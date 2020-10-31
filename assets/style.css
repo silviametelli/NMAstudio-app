@@ -35,20 +35,20 @@ h6 {
     margin-top: 20px;
 }
 
-.wind__speed__container {
-    display: flex;
-    flex-direction: column;
-    background-color: #5d6d95;
-    border-radius: 0.55rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-}
-
 .graph__title {
     color: #fff !important;
     letter-spacing: 0.3rem !important;
     padding: 25px 25px 0px 25px;
     margin-bottom: 0px !important;
     font-size: 1em;
+}
+.info_box {
+    color: #fff !important;
+    letter-spacing: 0.1rem !important;
+    padding: 25px 25px 0px 25px;
+    margin-bottom: 0px !important;
+    font-size: 12px;
+    font-family: "Arial" !important;
 }
 
 .slider {

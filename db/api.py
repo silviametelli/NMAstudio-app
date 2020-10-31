@@ -15,10 +15,10 @@ def get_wind_data(start, end):
     :returns: pandas dataframe object
     """
 
-    con = sqlite3.connect(str(DB_FILE))
-    statement = f'SELECT Speed, SpeedError, Direction FROM Wind WHERE rowid > "{start}" AND rowid <= "{end}";'
-    df = pd.read_sql_query(statement, con)
-    return df
+    # con = sqlite3.connect(str(DB_FILE))
+    # statement = f'SELECT Speed, SpeedError, Direction FROM Wind WHERE rowid > "{start}" AND rowid <= "{end}";'
+    # df = pd.read_sql_query(statement, con)
+    return None
 
 
 def get_wind_data_by_id(id):
@@ -29,7 +29,7 @@ def get_wind_data_by_id(id):
     :returns: pandas dataframe object
     """
 
-    con = sqlite3.connect(str(DB_FILE))
-    statement = f'SELECT * FROM Wind WHERE rowid = "{id}";'
-    df = pd.read_sql_query(statement, con)
-    return df
+    # con = sqlite3.connect(str(DB_FILE))
+    # statement = f'SELECT * FROM Wind WHERE rowid = "{id}";'
+    # df = pd.read_sql_query(statement, con)
+    return None

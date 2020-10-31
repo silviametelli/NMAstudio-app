@@ -9,8 +9,6 @@ from dash.dependencies import Input, Output, State
 # from db.api import get_wind_data, get_wind_data_by_id
 import plotly.express as px
 
-
-
 GRAPH_INTERVAL = os.environ.get("GRAPH_INTERVAL", 5000)
 
 app = dash.Dash(__name__, meta_tags=[{"name": "viewport",
@@ -31,13 +29,7 @@ stylesheet = [{'selector': 'node',
                'style': {'line-color': "#C5D3E2",
                          'arrow-scale': 2,
                          'width': 'data(weight)',
-                         'curve-style': 'bezier'}},
-               {'selector': 'unselected',
-                'style': {'line-color': "#07ABA0",
-                          }},
-                {'selector': 'selected',
-                'style': {'line-color': "#fff",
-                          }},
+                         'curve-style': 'bezier'}}
              ]
 
 network_layouts = [{'label': 'circle',       'value': 'circle'},
@@ -59,37 +51,6 @@ def get_network():
                 for target in np.unique(edges[['from', 'to']].values.flatten())]
 
     return cy_edges + cy_nodes
-
-df = pd.read_csv('db/forest_data/Acarbose.csv').reset_index(drop=False)
-df['CI_width'] = df.CI_upper - df.CI_lower
-df = df.sort_values(by='RR')
-
-fig = px.scatter(df, x="RR", y="Treatment",
-                 error_x_minus='CI_lower', error_x='CI_width',
-                 size='WEIGHTS',
-                 log_x=True)
-fig.update_layout(paper_bgcolor='#40515e',
-                  plot_bgcolor='#40515e',
-                  clickmode='event+select',
-                  font_color="white",
-                  margin=dict(l=10, r=10, t=10, b=80),
-                  xaxis=dict(showgrid=False,  tick0=0),
-                  yaxis=dict(showgrid=False),
-                  annotations=[dict(x=-1, ax=0, y=-0.15, ay=-0.1, xref='x',axref='x', yref='paper',
-                                    showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='green'),
-                               dict(x=1, ax=0, y=-0.15, ay=-0.1, xref='x',axref='x', yref='paper',
-                                   showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='red'),
-                               dict(x=.1, y=-0.22, xref='paper', yref='paper',text='Favours treatment', showarrow=False),
-                               dict(x=.78, y=-0.22, xref='paper', yref='paper',text='Favours PVI', showarrow=False)])
-fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='white', ticklen=5,
-                 tickvals=[0.1, 0.5, 1, 5, 10], ticktext=[0.1, 0.5, 1, 5, 10],
-                 autorange=True, showline= True, zeroline= True)
-
-fig.add_shape(type= 'line',
-              yref= 'paper', y0=0, y1=1,
-              xref= 'x', x0=1, x1=1,
-              line=dict(color="white",width=1), layer='below')
-fig.update_traces(marker=dict(symbol='square', opacity=1, line=dict(color='MediumPurple')))
 
 
 
@@ -123,8 +84,8 @@ app.layout = html.Div(
                           # Forest Plot
                           html.Div([html.Div([html.H6(id='tapNodeData-info', className="graph__title")]),
 
-                                    dcc.Graph(figure=fig
-                                        # id='cytoscape-tapNodeData-fig'
+                                    dcc.Graph(#figure=fig
+                                        id='tapNodeData-fig'
                                     )],
                                    className="graph__container second")],
                       className="one-third column histogram__direction")],
@@ -160,44 +121,50 @@ def TapNodeData_info(data):
     else:
         return 'Forest plot'
 
-# @app.callback(Output('cytoscape-tapNodeData-fig', 'figure'),
-#               [Input('cytoscape', 'tapNodeData')])
-# def TapNodeData_fig(data):
-#     if data:
-#         treatment = data['label']
-#         df = pd.read_csv(f'db/forest_data/{treatment}.csv').reset_index(drop=False)
-#         df['CI_width'] = df.CI_upper - df.CI_lower
-#         df = df.sort_values(by='RR')
-#
-#         fig = px.scatter(df, x="RR", y="Treatment",
-#                          error_x_minus='CI_lower', error_x='CI_width',
-#                          size='WEIGHTS',
-#                          log_x=True)
-#         fig.update_layout(paper_bgcolor='#40515e',
-#                           plot_bgcolor='#40515e',
-#                           clickmode='event+select',
-#                           font_color="white",
-#                           margin=dict(l=10, r=10, t=10, b=80),
-#                           xaxis=dict(showgrid=False, tick0=0),
-#                           yaxis=dict(showgrid=False),
-#                           annotations=[dict(x=-1, ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
-#                                             showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='green'),
-#                                        dict(x=1, ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
-#                                             showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='red'),
-#                                        dict(x=.1, y=-0.22, xref='paper', yref='paper', text='Favours treatment',
-#                                             showarrow=False),
-#                                        dict(x=.78, y=-0.22, xref='paper', yref='paper', text='Favours PVI',
-#                                             showarrow=False)])
-#         fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='white', ticklen=5,
-#                          tickvals=[0.1, 0.5, 1, 5, 10], ticktext=[0.1, 0.5, 1, 5, 10],
-#                          autorange=True, showline=True, zeroline=True)
-#
-#         fig.add_shape(type='line',
-#                       yref='paper', y0=0, y1=1,
-#                       xref='x', x0=1, x1=1,
-#                       line=dict(color="white", width=1), layer='below')
-#         fig.update_traces(marker=dict(symbol='square', opacity=1, line=dict(color='MediumPurple')))
-#         return fig
+@app.callback(Output('tapNodeData-fig', 'figure'),
+              [Input('cytoscape', 'tapNodeData')])
+def TapNodeData_fig(data):
+    if data:
+        treatment = data['label']
+        df = pd.read_csv(f'db/forest_data/{treatment}.csv').reset_index(drop=False)
+        df['CI_width'] = df.CI_upper - df.CI_lower
+        df = df.sort_values(by='RR')
+    else:
+        df = pd.DataFrame([[0]*7]*12, columns=['index', 'Treatment', 'RR', 'CI_lower', 'CI_upper', 'WEIGHTS', 'CI_width'])
+
+    fig = px.scatter(df, x="RR", y="Treatment",
+                     error_x_minus='CI_lower', error_x='CI_width',
+                     size='WEIGHTS',
+                     log_x=True)
+    fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='white', ticklen=5,
+                     tickvals=[0.1, 0.5, 1, 5, 10], ticktext=[0.1, 0.5, 1, 5, 10],
+                     autorange=True, showline=True, zeroline=True, range=[0.1, 1])
+    fig.add_shape(type='line',
+                  yref='paper', y0=0, y1=1,
+                  xref='x', x0=1, x1=1,
+                  line=dict(color="white", width=1), layer='below')
+    fig.update_traces(marker=dict(symbol='square', opacity=1, line=dict(color='MediumPurple')))
+
+    fig.update_layout(paper_bgcolor='#40515e',
+                      plot_bgcolor='#40515e',
+                      clickmode='event+select',
+                      font_color="white",
+                      margin=dict(l=10, r=10, t=10, b=80),
+                      xaxis=dict(showgrid=False, tick0=0),
+                      yaxis=dict(showgrid=False),
+                      annotations=[dict(x=-1, ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
+                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='green'),
+                                   dict(x=1, ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
+                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='red'),
+                                   dict(x=.1, y=-0.22, xref='paper', yref='paper', text='Favours treatment',
+                                        showarrow=False),
+                                   dict(x=.78, y=-0.22, xref='paper', yref='paper', text='Favours PVI',
+                                        showarrow=False)] if data else [])
+    if not data:
+        fig.update_yaxes(tickvals=[], ticktext=[])
+
+    return fig
+
 
 
 

@@ -26,7 +26,7 @@ h6 {
 }
 
 .app__menu__img {
-    height: 50px;
+    height: 60px;
     width: auto;
 }
 
@@ -38,17 +38,25 @@ h6 {
 .graph__title {
     color: #fff !important;
     letter-spacing: 0.3rem !important;
-    padding: 25px 25px 0px 25px;
+    padding: 25px 25px 0px 5px;
     margin-bottom: 0px !important;
+    font-size: 1em;
+}
+.box__title {
+    font-family: "Times New Roman", Times, serif !important;
+    color: #fff !important;
+    letter-spacing: 0.3rem !important;
+    padding: 25px 25px 0px 25px;
+    margin-bottom: -15px !important;
     font-size: 1em;
 }
 .info_box {
     color: #fff !important;
     letter-spacing: 0.1rem !important;
     padding: 25px 25px 0px 25px;
-    margin-bottom: 0px !important;
+    margin-bottom: -15px !important;
     font-size: 12px;
-    font-family: "Arial" !important;
+    font-family: "sans-serif" !important;
 }
 
 .slider {
@@ -88,24 +96,14 @@ h6 {
     margin-top: 15px;
 }
 
-.histogram__direction {
-    margin-left: 15px;
-}
 
-#wind-direction {
-    display: flex;
-    justify-content: center;
-}
+@media only screen and (max-width: 300px) {
 
-@media only screen and (max-width: 600px) {
-    .histogram__direction {
-        margin: 15px 0px 20px 0px;
-    }
     .app__content {
         display: block;
     }    
     .app__menu__img {
-        height: 30px;
+        height: 200px;
         width: auto;
     }
     .app__header {
@@ -118,6 +116,8 @@ h6 {
     }
     .app__header__logo {
         order: 0;
+        height: 30px;
+        width: auto;
     }
     .app__header__title {
         font-size: 1.5em;

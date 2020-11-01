@@ -5,8 +5,6 @@ import dash_cytoscape as cyto
 
 from dash.exceptions import PreventUpdate
 from dash.dependencies import Input, Output, State
-# from scipy.stats import rayleigh
-# from db.api import get_wind_data, get_wind_data_by_id
 import plotly.express as px
 
 GRAPH_INTERVAL = os.environ.get("GRAPH_INTERVAL", 5000)
@@ -61,12 +59,15 @@ app.layout = html.Div(
                         html.P("Anche se questo si è sempore saputo e non è dunque una gran novità...",
                                className="app__header__title--grey")], className="app__header__desc"),
              html.Div([html.Img(src=app.get_asset_url("logo_universite_paris.jpg"),
-                                className="app__menu__img")], className="app__header__logo")],
+                                className="app__menu__img")],
+                      className="app__header__logo")],
              className="app__header"),
     html.Div([html.Div(   # NMA Graph
                  [html.Div([html.H6("NMA Graph", className="graph__title"),
                             html.Div([dcc.Dropdown(id='dropdown-layout', options=network_layouts, clearable=False,
-                                                   value='circle', style={'width':'170px'})],
+                                                   value='circle', style={'width':'170px',
+                                                                          'color': '#1b242b',
+                                                                          'background-color': '#40515e'})],
                             className="row")]),
                   cyto.Cytoscape(id='cytoscape',
                                  elements=get_network(),
@@ -75,20 +76,28 @@ app.layout = html.Div(
                   className="two-thirds column"),
               html.Div(
                       [html.Div(  # Information
-                           [html.Div([html.H6("Information", className="graph__title")]),
-                            html.Div([html.P(id='cytoscape-mouseoverEdgeData-output', className="info_box")],
+                           [html.Div([html.H6("Information", className="box__title")]),
+                            html.Div([html.P(id='cytoscape-mouseoverEdgeData-output', className="info_box"),
+                                      html.Br()],
                                       className="content_information"),
                             html.Div([],
                                       className="auto__container")],
                           className="graph__container first"),
                           # Forest Plot
-                          html.Div([html.Div([html.H6(id='tapNodeData-info', className="graph__title")]),
+                          html.Div([html.Div([html.H6(id='tapNodeData-info', className="box__title"), html.Br()]),
 
-                                    dcc.Graph(#figure=fig
-                                        id='tapNodeData-fig'
+                                    dcc.Graph(id='tapNodeData-fig',
+                                              config={'modeBarButtonsToRemove':['toggleSpikelines', "pan2d",
+                                                                                "select2d", "lasso2d", "autoScale2d",
+                                                                                "hoverCompareCartesian"],
+                                                      'toImageButtonOptions': {'format': 'png', # one of png, svg,
+                                                                               'filename': 'custom_image',
+                                                                               'scale': 10 # Multiply title/legend/axis/canvas sizes by this factor
+                                                                              },
+                                                      'displaylogo':False}
                                     )],
                                    className="graph__container second")],
-                      className="one-third column histogram__direction")],
+                      className="one-third column")],
               className="app__content")],
     className="app__container")
 
@@ -149,9 +158,10 @@ def TapNodeData_fig(data):
                       plot_bgcolor='#40515e',
                       clickmode='event+select',
                       font_color="white",
-                      margin=dict(l=10, r=10, t=10, b=80),
+                      margin=dict(l=0, r=10, t=12, b=80),
                       xaxis=dict(showgrid=False, tick0=0),
-                      yaxis=dict(showgrid=False),
+                      yaxis=dict(showgrid=False, title=''),
+                      title_text='Treatment', title_x=0.02, title_y=.98, title_font_size=14,
                       annotations=[dict(x=-1, ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
                                         showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='green'),
                                    dict(x=1, ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',

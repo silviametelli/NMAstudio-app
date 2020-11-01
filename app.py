@@ -83,7 +83,7 @@ app.layout = html.Div(
                           className="graph__container first"),
                           # Forest Plot
                           html.Div([html.Div([html.H6(id='tapNodeData-info', className="box__title"), html.Br()]),
-
+                                dcc.Loading(
                                     dcc.Graph(id='tapNodeData-fig',
                                               config={'modeBarButtonsToRemove':['toggleSpikelines', "pan2d",
                                                                                 "select2d", "lasso2d", "autoScale2d",
@@ -93,7 +93,7 @@ app.layout = html.Div(
                                                                                'scale': 10 # Multiply title/legend/axis/canvas sizes by this factor
                                                                               },
                                                       'displaylogo':False}
-                                    )],
+                                    ))],
                                    className="graph__container second")],
                       className="one-half column")],
               className="app__content")],

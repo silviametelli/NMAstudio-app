@@ -39,8 +39,8 @@ default_elements= get_network()
 
 app.layout = html.Div(
     [html.Div(  # header
-             [html.Div([html.H4("Pis è un babbeo", className="app__header__title"),
-                        html.P("Anche se questo si è sempore saputo e non è dunque una gran novità...",
+             [html.Div([html.H4("Network Meta-Analysis Tool", className="app__header__title"),
+                        html.P("A tool for data visualisation of network meta-analysis.",
                                className="app__header__title--grey")], className="app__header__desc"),
              html.Div([html.Img(src=app.get_asset_url("logo_universite_paris.jpg"),
                                 className="app__menu__img")],

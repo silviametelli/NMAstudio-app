@@ -46,8 +46,8 @@ h6 {
     font-family: "Times New Roman", Times, serif !important;
     color: #fff !important;
     letter-spacing: 0.3rem !important;
-    padding: 25px 25px 0px 25px;
-    margin-bottom: -15px !important;
+    padding: 5px 0px 0px 25px;
+    margin-bottom: -20px !important;
     font-size: 1em;
 }
 .info_box {
@@ -83,6 +83,11 @@ h6 {
 }
 
 .graph__container {
+    background-color: #40515e;
+    border-radius: 0.55rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+}
+.info__container {
     background-color: #5d6d95;
     border-radius: 0.55rem;
     box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
@@ -122,3 +127,4 @@ h6 {
         padding-top: 15px;
     }
 }
+

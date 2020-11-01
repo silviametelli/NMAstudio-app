@@ -128,7 +128,7 @@ def TapNodeData_info(data):
     if data:
         return 'Forest plot: ' + data['label']
     else:
-        return 'Forest plot'
+        return 'Forest plot (click on a node to display associated forest plot)'
 
 @app.callback(Output('tapNodeData-fig', 'figure'),
               [Input('cytoscape', 'tapNodeData')])

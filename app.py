@@ -1,10 +1,9 @@
-import os, io
+import os, io, base64
 import pandas as pd, numpy as np
 import dash, dash_core_components as dcc, dash_html_components as html
 import dash_table
-
-
 import dash_cytoscape as cyto
+from assets.cytoscape_styleesheeet import default_stylesheet
 
 from dash.exceptions import PreventUpdate
 from dash.dependencies import Input, Output, State
@@ -16,22 +15,6 @@ app = dash.Dash(__name__, meta_tags=[{"name": "viewport",
                                       "content": "width=device-width, initial-scale=1"}])
 
 server = app.server
-stylesheet = [{'selector': 'node',
-               'style': {'content': 'data(name)',
-                         'font-family': 'helvetica',
-                         'font-size': 18,
-                         'text-outline-width': 1,
-                         # 'text-outline-color': '#fff',
-                         'opacity': 1,
-                         'label': "data(label)",
-                         'background-color': "#07ABA0",
-                         'color': "#fff"}},
-              {'selector': 'edge',
-               'style': {'line-color': "#C5D3E2",
-                         'arrow-scale': 2,
-                         'width': 'data(weight)',
-                         'curve-style': 'bezier'}}
-             ]
 
 network_layouts = [{'label': 'circle',       'value': 'circle'},
                    {'label': 'random',       'value': 'random'},
@@ -44,13 +27,14 @@ DF = pd.read_csv('db/Senn2013.csv', index_col=0).rename(columns={"treat1.long": 
                                                                  "treat2.long": 'to'})
 def get_network():
     edges = DF.groupby(['from', 'to']).TE.count().reset_index()
+    all_nodes = np.unique(edges[['from', 'to']].values.flatten())
     cy_edges = [{'data': {'source': source, 'target': target, 'weight': weight * 2, 'weight_lab': weight}}
                 for source, target, weight in edges.values]
-    cy_nodes = [{"data": {"id": target, "label": target}}
-                for target in np.unique(edges[['from', 'to']].values.flatten())]
+    cy_nodes = [{"data": {"id": target, "label": target, 'classes':'genesis'}}
+                for target in all_nodes]
 
     return cy_edges + cy_nodes
-
+default_elements= get_network()
 
 
 app.layout = html.Div(
@@ -70,9 +54,9 @@ app.layout = html.Div(
                                                                           'background-color': '#40515e'})],
                             className="row")]),
                   cyto.Cytoscape(id='cytoscape',
-                                 elements=get_network(),
+                                 elements=default_elements,
                                  style={'height': '70vh', 'width': '100%'},
-                                 stylesheet=stylesheet)],
+                                 stylesheet=default_stylesheet)],
                   className="one-half column"),
               html.Div(
                       [html.Div(  # Information
@@ -124,8 +108,6 @@ app.layout = html.Div(
 
                       ],
                       className="one-half column"),
-
-
     ],
               className="app__content")],
     className="app__container")
@@ -140,6 +122,70 @@ def update_cytoscape_layout(layout):
             'animate': True}
 
 
+@app.callback(Output('cytoscape', 'stylesheet'),
+              [Input('cytoscape', 'tapNode')])
+def generate_stylesheet(node):
+    FOLLOWER_COLOR = '#07ABA0'
+    FOLLOWING_COLOR = '#07ABA0'
+    NODE_SHAPE = 'ellipse'
+    # One of  'ellipse', 'triangle', 'rectangle', 'diamond', 'pentagon', 'hexagon', 'heptagon', 'octagon', 'star', 'polygon',
+    
+    if not node:
+        return default_stylesheet
+
+    stylesheet = [{"selector": 'node',
+                   'style': {'opacity': 0.2,
+                             'color': "#fff",
+                             'label': "data(label)",
+                             'background-color': "#07ABA0",
+                             'shape': NODE_SHAPE}},
+                  {'selector': 'edge',
+                   'style': {'opacity': 0.1,
+                             'width': 'data(weight)',
+                             "curve-style": "bezier"}},
+                  {"selector": 'node[id = "{}"]'.format(node['data']['id']),
+                   "style": {'background-color': '#07ABA0',
+                             "border-color": "#751225",
+                             "border-width": 5,
+                             "border-opacity": 1,
+                             "opacity": 1,
+                             "label": "data(label)",
+                             "color": "white",
+                             "text-opacity": 1,
+                             'shape': 'ellipse',
+                             # "font-size": 12,
+                             'z-index': 9999}}
+                  ]
+    for edge in node['edgesData']:
+        if edge['source'] == node['data']['id']:
+            stylesheet.append({
+                "selector": 'node[id = "{}"]'.format(edge['target']),
+                "style": {'background-color': FOLLOWING_COLOR,
+                          'opacity': 0.9}})
+            stylesheet.append({"selector": 'edge[id= "{}"]'.format(edge['id']),
+                               "style": {
+                                         # "line-color": FOLLOWING_COLOR,
+                                         # "mid-target-arrow-color": FOLLOWING_COLOR,
+                                         # "mid-target-arrow-shape": "vee",
+                                         'opacity': 0.9,
+                                         'z-index': 5000}})
+
+        if edge['target'] == node['data']['id']:
+            stylesheet.append({"selector": 'node[id = "{}"]'.format(edge['source']),
+                               "style": {'background-color': FOLLOWER_COLOR,
+                                         'opacity': 0.9,
+                                         'z-index': 9999}})
+            stylesheet.append({"selector": 'edge[id= "{}"]'.format(edge['id']),
+                               "style": {
+                                         # "line-color": FOLLOWER_COLOR,
+                                         # "mid-target-arrow-color": FOLLOWER_COLOR,
+                                         # "mid-target-arrow-shape": "vee",
+                                         'opacity': 1,
+                                         'z-index': 5000}})
+
+    return stylesheet
+
+
 
 @app.callback(Output('tapNodeData-info', 'children'),
               [Input('cytoscape', 'tapNodeData')])
@@ -147,7 +193,7 @@ def TapNodeData_info(data):
     if data:
         return data['label']
     else:
-        return 'Click on a node to display associated forest plot'
+        return 'Click on a node to display the associated forest plot'
 
 @app.callback(Output('tapNodeData-fig', 'figure'),
               [Input('cytoscape', 'tapNodeData')])
@@ -222,23 +268,14 @@ def mouseoverEdgeData(data):
     else:
         return "Try hovering over an edge!"
 
-# @app.callback(Output('datatable-upload-container', 'children'),
-#               [Input('upload', 'contents')])
-# def update_figure(content):
-#     if not content:
-#         return []
-#     dff = pd.read_csv(io.StringIO(content))
-#     return dff.to_dict('records')
-import base64
+
 def parse_contents(contents, filename):
     content_type, content_string = contents.split(',')
     decoded = base64.b64decode(content_string)
-    if 'csv' in filename:
-        # Assume that the user uploaded a CSV file
+    if 'csv' in filename:    # Assume that the user uploaded a CSV file
         return pd.read_csv(
             io.StringIO(decoded.decode('utf-8')))
-    elif 'xls' in filename:
-        # Assume that the user uploaded an excel file
+    elif 'xls' in filename:  # Assume that the user uploaded an excel file
         return pd.read_excel(io.BytesIO(decoded))
 
 

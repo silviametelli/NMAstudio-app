@@ -169,6 +169,7 @@ def TapNodeData_fig(data):
                                         showarrow=False)] if data else [])
     if not data:
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
+        fig.update_layout(margin=dict(l=0, r=10, t=12, b=80))
 
     return fig
 

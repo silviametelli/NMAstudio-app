@@ -47,7 +47,7 @@ app.layout = html.Div(
                       className="app__header__logo")],
              className="app__header"),
     html.Div([html.Div(   # NMA Graph
-                 [html.Div([html.H6("NMA Graph", className="graph__title",style={'display': 'inline-block'}),
+                 [html.Div([html.H6("Graph layout", className="graph__title",style={'display': 'inline-block'}),
                             html.Div([dcc.Dropdown(id='dropdown-layout', options=network_layouts, clearable=False,
                                                    value='circle', style={'width':'170px',
                                                                           'color': '#1b242b',

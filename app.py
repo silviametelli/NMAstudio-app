@@ -1,5 +1,5 @@
 import os
-import pandas as pd, numpy as np, datetime as dt
+import pandas as pd, numpy as np
 import dash, dash_core_components as dcc, dash_html_components as html
 import dash_cytoscape as cyto
 
@@ -38,7 +38,6 @@ network_layouts = [{'label': 'circle',       'value': 'circle'},
                    {'label': 'cose',         'value': 'cose'}]
 
 def get_network():
-
     df = pd.read_csv('db/Senn2013.csv', index_col=0).rename(columns={"treat1.long": 'from',
                                                                      "treat2.long": 'to',
                                                                      'TE': 'weight'})
@@ -49,7 +48,6 @@ def get_network():
                 for target in np.unique(edges[['from', 'to']].values.flatten())]
 
     return cy_edges + cy_nodes
-
 
 
 
@@ -73,7 +71,7 @@ app.layout = html.Div(
                                  elements=get_network(),
                                  style={'height': '70vh', 'width': '100%'},
                                  stylesheet=stylesheet)],
-                  className="two-thirds column"),
+                  className="one-half column"),
               html.Div(
                       [html.Div(  # Information
                            [html.Div([html.H6("Information", className="box__title")]),
@@ -97,7 +95,7 @@ app.layout = html.Div(
                                                       'displaylogo':False}
                                     )],
                                    className="graph__container second")],
-                      className="one-third column")],
+                      className="one-half column")],
               className="app__content")],
     className="app__container")
 
@@ -145,18 +143,17 @@ def TapNodeData_fig(data):
                      error_x_minus='CI_lower', error_x='CI_width',
                      size='WEIGHTS',
                      log_x=True)
-    fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='white', ticklen=5,
-                     tickvals=[0.1, 0.5, 1, 5, 10], ticktext=[0.1, 0.5, 1, 5, 10],
-                     autorange=True, showline=True, zeroline=True, range=[0.1, 1])
+    fig.update_layout(paper_bgcolor='#40515e',
+                      plot_bgcolor='#40515e')
     fig.add_shape(type='line',
                   yref='paper', y0=0, y1=1,
                   xref='x', x0=1, x1=1,
                   line=dict(color="white", width=1), layer='below')
     fig.update_traces(marker=dict(symbol='square', opacity=1, line=dict(color='MediumPurple')))
-
-    fig.update_layout(paper_bgcolor='#40515e',
-                      plot_bgcolor='#40515e',
-                      clickmode='event+select',
+    fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='white', ticklen=5,
+                     tickvals=[0.1, 0.5, 1, 5, 10], ticktext=[0.1, 0.5, 1, 5, 10],
+                     autorange=True, showline=True, zeroline=True, range=[0.1, 1])
+    fig.update_layout(clickmode='event+select',
                       font_color="white",
                       margin=dict(l=0, r=10, t=12, b=80),
                       xaxis=dict(showgrid=False, tick0=0),
@@ -171,7 +168,7 @@ def TapNodeData_fig(data):
                                    dict(x=.78, y=-0.22, xref='paper', yref='paper', text='Favours PVI',
                                         showarrow=False)] if data else [])
     if not data:
-        fig.update_yaxes(tickvals=[], ticktext=[])
+        fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
 
     return fig
 

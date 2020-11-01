@@ -55,7 +55,7 @@ app.layout = html.Div(
                             className="row")]),
                   cyto.Cytoscape(id='cytoscape',
                                  elements=default_elements,
-                                 style={'height': '70vh', 'width': '100%'},
+                                 style={'height': '60vh', 'width': '100%'},
                                  stylesheet=default_stylesheet)],
                   className="one-half column"),
               html.Div(
@@ -107,9 +107,10 @@ app.layout = html.Div(
                                    className="graph__container second"),
 
                       ],
-                      className="one-half column"),
+                      className="one-half column")
     ],
-              className="app__content")],
+              className="app__content"),
+        html.P('Copyright © 2020. All rights reserved.', className='__footer')],
     className="app__container")
 
 

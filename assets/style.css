@@ -58,7 +58,14 @@ h6 {
     font-size: 12px;
     font-family: "sans-serif" !important;
 }
-
+.__footer {
+    color: #9d9d9d !important;
+    /*letter-spacing: 0.1rem !important;*/
+    /*padding: 25px 25px 0px 25px;*/
+    /*margin-bottom: -15px !important;*/
+    font-size: 12px;
+    font-family: "sans-serif" !important;
+}
 .slider {
     padding: 15px;
 }

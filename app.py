@@ -82,23 +82,27 @@ app.layout = html.Div(
                                                                                               },
                                                                       'displaylogo':False}))]
                                       ),
-                              dcc.Tab(label='Data', children=[dcc.Upload(html.Button('Upload your file!',
-                                                                                     style=dict(color='white')),
-                                                                         id='datatable-upload'),
-                                                              dash_table.DataTable(id='datatable-upload-container',
-                                                                                   fixed_rows={'headers': True,
-                                                                                               'data': 0},
-                                                                                   style_cell_conditional=[
-                                                                                       {'if': {'column_id': c},
-                                                                                               'textAlign': 'left'}
-                                                                                       for c in ['Date', 'Region']],
-                                                                                   style_data_conditional=[
-                                                                                       {'if': {'row_index': 'odd'},
-                                                                                               'backgroundColor': 'rgb(248, 248, 248)'}],
-                                                                                   style_header={'backgroundColor': 'rgb(230, 230, 230)',
-                                                                                                 'fontWeight': 'bold'},
-                                                                                   css=[{"selector": "table",
-                                                                                             "rule": "width: 100%;"}]
+                              dcc.Tab(label='Data',
+                                      children=[dcc.Upload(html.Button('Upload your file!',
+                                                                       style=dict(color='white')),
+                                                                       id='datatable-upload'),
+                                                dash_table.DataTable(id='datatable-upload-container',
+                                                                     # fixed_rows={'headers': True,
+                                                                     #             'data': 0},
+                                                                     style_cell_conditional=[
+                                                                         {'if': {'column_id': c},
+                                                                                 'textAlign': 'left'}
+                                                                         for c in ['Date', 'Region']],
+                                                                     style_data_conditional=[
+                                                                         {'if': {'row_index': 'odd'},
+                                                                                 'backgroundColor': 'rgb(248, 248, 248)'}],
+                                                                     style_header={'backgroundColor': 'rgb(230, 230, 230)',
+                                                                                   'fontWeight': 'bold'},
+                                                                     style_table={'height': '400px',
+                                                                                  'overflowX': 'auto',
+                                                                                  'overflowY': 'auto'},
+                                                                     css=[{"selector": "table",
+                                                                           "rule": "width: 100%;"}]
                                                                                    )])
                           ],colors={"border": "#1b242b",
                                     "primary": "#1b242b",
@@ -242,8 +246,6 @@ def TapNodeData_fig(data):
     return fig
 
 
-
-
 # @app.callback(Output('cytoscape-tapEdgeData-output', 'children'),
 #               [Input('cytoscape', 'tapEdgeData')])
 # def TapEdgeData(data):
@@ -256,7 +258,6 @@ def TapNodeData_fig(data):
 # def mouseoverNodeData(data):
 #     if data:
 #         return "Hovered over node: " + data['label']
-
 
 
 @app.callback(Output('cytoscape-mouseoverEdgeData-output', 'children'),

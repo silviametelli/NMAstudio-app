@@ -3,4 +3,5 @@ venv
 .DS_Store
 .env
 .idea/
+db/.temp/
 settings.json

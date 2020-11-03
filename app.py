@@ -1,6 +1,6 @@
-import os, io, base64
+import os, io, base64, pickle
 import pandas as pd, numpy as np
-import dash, dash_core_components as dcc, dash_html_components as html
+import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
 import dash_table
 import dash_cytoscape as cyto
 from assets.cytoscape_styleesheeet import default_stylesheet
@@ -47,18 +47,19 @@ app.layout = html.Div(
                       className="app__header__logo")],
              className="app__header"),
     html.Div([html.Div(   # NMA Graph
-                 [html.Div([html.H6("Graph layout", className="graph__title",style={'display': 'inline-block'}),
-                            html.Div([dcc.Dropdown(id='dropdown-layout', options=network_layouts, clearable=False,
-                                                   value='circle', style={'width':'170px',
-                                                                          'color': '#1b242b',
-                                                                          'background-color': '#40515e'})],
-                            className="row")]),
+                 [html.Div([dbc.Row([html.H6("Graph layout", className="graph__title",style={'display': 'inline-block'}),
+                                     dcc.Dropdown(id='dropdown-layout', options=network_layouts, clearable=False,
+                                                  value='circle', style={'width':'170px',
+                                                                         'color': '#1b242b',
+                                                                         'background-color': '#40515e',
+                                                                         'display': 'inline-block'})]
+                                    ), html.Br()]),
                   cyto.Cytoscape(id='cytoscape',
                                  elements=default_elements,
                                  style={'height': '60vh', 'width': '100%'},
                                  stylesheet=default_stylesheet)],
                   className="one-half column"),
-              html.Div(
+                 html.Div(
                       [html.Div(  # Information
                            [html.Div([html.H6("Information", className="box__title")]),
                             html.Div([html.P(id='cytoscape-mouseoverEdgeData-output', className="info_box"),
@@ -93,14 +94,19 @@ app.layout = html.Div(
                                                                          {'if': {'column_id': c},
                                                                                  'textAlign': 'left'}
                                                                          for c in ['Date', 'Region']],
+                                                                     style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
+                                                                                 'color': 'white',
+                                                                                 'border': '1px solid #5d6d95'},
                                                                      style_data_conditional=[
                                                                          {'if': {'row_index': 'odd'},
-                                                                                 'backgroundColor': 'rgb(248, 248, 248)'}],
-                                                                     style_header={'backgroundColor': 'rgb(230, 230, 230)',
-                                                                                   'fontWeight': 'bold'},
+                                                                                 'backgroundColor': 'rgba(0,0,0,0.2)'}],
+                                                                     style_header={'backgroundColor': 'rgb(26, 36, 43)',
+                                                                                   'fontWeight': 'bold',
+                                                                                   'border': '1px solid #5d6d95'},
                                                                      style_table={'height': '400px',
                                                                                   'overflowX': 'auto',
-                                                                                  'overflowY': 'auto'},
+                                                                                  'overflowY': 'auto',
+                                                                                  'border': '1px solid #5d6d95'},
                                                                      css=[{"selector": "table",
                                                                            "rule": "width: 100%;"}]
                                                                                    )])
@@ -114,7 +120,8 @@ app.layout = html.Div(
                       className="one-half column")
     ],
               className="app__content"),
-        html.P('Copyright © 2020. All rights reserved.', className='__footer')],
+        html.P('Copyright © 2020. All rights reserved.', className='__footer')
+    ],
     className="app__container")
 
 
@@ -130,13 +137,27 @@ def update_cytoscape_layout(layout):
 @app.callback(Output('cytoscape', 'stylesheet'),
               [Input('cytoscape', 'tapNode')])
 def generate_stylesheet(node):
+
     FOLLOWER_COLOR = '#07ABA0'
     FOLLOWING_COLOR = '#07ABA0'
     NODE_SHAPE = 'ellipse'
     # One of  'ellipse', 'triangle', 'rectangle', 'diamond', 'pentagon', 'hexagon', 'heptagon', 'octagon', 'star', 'polygon',
-    
+
+    def io_node_topickle(store_node):
+        with open('db/.temp/selected_nodes.pickle', 'wb') as f:
+            pickle.dump(store_node, f, protocol=pickle.HIGHEST_PROTOCOL)
     if not node:
+        os.makedirs('db/.temp', exist_ok=True)
+        io_node_topickle({'label': None})
         return default_stylesheet
+    else:
+        store_node = pickle.load(open('db/.temp/selected_nodes.pickle', 'rb'))
+        if node['data']['label']==store_node['label']:
+            io_node_topickle({'label': None})
+            return default_stylesheet
+        else:
+            io_node_topickle({'label': node['data']['label']})
+
 
     stylesheet = [{"selector": 'node',
                    'style': {'opacity': 0.2,
@@ -191,7 +212,6 @@ def generate_stylesheet(node):
     return stylesheet
 
 
-
 @app.callback(Output('tapNodeData-info', 'children'),
               [Input('cytoscape', 'tapNodeData')])
 def TapNodeData_info(data):
@@ -234,10 +254,10 @@ def TapNodeData_fig(data):
                       annotations=[dict(x=-1, ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
                                         showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='green'),
                                    dict(x=1, ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
-                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='red'),
+                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='#751225'),
                                    dict(x=.1, y=-0.22, xref='paper', yref='paper', text='Favours treatment',
                                         showarrow=False),
-                                   dict(x=.78, y=-0.22, xref='paper', yref='paper', text='Favours PVI',
+                                   dict(x=.78, y=-0.22, xref='paper', yref='paper', text='Favours comparator',
                                         showarrow=False)] if data else [])
     if not data:
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
@@ -261,14 +281,14 @@ def TapNodeData_fig(data):
 
 
 @app.callback(Output('cytoscape-mouseoverEdgeData-output', 'children'),
-              [Input('cytoscape', 'mouseoverEdgeData')])
+              [Input('cytoscape', 'tapEdgeData')])
 def mouseoverEdgeData(data):
     if data:
         n_studies = data['weight_lab']
         studies_str = f"{n_studies}" + (' studies' if n_studies>1 else ' study')
         return f"{data['source'].upper()} vs {data['target'].upper()}: {studies_str}"
     else:
-        return "Try hovering over an edge!"
+        return "Click on an edge to get information."
 
 
 def parse_contents(contents, filename):

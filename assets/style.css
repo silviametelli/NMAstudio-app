@@ -38,7 +38,7 @@ h6 {
 .graph__title {
     color: #fff !important;
     letter-spacing: 0.3rem !important;
-    padding: 25px 25px 0px 25px;
+    padding: 25px 25px 0px 0px;
     margin-bottom: 0px !important;
     font-size: 1em;
 }

@@ -4,9 +4,10 @@ setwd("/Users/silvia/Desktop/Dash-Net2")
 
 dat = read.csv("db/Senn2013.csv", header = T)
 colnames(dat) = c("X","TE","seTE","t1","t2", "treat1", "treat2","studlab")
+ref="Placebo" ## else pass a dataset with a 'reference' column
   
 N.t=unique(c(dat$t1, dat$t2))
-#forest plot data for each node-subnetwork
+
 for(x in 1:N.t){
     subnet_temp = dat %>%
                   filter(dat$t1==x | dat$t2==x)
@@ -16,6 +17,12 @@ for(x in 1:N.t){
                               subnet_temp$studlab,
                               comb.random=TRUE,
                               backtransf = TRUE,
-                              reference.group = "Placebo"
+                              reference.group = ref
                               )
+    TE_temp =
+    seTE_temp =
+    from_temp =
+    to_temp =
+    studlab_temp =
+    ref_temp =
 }

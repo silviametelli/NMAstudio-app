@@ -23,11 +23,11 @@ network_layouts = [{'label': 'circle',       'value': 'circle'},
                    {'label': 'breadthfirst', 'value': 'breadthfirst'},
                    {'label': 'cose',         'value': 'cose'}]
 
-DF = pd.read_csv('db/Senn2013.csv', index_col=0).rename(columns={"treat1.long": 'from',
-                                                                 "treat2.long": 'to'})
+DF = pd.read_csv('db/Senn2013.csv', index_col=0).rename(columns={"treat1.long": 'treat1',
+                                                                 "treat2.long": 'treat2'})
 def get_network():
-    edges = DF.groupby(['from', 'to']).TE.count().reset_index()
-    all_nodes = np.unique(edges[['from', 'to']].values.flatten())
+    edges = DF.groupby(['treat1', 'treat2']).TE.count().reset_index()
+    all_nodes = np.unique(edges[['treat1', 'treat2']].values.flatten())
     cy_edges = [{'data': {'source': source, 'target': target, 'weight': weight * 2, 'weight_lab': weight}}
                 for source, target, weight in edges.values]
     cy_nodes = [{"data": {"id": target, "label": target, 'classes':'genesis'}}
@@ -216,7 +216,7 @@ def generate_stylesheet(node):
               [Input('cytoscape', 'tapNodeData')])
 def TapNodeData_info(data):
     if data:
-        return data['label']
+        return 'Treatment selected: ', data['label']
     else:
         return 'Click on a node to display the associated forest plot'
 
@@ -250,7 +250,7 @@ def TapNodeData_fig(data):
                       margin=dict(l=0, r=10, t=12, b=80),
                       xaxis=dict(showgrid=False, tick0=0),
                       yaxis=dict(showgrid=False, title=''),
-                      title_text='Treatment', title_x=0.02, title_y=.98, title_font_size=14,
+                      title_text='   ', title_x=0.02, title_y=.98, title_font_size=14,
                       annotations=[dict(x=-1, ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
                                         showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='green'),
                                    dict(x=1, ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',

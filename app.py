@@ -48,11 +48,12 @@ app.layout = html.Div(
              className="app__header"),
     html.Div([html.Div(   # NMA Graph
                  [html.Div([dbc.Row([html.H6("Graph layout", className="graph__title",style={'display': 'inline-block'}),
-                                     dcc.Dropdown(id='dropdown-layout', options=network_layouts, clearable=False,
+                                     html.Div(dcc.Dropdown(id='dropdown-layout', options=network_layouts, clearable=False,
                                                   value='circle', style={'width':'170px',
                                                                          'color': '#1b242b',
                                                                          'background-color': '#40515e',
-                                                                         'display': 'inline-block'})]
+                                                                         }),
+                                              style={'display': 'inline-block', 'margin-bottom':'-10px'})]
                                     ), html.Br()]),
                   cyto.Cytoscape(id='cytoscape',
                                  elements=default_elements,
@@ -88,18 +89,15 @@ app.layout = html.Div(
                                                                        style=dict(color='white')),
                                                                        id='datatable-upload'),
                                                 dash_table.DataTable(id='datatable-upload-container',
-                                                                     # fixed_rows={'headers': True,
-                                                                     #             'data': 0},
-                                                                     style_cell_conditional=[
-                                                                         {'if': {'column_id': c},
-                                                                                 'textAlign': 'left'}
-                                                                         for c in ['Date', 'Region']],
                                                                      style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
                                                                                  'color': 'white',
                                                                                  'border': '1px solid #5d6d95'},
                                                                      style_data_conditional=[
                                                                          {'if': {'row_index': 'odd'},
-                                                                                 'backgroundColor': 'rgba(0,0,0,0.2)'}],
+                                                                                 'backgroundColor': 'rgba(0,0,0,0.2)'},
+                                                                         {'if': {'state': 'active'},
+                                                                          'backgroundColor': 'rgba(0, 116, 217, 0.3)',
+                                                                          'border': '1px solid rgb(0, 116, 217)'}],
                                                                      style_header={'backgroundColor': 'rgb(26, 36, 43)',
                                                                                    'fontWeight': 'bold',
                                                                                    'border': '1px solid #5d6d95'},
@@ -108,7 +106,12 @@ app.layout = html.Div(
                                                                                   'overflowY': 'auto',
                                                                                   'border': '1px solid #5d6d95'},
                                                                      css=[{"selector": "table",
-                                                                           "rule": "width: 100%;"}]
+                                                                           "rule": "width: 100%;"},
+                                                                          {'selector': 'tr:hover',
+                                                                           'rule': 'background-color: rgba(0, 0, 0, 0);'},
+                                                                          {'selector': 'td:hover',
+                                                                           'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}
+                                                                          ]
                                                                                    )])
                           ],colors={"border": "#1b242b",
                                     "primary": "#1b242b",
@@ -247,7 +250,7 @@ def TapNodeData_fig(data):
                      autorange=True, showline=True, zeroline=True, range=[0.1, 1])
     fig.update_layout(clickmode='event+select',
                       font_color="white",
-                      margin=dict(l=0, r=10, t=12, b=80),
+                      margin=dict(l=150, r=150, t=12, b=80),
                       xaxis=dict(showgrid=False, tick0=0),
                       yaxis=dict(showgrid=False, title=''),
                       title_text='   ', title_x=0.02, title_y=.98, title_font_size=14,
@@ -261,7 +264,7 @@ def TapNodeData_fig(data):
                                         showarrow=False)] if data else [])
     if not data:
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
-        fig.update_layout(margin=dict(l=0, r=10, t=12, b=80))
+        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80))
 
     return fig
 
@@ -315,4 +318,4 @@ def update_output(contents, filename):
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(debug=False)

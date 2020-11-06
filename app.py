@@ -230,41 +230,54 @@ def TapNodeData_fig(data):
         treatment = data['label']
         df = pd.read_csv(f'db/forest_data/{treatment}.csv').reset_index(drop=False)
         df['CI_width'] = df.CI_upper - df.CI_lower
-        df = df.sort_values(by='RR')
+        df['CI_width_hf'] = df['CI_width'] /2
+        df = df.sort_values(by='MD')
     else:
-        df = pd.DataFrame([[0]*7]*12, columns=['index', 'Treatment', 'RR', 'CI_lower', 'CI_upper', 'WEIGHTS', 'CI_width'])
+        df = pd.DataFrame([[0]*8], columns=['index', 'Treatment', 'MD', 'CI_lower', 'CI_upper', 'WEIGHTS', 'CI_width', 'CI_width_hf'])
 
-    fig = px.scatter(df, x="RR", y="Treatment",
-                     error_x_minus='CI_lower', error_x='CI_width',
-                     size='WEIGHTS',
-                     log_x=True)
+    fig = px.scatter(df, x="MD", y="Treatment",
+                    # marker=dict(size=12,line=dict(width=0.8),color="red"),
+                     # error_x_minus='CI_lower',
+                     error_x='CI_width_hf' if data else None,
+                     # log_x=True,
+                     size='WEIGHTS')
     fig.update_layout(paper_bgcolor='#40515e',
                       plot_bgcolor='#40515e')
-    fig.add_shape(type='line',
-                  yref='paper', y0=0, y1=1,
-                  xref='x', x0=1, x1=1,
-                  line=dict(color="white", width=1), layer='below')
-    fig.update_traces(marker=dict(symbol='square', opacity=1, line=dict(color='MediumPurple')))
+    # fig.add_shape(type='line',
+    #               yref='paper', y0=0, y1=1,
+    #               xref='x', x0=1, x1=1,
+    #               line=dict(color="white", width=1), layer='below')
+    fig.update_traces(marker=dict(symbol='square',
+                                  opacity=0.4 if data else 0,
+                                  line=dict(color='MediumPurple')))
     fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='white', ticklen=5,
-                     tickvals=[0.1, 0.5, 1, 5, 10], ticktext=[0.1, 0.5, 1, 5, 10],
-                     autorange=True, showline=True, zeroline=True, range=[0.1, 1])
+                     # tickvals=[0.1, 0.5, 1, 5], ticktext=[0.1, 0.5, 1, 5],
+                     autorange=True, showline=True,
+                     # range=[0.1, 1],
+                     zeroline=True)
+
     fig.update_layout(clickmode='event+select',
                       font_color="white",
                       margin=dict(l=150, r=150, t=12, b=80),
-                      xaxis=dict(showgrid=False, tick0=0),
+                      xaxis=dict(showgrid=False, tick0=0, title=''),
                       yaxis=dict(showgrid=False, title=''),
-                      title_text='   ', title_x=0.02, title_y=.98, title_font_size=14,
-                      annotations=[dict(x=-1, ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
+                      title_text='  ', title_x=0.02, title_y=.98, title_font_size=14,
+                      annotations=[dict(x=0, ax=0, y=-0.12, ay=-0.1, xref='x', axref='x', yref='paper', showarrow=False, text="MD"),
+
+                                   dict(x=df.CI_lower.min(), ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
                                         showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='green'),
-                                   dict(x=1, ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
-                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='#751225'),
-                                   dict(x=.1, y=-0.22, xref='paper', yref='paper', text='Favours treatment',
+                                   dict(x=df.CI_upper.max(), ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
+                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='white'),  #'#751225'
+                                   dict(x=df.CI_lower.min()/2, y=-0.22, xref='x', yref='paper', text='Favours treatment',
                                         showarrow=False),
-                                   dict(x=.78, y=-0.22, xref='paper', yref='paper', text='Favours comparator',
-                                        showarrow=False)] if data else [])
+                                   dict(x=df.CI_upper.max()/2, y=-0.22, xref='x', yref='paper', text=f'Favours {treatment}',
+                                        showarrow=False)] if data else []
+                      )
     if not data:
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
         fig.update_layout(margin=dict(l=100, r=100, t=12, b=80))
+        fig.update_traces(hoverinfo='skip', hovertemplate=None)
+
 
     return fig
 

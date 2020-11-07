@@ -233,11 +233,12 @@ def TapNodeData_fig(data):
         df['CI_width'] = df.CI_upper - df.CI_lower
         df['CI_width_hf'] = df['CI_width'] /2
         effect_size = df.columns[1]
+        weight = round(df['WEIGHT'],3)
         df = df.sort_values(by=effect_size)
     else:
         effect_size = ''
         df = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
-                                                  'CI_width', 'CI_width_hf'])
+                                              'CI_width', 'CI_width_hf'])
 
     xlog = effect_size in ('RR', 'OR')
 
@@ -245,7 +246,7 @@ def TapNodeData_fig(data):
                      error_x_minus='CI_lower' if xlog else None,
                      error_x='CI_width_hf' if data else 'CI_width' if xlog else None,
                      log_x=xlog,
-                     size='WEIGHT' if data else None)
+                     size=weight if data else None)
 
     fig.update_layout(paper_bgcolor='#40515e',
                       plot_bgcolor='#40515e')

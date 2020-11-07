@@ -7,10 +7,12 @@ colnames(dat) = c("X","TE","seTE","t1","t2","studlab")
 ref="Placebo" ## else pass a dataset with a 'reference' column
 N.t=unique(c(dat$t1, dat$t2))
 
+
+# subnet_temp = dat %>%
+#               filter(dat$t1==x | dat$t2==x)
+
 for(x in N.t){
-   # subnet_temp = dat %>%
-   #               filter(dat$t1==x | dat$t2==x)
-    NMAresults_temp = netmeta(
+    NMAresults = netmeta(
                               dat$TE,dat$seTE,
                               dat$t1,dat$t2,
                               dat$studlab,
@@ -18,26 +20,24 @@ for(x in N.t){
                               backtransf = TRUE,
                               reference.group = x
                               )
-    cl1 = NMAresults_temp$treat1.pos # class positions
-    cl2 = NMAresults_temp$treat2.pos
-    y.m = NMAresults_temp$TE
-    nt  = NMAresults_temp$n # number of treatments 
+    cl1 = NMAresults$treat1.pos # class positions
+    cl2 = NMAresults$treat2.pos
+    y.m = NMAresults$TE
+    nt  = NMAresults$n # number of treatments 
     
-    ### design matrix
-    treatment_list = NMAresults_temp$trts[NMAresults_temp$trts!=x] 
-    b =  NMAresults_temp$TE.random[, x]
+    treatment_list = NMAresults$trts[NMAresults$trts!=x] 
+    b =  NMAresults$TE.random[, x]
     b_names = names(b)[sapply(b, is.numeric)]
     b = b[which(b_names!=x)]
-    se = NMAresults_temp$seTE.random[, x] 
+    se = NMAresults$seTE.random[, x] 
     se = se[which(b_names!=x)]
-    bweights = 1/NMAresults_temp$seTE.random[, x] #precision
+    bweights = 1/NMAresults$seTE.random[, x]/1.5 # weights propto precision
     bweights = bweights[which(b_names!=x)]
     ci_lo = b-1.96*se
     ci_up = b+1.96*se
-    id=seq(0,(length(treatment_list)-1))
-    df = data.frame(id,treatment_list, b, ci_lo, ci_up, bweights)
-    colnames(df) = c("index", "Treatment", "MD", "CI_lower", "CI_upper", "WEIGHTS")
-    #write.table(df, file=sprintf(“db/forest_data/%s.csv”,x), sep=”,” , row.names=FALSE)
+    df = data.frame(treatment_list, round(b,3), round(ci_lo,3), round(ci_up,2), round(bweights,3))
+    colnames(df) = c("Treatment", "MD", "CI_lower", "CI_upper", "WEIGHT")
     write.csv(df, paste0("db/forest_data/", x,".csv"), row.names=F)
     
 }
+

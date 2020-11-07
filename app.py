@@ -40,7 +40,7 @@ default_elements= get_network()
 app.layout = html.Div(
     [html.Div(  # header
              [html.Div([html.H4("Network Meta-Analysis Tool", className="app__header__title"),
-                        html.P("A tool for data visualisation of network meta-analysis.",
+                        html.P("An interactive tool for data visualisation of network meta-analysis.",
                                className="app__header__title--grey")], className="app__header__desc"),
              html.Div([html.Img(src=app.get_asset_url("logo_universite_paris.jpg"),
                                 className="app__menu__img")],
@@ -80,7 +80,7 @@ app.layout = html.Div(
                                                                                                 "hoverCompareCartesian"],
                                                                       'toImageButtonOptions': {'format': 'png', # one of png, svg,
                                                                                                'filename': 'custom_image',
-                                                                                               'scale': 10 # Multiply title/legend/axis/canvas sizes by this factor
+                                                                                               'scale': 10  # Multiply title/legend/axis/canvas sizes by this factor
                                                                                               },
                                                                       'displaylogo':False}))]
                                       ),
@@ -223,46 +223,53 @@ def TapNodeData_info(data):
     else:
         return 'Click on a node to display the associated forest plot'
 
+
 @app.callback(Output('tapNodeData-fig', 'figure'),
               [Input('cytoscape', 'tapNodeData')])
 def TapNodeData_fig(data):
     if data:
         treatment = data['label']
-        df = pd.read_csv(f'db/forest_data/{treatment}.csv').reset_index(drop=False)
+        df = pd.read_csv(f'db/forest_data/{treatment}.csv')
         df['CI_width'] = df.CI_upper - df.CI_lower
         df['CI_width_hf'] = df['CI_width'] /2
-        df = df.sort_values(by='MD')
+        effect_size = df.columns[1]
+        df = df.sort_values(by=effect_size)
     else:
-        df = pd.DataFrame([[0]*8], columns=['index', 'Treatment', 'MD', 'CI_lower', 'CI_upper', 'WEIGHTS', 'CI_width', 'CI_width_hf'])
+        effect_size = ''
+        df = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
+                                                  'CI_width', 'CI_width_hf'])
 
-    fig = px.scatter(df, x="MD", y="Treatment",
-                    # marker=dict(size=12,line=dict(width=0.8),color="red"),
-                     # error_x_minus='CI_lower',
-                     error_x='CI_width_hf' if data else None,
-                     # log_x=True,
-                     size='WEIGHTS')
+    xlog = effect_size in ('RR', 'OR')
+
+    fig = px.scatter(df, x=effect_size, y="Treatment",
+                     error_x_minus='CI_lower' if xlog else None,
+                     error_x='CI_width_hf' if data else 'CI_width' if xlog else None,
+                     log_x=xlog,
+                     size='WEIGHT' if data else None)
+
     fig.update_layout(paper_bgcolor='#40515e',
                       plot_bgcolor='#40515e')
-    # fig.add_shape(type='line',
-    #               yref='paper', y0=0, y1=1,
-    #               xref='x', x0=1, x1=1,
-    #               line=dict(color="white", width=1), layer='below')
+    if xlog:
+        fig.add_shape(type='line', yref='paper', y0=0, y1=1, xref='x', x0=1, x1=1,
+                      line=dict(color="white", width=1), layer='below')
     fig.update_traces(marker=dict(symbol='square',
-                                  opacity=0.4 if data else 0,
-                                  line=dict(color='MediumPurple')))
+                                  opacity=0.9 if data else 0,
+                                  line=dict(color='Whitesmoke'), color='Whitesmoke')
+                      )
     fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='white', ticklen=5,
-                     # tickvals=[0.1, 0.5, 1, 5], ticktext=[0.1, 0.5, 1, 5],
+                     tickvals=[0.1, 0.5, 1, 5] if xlog else None,
+                     ticktext=[0.1, 0.5, 1, 5] if xlog else None,
+                     range=[0.1, 1] if xlog else None,
                      autorange=True, showline=True,
-                     # range=[0.1, 1],
                      zeroline=True)
 
     fig.update_layout(clickmode='event+select',
                       font_color="white",
-                      margin=dict(l=150, r=150, t=12, b=80),
+                      margin=dict(l=5, r=10, t=12, b=80),
                       xaxis=dict(showgrid=False, tick0=0, title=''),
                       yaxis=dict(showgrid=False, title=''),
                       title_text='  ', title_x=0.02, title_y=.98, title_font_size=14,
-                      annotations=[dict(x=0, ax=0, y=-0.12, ay=-0.1, xref='x', axref='x', yref='paper', showarrow=False, text="MD"),
+                      annotations=[dict(x=0, ax=0, y=-0.12, ay=-0.1, xref='x', axref='x', yref='paper', showarrow=False, text=effect_size),
 
                                    dict(x=df.CI_lower.min(), ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
                                         showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='green'),
@@ -274,6 +281,7 @@ def TapNodeData_fig(data):
                                         showarrow=False)] if data else []
                       )
     if not data:
+        fig.update_shapes(dict(xref='x', yref='y'))
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
         fig.update_layout(margin=dict(l=100, r=100, t=12, b=80))
         fig.update_traces(hoverinfo='skip', hovertemplate=None)
@@ -331,4 +339,4 @@ def update_output(contents, filename):
 
 
 if __name__ == "__main__":
-    app.run_server(debug=False)
+    app.run_server(debug=True)

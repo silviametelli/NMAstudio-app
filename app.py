@@ -1,13 +1,23 @@
+import rpy2.robjects as ro
+from rpy2.robjects import pandas2ri # Define the R script and loads the instance in Python
+from rpy2.robjects.conversion import localconverter
+r = ro.r
+r['source']('create-forest-data.R')  # Loading the function we have defined in R.
+run_NetMeta_r = ro.globalenv['run_NetMeta']  # Reading and processing data
+
 import os, io, base64, pickle
 import pandas as pd, numpy as np
 import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
 import dash_table
 import dash_cytoscape as cyto
 from assets.cytoscape_styleesheeet import default_stylesheet
-
-from dash.exceptions import PreventUpdate
 from dash.dependencies import Input, Output, State
 import plotly.express as px
+
+
+#---------R2Py Resources --------------------------------------------------------------------------------------------#
+
+#--------------------------------------------------------------------------------------------------------------------#
 
 GRAPH_INTERVAL = os.environ.get("GRAPH_INTERVAL", 5000)
 
@@ -16,25 +26,39 @@ app = dash.Dash(__name__, meta_tags=[{"name": "viewport",
 
 server = app.server
 
-network_layouts = [{'label': 'circle',       'value': 'circle'},
-                   {'label': 'random',       'value': 'random'},
-                   {'label': 'grid',         'value': 'grid'},
-                   {'label': 'concentric',   'value': 'concentric'},
-                   {'label': 'breadthfirst', 'value': 'breadthfirst'},
-                   {'label': 'cose',         'value': 'cose'}]
+styles = {
+    'output': {
+        'overflow-y': 'scroll',
+        'overflow-wrap': 'break-word',
+        'height': 'calc(100% - 25px)',
+        'border': 'thin lightgrey solid'
+    },
+    'tab': {'height': 'calc(98vh - 115px)'}
+}
+# Load extra layouts
+cyto.load_extra_layouts()
+network_layouts = [{'label': 'circle',        'value': 'circle'},
+                   {'label': 'breadthfirst',  'value': 'breadthfirst'},
+                   {'label': 'grid',          'value': 'grid'},
+                   {'label': 'spread',        'value': 'spread'},
+                   {'label': 'cola',          'value': 'cola'},
+                   {'label': 'random',        'value': 'random'}
+                   ]
 
-DF = pd.read_csv('db/Senn2013.csv', index_col=0).rename(columns={"treat1.long": 'treat1',
-                                                                 "treat2.long": 'treat2'})
-def get_network():
-    edges = DF.groupby(['treat1', 'treat2']).TE.count().reset_index()
+def get_network(df):
+    edges = df.groupby(['treat1', 'treat2']).TE.count().reset_index()
     all_nodes = np.unique(edges[['treat1', 'treat2']].values.flatten())
     cy_edges = [{'data': {'source': source, 'target': target, 'weight': weight * 2, 'weight_lab': weight}}
                 for source, target, weight in edges.values]
     cy_nodes = [{"data": {"id": target, "label": target, 'classes':'genesis'}}
                 for target in all_nodes]
-
     return cy_edges + cy_nodes
-default_elements= get_network()
+
+
+# Save default dataframe for use
+GLOBAL_DATA = {'default_net':pd.read_csv('db/Senn2013.csv'),
+               'forest_data':pd.read_csv('db/forest_data/forest_data.csv')}
+GLOBAL_DATA['default_elements'] = get_network(df=GLOBAL_DATA['default_net'])
 
 
 app.layout = html.Div(
@@ -51,15 +75,18 @@ app.layout = html.Div(
                                      html.Div(dcc.Dropdown(id='dropdown-layout', options=network_layouts, clearable=False,
                                                   value='circle', style={'width':'170px',
                                                                          'color': '#1b242b',
-                                                                         'background-color': '#40515e',
-                                                                         }),
+                                                                         'background-color': '#40515e'}),
                                               style={'display': 'inline-block', 'margin-bottom':'-10px'})]
                                     ), html.Br()]),
+                  # html.Div([html.Div(style={'width': '10%', 'display': 'inline'}, children=[
+                  #     'Node Color:', dcc.Input(id='input-bg-color', type='text') ])
+                  #  ]),
                   cyto.Cytoscape(id='cytoscape',
-                                 elements=default_elements,
+                                 elements=GLOBAL_DATA['default_elements'],
                                  style={'height': '60vh', 'width': '100%'},
                                  stylesheet=default_stylesheet)],
                   className="one-half column"),
+                 html.Div(className='graph__title', children=[html.Button("Download graph", id="btn-get-png")]),
                  html.Div(
                       [html.Div(  # Information
                            [html.Div([html.H6("Information", className="box__title")]),
@@ -94,7 +121,7 @@ app.layout = html.Div(
                                                                                  'border': '1px solid #5d6d95'},
                                                                      style_data_conditional=[
                                                                          {'if': {'row_index': 'odd'},
-                                                                                 'backgroundColor': 'rgba(0,0,0,0.2)'},
+                                                                          'backgroundColor': 'rgba(0,0,0,0.2)'},
                                                                          {'if': {'state': 'active'},
                                                                           'backgroundColor': 'rgba(0, 116, 217, 0.3)',
                                                                           'border': '1px solid rgb(0, 116, 217)'}],
@@ -112,13 +139,11 @@ app.layout = html.Div(
                                                                           {'selector': 'td:hover',
                                                                            'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}
                                                                           ]
-                                                                                   )])
-                          ],colors={"border": "#1b242b",
-                                    "primary": "#1b242b",
-                                    "background": "#1b242b"}, style=dict(color='#40515e', fontWeight= 'bold')),
+                                                                     )])
+                          ],colors={"border": "#1b242b", "primary": "#1b242b", "background": "#1b242b"},
+                            style=dict(color='#40515e', fontWeight= 'bold')),
                           ],
                                    className="graph__container second"),
-
                       ],
                       className="one-half column")
     ],
@@ -127,24 +152,38 @@ app.layout = html.Div(
     ],
     className="app__container")
 
+###############################################################################
+###############################################################################
+# ############################## CALLBACKS ####################################
+###############################################################################
+###############################################################################
 
-
-
+### ----- update graph layout with dropdown ------ ###
 @app.callback(Output('cytoscape', 'layout'),
              [Input('dropdown-layout', 'value')])
 def update_cytoscape_layout(layout):
     return {'name': layout,
             'animate': True}
 
+### ----- save network plot as png ------ ###
+@app.callback(Output("cytoscape", "generateImage"),
+              Input("btn-get-png", "n_clicks"))
+def get_image(button):
+    action = 'store'
+    ctx = dash.callback_context
+    if ctx.triggered:
+        input_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        if input_id != "tabs":
+            action = "download"
+    return {'type': 'png','action': action}
 
+### ----- update graph layout on node click ------ ###
 @app.callback(Output('cytoscape', 'stylesheet'),
-              [Input('cytoscape', 'tapNode')])
+              Input('cytoscape', 'tapNode'))
 def generate_stylesheet(node):
-
     FOLLOWER_COLOR = '#07ABA0'
     FOLLOWING_COLOR = '#07ABA0'
-    NODE_SHAPE = 'ellipse'
-    # One of  'ellipse', 'triangle', 'rectangle', 'diamond', 'pentagon', 'hexagon', 'heptagon', 'octagon', 'star', 'polygon',
+    NODE_SHAPE = 'ellipse' # One of  'ellipse', 'triangle', 'rectangle', 'diamond', 'pentagon', 'hexagon', 'heptagon', 'octagon', 'star', 'polygon'
 
     def io_node_topickle(store_node):
         with open('db/.temp/selected_nodes.pickle', 'wb') as f:
@@ -214,7 +253,7 @@ def generate_stylesheet(node):
 
     return stylesheet
 
-
+### ----- update node info on forest plot  ------ ###
 @app.callback(Output('tapNodeData-info', 'children'),
               [Input('cytoscape', 'tapNodeData')])
 def TapNodeData_info(data):
@@ -223,17 +262,17 @@ def TapNodeData_info(data):
     else:
         return 'Click on a node to display the associated forest plot'
 
-
+### ----- display forest plot on node click ------ ###
 @app.callback(Output('tapNodeData-fig', 'figure'),
               [Input('cytoscape', 'tapNodeData')])
 def TapNodeData_fig(data):
     if data:
         treatment = data['label']
-        df = pd.read_csv(f'db/forest_data/{treatment}.csv')
+        df = GLOBAL_DATA['forest_data'][GLOBAL_DATA['forest_data'].Reference==treatment]
         df['CI_width'] = df.CI_upper - df.CI_lower
         df['CI_width_hf'] = df['CI_width'] /2
         effect_size = df.columns[1]
-        weight = round(df['WEIGHT'],3)
+        #weight_es = round(df['WEIGHT'],3)
         df = df.sort_values(by=effect_size)
     else:
         effect_size = ''
@@ -246,7 +285,7 @@ def TapNodeData_fig(data):
                      error_x_minus='CI_lower' if xlog else None,
                      error_x='CI_width_hf' if data else 'CI_width' if xlog else None,
                      log_x=xlog,
-                     size=weight if data else None)
+                     size='WEIGHT' if data else None)
 
     fig.update_layout(paper_bgcolor='#40515e',
                       plot_bgcolor='#40515e')
@@ -270,8 +309,8 @@ def TapNodeData_fig(data):
                       xaxis=dict(showgrid=False, tick0=0, title=''),
                       yaxis=dict(showgrid=False, title=''),
                       title_text='  ', title_x=0.02, title_y=.98, title_font_size=14,
-                      annotations=[dict(x=0, ax=0, y=-0.12, ay=-0.1, xref='x', axref='x', yref='paper', showarrow=False, text=effect_size),
-
+                      annotations=[dict(x=0, ax=0, y=-0.12, ay=-0.1, xref='x', axref='x', yref='paper',
+                                        showarrow=False, text=effect_size),
                                    dict(x=df.CI_lower.min(), ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
                                         showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='green'),
                                    dict(x=df.CI_upper.max(), ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
@@ -287,24 +326,10 @@ def TapNodeData_fig(data):
         fig.update_layout(margin=dict(l=100, r=100, t=12, b=80))
         fig.update_traces(hoverinfo='skip', hovertemplate=None)
 
-
     return fig
 
 
-# @app.callback(Output('cytoscape-tapEdgeData-output', 'children'),
-#               [Input('cytoscape', 'tapEdgeData')])
-# def TapEdgeData(data):
-#     if data:
-#         return "Clicked on edge between " + data['source'].upper() + " and " + data['target'].upper()
-
-
-# @app.callback(Output('cytoscape-mouseoverNodeData-output', 'children'),
-#               [Input('cytoscape', 'mouseoverNodeData')])
-# def mouseoverNodeData(data):
-#     if data:
-#         return "Hovered over node: " + data['label']
-
-
+### ----- display information on edge click ------ ###
 @app.callback(Output('cytoscape-mouseoverEdgeData-output', 'children'),
               [Input('cytoscape', 'tapEdgeData')])
 def mouseoverEdgeData(data):
@@ -325,19 +350,45 @@ def parse_contents(contents, filename):
     elif 'xls' in filename:  # Assume that the user uploaded an excel file
         return pd.read_excel(io.BytesIO(decoded))
 
-
+### ----- display Data Table ------ ###
 @app.callback([Output('datatable-upload-container', 'data'),
-               Output('datatable-upload-container', 'columns')],
+               Output('datatable-upload-container', 'columns'),
+               Output('cytoscape', 'elements')],
               [Input('datatable-upload', 'contents')],
               [State('datatable-upload', 'filename')])
 def update_output(contents, filename):
     if contents is None:
-        df = DF
+        df = GLOBAL_DATA['default_net']
+        elements = GLOBAL_DATA['default_elements']
     else:
         df = parse_contents(contents, filename)
-    return df.to_dict('records'), [{"name": i, "id": i} for i in df.columns]
+        df = df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+        GLOBAL_DATA['user_net'] = df
+        GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['user_net'])
+        elements = GLOBAL_DATA['user_elements']
+        # Create Forest data
+        def forest_df(df):
+            with localconverter(ro.default_converter + pandas2ri.converter):
+                df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
+            netmeta_r = run_NetMeta_r(dat=df_r) # Invoke R function and get the result
+            df_result = pandas2ri.rpy2py(netmeta_r).reset_index(drop=True)  # Convert back to a pandas.DataFrame.
+            return df_result
+        GLOBAL_DATA['forest_data'] = forest_df(df)
+
+    return df.to_dict('records'), [{"name": i, "id": i} for i in df.columns], elements
+
+# @app.callback(Output('cytoscape-tapEdgeData-output', 'children'),
+#               [Input('cytoscape', 'tapEdgeData')])
+# def TapEdgeData(data):
+#     if data:
+#         return "Clicked on edge between " + data['source'].upper() + " and " + data['target'].upper()
 
 
+# @app.callback(Output('cytoscape-mouseoverNodeData-output', 'children'),
+#               [Input('cytoscape', 'mouseoverNodeData')])
+# def mouseoverNodeData(data):
+#     if data:
+#         return "Hovered over node: " + data['label']
 
 if __name__ == "__main__":
-    app.run_server(debug=False)
+    app.run_server(debug=True, host='127.0.0.1')

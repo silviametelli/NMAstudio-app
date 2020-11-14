@@ -1,43 +1,36 @@
-library(netmeta)
-library(dplyr)
-setwd("/Users/silvia/Desktop/Dash-Net2")
-
-dat = read.csv("db/Senn2013.csv", header = T)
-colnames(dat) = c("X","TE","seTE","t1","t2","studlab")
-ref="Placebo" ## else pass a dataset with a 'reference' column
-N.t=unique(c(dat$t1, dat$t2))
+options(warn=-1)
+suppressMessages(library(netmeta))
+suppressMessages(library(dplyr))
 
 
-# subnet_temp = dat %>%
-#               filter(dat$t1==x | dat$t2==x)
+run_NetMeta <- function(dat){
+       treatments <- c(dat$treat1, dat$treat2)
+       treatments <- treatments[!duplicated(treatments)]
+       ALL_DFs <- list()
+       for (treatment in treatments){
+              nma_temp <- netmeta(dat$TE, dat$seTE, dat$treat1, dat$treat2, dat$studlab,
+                                         comb.random = TRUE,
+                                         backtransf = TRUE,
+                                         reference.group = treatment)
+              ### Design Matrix
+              treatment_list <- nma_temp$trts[nma_temp$trts!=treatment]
+              TE <-  nma_temp$TE.random[, treatment]
+              TE_names <- names(TE)[sapply(TE, is.numeric)]
+              TE <- TE[which(TE_names!=treatment)]
+              se <- nma_temp$seTE.random[, treatment]
+              se <- se[which(TE_names!=treatment)]
+              ci_lo <- TE-1.96*se
+              ci_up <- TE+1.96*se
+              TEweights <- 1/nma_temp$seTE.random[, treatment] # Precision
+              TEweights <- TEweights[which(TE_names!=treatment)]
 
-for(x in N.t){
-    NMAresults = netmeta(
-                              dat$TE,dat$seTE,
-                              dat$t1,dat$t2,
-                              dat$studlab,
-                              comb.random=TRUE,
-                              backtransf = TRUE,
-                              reference.group = x
-                              )
-    cl1 = NMAresults$treat1.pos # class positions
-    cl2 = NMAresults$treat2.pos
-    y.m = NMAresults$TE
-    nt  = NMAresults$n # number of treatments 
-    
-    treatment_list = NMAresults$trts[NMAresults$trts!=x] 
-    b =  NMAresults$TE.random[, x]
-    b_names = names(b)[sapply(b, is.numeric)]
-    b = b[which(b_names!=x)]
-    se = NMAresults$seTE.random[, x] 
-    se = se[which(b_names!=x)]
-    bweights = 1/NMAresults$seTE.random[, x]/1.5 # weights propto precision
-    bweights = bweights[which(b_names!=x)]
-    ci_lo = b-1.96*se
-    ci_up = b+1.96*se
-    df = data.frame(treatment_list, round(b,3), round(ci_lo,3), round(ci_up,2), round(bweights,3))
-    colnames(df) = c("Treatment", "MD", "CI_lower", "CI_upper", "WEIGHT")
-    write.csv(df, paste0("db/forest_data/", x,".csv"), row.names=F)
-    
+              df <- data.frame(treatment_list, TE, ci_lo, ci_up, TEweights)
+              colnames(df) <- c("Treatment", "MD", "CI_lower", "CI_upper", "WEIGHT")
+              df['Reference'] <- treatment
+              ALL_DFs[[treatment]] <- df
+       }
+       ALL_DFs <- do.call('rbind', ALL_DFs)
+       return(ALL_DFs)
 }
+
 

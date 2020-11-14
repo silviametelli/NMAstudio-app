@@ -5,4 +5,7 @@ venv
 .env
 .idea/
 db/.temp/
+db/forest_data/old_data
+db/SennXXX.csv
 settings.json
+download_prova.py

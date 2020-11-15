@@ -6,3 +6,4 @@ gunicorn==19.9.0
 dash_cytoscape==0.2.0
 dash_bootstrap_components==0.10.7
 tzlocal
+matplotlib

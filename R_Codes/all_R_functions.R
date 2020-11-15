@@ -2,13 +2,14 @@ options(warn=-1)
 suppressMessages(library(netmeta))
 suppressMessages(library(dplyr))
 
-
+## forest plots with reference treatments
 run_NetMeta <- function(dat){
        treatments <- c(dat$treat1, dat$treat2)
        treatments <- treatments[!duplicated(treatments)]
        ALL_DFs <- list()
        for (treatment in treatments){
               nma_temp <- netmeta(dat$TE, dat$seTE, dat$treat1, dat$treat2, dat$studlab,
+                                         sm = "MD",
                                          comb.random = TRUE,
                                          backtransf = TRUE,
                                          reference.group = treatment)
@@ -33,4 +34,27 @@ run_NetMeta <- function(dat){
        return(ALL_DFs)
 }
 
+## league tables for two outcomes
+league_table <- function(dat){
+        nma_primary <- netmeta(TE=dat$TE, seTE=dat$seTE,
+                               treat1=dat$treat1, treat2=dat$treat2,
+                               studlab=dat$studlab,
+                               sm = "MD",
+                               comb.random = TRUE,
+                               backtransf = TRUE,
+                               reference.group = dat$treat2[1])
+        nma_secondary <- netmeta(TE=dat$TE2, seTE=dat$seTE2,
+                                 treat1=dat$treat1, treat2=dat$treat2,
+                                 studlab=dat$studlab,
+                                 sm = "MD",
+                                 comb.random = TRUE,
+                                 backtransf = TRUE,
+                                 reference.group = dat$treat2[1])
+        # - network estimates of first outcome in lower triangle
+        # - network estimates of second outcome in upper triangle
+        netleague_table <- netleague(nma_primary, nma_secondary, digits = 2,
+                                     backtransf = TRUE, ci = FALSE)
+
+        return(netleague_table$random)
+}
 

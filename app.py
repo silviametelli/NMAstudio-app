@@ -1,10 +1,12 @@
+#---------R2Py Resources --------------------------------------------------------------------------------------------#
 import rpy2.robjects as ro
 from rpy2.robjects import pandas2ri # Define the R script and loads the instance in Python
 from rpy2.robjects.conversion import localconverter
 r = ro.r
-r['source']('create-forest-data.R')  # Loading the function we have defined in R.
-run_NetMeta_r = ro.globalenv['run_NetMeta']  # Reading and processing data
-
+r['source']('R_Codes/all_R_functions.R')  # Loading the function we have defined in R.
+run_NetMeta_r = ro.globalenv['run_NetMeta']    # Get run_NetMeta from R
+league_table_r = ro.globalenv['league_table']  # Get league_table from R
+#--------------------------------------------------------------------------------------------------------------------#
 import os, io, base64, pickle
 import pandas as pd, numpy as np
 import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
@@ -13,17 +15,15 @@ import dash_cytoscape as cyto
 from assets.cytoscape_styleesheeet import default_stylesheet
 from dash.dependencies import Input, Output, State
 import plotly.express as px
-
-
-#---------R2Py Resources --------------------------------------------------------------------------------------------#
-
+import colorlover
+import matplotlib.pyplot as plt
+import matplotlib.colors as clrs
 #--------------------------------------------------------------------------------------------------------------------#
 
 GRAPH_INTERVAL = os.environ.get("GRAPH_INTERVAL", 5000)
 
 app = dash.Dash(__name__, meta_tags=[{"name": "viewport",
                                       "content": "width=device-width, initial-scale=1"}])
-
 server = app.server
 
 styles = {
@@ -56,9 +56,11 @@ def get_network(df):
 
 
 # Save default dataframe for use
-GLOBAL_DATA = {'default_net':pd.read_csv('db/Senn2013.csv'),
-               'forest_data':pd.read_csv('db/forest_data/forest_data.csv')}
-GLOBAL_DATA['default_elements'] = get_network(df=GLOBAL_DATA['default_net'])
+GLOBAL_DATA = {'net_data':pd.read_csv('db/Senn2013.csv'),
+               'forest_data':pd.read_csv('db/forest_data/forest_data.csv'),
+               'league_table_data':pd.read_csv('db/league_table_data/league_table.csv', index_col=0)}
+
+GLOBAL_DATA['default_elements'] = get_network(df=GLOBAL_DATA['net_data'])
 
 
 app.layout = html.Div(
@@ -76,7 +78,12 @@ app.layout = html.Div(
                                                   value='circle', style={'width':'170px',
                                                                          'color': '#1b242b',
                                                                          'background-color': '#40515e'}),
-                                              style={'display': 'inline-block', 'margin-bottom':'-10px'})]
+                                              style={'display': 'inline-block', 'margin-bottom':'-10px'}),
+                                     html.Div(html.Button("Download graph",id="btn-get-png",style={'color': 'white',
+                                                                                                   'height': '36.5px',
+                                                                                                   'verticalAlign':'middle'}),
+                                              style={'display': 'inline-block','paddingLeft':'15px',
+                                                     'verticalAlign':'top'})]
                                     ), html.Br()]),
                   # html.Div([html.Div(style={'width': '10%', 'display': 'inline'}, children=[
                   #     'Node Color:', dcc.Input(id='input-bg-color', type='text') ])
@@ -86,7 +93,7 @@ app.layout = html.Div(
                                  style={'height': '60vh', 'width': '100%'},
                                  stylesheet=default_stylesheet)],
                   className="one-half column"),
-                 html.Div(className='graph__title', children=[html.Button("Download graph", id="btn-get-png")]),
+                 html.Div(className='graph__title', children=[]),
                  html.Div(
                       [html.Div(  # Information
                            [html.Div([html.H6("Information", className="box__title")]),
@@ -109,16 +116,52 @@ app.layout = html.Div(
                                                                                                'filename': 'custom_image',
                                                                                                'scale': 10  # Multiply title/legend/axis/canvas sizes by this factor
                                                                                               },
-                                                                      'displaylogo':False}))]
-                                      ),
+                                                                      'displaylogo':False}))]),
+                              dcc.Tab(label='League Table',
+                                      children=[html.Div([html.Br(),
+                                                          html.Div(id='legend_table_legend',
+                                                                   style={'float': 'right',
+                                                                          'padding': '5px 5px 5px 5px'}),
+                                                          dash_table.DataTable(id='leaguetable-container',
+                                                                     style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
+                                                                                 'color': 'white',
+                                                                                 'border': '1px solid #5d6d95',
+                                                                                 'font-family':'sans-serif',
+                                                                                 'textOverflow': 'ellipsis'
+                                                                                 },
+                                                                     fixed_rows={'headers': True, 'data': 0},
+                                                                     fixed_columns={'headers': True, 'data': 1 },
+                                                                     style_header={'backgroundColor': 'rgb(26, 36, 43)',
+                                                                                   'border': '1px solid #5d6d95'},
+                                                                     style_header_conditional=[{'if': {'column_id': 'Treatment',
+                                                                                                       'header_index': 0 },
+                                                                                                'fontWeight': 'bold'}],
+                                                                     style_table={'overflow': 'auto',
+                                                                                  'width': '100%',
+                                                                                  'max-width': 'calc(40vw)',
+                                                                                  'padding': '5px 5px 5px 5px'},
+                                                                     css=[{"selector": "table",
+                                                                           "rule": "width: 100%; "},
+                                                                          {'selector': 'tr:hover',
+                                                                           'rule': 'background-color: rgba(0, 0, 0, 0);'},
+                                                                          {'selector': 'td:hover',
+                                                                           'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}]
+                                                                     )])]),
+                              dcc.Tab(label='Transitivity',
+                                      children=[html.P('Work in progress...')]),
                               dcc.Tab(label='Data',
-                                      children=[dcc.Upload(html.Button('Upload your file!',
-                                                                       style=dict(color='white')),
-                                                                       id='datatable-upload'),
+                                      children=[html.Div(html.Button(dcc.Upload(html.P('Upload your file!'),
+                                                                                id='datatable-upload'),
+                                                                     style=dict(color='white')),
+                                                         style=dict(padding='5px 5px 5px 5px')),
                                                 dash_table.DataTable(id='datatable-upload-container',
                                                                      style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
                                                                                  'color': 'white',
-                                                                                 'border': '1px solid #5d6d95'},
+                                                                                 'border': '1px solid #5d6d95',
+                                                                                 'textOverflow': 'ellipsis',
+                                                                                 'font-family': 'sans-serif',
+                                                                                 'foontSize': 10
+                                                                                 },
                                                                      style_data_conditional=[
                                                                          {'if': {'row_index': 'odd'},
                                                                           'backgroundColor': 'rgba(0,0,0,0.2)'},
@@ -128,24 +171,25 @@ app.layout = html.Div(
                                                                      style_header={'backgroundColor': 'rgb(26, 36, 43)',
                                                                                    'fontWeight': 'bold',
                                                                                    'border': '1px solid #5d6d95'},
-                                                                     style_table={'height': '400px',
-                                                                                  'overflowX': 'auto',
+                                                                     style_table={'overflowX': 'scroll',
                                                                                   'overflowY': 'auto',
-                                                                                  'border': '1px solid #5d6d95'},
-                                                                     css=[{"selector": "table",
-                                                                           "rule": "width: 100%;"},
+                                                                                  'height': '100%',
+                                                                                  'max-height': '400px',
+                                                                                  'width':'100%',
+                                                                                  'max-width':'calc(40vw)',
+                                                                                  'padding': '5px 5px 5px 5px'},
+                                                                     css=[
                                                                           {'selector': 'tr:hover',
                                                                            'rule': 'background-color: rgba(0, 0, 0, 0);'},
                                                                           {'selector': 'td:hover',
                                                                            'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}
-                                                                          ]
-                                                                     )])
+                                                                          ])
+                                                ])
                           ],colors={"border": "#1b242b", "primary": "#1b242b", "background": "#1b242b"},
-                            style=dict(color='#40515e', fontWeight= 'bold')),
+                            style=dict(color='#40515e')),
                           ],
                                    className="graph__container second"),
-                      ],
-                      className="one-half column")
+                      ], className="one-half column")
     ],
               className="app__content"),
         html.P('Copyright © 2020. All rights reserved.', className='__footer')
@@ -268,7 +312,7 @@ def TapNodeData_info(data):
 def TapNodeData_fig(data):
     if data:
         treatment = data['label']
-        df = GLOBAL_DATA['forest_data'][GLOBAL_DATA['forest_data'].Reference==treatment]
+        df = GLOBAL_DATA['forest_data'][GLOBAL_DATA['forest_data'].Reference==treatment].copy()
         df['CI_width'] = df.CI_upper - df.CI_lower
         df['CI_width_hf'] = df['CI_width'] /2
         effect_size = df.columns[1]
@@ -350,32 +394,94 @@ def parse_contents(contents, filename):
     elif 'xls' in filename:  # Assume that the user uploaded an excel file
         return pd.read_excel(io.BytesIO(decoded))
 
-### ----- display Data Table ------ ###
+### ----- display Data Table and League Table ------ ###
 @app.callback([Output('datatable-upload-container', 'data'),
                Output('datatable-upload-container', 'columns'),
-               Output('cytoscape', 'elements')],
+               Output('cytoscape', 'elements'),
+               Output('leaguetable-container', 'data'),
+               Output('leaguetable-container', 'columns'),
+               Output('leaguetable-container', 'style_data_conditional'),
+               Output('legend_table_legend', 'children')],
               [Input('datatable-upload', 'contents')],
               [State('datatable-upload', 'filename')])
 def update_output(contents, filename):
+    def apply_r_func(func, df):
+        with localconverter(ro.default_converter + pandas2ri.converter):
+            df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
+        func_r_res = func(dat=df_r)  # Invoke R function and get the result
+        df_result = pandas2ri.rpy2py(func_r_res).reset_index(drop=True)  # Convert back to a pandas.DataFrame.
+        return df_result
     if contents is None:
-        df = GLOBAL_DATA['default_net']
+        data = GLOBAL_DATA['net_data']
         elements = GLOBAL_DATA['default_elements']
+        leaguetable = GLOBAL_DATA['league_table_data']
     else:
-        df = parse_contents(contents, filename)
-        df = df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
-        GLOBAL_DATA['user_net'] = df
-        GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['user_net'])
+        data = parse_contents(contents, filename)
+        GLOBAL_DATA['net_data'] = data = data.loc[:, ~data.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+        GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
         elements = GLOBAL_DATA['user_elements']
-        # Create Forest data
-        def forest_df(df):
-            with localconverter(ro.default_converter + pandas2ri.converter):
-                df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
-            netmeta_r = run_NetMeta_r(dat=df_r) # Invoke R function and get the result
-            df_result = pandas2ri.rpy2py(netmeta_r).reset_index(drop=True)  # Convert back to a pandas.DataFrame.
-            return df_result
-        GLOBAL_DATA['forest_data'] = forest_df(df)
 
-    return df.to_dict('records'), [{"name": i, "id": i} for i in df.columns], elements
+        GLOBAL_DATA['forest_data'] = apply_r_func(func=run_NetMeta_r, df=data)
+        leaguetable  = apply_r_func(func=league_table_r, df=data)
+        leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
+        leaguetable = leaguetable.reset_index().rename(columns={'index':'Treatments'})
+        GLOBAL_DATA['league_table_data'] = leaguetable
+
+    #####   Add style colouring and legend
+    N_BINS = 5
+    bounds = np.arange(N_BINS + 1)/N_BINS
+
+    treatments = np.unique(data[['treat1', 'treat2']].values.flatten())
+    robs = (data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
+                .pivot_table(index='treat1', columns='treat2', values='rob')
+                .reindex(index=treatments, columns=treatments, fill_value=np.nan))
+
+    # leaguetable_colr = leaguetable.copy(deep=True)
+    leaguetable_colr = robs.copy(deep=True)
+    np.fill_diagonal(leaguetable_colr.values, np.nan)
+    leaguetable_colr = leaguetable_colr.astype(np.float64)
+
+
+    cmap = [clrs.to_hex(plt.get_cmap('RdYlGn_r', N_BINS)(n)) for n in range(N_BINS)]
+
+
+    df_max = leaguetable_colr.max().max()
+    df_min = leaguetable_colr.min().min()
+    ranges = (df_max - df_min) * bounds + df_min
+    ranges[-1] *= 1.001
+    legend = [html.Div(style={'display': 'inline-block', 'width': '100px'},
+                       children=[html.Div(),
+                                 html.Small('Risk of bias: ', style={'color':'white'})])]
+    legend += [html.Div(style={'display': 'inline-block', 'width': '60px'},
+                               children=[html.Div(style={'backgroundColor': cmap[n],
+                                                         'borderLeft': '1px rgb(50, 50, 50) solid',
+                                                         'height': '10px'}),
+                                         html.Small('Low' if n==0 else 'High' if n==len(bounds)-2 else None,
+                                                    style={'paddingLeft': '2px', 'color':'white'})])
+              for n in range(len(bounds)-1)]
+    styles = []
+    for treat_c in treatments:
+        for treat_r in treatments:
+            rob = robs.loc[treat_r, treat_c]
+            indxs = np.where(rob < ranges)[0]
+            clr_indx =  indxs[0] - 1 if len(indxs) else 0
+            diag, empty = treat_r==treat_c, rob!=rob
+            styles.append({'if': {'filter_query':f'{{Treatment}} = {{{treat_r}}}',
+                                  'column_id': treat_c},
+                           'backgroundColor': cmap[clr_indx] if not empty else '#40515e',
+                           'color': 'rgb(26, 36, 43)' if not empty else 'gray' if diag else 'white'})
+    styles.append({'if': {'column_id': 'Treatment'},
+                   'backgroundColor': 'rgb(26, 36, 43)'})
+
+    data_cols = [{"name": i, "id": i} for i in data.columns]
+    data = data.to_dict('records')
+    leaguetable = leaguetable.reset_index().rename(columns={'index':'Treatment'})
+    leaguetable_cols = [{"name": i, "id": i} for i in leaguetable.columns]
+    leaguetable = leaguetable.to_dict('records')
+
+    return data, data_cols, elements, leaguetable, leaguetable_cols, styles, legend
+
+
 
 # @app.callback(Output('cytoscape-tapEdgeData-output', 'children'),
 #               [Input('cytoscape', 'tapEdgeData')])

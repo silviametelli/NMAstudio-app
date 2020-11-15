@@ -1,0 +1,11 @@
+,Acarbose,Benfluorex,Metformin,Miglitol,Pioglitazone,Placebo,Rosiglitazone,Sitagliptin,Sulfonylurea,Vildagliptin
+Acarbose,Acarbose,-0.11,0.28,0.11,0.29,-0.84,0.39,-0.27,-0.43,-0.14
+Benfluorex,-0.11,Benfluorex,0.40,0.22,0.40,-0.73,0.50,-0.16,-0.31,-0.03
+Metformin,0.28,0.40,Metformin,-0.18,0.00,-1.13,0.11,-0.56,-0.71,-0.43
+Miglitol,0.11,0.22,-0.18,Miglitol,0.18,-0.95,0.28,-0.38,-0.53,-0.25
+Pioglitazone,0.29,0.40,0.00,0.18,Pioglitazone,-1.13,0.10,-0.56,-0.71,-0.43
+Placebo,-0.84,-0.73,-1.13,-0.95,-1.13,Placebo,1.23,0.57,0.42,0.70
+Rosiglitazone,0.39,0.50,0.11,0.28,0.10,1.23,Rosiglitazone,-0.66,-0.82,-0.53
+Sitagliptin,-0.27,-0.16,-0.56,-0.38,-0.56,0.57,-0.66,Sitagliptin,-0.15,0.13
+Sulfonylurea,-0.43,-0.31,-0.71,-0.53,-0.71,0.42,-0.82,-0.15,Sulfonylurea,0.28
+Vildagliptin,-0.14,-0.03,-0.43,-0.25,-0.43,0.70,-0.53,0.13,0.28,Vildagliptin

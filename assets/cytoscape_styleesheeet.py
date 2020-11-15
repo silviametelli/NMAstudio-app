@@ -10,6 +10,17 @@ default_stylesheet = [
                'width': 'data(weight)',
                "opacity": 0.75}}]
 
+download_stylesheet = [
+    {"selector": 'node',
+     'style': {"opacity": 1,
+               'background-color': "#07ABA0",
+               'label': "data(label)",
+               'color': "#1b242b"}},
+    {"selector": 'edge',
+     'style': {"curve-style": "bezier",
+               'width': 'data(weight)',
+               "opacity": 0.75}}]
+
 stylesheet = [{'selector': 'node',
                'style': {'content': 'data(name)',
                          'font-family': 'helvetica',

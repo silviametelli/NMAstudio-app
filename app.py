@@ -64,7 +64,7 @@ EMPTY_SELECTION = {'active': {'ids': dict()}}
 
 app.layout = html.Div(
     [html.Div(  # header
-             [html.Div([html.H4("Network Meta-Analysis Tool", className="app__header__title"),
+             [html.Div([html.H4("VisualNMA", className="app__header__title"),
                         html.P("An interactive tool for data visualisation of network meta-analysis.",
                                className="app__header__title--grey")], className="app__header__desc"),
              html.Div([html.Img(src=app.get_asset_url("logo_universite_paris.jpg"),
@@ -431,7 +431,7 @@ def update_output(store_node, data):
     # Filter according to cytoscape selection
     if store_node['active']['ids']:
         slctd_trmnts = [nd['data']['label'] for nd in store_node['active']['ids'].values()]
-        data = data[data.treat1.isin(slctd_trmnts)]
+        data = data[data.treat1.isin(slctd_trmnts) | data.treat2.isin(slctd_trmnts) ]
         if len(slctd_trmnts)>1:
             leaguetable = leaguetable.loc[slctd_trmnts, slctd_trmnts]
             robs        = robs.loc[slctd_trmnts, slctd_trmnts]

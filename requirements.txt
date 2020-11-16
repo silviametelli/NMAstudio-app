@@ -4,7 +4,7 @@ pandas==0.24.2
 gunicorn==19.9.0
 dash_cytoscape==0.2.0
 dash_bootstrap_components==0.10.7
-rpy2==3.3.6
-matplotlib==3.3.3
 tzlocal==2.1
+matplotlib==3.3.3
+rpy2==3.3.6
 

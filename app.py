@@ -1,3 +1,5 @@
+import warnings
+warnings.filterwarnings("ignore")
 #---------R2Py Resources --------------------------------------------------------------------------------------------#
 import rpy2.robjects as ro
 from rpy2.robjects import pandas2ri # Define the R script and loads the instance in Python
@@ -7,7 +9,7 @@ r['source']('R_Codes/all_R_functions.R')  # Loading the function we have defined
 run_NetMeta_r = ro.globalenv['run_NetMeta']    # Get run_NetMeta from R
 league_table_r = ro.globalenv['league_table']  # Get league_table from R
 #--------------------------------------------------------------------------------------------------------------------#
-import os, io, base64, pickle, shutil, time
+import os, io, base64, pickle, shutil, time, copy
 import pandas as pd, numpy as np
 import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
 import dash_table
@@ -18,6 +20,24 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
 #--------------------------------------------------------------------------------------------------------------------#
+def write_node_topickle(store_node):
+    with open('db/.temp/selected_nodes.pickle', 'wb') as f:
+        pickle.dump(store_node, f, protocol=pickle.HIGHEST_PROTOCOL)
+def read_node_frompickle():
+    return pickle.load(open('db/.temp/selected_nodes.pickle', 'rb'))
+def write_edge_topickle(store_edge):
+    with open('db/.temp/selected_edges.pickle', 'wb') as f:
+        pickle.dump(store_edge, f, protocol=pickle.HIGHEST_PROTOCOL)
+def read_edge_frompickle():
+    return pickle.load(open('db/.temp/selected_edges.pickle', 'rb'))
+
+shutil.rmtree('db/.temp', ignore_errors=True)
+os.makedirs('db/.temp', exist_ok=True)
+
+EMPTY_SELECTION_NODES = {'active': {'ids': dict()}}
+EMPTY_SELECTION_EDGES = {'id': None}
+write_node_topickle(EMPTY_SELECTION_NODES)
+write_edge_topickle(EMPTY_SELECTION_EDGES)
 
 GRAPH_INTERVAL = os.environ.get("GRAPH_INTERVAL", 5000)
 
@@ -60,7 +80,10 @@ GLOBAL_DATA = {'net_data':pd.read_csv('db/Senn2013.csv'),
 GLOBAL_DATA['default_elements'] = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
 GLOBAL_DATA['dwnld_bttn_calls'] = 0
 GLOBAL_DATA['WAIT'] = False
-EMPTY_SELECTION = {'active': {'ids': dict()}}
+
+options = []
+for col in GLOBAL_DATA['net_data'].columns:
+    options.append({'label':'{}'.format(col, col), 'value':col})
 
 app.layout = html.Div(
     [html.Div(  # header
@@ -96,26 +119,25 @@ app.layout = html.Div(
                  html.Div(
                       [html.Div(  # Information
                            [html.Div([html.H6("Information", className="box__title")]),
-                            html.Div([html.P(id='cytoscape-mouseoverEdgeData-output', className="info_box"),
+                            html.Div([html.P(id='cytoscape-mouseTapEdgeData-output', className="info_box"),
                                       html.Br()],
                                       className="content_information"),
                             html.Div([],className="auto__container")],
                           className="info__container"),
                           # Forest Plot
-                          html.Div([dcc.Tabs([
-                              dcc.Tab(label='Forest plot',
-                                      children=[html.Div([html.P(id='tapNodeData-info', className="box__title"),
-                                                          html.Br()]),
-                                                dcc.Loading(
-                                                    dcc.Graph(id='tapNodeData-fig',
-                                                              config={'modeBarButtonsToRemove':['toggleSpikelines', "pan2d",
-                                                                                                "select2d", "lasso2d", "autoScale2d",
-                                                                                                "hoverCompareCartesian"],
-                                                                      'toImageButtonOptions': {'format': 'png', # one of png, svg,
-                                                                                               'filename': 'custom_image',
-                                                                                               'scale': 10  # Multiply title/legend/axis/canvas sizes by this factor
-                                                                                              },
-                                                                      'displaylogo':False}))]),
+                          html.Div([dcc.Tabs([dcc.Tab(label='Forest plots',
+                                                        children=[html.Div([html.P(id='tapNodeData-info', className="box__title"),
+                                                                          html.Br()]),
+                                                                dcc.Loading(
+                                                                    dcc.Graph(id='tapNodeData-fig',
+                                                                              config={'modeBarButtonsToRemove':['toggleSpikelines', "pan2d",
+                                                                                                                "select2d", "lasso2d", "autoScale2d",
+                                                                                                                "hoverCompareCartesian"],
+                                                                                      'toImageButtonOptions': {'format': 'png', # one of png, svg,
+                                                                                                               'filename': 'custom_image',
+                                                                                                               'scale': 10  # Multiply title/legend/axis/canvas sizes by this factor
+                                                                                                              },
+                                                                                      'displaylogo':False}))]),
                               dcc.Tab(label='League Table',
                                       children=[html.Div([html.Br(),
                                                       html.Button("Download table",id="btn-get-league",style={'color': 'white',
@@ -125,8 +147,27 @@ app.layout = html.Div(
                                                                    style={'float': 'right',
                                                                           'padding': '5px 5px 5px 5px'}),
                                                           html.Div(id='legend_table')])]),
-                              dcc.Tab(label='Transitivity',
-                                      children=[html.P('Work in progress...')]),
+                              dcc.Tab(label='Transitivity',children=[
+                                      #children=[html.P('Work in progress...')]),
+                                      html.Div([dbc.Row([html.H6("Choose effect modifier", className="graph__title2",
+                                                              style={'display': 'inline-block'}),
+                                                      html.Div(
+                                                          dcc.Dropdown(id='dropdown-effectmod', options=options,
+                                                                       clearable=False,
+                                                                       style={'width': '170px',
+                                                                              'color': '#1b242b',
+                                                                              'background-color': '#40515e'}),
+                                                          style={'display': 'inline-block', 'margin-bottom': '-15px'})
+                                              ])]),
+                                        dcc.Graph(id='tapEdgeData-fig',
+                                                  config={'modeBarButtonsToRemove':['toggleSpikelines', "pan2d",
+                                                                                    "select2d", "lasso2d", "autoScale2d",
+                                                                                    "hoverCompareCartesian"],
+                                                                                    'toImageButtonOptions': {'format': 'png', # one of png, svg,
+                                                                                                              'filename': 'custom_image',
+                                                                                                              'scale': 10  # Multiply title/legend/axis/canvas sizes by this factor
+                                                                                                              },
+                                                                                    'displaylogo':False})]),
                               dcc.Tab(label='Data',
                                       children=[html.Div(html.Button(dcc.Upload(html.P('Upload your file!'),
                                                                                 id='datatable-upload'),
@@ -171,8 +212,9 @@ app.layout = html.Div(
     ],
               className="app__content"),
         html.P('Copyright © 2020. All rights reserved.', className='__footer'),
-        html.Div(id='__storage', style={'display': 'none'}),
-        html.Div(id='__storage2', style={'display': 'none'})
+        html.Div(id='__storage_nodes', style={'display': 'none'}),
+        html.Div(id='__storage_edges', style={'display': 'none'}),
+        html.Div(id='__storage_netdata', style={'display': 'none'})
     ],
     className="app__container")
 
@@ -208,43 +250,46 @@ def get_image(button):
 
 ### ----- update graph layout on node click ------ ###
 @app.callback([Output('cytoscape', 'stylesheet'),
-               Output('__storage', 'loading_state')],
+               Output('__storage_nodes', 'loading_state')],
               [Input('cytoscape', 'tapNode'),
                Input("btn-get-png", "n_clicks")])
 def generate_stylesheet(node, dwld_button):
-    def io_node_topickle(store_node):
-        with open('db/.temp/selected_nodes.pickle', 'wb') as f:
-            pickle.dump(store_node, f, protocol=pickle.HIGHEST_PROTOCOL)
     FOLLOWER_COLOR = '#07ABA0'
     FOLLOWING_COLOR = '#07ABA0'
     NODE_SHAPE = 'ellipse' # One of  'ellipse', 'triangle', 'rectangle', 'diamond', 'pentagon', 'hexagon', 'heptagon', 'octagon', 'star', 'polygon'
     DWNLD = False
+    edge = read_edge_frompickle()
+    if edge and edge['id'] is not None:
+        stylesheet = default_stylesheet + [{"selector": 'edge[id= "{}"]'.format(edge['id']),
+                                           "style": {'opacity': 1,
+                                                     "line-color": 'pink',
+                                                     'z-index': 5000}}] if edge['id']!='RESET' else []
+        write_edge_topickle(EMPTY_SELECTION_EDGES)
+        return stylesheet, EMPTY_SELECTION_NODES
     if dwld_button and dwld_button > GLOBAL_DATA['dwnld_bttn_calls']:
         GLOBAL_DATA['dwnld_bttn_calls'] += 1
         DWNLD = True
     GLOBAL_DATA['WAIT'] = DWNLD
     if node and not DWNLD:
-        store_node = pickle.load(open('db/.temp/selected_nodes.pickle', 'rb'))
+        store_node = read_node_frompickle()
         if node['data']['id'] in store_node['active']['ids'].keys():
             del store_node['active']['ids'][node['data']['id']]
-            io_node_topickle(store_node)
+            write_node_topickle(store_node)
         else:
             store_node['active']['ids'][node['data']['id']] = node
-            io_node_topickle(store_node)
+            write_node_topickle(store_node)
         if not len(store_node['active']['ids']):
             GLOBAL_DATA['cytoscape_layout'] = download_stylesheet if DWNLD else default_stylesheet
-            return GLOBAL_DATA['cytoscape_layout'], EMPTY_SELECTION
+            return GLOBAL_DATA['cytoscape_layout'], EMPTY_SELECTION_NODES
     elif DWNLD:
         if os.path.exists('db/.temp/selected_nodes.pickle'):
-            store_node = pickle.load(open('db/.temp/selected_nodes.pickle', 'rb'))
+            store_node = read_node_frompickle()
         else:
-            store_node = EMPTY_SELECTION
+            store_node = EMPTY_SELECTION_NODES
     else:
-        shutil.rmtree('db/.temp', ignore_errors=True)
-        os.makedirs('db/.temp', exist_ok=True)
-        io_node_topickle(EMPTY_SELECTION)
+        write_node_topickle(EMPTY_SELECTION_NODES)
         GLOBAL_DATA['cytoscape_layout'] = download_stylesheet if DWNLD else default_stylesheet
-        return GLOBAL_DATA['cytoscape_layout'], EMPTY_SELECTION
+        return GLOBAL_DATA['cytoscape_layout'], EMPTY_SELECTION_NODES
 
 
     stylesheet = [{"selector": 'node',
@@ -371,15 +416,22 @@ def TapNodeData_fig(data):
 
 
 ### ----- display information on edge click ------ ###
-@app.callback(Output('cytoscape-mouseoverEdgeData-output', 'children'),
+@app.callback(Output('cytoscape-mouseTapEdgeData-output', 'children'),
               [Input('cytoscape', 'tapEdgeData')])
-def mouseoverEdgeData(data):
-    if data:
-        n_studies = data['weight_lab']
+def TapEdgeData(edge):
+
+    if edge:
+    #     store_edge = read_edge_frompickle()
+    #     if edge['id']==store_edge['id']: # You clicked it before: unselect it TODO: not working
+    #         write_edge_topickle(EMPTY_SELECTION_EDGES)
+    #     else:                            # New click: reset layout on nodes and select layout on edge
+    #         write_edge_topickle(edge)
+        n_studies = edge['weight_lab']
         studies_str = f"{n_studies}" + (' studies' if n_studies>1 else ' study')
-        return f"{data['source'].upper()} vs {data['target'].upper()}: {studies_str}"
+        return f"{edge['source'].upper()} vs {edge['target'].upper()}: {studies_str}"
     else:
         return "Click on an edge to get information."
+
 
 
 def parse_contents(contents, filename):
@@ -392,7 +444,7 @@ def parse_contents(contents, filename):
         return pd.read_excel(io.BytesIO(decoded))
 
 ### ----- upload new data ------ ###
-@app.callback([Output('__storage2', 'children'),
+@app.callback([Output('__storage_netdata', 'children'),
                Output('cytoscape', 'elements')],
               [Input('datatable-upload', 'contents')],
               [State('datatable-upload', 'filename')])
@@ -417,20 +469,24 @@ def get_new_data(contents, filename):
     elements = GLOBAL_DATA['user_elements']
     return data.to_json(orient='split'), elements
 
+
 ### ----- display Data Table and League Table ------ ###
 @app.callback([Output('datatable-upload-container', 'data'),
                Output('datatable-upload-container', 'columns'),
                Output('legend_table', 'children'),
                Output('legend_table_legend', 'children')],
-              [Input('__storage', 'loading_state'),
-               Input('__storage2', 'children')])
-def update_output(store_node, data):
+              [Input('__storage_nodes', 'loading_state'),
+               Input('__storage_netdata', 'children'),
+               Input('cytoscape', 'tapEdgeData')]
+              )
+def update_output(store_node, data, store_edge):
     data = pd.read_json(data, orient='split').round(3)
     leaguetable = GLOBAL_DATA['league_table_data'].copy(deep=True)
     treatments = np.unique(data[['treat1', 'treat2']].values.flatten())
     robs = (data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
                 .pivot_table(index='treat1', columns='treat2', values='rob')
                 .reindex(index=treatments, columns=treatments, fill_value=np.nan))
+
     # Filter according to cytoscape selection
     if store_node['active']['ids']:
         slctd_trmnts = [nd['data']['label'] for nd in store_node['active']['ids'].values()]
@@ -482,12 +538,22 @@ def update_output(store_node, data):
 
     # Prepare for output
     data_cols = [{"name": c, "id": c} for c in data.columns]
-    data = data.to_dict('records')
+    data_output = data.to_dict('records')
     leaguetable = leaguetable.reset_index().rename(columns={'index':'Treatment'})
     leaguetable_cols = [{"name": c, "id": c} for c in leaguetable.columns]
     leaguetable = leaguetable.to_dict('records')
 
-    return data, data_cols, build_league_table(leaguetable, leaguetable_cols, styles), legend
+    if store_edge and not store_node['active']['ids']:
+  #  if store_edge['active']['ids'] and not store_node['active']['ids']:
+        slctd_edge = [store_edge['source'], store_edge['target']]
+        data = data[data.treat1.isin(slctd_edge) & data.treat2.isin(slctd_edge)]
+        # Prepare for output
+        data_cols = [{"name": c, "id": c} for c in data.columns]
+        data_output = data.to_dict('records')
+
+        return data_output, data_cols, build_league_table(leaguetable, leaguetable_cols, styles), legend
+
+    return data_output, data_cols, build_league_table(leaguetable, leaguetable_cols, styles), legend
 
 
 def build_league_table(data, columns, style_data_conditional):
@@ -525,13 +591,100 @@ def build_league_table(data, columns, style_data_conditional):
 #     if data:
 #         return "Clicked on edge between " + data['source'].upper() + " and " + data['target'].upper()
 
-
 # @app.callback(Output('cytoscape-mouseoverNodeData-output', 'children'),
 #               [Input('cytoscape', 'mouseoverNodeData')])
 # def mouseoverNodeData(data):
 #     if data:
 #         return "Hovered over node: " + data['label']
 
+
+### ----- transitivity boxplots ------ ###
+@app.callback(Output('tapEdgeData-fig', 'figure'),
+             [Input('dropdown-effectmod', 'value'),
+              Input('cytoscape', 'tapEdgeData')])
+
+def update_dropdown_boxplot(value, edge):
+    if value:
+            df = GLOBAL_DATA['net_data'].copy()
+            df = df[['treat1', 'treat2',value]]
+            #df['Comparison'] = df.groupby(['treat1', 'treat2'], sort=False).ngroup().add(1)
+            df['Comparison'] = (df['treat1'] + str(' ') +str('vs') + str(' ') + df['treat2'])
+            range1 = df[value].min() - 5
+            range2 = df[value].max() + 5
+            if edge:
+                df = GLOBAL_DATA['net_data'].copy()
+                df = df[['treat1', 'treat2', value]]
+                #df['Comparison'] = df.groupby(['treat1', 'treat2'], sort=False).ngroup().add(1)
+                df['Comparison'] = (df['treat1'] + str(' ') +str('vs') + str(' ') + df['treat2'])
+                range1 = df[value].min() - 5
+                range2 = df[value].max() + 5
+                df['mycolor'] = np.where(((df['treat1']==edge['source']) & (df['treat2']==edge['target'])),
+                                         'blue', 'Whitesmoke')
+
+                fig = px.box(df, x='Comparison', y=value, color='mycolor',
+                            color_discrete_sequence=['Whitesmoke','blue'] ,
+                            range_y=[range1, range2], points='suspectedoutliers'
+                            )
+
+                fig.update_layout(clickmode='event+select',
+                                  paper_bgcolor='#40515e',
+                                  plot_bgcolor='#40515e',
+                                  font_color="white",
+                                  showlegend=False)
+
+                fig.update_traces(boxpoints='outliers', quartilemethod="inclusive",hoverinfo= "x+y",
+                                  selector=dict(mode='markers'),
+                                  marker=dict( opacity=1, line=dict(color='Whitesmoke', outlierwidth=2)))
+
+                fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='white', ticklen=5,
+                                 tickvals=[],
+                #                 tickvals=[x for x in range(df['Comparison'].min(), df['Comparison'].max() + 1)],
+                #                 ticktext=[x for x in range(df['Comparison'].min(), df['Comparison'].max() + 1)],
+                                 showline=True,
+                                 zeroline=True)
+
+                fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='white', showline=True)
+                return fig
+
+
+
+    if not value:
+            df = pd.DataFrame([[0] * 2], columns=['Comparison', 'value'])
+            value = df['value']
+            range1 = range2 = 0
+
+
+    fig = px.box(df, x='Comparison', y=value,
+                 range_y=[range1,range2], points= 'suspectedoutliers')
+
+    fig.update_layout(paper_bgcolor='#40515e',
+                      plot_bgcolor='#40515e',
+                      font_color="white",
+                      showlegend=False)
+
+    fig.update_traces(boxpoints='outliers', quartilemethod="inclusive", hoverinfo= "x+y",
+                      marker=dict(opacity=1, line=dict(color='Whitesmoke', outlierwidth=2), color= "Whitesmoke")
+                      )
+
+    fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='white', ticklen=5,
+                     tickvals=[],
+                     #tickvals=[x for x in range(df['Comparison'].min(), df['Comparison'].max()+1)],
+                   #  ticktext=[x for x in range(df['Comparison'].min(), df['Comparison'].max()+1)],
+                     showline=True,
+                     zeroline=True)
+
+    fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='w hite', showline=True)
+
+    if not any(value):
+        fig.update_shapes(dict(xref='x', yref='y'))
+        fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
+        fig.update_xaxes(tickvals=[], ticktext=[], visible=False)
+        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80))
+        fig.update_traces(quartilemethod="exclusive", hoverinfo='skip', hovertemplate=None)
+
+    return fig
+
+
 if __name__ == "__main__":
-    #app.run_server(debug=True, host='127.0.0.1')
-    app.run_server(debug=False)
+    app.run_server(debug=True, host='127.0.0.1')
+    #app.run_server(debug=False)

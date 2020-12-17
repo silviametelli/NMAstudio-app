@@ -43,6 +43,15 @@ h6 {
     margin-bottom: 0px !important;
     font-size: 1em;
 }
+
+.graph__title2 {
+    color: #fff !important;
+    letter-spacing: 0.3rem !important;
+    padding: 16px 25px 25px 25px;
+    margin-bottom: 0px !important;
+    font-size: 1em;
+}
+
 .box__title {
     font-family: "Open Sans", Times, serif !important;
     color: #fff !important;

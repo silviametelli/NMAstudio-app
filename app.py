@@ -13,6 +13,7 @@ import os, io, base64, pickle, shutil, time, copy
 import pandas as pd, numpy as np
 import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
 import dash_table
+#from dash_extensions import Download
 import dash_cytoscape as cyto
 from assets.cytoscape_styleesheeet import default_stylesheet, download_stylesheet
 from dash.dependencies import Input, Output, State
@@ -140,9 +141,6 @@ app.layout = html.Div(
                                                                                       'displaylogo':False}))]),
                               dcc.Tab(label='League Table',
                                       children=[html.Div([html.Br(),
-                                                      html.Button("Download table",id="btn-get-league",style={'color': 'white',
-                                                                                                   'height': '36.5px',
-                                                                                                   'verticalAlign':'middle'}),
                                                           html.Div(id='legend_table_legend',
                                                                    style={'float': 'right',
                                                                           'padding': '5px 5px 5px 5px'}),
@@ -565,6 +563,7 @@ def build_league_table(data, columns, style_data_conditional):
                                      },
                                 data=data,
                                 columns=columns,
+                                export_format="csv",
                                 style_data_conditional=style_data_conditional,
                                 # fixed_rows={'headers': True, 'data': 0},    # DOES NOT WORK / LEADS TO BUG
                                 # fixed_columns={'headers': True, 'data': 1}, # DOES NOT WORK / LEADS TO BUG
@@ -608,20 +607,22 @@ def update_dropdown_boxplot(value, edge):
             df = GLOBAL_DATA['net_data'].copy()
             df = df[['treat1', 'treat2',value]]
             #df['Comparison'] = df.groupby(['treat1', 'treat2'], sort=False).ngroup().add(1)
-            df['Comparison'] = (df['treat1'] + str(' ') +str('vs') + str(' ') + df['treat2'])
+            df['Comparison'] = (df['treat1'] + str(' ') + str('vs') + str(' ') + df['treat2'])
             range1 = df[value].min() - 5
             range2 = df[value].max() + 5
             if edge:
                 df = GLOBAL_DATA['net_data'].copy()
                 df = df[['treat1', 'treat2', value]]
-                #df['Comparison'] = df.groupby(['treat1', 'treat2'], sort=False).ngroup().add(1)
                 df['Comparison'] = (df['treat1'] + str(' ') +str('vs') + str(' ') + df['treat2'])
                 range1 = df[value].min() - 5
                 range2 = df[value].max() + 5
                 df['mycolor'] = np.where(((df['treat1']==edge['source']) & (df['treat2']==edge['target'])),
                                          'blue', 'Whitesmoke')
+                mycolormap={}
+                for c in range(len(df['Comparison'])):
+                    mycolormap[df['Comparison'][c]]=df['mycolor'][c]
 
-                fig = px.box(df, x='Comparison', y=value, color='mycolor',
+                fig = px.box(df, x='Comparison', y=value, color='mycolor', #color_discrete_map=mycolormap,
                             color_discrete_sequence=['Whitesmoke','blue'] ,
                             range_y=[range1, range2], points='suspectedoutliers'
                             )
@@ -637,7 +638,7 @@ def update_dropdown_boxplot(value, edge):
                                   marker=dict( opacity=1, line=dict(color='Whitesmoke', outlierwidth=2)))
 
                 fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='white', ticklen=5,
-                                 tickvals=[],
+                #                 tickvals=[],
                 #                 tickvals=[x for x in range(df['Comparison'].min(), df['Comparison'].max() + 1)],
                 #                 ticktext=[x for x in range(df['Comparison'].min(), df['Comparison'].max() + 1)],
                                  showline=True,
@@ -667,18 +668,18 @@ def update_dropdown_boxplot(value, edge):
                       )
 
     fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='white', ticklen=5,
-                     tickvals=[],
+                    # tickvals=[],
                      #tickvals=[x for x in range(df['Comparison'].min(), df['Comparison'].max()+1)],
-                   #  ticktext=[x for x in range(df['Comparison'].min(), df['Comparison'].max()+1)],
+                   #  ticktext=[x for x in df['Comparison']],
                      showline=True,
                      zeroline=True)
 
-    fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='w hite', showline=True)
+    fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='white', showline=True)
 
     if not any(value):
         fig.update_shapes(dict(xref='x', yref='y'))
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
-        fig.update_xaxes(tickvals=[], ticktext=[], visible=False)
+      #  fig.update_xaxes(tickvals=[], ticktext=[], visible=False)
         fig.update_layout(margin=dict(l=100, r=100, t=12, b=80))
         fig.update_traces(quartilemethod="exclusive", hoverinfo='skip', hovertemplate=None)
 

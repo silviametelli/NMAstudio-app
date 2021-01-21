@@ -145,3 +145,9 @@ h6 {
     }
 }
 
+.export{
+    position: absolute;
+    left: 1%;
+    font-type: sans-serif;
+    color: white;
+}

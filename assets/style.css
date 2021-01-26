@@ -151,3 +151,77 @@ h6 {
     font-type: sans-serif;
     color: white;
 }
+
+/*div.Select–single>.Select-control .Select-value,*/
+.Select-placeholder {
+    color: #363333;
+    /*background: #394046;*/
+    #background-image: linear-gradient(#484e55, #3A3F44 60%, #313539);
+    left: 0;
+    line-height: 20px;
+    padding-left: 14px;
+    padding-right: 10px;
+    padding-top:5px;
+    right: 0;
+    top: 0px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: absolute;
+    align-items: center;
+}
+
+/*#graph-layout-dropdown .VirtualizedSelectFocusedOption {*/
+/*    background-color: #909898;*/
+/*    position: absolute;*/
+/*    color: white;*/
+/*    padding-bottom:20px;*/
+/*    left: 0;*/
+/*}*/
+
+#graph-layout-dropdown .Select-value {
+    background-color: #909898;
+    position: absolute;
+    color: white;
+    padding-bottom:10px;
+    padding-top:10px;
+    left: 0;
+}
+
+@for $i from 1 through 11
+    #{dropdown-1}_#{$i} .Select-value {
+        background-color: deepskyblue;
+        color: white;
+        left: 0;
+        padding-bottom:20px;
+        line-height: 20px;
+        padding-left: 0px;
+          /*padding-right: 0px;*/
+          /*padding-top: 0px;*/
+          /*right: 0;*/
+          /*top: -5px;*/
+        max-width: 100%;
+        position: center;
+    }
+
+    #{dropdown-1}_#{$i} .Select-placeholder {
+        color: white;
+        /*background: #394046;*/
+         #background-image: linear-gradient(#484e55, #3A3F44 60%, #313539);
+         left: 0;
+         line-height: 20px;
+         padding-left: 14px;
+         padding-right: 10px;
+         padding-bottom:10px;
+         right: 0;
+         top: -5px;
+         max-width: 100%;
+         overflow: hidden;
+         text-overflow: ellipsis;
+         position: absolute;
+    }
+
+.Select--single>.Select-control .Select-value, .Select-placeholder
+{
+    line-height: 20px;
+}

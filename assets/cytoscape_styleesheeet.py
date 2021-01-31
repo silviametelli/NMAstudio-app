@@ -3,23 +3,16 @@ default_stylesheet = [
     {"selector": 'node',
      'style': {"opacity": 1,
                'background-color': "#07ABA0",
+               "width": "data(size)", "height": "data(size)",
                'label': "data(label)",
-               'color': "#fff"}},
+               'shape':'circle',
+               'color': "#fff"},
+     },
     {"selector": 'edge',
      'style': {"curve-style": "bezier",
                'width': 'data(weight)',
                "opacity": 0.75}}]
 
-# download_stylesheet = [
-#     {"selector": 'node',
-#      'style': {"opacity": 1,
-#                'background-color': "#07ABA0",
-#                'label': "data(label)",
-#                'color': "#1b242b"}},
-#     {"selector": 'edge',
-#      'style': {"curve-style": "bezier",
-#                'width': 'data(weight)',
-#                "opacity": 0.75}}]
 
 download_stylesheet = [
                     {'selector': 'edge',
@@ -30,7 +23,8 @@ download_stylesheet = [
                             "border-color": "#751225", "border-width": 5, "border-opacity": 1,
                             "opacity": 1,
                             "label": "data(label)",
-                            "color": "#1b242b",
+                            "weight": "data(weight)",
+                             "color": "#1b242b",
                             "text-opacity": 1,
                             'shape': 'ellipse',
                             # "font-size": 12,
@@ -44,6 +38,7 @@ stylesheet = [{'selector': 'node',
                          # 'text-outline-color': '#fff',
                          'opacity': 1,
                          'label': "data(label)",
+           #              'size': "data(size)",
                          # 'background-color': "#07ABA0",
                          'color': "#fff"
                          }},

@@ -1,0 +1,8 @@
+﻿TE,seTE,treat1,treat2,studlab,rob,year,mean age,perc male ,indirectness,TE2,seTE2
+-1.9,0.1414,Metformin,Placebo,DeFronzo1995,1,1995,55,60,1,-1.9,0.1414
+-0.82,0.0992,Metformin,Placebo,Lewin2007,1,2007,55.3,67,1,-0.82,0.0992
+-0.2,0.3579,Metformin,Acarbose,Willms1999,1,1999,56.6,50,1,-0.2,0.3579
+-1.34,0.1435,Rosiglitazone,Placebo,Davidson2007,1,2007,62.2,63,1,-1.34,0.1435
+-1.1,0.1141,Rosiglitazone,Placebo,Wolffenbuttel1999,1,1999,58.1,61,2,-1.1,0.1141
+-1.3,0.1268,Pioglitazone,Placebo,Kipnes2001,2,2001,57.8,60,2,-1.3,0.1268
+-0.77,0.1078,Rosiglitazone,Placebo,Kerenyi2004,2,2004,62.1,57,2,-0.77,0.1078

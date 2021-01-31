@@ -179,8 +179,9 @@ h6 {
 /*    left: 0;*/
 /*}*/
 
+
 #graph-layout-dropdown .Select-value {
-    background-color: #909898;
+    background-color: #808484;
     position: absolute;
     color: white;
     padding-bottom:10px;
@@ -188,13 +189,43 @@ h6 {
     left: 0;
 }
 
-@for $i from 1 through 11
+.Select-arrow { --accent: black; }
+
+
+#node-size-dropdown .Select-value {
+    background-color: #808484;
+    position: absolute;
+    color: white;
+    padding-bottom:10px;
+    padding-top:10px;
+    left: 0;
+}
+
+#node-color-dropdown .Select-value {
+    background-color: #808484;
+    position: absolute;
+    color: white;
+    padding-bottom:10px;
+    padding-top:10px;
+    left: 0;
+}
+
+.tapEdgeData-fig-class {
+    padding-bottom:10px;
+    padding-top:20px;
+}
+
+@for $i from 1 through 13
     #{dropdown-1}_#{$i} .Select-value {
-        background-color: deepskyblue;
-        color: white;
+        /*background-color: #0348cd;*/
+        font-weight: bold;
+        appearance: menulist;
+        color:black;
+        background-clip: padding-box;
         left: 0;
+        border-color: 1;
         padding-bottom:20px;
-        line-height: 20px;
+        line-height: 10px;
         padding-left: 0px;
           /*padding-right: 0px;*/
           /*padding-top: 0px;*/
@@ -205,7 +236,7 @@ h6 {
     }
 
     #{dropdown-1}_#{$i} .Select-placeholder {
-        color: white;
+        color: dodgerblue;
         /*background: #394046;*/
          #background-image: linear-gradient(#484e55, #3A3F44 60%, #313539);
          left: 0;
@@ -221,7 +252,10 @@ h6 {
          position: absolute;
     }
 
+   #{dropdown-1}_#{$i} .Select-arrow { --accent: black; }
+
+
 .Select--single>.Select-control .Select-value, .Select-placeholder
 {
-    line-height: 20px;
+    line-height: 17px;
 }

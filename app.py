@@ -17,6 +17,7 @@ import dash_table
 import dash_cytoscape as cyto
 from assets.cytoscape_styleesheeet import default_stylesheet, download_stylesheet
 from assets.tab_styles import subtab_style, subtab_selected_style
+from assets.dropdowns_values import options_format, options_outcomes, options_outcomes_direction, options_nodesize, options_colornodeby
 
 from dash.dependencies import Input, Output, State
 import plotly.express as px
@@ -34,6 +35,10 @@ def write_edge_topickle(store_edge):
         pickle.dump(store_edge, f, protocol=pickle.HIGHEST_PROTOCOL)
 def read_edge_frompickle():
     return pickle.load(open('db/.temp/selected_edges.pickle', 'rb'))
+
+UPLOAD_DIRECTORY = "db/.temp/UPLOAD_DIRECTORY"
+if not os.path.exists(UPLOAD_DIRECTORY):
+    os.makedirs(UPLOAD_DIRECTORY)
 
 shutil.rmtree('db/.temp', ignore_errors=True)
 os.makedirs('db/.temp', exist_ok=True)
@@ -61,27 +66,41 @@ styles = {
 # Load extra layouts
 cyto.load_extra_layouts()
 network_layouts = [{'label': 'circle',        'value': 'circle'},
-                   {'label': 'breadthfirst',  'value': 'breadthfirst'},
+                   {'label': 'wide',          'value': 'breadthfirst'},
                    {'label': 'grid',          'value': 'grid'},
                    {'label': 'spread',        'value': 'spread'},
                    {'label': 'cola',          'value': 'cola'},
                    {'label': 'random',        'value': 'random'}
                    ]
 
-def get_network(df):
+def get_network(df, nodesize=False):
     edges = df.groupby(['treat1', 'treat2']).TE.count().reset_index()
     all_nodes = np.unique(edges[['treat1', 'treat2']].values.flatten())
+    df_n1 = df.groupby(['treat1']).n1.sum().reset_index()
+    df_n1 = df_n1.rename(columns={'treat1': 'treat', 'n1':'n'})
+    df_n2 = df.groupby(['treat2']).n2.sum().reset_index()
+    df_n2 = df_n2.rename(columns={'treat2': 'treat', 'n2':'n'})
+    all_nodes_sized = pd.concat([df_n1,df_n2]).groupby(['treat']).sum().reset_index()
     cy_edges = [{'data': {'source': source, 'target': target, 'weight': weight * 2, 'weight_lab': weight}}
                 for source, target, weight in edges.values]
-    cy_nodes = [{"data": {"id": target, "label": target, 'classes':'genesis'}}
-                for target in all_nodes]
+    if nodesize==False:
+        cy_nodes = [{"data": {"id": target, "label": target, 'classes':'genesis' }}
+                    for target in all_nodes]
+    else:
+        cy_nodes = [{"data": {"id": target, "label": target, 'classes':'genesis', 'size': np.sqrt(size)*2}}
+                    for target, size in all_nodes_sized.values]
+
     return cy_edges + cy_nodes
+
 
 # Save default dataframe for use
 GLOBAL_DATA = {'net_data':pd.read_csv('db/Senn2013.csv'),
+               'cinema_net_data':pd.read_csv('db/CINeMa_file.csv'),
                'forest_data':pd.read_csv('db/forest_data/forest_data.csv'),
                'league_table_data':pd.read_csv('db/league_table_data/league_table.csv', index_col=0)}
 GLOBAL_DATA['default_elements'] = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
+GLOBAL_DATA['user_elements_nodesize'] = get_network(df=GLOBAL_DATA['net_data'], nodesize=True)
+
 GLOBAL_DATA['dwnld_bttn_calls'] = 0
 GLOBAL_DATA['WAIT'] = False
 
@@ -89,108 +108,121 @@ options_var = []
 for col in GLOBAL_DATA['net_data'].columns:
     options_var.append({'label':'{}'.format(col, col), 'value':col})
 
-options_format = [{'label':'long',      'value':'long'},
-                  {'label':'contrast',  'value':'contrast'}
-                  ]
 
-options_outcomes = [{'label':'continuous',      'value':'continuous'},
-                   {'label':'binary',  'value':'binary'}
-                   ]
+##############################################################################
+##########################------- APP LAYOUT -------##########################
+##############################################################################
 
-options_outcomes_direction = [{'label':'beneficial',  'value':'beneficial'},
-                             {'label':'harmful',     'value':'harmful'}
-                             ]
-
-###------- APP LAYOUT -------###
 app.layout = html.Div(
     [html.Div(  # header
              [html.Div([html.H4("VisualNMA", className="app__header__title"),
                         html.P("An interactive tool for data visualisation of network meta-analysis.",
                                className="app__header__title--grey")], className="app__header__desc"),
+
              html.Div([html.Img(src=app.get_asset_url("logo_universite_paris.jpg"),
                                 className="app__menu__img")],
                       className="app__header__logo")],
              className="app__header"),
     html.Div([html.Div(   # NMA Graph
-                 [html.Div([dbc.Row([html.H6("Graph layout", className="graph__title",style={'display': 'inline-block'}),
-                                     html.Div(dcc.Dropdown(id='graph-layout-dropdown', options=network_layouts, clearable=False, className='',
-                                                  value='circle', style={'width':'100px',
+                 [html.Div([dbc.Row([
+                                dbc.Col([
+                                    html.H6("Graph layout", className="graph__title",style={'display': 'inline-block','font-size':'11px'}),
+                                    html.Div(dcc.Dropdown(id='graph-layout-dropdown', options=network_layouts, clearable=False,
+                                                          value='circle', style={'width':'75px',
+                                                                                 'color': '#1b242b','font-size':'10.5px',
+                                                                                 'background-color': '#40515e'}),
+                                                  style={'display': 'inline-block', 'margin-bottom':'-10px','margin-left': '-8px'})],
+                                                  width={"size": 3, "order": "last", "offset": 1}, lg=3, style={'display': 'inline-block'}),
+                                dbc.Col([
+                                     html.H6("Node size", className="graph__title",style={'display': 'inline-block','font-size':'11px'}),
+                                     html.Div(dcc.Dropdown(id='node-size-dropdown', options=options_nodesize, clearable=False, className='',
+                                                  value='default', style={'width':'75px',
+                                                                         'color': '#1b242b','font-size':'10.5px',
+                                                                         'background-color': '#40515e'}),
+                                                  style={'display': 'inline-block', 'margin-bottom':'-10px','margin-left': '-8px'})],
+                                                  width={"size": 3, "order": "last", "offset": 2},lg=3, style={'display': 'inline-block'}),
+                                dbc.Col([
+                                      html.H6("Node color", className="graph__title", style={'display': 'inline-block','font-size':'11px'}),
+                                      html.Div(dcc.Dropdown(id='node-color-dropdown', options=options_colornodeby, clearable=False,
+                                                  className='',
+                                                  value='default', style={'width': '75px','font-size':'10.5px',
                                                                          'color': '#1b242b',
                                                                          'background-color': '#40515e'}),
-                                              style={'display': 'inline-block', 'margin-bottom':'-10px','margin-left': '-8px'}),
-                                     html.Div(html.Button("Download graph",id="btn-get-png",style={'color': 'white',
-                                                                                                   'height': '36.5px',
-                                                                                                   'verticalAlign':'middle'}),
-                                              style={'display': 'inline-block','paddingLeft':'15px',
-                                                     'verticalAlign':'top'}),
-                                  #   html.Div(html.Button("Reset", id="bt-reset", n_clicks=0, style={'color': 'white',
-                                  #                                                                   'height': '36.5px',
-                                  #                                                                   'verticalAlign': 'right'}),
-                                  #            style={'display': 'inline-block', 'paddingLeft': '15px',
-                                  #                   'verticalAlign': 'top'})
-                                     ]
-                                    ),
-                            dbc.Row([
-
-
-
-                                    ]),
+                                                  style={'display': 'inline-block', 'margin-bottom': '-10px', 'margin-left': '-8px'})],
+                                                  width={"size": 3, "order": "last", "offset": 3},lg=3, style={'display': 'inline-block'})
+                                 ]),
+                            dbc.Row(html.Div(html.Button("Save", id="btn-get-png", #size='sm',
+                                                         style={'color': 'green',
+                                                                          'height': '33px','margin-left': '8px',
+                                                                          'verticalAlign': 'top'}),
+                                     style={'display': 'inline-block', 'paddingLeft': '15px',
+                                            'verticalAlign': 'top'})),
 
                             html.Br()]),
                   # html.Div([html.Div(style={'width': '10%', 'display': 'inline'}, children=[
                   #     'Node Color:', dcc.Input(id='input-bg-color', type='text') ])
                   #  ]),
                   cyto.Cytoscape(id='cytoscape',
+                                 #elements=GLOBAL_DATA['user_elements_nodesize'],
                                  elements=GLOBAL_DATA['user_elements'],
-                                 style={'height': '60vh', 'width': '100%'},
+                                 style={'height': '60vh', 'width': '100%','margin-top': '-50px','margin-left': '20px'},
                                  stylesheet=default_stylesheet)],
                   className="one-half column"),
                  html.Div(className='graph__title', children=[]),
                  html.Div(
                       [html.Div(  # Information
-                           [html.Div([html.H6("Information", className="box__title")]),
+                           [html.Div([dbc.Row([
+                                              html.H6("Information", className="box__title"),
+                                             # html.H6("Download button here?")
+                                              ]),
+                                      ]),
                             html.Div([html.P(id='cytoscape-mouseTapEdgeData-output', className="info_box"),
                                       html.Br()],
                                       className="content_information"),
                             html.Div([],className="auto__container")],
                           className="info__container"),
-                          # Forest Plot
+                          # tabs
                           html.Div([
                               dcc.Tabs([
 
                                   dcc.Tab(label='Project set up',children=[html.Div(children=[
                                           html.Br(),
-                                          dcc.Upload(html.A('Upload main data file'), id='datatable-upload', multiple=False),
-                                          dcc.Upload(html.A('Upload CINeMA grading file'), id='datatable-secondfile-upload',
-                                                     multiple=False),
+                                          dbc.Row([dcc.Upload(html.A('Upload main data file*',
+                                                                     style={'display': 'inline-block', 'margin-left': '5px'}),
+                                                              id='datatable-upload', multiple=False),
+                                                              html.Ul(id="file-list",
+                                                                      style={'display': 'inline-block', 'margin-left': '5px'})]
+                                                  ),
+                                          dbc.Row([dcc.Upload(html.A('Upload CINeMA grading file',style={'display': 'inline-block', 'margin-left': '5px'}), id='datatable-secondfile-upload', multiple=False),
+                                                              html.Ul(id="file2-list",style={'display': 'inline-block', 'margin-left': '5px'})]
+                                                  ),
                                           html.Br(),
                                           dbc.Row([
-                                              html.P("Format*:", className="graph__title2",
+                                              dbc.Col([html.P("Format*:", className="graph__title2",
                                                        style={'display': 'inline-block', 'margin-left': '5px',
                                                               'paddingLeft': '0px','font-size': '11px','vertical-alignment':'middle'}),
                                                        html.Div(dcc.RadioItems(id='dropdown-format', options=options_format,
-                                                                style={'width': '80px', 'margin-left': '-8px',
+                                                                style={'width': '80px', 'margin-left': '-20px',
                                                                        'color': '#1b242b', 'font-size': '10px',
                                                                        'background-color': '#40515e'}),
-                                                       style={'display': 'inline-block', 'margin-bottom': '-15px'}),
+                                                       style={'display': 'inline-block', 'margin-bottom': '-15px'})],width="auto", style={'display': 'inline-block'}),
 
-                                              html.P("Outcome*:", className="graph__title2",
-                                                            style={'display': 'inline-block', 'paddingLeft': '15px','font-size': '11px'}),
+                                              dbc.Col([html.P(["1",html.Sup("st"), " outcome*:"], className="graph__title2",
+                                                            style={'display': 'inline-block', 'paddingLeft': '10px','font-size': '11px'}),
                                                    html.Div(dcc.RadioItems(id='dropdown-outcome1', options=options_outcomes,
-                                                                          style={'width': '80px', 'margin-left': '-8px',
+                                                                          style={'width': '80px', 'margin-left': '-20px',
                                                                                  'color': '#1b242b', 'font-size': '10px',
                                                                                  'background-color': '#40515e'}),
-                                                             style={'display': 'inline-block', 'margin-bottom': '-15px'}),
+                                                             style={'display': 'inline-block', 'margin-bottom': '-15px'})],width="auto", style={'display': 'inline-block'}),
 
-                                              html.P("Second outcome:", className="graph__title2",
-                                                      style={'display': 'inline-block', 'paddingLeft': '15px','font-size': '11px'}),
+                                              dbc.Col([html.P(["2",html.Sup("nd"), " outcome:"], className="graph__title2",
+                                                      style={'display': 'inline-block', 'paddingLeft': '10px','font-size': '11px'}),
                                               html.Div(dcc.RadioItems(id='dropdown-outcome2', options=options_outcomes,
-                                                                    style={'width': '80px', 'margin-left': '-8px',
+                                                                    style={'width': '80px', 'margin-left': '-20px',
                                                                            'color': '#1b242b', 'font-size': '10px',
                                                                            'background-color': '#40515e'}),
-                                                       style={'display': 'inline-block', 'margin-bottom': '-15px'})
+                                                       style={'display': 'inline-block', 'margin-bottom': '-15px'})],width="auto", style={'display': 'inline-block'})
                                           ]),
-                                   # html.Div(id='chiamalocomevuoi'),
                                    html.Div(id='second-selection')
                                   ])]),
 
@@ -205,11 +237,11 @@ app.layout = html.Div(
                                                                                    dcc.Loading(
                                                                                        html.Div([
                                                                                             dbc.Row([
-                                                                                            dbc.Col(html.P('Outcome is',style={'paddingLeft':'400px','font-size': '11px',
+                                                                                            dbc.Col(html.P('Outcome is',style={'paddingLeft':'10px','font-size': '11px',
                                                                                                                                'margin-bottom':'-20px','color':'black'})),
                                                                                             dbc.Col(html.Div(dcc.RadioItems(id='dropdown-direction', options=options_outcomes_direction,
                                                                                                                             value='beneficial', labelStyle={'display': 'inline-block'},
-                                                                                                                     style={'width': '180px', 'margin-left': '5px','paddingLeft':'460px',
+                                                                                                                     style={'width': '180px', 'margin-left': '5px','paddingLeft':'60px',
                                                                                                                             'color': '#1b242b', 'font-size': '10px', #'vertical-align':'middle',
                                                                                                                             'background-color': '#40515e'}),style={}))
                                                                                             ]),
@@ -233,8 +265,14 @@ app.layout = html.Div(
                                                                                             'displaylogo': False}) ])
                                                                               )
                                                        ]),
-                                                                dcc.Tab(label='MA', id='tab2', value='Tab2', style=subtab_style,selected_style=subtab_selected_style),
-                                                                dcc.Tab(label='Double MA', id='tab3', value='Tab3', style=subtab_style,selected_style=subtab_selected_style)
+                                                                dcc.Tab(label='Pairwise', id='tab2', value='Tab2', style=subtab_style,selected_style=subtab_selected_style,
+                                                                        children=[html.Div([html.P(
+                                                                            id='tapEdgeData-info',
+                                                                            className="box__title"),
+                                                                                            html.Br()])],
+                                                                                  ),
+
+                                                                dcc.Tab(label='Two-dimensional', id='tab3', value='Tab3', style=subtab_style,selected_style=subtab_selected_style)
                               ])]),
 
                                   dcc.Tab(label='League Table',
@@ -249,10 +287,10 @@ app.layout = html.Div(
                                                                   style={'display': 'inline-block'}),
                                                           html.Div(
                                                               dcc.Dropdown(id='dropdown-effectmod', options=options_var,
-                                                                           clearable=False,
+                                                                           clearable=False,className="tapEdgeData-fig-class",
                                                                            style={'width': '170px','vertical-align': 'middle',
                                                                                   'color': '#1b242b','display': 'inline-block',
-                                                                                  'background-color': '#40515e'}),
+                                                                                  'background-color': '#40515e','padding-bottom':'5px'}),
                                                               style={'display': 'inline-block', 'margin-bottom': '-15px'})
                                                   ])]),
                                         dcc.Graph(id='tapEdgeData-fig',
@@ -265,11 +303,10 @@ app.layout = html.Div(
                                                                                                               },
                                                                                     'displaylogo':False})]),
 
-                              dcc.Tab(label='Data', children=[html.Div(
+                                  dcc.Tab(label='Data', children=[html.Div(
                                                                 dash_table.DataTable(
                                                                      id='datatable-upload-container',
                                                                      editable=True,
-                                                                     #columns=[{'name': i, 'id': i, 'deletable': True} for i in df.columns if i != 'id'],
                                                                      style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
                                                                                  'color': 'white',
                                                                                  'border': '1px solid #5d6d95',
@@ -300,17 +337,18 @@ app.layout = html.Div(
                                                                            'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}
                                                                           ])
                                                 )])
-                          ],colors={"border": "#1b242b", "primary": "#1b242b", "background": "#1b242b"},
-                            style=dict(color='#40515e')),
-                          ],
-                                   className="graph__container second"),
+                                  ],colors={"border": "#1b242b", "primary": "#1b242b", "background": "#1b242b"},
+                                    style=dict(color='#40515e')),
+                                    ],
+                                      className="graph__container second"),
                       ], className="one-half column")
     ],
               className="app__content"),
         html.P('Copyright © 2020. All rights reserved.', className='__footer'),
         html.Div(id='__storage_nodes', style={'display': 'none'}),
         html.Div(id='__storage_edges', style={'display': 'none'}),
-        html.Div(id='__storage_netdata', style={'display': 'none'})
+        html.Div(id='__storage_netdata', style={'display': 'none'}),
+        html.Div(id='__storage_netdata_cinema', style={'display': 'none'})
     ],
     className="app__container")
 
@@ -324,7 +362,8 @@ app.layout = html.Div(
 ### ---------------- PROJECT SETUP --------------- ###
 @app.callback(Output("second-selection", "children"),
               #Output("my-dynamic-dropdown2", "options"),
-              [Input("dropdown-format", "value"),Input("dropdown-outcome1", "value"),Input("dropdown-outcome2", "value")])
+              [Input("dropdown-format", "value"),Input("dropdown-outcome1", "value"),
+               Input("dropdown-outcome2", "value")])
 def update_options(search_value_format,search_value_outcome1,search_value_outcome2):
 
     if search_value_format=='long' and search_value_outcome1=='continuous' and  search_value_outcome2==None:
@@ -357,7 +396,7 @@ def update_options(search_value_format,search_value_outcome1,search_value_outcom
                                    'font-size': '10px'}),
                      dcc.Dropdown(id='dropdown-1_3', options=options_var, searchable=True,placeholder="...",
                                   clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'paddingLeft': '5px', 'paddingLeft': '23px',
+                                                          'paddingLeft': '24px',
                                                           'margin-left': '-8px', 'display': 'inline-block',
                                                           'color': '#1b242b', 'font-size': '10px',
                                                           'background-color': '#40515e'}),
@@ -369,7 +408,18 @@ def update_options(search_value_format,search_value_outcome1,search_value_outcom
                                                           'color': '#1b242b', 'font-size': '10px',
                                                           'background-color': '#40515e'}),
 
-                     ], style={'margin-bottom': '0px'}),
+                     ], style={'margin-bottom': '-25px'}),
+            dbc.Row([html.P("n:", className="graph__title2",
+                            style={'display': 'inline-block',
+                                   'paddingLeft': '5px',
+                                   'font-size': '10px'}),
+                     dcc.Dropdown(id='dropdown-1_5', options=options_var, searchable=True,placeholder="...",
+                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
+                                                          'paddingLeft': '5px', 'paddingLeft': '50px',
+                                                          'margin-left': '-8px', 'display': 'inline-block',
+                                                          'color': '#1b242b', 'font-size': '10px',
+                                                          'background-color': '#40515e'}),
+                     ], style={'margin-bottom': '0px'})
 
         ])
 
@@ -425,12 +475,24 @@ def update_options(search_value_format,search_value_outcome1,search_value_outcom
                                                           'background-color': '#40515e'}),
                      html.P("sd.z:", className="graph__title2", style={'display': 'inline-block', 'paddingLeft': '77px',
                                                                      'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_5', options=options_var, searchable=True, placeholder="...",
+                     dcc.Dropdown(id='dropdown-1_6', options=options_var, searchable=True, placeholder="...",
                                   clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
                                                           'margin-left': '-8px', 'display': 'inline-block',
                                                           'color': '#1b242b', 'font-size': '10px',
                                                           'background-color': '#40515e'}),
 
+                     ], style={'margin-bottom': '-25px'}),
+
+            dbc.Row([html.P("n:", className="graph__title2",
+                            style={'display': 'inline-block',
+                                   'paddingLeft': '5px',
+                                   'font-size': '10px'}),
+                     dcc.Dropdown(id='dropdown-1_7', options=options_var, searchable=True, placeholder="...",
+                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
+                                                          'paddingLeft': '5px', 'paddingLeft': '50px',
+                                                          'margin-left': '-8px', 'display': 'inline-block',
+                                                          'color': '#1b242b', 'font-size': '10px',
+                                                          'background-color': '#40515e'}),
                      ], style={'margin-bottom': '0px'}),
 
         ])
@@ -609,15 +671,34 @@ def update_options(search_value_format,search_value_outcome1,search_value_outcom
                                                                       'background-color': '#40515e'})
                                  ], style={'margin-bottom':'-25px'}),
 
-                        dbc.Row([html.P("sd2:", className="graph__title2", style={'display': 'inline-block',
-                                                                         'paddingLeft': '224px',
+                        dbc.Row([html.P("n1:", className="graph__title2", style={'display': 'inline-block',
+                                                                         'paddingLeft': '5px',
                                                                          'font-size': '10px'}),
                                 dcc.Dropdown(id='dropdown-1_5', options=options_var, searchable=True, placeholder="...",
                                             clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
                                                                     'margin-left': '-8px', 'display': 'inline-block',
+                                                                    'color': '#1b242b', 'font-size': '10px','paddingLeft': '43px',
+                                                                    'background-color': '#40515e'}),
+                                html.P("sd2:", className="graph__title2", style={'display': 'inline-block',
+                                                                         'paddingLeft': '76px',
+                                                                         'font-size': '10px'}),
+                                dcc.Dropdown(id='dropdown-1_6', options=options_var, searchable=True, placeholder="...",
+                                            clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
+                                                                    'margin-left': '-8px', 'display': 'inline-block',
                                                                     'color': '#1b242b', 'font-size': '10px',
                                                                     'background-color': '#40515e'})
-                                ], style = {'margin-bottom': '0px'})
+                                ], style = {'margin-bottom': '-25px'}),
+
+                        dbc.Row([html.P("n2:", className="graph__title2", style={'display': 'inline-block',
+                                                                      'paddingLeft': '5px',
+                                                                      'font-size': '10px'}),
+                                 dcc.Dropdown(id='dropdown-1_7', options=options_var, searchable=True, placeholder="...",
+                                   clearable=False,
+                                   style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
+                                          'margin-left': '-8px', 'display': 'inline-block',
+                                          'color': '#1b242b', 'font-size': '10px', 'paddingLeft': '43px',
+                                          'background-color': '#40515e'})
+                      ], style={'margin-bottom': '0px'})
 
                         ])
 
@@ -693,7 +774,7 @@ def update_options(search_value_format,search_value_outcome1,search_value_outcom
                                  dcc.Dropdown(id='dropdown-1_7', options=options_var,searchable=True, placeholder="...",
                                                                  clearable=False, style={'width': '60px','height': '20px','vertical-align': 'middle',
                                                                                          'margin-left': '-8px', 'display': 'inline-block', 'paddingLeft': '10px',
-                                                                                         'color': '#1b242b', 'font-size': '10px', 'font-size': "50%",
+                                                                                         'color': '#1b242b', 'font-size': '10px',
                                                                                          'background-color': '#40515e'}),
                                  html.P("y2:", className="graph__title2", style={'display': 'inline-block',
                                                                                  'paddingLeft': '85px',
@@ -714,10 +795,21 @@ def update_options(search_value_format,search_value_outcome1,search_value_outcom
                                                      'background-color': '#40515e'})
                                  ], style={'margin-bottom':'-25px'}),
 
-                        dbc.Row([html.P("sd2:", className="graph__title2", style={'display': 'inline-block',
-                                                                         'paddingLeft': '223px',
-                                                                         'font-size': '10px'}),
+                        dbc.Row([
+                                html.P("n1:", className="graph__title2", style={'display': 'inline-block',
+                                                                             'paddingLeft': '5px',
+                                                                             'font-size': '10px'}),
                                 dcc.Dropdown(id='dropdown-1_10', options=options_var, searchable=True, placeholder="...",
+                                         clearable=False,
+                                         style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
+                                                'margin-left': '-8px', 'display': 'inline-block','paddingLeft': '43px',
+                                                'color': '#1b242b', 'font-size': '10px',
+                                                'background-color': '#40515e'}),
+
+                                html.P("sd2:", className="graph__title2", style={'display': 'inline-block',
+                                                                         'paddingLeft': '75px',
+                                                                         'font-size': '10px'}),
+                                dcc.Dropdown(id='dropdown-1_11', options=options_var, searchable=True, placeholder="...",
                                             clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
                                                                     'margin-left': '-8px', 'display': 'inline-block',
                                                                     'color': '#1b242b', 'font-size': '10px',
@@ -725,13 +817,25 @@ def update_options(search_value_format,search_value_outcome1,search_value_outcom
                                 html.P("sd2.z:", className="graph__title2", style={'display': 'inline-block',
                                                                                   'paddingLeft': '78px',
                                                                                   'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_11', options=options_var, searchable=True, placeholder="...",
+                                 dcc.Dropdown(id='dropdown-1_12', options=options_var, searchable=True, placeholder="...",
                                               clearable=False,
                                               style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
                                                      'margin-left': '-8px', 'display': 'inline-block',
                                                      'color': '#1b242b', 'font-size': '10px',
                                                      'background-color': '#40515e'})
-                                ], style = {'margin-bottom': '0px'})
+                                ], style = {'margin-bottom': '-25px'}),
+
+                        dbc.Row([
+                                 html.P("n2:", className="graph__title2", style={'display': 'inline-block',
+                                                                 'paddingLeft': '5px',
+                                                                 'font-size': '10px'}),
+                                 dcc.Dropdown(id='dropdown-1_13', options=options_var, searchable=True, placeholder="...",
+                                              clearable=False,
+                                              style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
+                                                     'margin-left': '-8px', 'display': 'inline-block', 'paddingLeft': '43px',
+                                                     'color': '#1b242b', 'font-size': '10px',
+                                                     'background-color': '#40515e'}),
+                                 ], style={'margin-bottom': '0px'})
 
                         ])
 
@@ -928,13 +1032,12 @@ def update_options(search_value_format,search_value_outcome1,search_value_outcom
 
     else: return None
 
-
-### ----- update graph layout with dropdown ------ ###
+### --- update graph layout with dropdown: graph layout --- ###
 @app.callback(Output('cytoscape', 'layout'),
              [Input('graph-layout-dropdown', 'value')])
 def update_cytoscape_layout(layout):
-    return {'name': layout,
-            'animate': True}
+        return {'name': layout,
+                'animate': True}
 
 ### ----- save network plot as png ------ ###
 @app.callback(Output("cytoscape", "generateImage"),
@@ -1047,14 +1150,14 @@ def generate_stylesheet(node, dwld_button):
     return stylesheet, store_node
 
 
-### ----- update node info on forest plot  ------ ###
+### ----- update node info on NMA forest plot  ------ ###
 @app.callback(Output('tapNodeData-info', 'children'),
               [Input('cytoscape', 'tapNodeData')])
 def TapNodeData_info(data):
     if data:
         return 'Treatment selected: ', data['label']
     else:
-        return 'Click on a node to display the associated forest plot'
+        return 'Click on a node to display the associated plot'
 
 
 ### ----- display forest plot on node click ------ ###
@@ -1155,6 +1258,15 @@ def TapNodeData_fig(data, outcome_direction):
 
 
 ### ----- display information on edge click ------ ###
+@app.callback(Output('tapEdgeData-info', 'children'),
+              Input('cytoscape', 'tapEdgeData'))
+def TapEdgeData_info(data):
+    if data:
+        return 'Selected comparison: ', f"{data['source'].upper()} vs {data['target'].upper()}"
+    else:
+        return 'Click on an edge to display the associated  plot'
+
+### - display pairwise forest plot on edge click - ###
 @app.callback(Output('cytoscape-mouseTapEdgeData-output', 'children'),
               [Input('cytoscape', 'tapEdgeData')])
 def TapEdgeData(edge):
@@ -1169,6 +1281,7 @@ def TapEdgeData(edge):
         studies_str = f"{n_studies}" + (' studies' if n_studies>1 else ' study')
         return f"{edge['source'].upper()} vs {edge['target'].upper()}: {studies_str}"
     else:
+
         return "Click on an edge to get information."
 
 def parse_contents(contents, filename):
@@ -1181,12 +1294,14 @@ def parse_contents(contents, filename):
     elif 'xls' in filename:  # Assume that the user uploaded an excel file
         return pd.read_excel(io.BytesIO(decoded))
 
-### ----- upload new data ------ ###
+### ----- upload main data file ------ ###
 @app.callback([Output('__storage_netdata', 'children'),
-               Output('cytoscape', 'elements')],
-              [Input('datatable-upload', 'contents')],
+               Output('cytoscape', 'elements'),
+               Output("file-list", "children")],
+              [Input('datatable-upload', 'contents'),
+               Input('dropdown-1_1', 'children')],
               [State('datatable-upload', 'filename')])
-def get_new_data(contents, filename):
+def get_new_data(contents, dd1, filename):
     def apply_r_func(func, df):
         with localconverter(ro.default_converter + pandas2ri.converter):
             df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
@@ -1196,6 +1311,7 @@ def get_new_data(contents, filename):
     if contents is None:
         data = GLOBAL_DATA['net_data']
     else:
+        print(dd1)
         data = parse_contents(contents, filename)
         GLOBAL_DATA['net_data'] = data = data.loc[:, ~data.columns.str.contains('^Unnamed')]  # Remove unnamed columns
         GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
@@ -1205,7 +1321,38 @@ def get_new_data(contents, filename):
         leaguetable = leaguetable.reset_index().rename(columns={'index':'Treatments'})
         GLOBAL_DATA['league_table_data'] = leaguetable
     elements = GLOBAL_DATA['user_elements']
-    return data.to_json(orient='split'), elements
+    if filename is not None:
+        return data.to_json(orient='split'), elements, f'{filename}'
+    else:
+        return data.to_json(orient='split'), elements, 'No file uploaded'
+    # def save_file(name, content):
+    #     data = content.encode("utf8").split(b";base64,")[1]
+    #     with open(os.path.join(UPLOAD_DIRECTORY, name), "wb") as fp:
+    #         fp.write(base64.decodebytes(data))
+    #
+    # if filename is not None and contents is not None:
+    #     for name, data in zip(filename, contents):
+    #         save_file(name, data)
+    # files = uploaded_files()
+    # if len(files) == 0:
+    #     return [html.Li("No files yet!")]
+    # else:
+    #     file_string = [html.Li(file_download_link(filename)) for filename in files]
+
+### ----- upload CINeMA data file ------ ###
+@app.callback([Output('__storage_netdata_cinema', 'children'), Output("file2-list", "children")],
+              [Input('datatable-secondfile-upload', 'contents')],
+              [State('datatable-secondfile-upload', 'filename')])
+def get_new_data_cinema(contents, filename):
+    if contents is None:
+        data = GLOBAL_DATA['cinema_net_data']
+    else:
+        data = parse_contents(contents, filename)
+        GLOBAL_DATA['cinema_net_data'] = data = data.loc[:, ~data.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+    if filename is not None:
+        return data.to_json(orient='split'), f'{filename}'
+    else:
+        return data.to_json(orient='split'), 'No file uploaded'
 
 
 ### ----- display Data Table and League Table ------ ###
@@ -1224,7 +1371,6 @@ def update_output(store_node, data, store_edge):
     robs = (data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
                 .pivot_table(index='treat1', columns='treat2', values='rob')
                 .reindex(index=treatments, columns=treatments, fill_value=np.nan))
-
     # Filter according to cytoscape selection
     if store_node['active']['ids']:
         slctd_trmnts = [nd['data']['label'] for nd in store_node['active']['ids'].values()]
@@ -1344,6 +1490,7 @@ def update_dropdown_boxplot(value, edge):
                 range2 = df[value].max() + 5
                 df['mycolor'] = np.where(((df['treat1']==edge['source']) & (df['treat2']==edge['target'])),
                                          'blue', 'Whitesmoke')
+                #df = df.sort_values(by='Comparison')
                 mycolormap={}
                 for c in range(len(df['Comparison'])):
                     mycolormap[df['Comparison'][c]]=df['mycolor'][c]
@@ -1372,8 +1519,6 @@ def update_dropdown_boxplot(value, edge):
 
                 fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='white', showline=True)
                 return fig
-
-
 
     if not value:
             df = pd.DataFrame([[0] * 2], columns=['Comparison', 'value'])

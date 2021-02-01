@@ -163,7 +163,6 @@ app.layout = html.Div(
                   #     'Node Color:', dcc.Input(id='input-bg-color', type='text') ])
                   #  ]),
                   cyto.Cytoscape(id='cytoscape',
-                                 #elements=GLOBAL_DATA['user_elements_nodesize'],
                                  elements=GLOBAL_DATA['user_elements'],
                                  style={'height': '60vh', 'width': '100%','margin-top': '-50px','margin-left': '20px'},
                                  stylesheet=default_stylesheet)],
@@ -201,11 +200,13 @@ app.layout = html.Div(
                                               dbc.Col([html.P("Format*:", className="graph__title2",
                                                        style={'display': 'inline-block', 'margin-left': '5px',
                                                               'paddingLeft': '0px','font-size': '11px','vertical-alignment':'middle'}),
-                                                       html.Div(dcc.RadioItems(id='dropdown-format', options=options_format,
-                                                                style={'width': '80px', 'margin-left': '-20px',
+                                                       html.Div(dcc.RadioItems(id='dropdown-format',
+                                                                               options=options_format,
+                                                                               style={'width': '80px', 'margin-left': '-20px',
                                                                        'color': '#1b242b', 'font-size': '10px',
                                                                        'background-color': '#40515e'}),
-                                                       style={'display': 'inline-block', 'margin-bottom': '-15px'})],width="auto", style={'display': 'inline-block'}),
+                                                                style={'display': 'inline-block', 'margin-bottom': '-15px'})],
+                                                      width="auto", style={'display': 'inline-block'}),
 
                                               dbc.Col([html.P(["1",html.Sup("st"), " outcome*:"], className="graph__title2",
                                                             style={'display': 'inline-block', 'paddingLeft': '10px','font-size': '11px'}),
@@ -362,675 +363,49 @@ app.layout = html.Div(
 ### ---------------- PROJECT SETUP --------------- ###
 @app.callback(Output("second-selection", "children"),
               #Output("my-dynamic-dropdown2", "options"),
-              [Input("dropdown-format", "value"),Input("dropdown-outcome1", "value"),
+              [Input("dropdown-format", "value"),
+               Input("dropdown-outcome1", "value"),
                Input("dropdown-outcome2", "value")])
-def update_options(search_value_format,search_value_outcome1,search_value_outcome2):
+def update_options(search_value_format, search_value_outcome1, search_value_outcome2):
+
+    if search_value_format is None: return None
+    col_vars = [[]]*3
+    if search_value_format == 'long':
+        col_vars[0] = ['study id', 'treat', 'rob']
+        if search_value_outcome1 == 'continuous':
+            col_vars[1] = ['y', 'sd','n']
+        elif search_value_outcome1 == 'binary':
+            col_vars[1] = ['r', 'n']
+        else:
+            return None
+    elif search_value_format == 'contrast':
+        col_vars[0] = ['treat 1', 'treat 2', 'rob']
+        if search_value_outcome1 == 'continuous':
+            col_vars[0] += ['n1', 'n2']
+            col_vars[1] = ['y1', 'sd1', 'y2', 'sd2']
+        elif search_value_outcome1 == 'binary':
+            col_vars[1] = ['r1', 'n1', 'r2', 'n2']
+        else:
+            return None
+
+    selectors_row = html.Div(
+        [dbc.Row([html.P("Select your variables")])]+[
+         dbc.Row([dbc.Col(dbc.Row(
+                 [html.P(f"{name}:", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
+                                                                   'margin-left': '0px', 'font-size': '10px'}),
+                 dcc.Dropdown(id=f'dropdown-{nrow}-{ncol}', options=options_var, searchable=True, placeholder="...", #className="box",
+                              clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
+                                                      'margin-left': '-8px',
+                                                      'padding-left':'0px',
+                                                      'display': 'inline-block',
+                                                      'color': '#1b242b', 'font-size': '10px',
+                                                      'background-color': '#40515e'})]), style={'margin-bottom': '0px'})
+                            for nrow, name in enumerate(col_var)],
+                style={'display': 'inline-block'})
+        for ncol, col_var in enumerate(col_vars)]
+    )
+    return selectors_row
 
-    if search_value_format=='long' and search_value_outcome1=='continuous' and  search_value_outcome2==None:
-
-        selectors_row = html.Div([
-
-            dbc.Row([html.P("Select your variables")]),
-
-            dbc.Row([html.P("study id:", className="graph__title2", style={'display': 'inline-block',
-                                                                           'paddingLeft': '5px',
-                                                                           'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_1', options=options_var, searchable=True, placeholder="...",#className='Select-placeholder-variables',
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'}),
-                     html.P("y:", className="graph__title2", style={'display': 'inline-block',
-                                                                     'paddingLeft': '85px',
-                                                                     'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_2', options=options_var, searchable=True,placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'})
-                     ], style={'margin-bottom': '-25px'}),
-
-            dbc.Row([html.P("treat:", className="graph__title2",
-                            style={'display': 'inline-block',
-                                   'paddingLeft': '5px',
-                                   'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_3', options=options_var, searchable=True,placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'paddingLeft': '24px',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'}),
-                     html.P("sd:", className="graph__title2", style={'display': 'inline-block', 'paddingLeft': '77px',
-                                                                      'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_4', options=options_var, searchable=True,placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'}),
-
-                     ], style={'margin-bottom': '-25px'}),
-            dbc.Row([html.P("n:", className="graph__title2",
-                            style={'display': 'inline-block',
-                                   'paddingLeft': '5px',
-                                   'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_5', options=options_var, searchable=True,placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'paddingLeft': '5px', 'paddingLeft': '50px',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'}),
-                     ], style={'margin-bottom': '0px'})
-
-        ])
-
-        return selectors_row
-
-    elif search_value_format=='long' and search_value_outcome1=='continuous' and  search_value_outcome2=='continuous':
-        selectors_row = html.Div([
-
-            dbc.Row([html.P("Select your variables")]),
-
-            dbc.Row([html.P("study id:", className="graph__title2", style={'display': 'inline-block',
-                                                                           'paddingLeft': '5px',
-                                                                           'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_1', options=options_var, searchable=True,placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'}),
-                     html.P("y:", className="graph__title2", style={'display': 'inline-block',
-                                                                     'paddingLeft': '85px',
-                                                                     'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1.2', options=options_var, searchable=True, placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'}),
-                     html.P("z:", className="graph__title2", style={'display': 'inline-block',
-                                                                    'paddingLeft': '98px',
-                                                                    'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_3', options=options_var, searchable=True, placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'})
-                     ], style={'margin-bottom': '-25px'}),
-
-            dbc.Row([html.P("treat:", className="graph__title2",
-                            style={'display': 'inline-block',
-                                   'paddingLeft': '5px',
-                                   'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_4', options=options_var, searchable=True, placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'paddingLeft': '5px', 'paddingLeft': '23px',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'}),
-                     html.P("sd:", className="graph__title2", style={'display': 'inline-block', 'paddingLeft': '77px',
-                                                                      'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_5', options=options_var, searchable=True, placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'}),
-                     html.P("sd.z:", className="graph__title2", style={'display': 'inline-block', 'paddingLeft': '77px',
-                                                                     'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_6', options=options_var, searchable=True, placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'}),
-
-                     ], style={'margin-bottom': '-25px'}),
-
-            dbc.Row([html.P("n:", className="graph__title2",
-                            style={'display': 'inline-block',
-                                   'paddingLeft': '5px',
-                                   'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_7', options=options_var, searchable=True, placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'paddingLeft': '5px', 'paddingLeft': '50px',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'}),
-                     ], style={'margin-bottom': '0px'}),
-
-        ])
-
-        return selectors_row
-
-    elif search_value_format=='long' and search_value_outcome1=='binary' and  search_value_outcome2==None:
-
-        selectors_row = html.Div([
-
-            dbc.Row([html.P("Select your variables")]),
-
-            dbc.Row([html.P("study id:", className="graph__title2", style={'display': 'inline-block',
-                                                                           'paddingLeft': '5px',
-                                                                           'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_1', options=options_var, searchable=True, placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'}),
-                     html.P("r:", className="graph__title2", style={'display': 'inline-block',
-                                                                     'paddingLeft': '85px',
-                                                                     'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_2', options=options_var, searchable=True, placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'})
-                     ], style={'margin-bottom': '-25px'}),
-
-            dbc.Row([html.P("treat:", className="graph__title2",
-                            style={'display': 'inline-block',
-                                   'paddingLeft': '5px',
-                                   'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_3', options=options_var, searchable=True, placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'paddingLeft': '5px', 'paddingLeft': '23px',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'}),
-                     html.P("n:", className="graph__title2", style={'display': 'inline-block', 'paddingLeft': '84px',
-                                                                      'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_4', options=options_var, searchable=True, placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'}),
-
-                     ], style={'margin-bottom': '0px'}),
-
-        ])
-
-        return selectors_row
-
-    elif search_value_format=='long' and search_value_outcome1=='binary' and  search_value_outcome2=='binary':
-        selectors_row = html.Div([
-
-            dbc.Row([html.P("Select your variables")]),
-
-            dbc.Row([html.P("study id:", className="graph__title2", style={'display': 'inline-block',
-                                                                           'paddingLeft': '5px',
-                                                                           'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_1', options=options_var, searchable=True, placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'}),
-                     html.P("r:", className="graph__title2", style={'display': 'inline-block',
-                                                                     'paddingLeft': '85px',
-                                                                     'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_2', options=options_var, searchable=True, placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'}),
-                     html.P("r.z:", className="graph__title2", style={'display': 'inline-block',
-                                                                    'paddingLeft': '98px',
-                                                                    'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_3', options=options_var, searchable=True, placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'})
-                     ], style={'margin-bottom': '-25px'}),
-
-            dbc.Row([html.P("treat:", className="graph__title2",
-                            style={'display': 'inline-block',
-                                   'paddingLeft': '5px',
-                                   'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_4', options=options_var, searchable=True, placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'paddingLeft': '5px', 'paddingLeft': '23px',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'}),
-                     html.P("n:", className="graph__title2", style={'display': 'inline-block', 'paddingLeft': '84px',
-                                                                      'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_5', options=options_var, searchable=True, placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'}),
-                     html.P("n.z:", className="graph__title2", style={'display': 'inline-block', 'paddingLeft': '94px',
-                                                                     'font-size': '10px'}),
-                     dcc.Dropdown(id='dropdown-1_5', options=options_var, searchable=True, placeholder="...",
-                                  clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                          'margin-left': '-8px', 'display': 'inline-block',
-                                                          'color': '#1b242b', 'font-size': '10px',
-                                                          'background-color': '#40515e'}),
-
-                     ], style={'margin-bottom': '0px'}),
-
-        ])
-
-        return selectors_row
-
-    elif search_value_format=='contrast' and search_value_outcome1=='continuous' and  search_value_outcome2==None:
-         selectors_row = html.Div([
-
-                        dbc.Row([html.P("Select your variables")]),
-
-                        dbc.Row([html.P("study id:", className="graph__title2", style={'display': 'inline-block',
-                                                                                        'paddingLeft': '5px',
-                                                                                        'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_1', options=options_var,searchable=True, placeholder="...",
-                                              clearable=False, style={'width': '60px','height': '20px','vertical-align': 'middle',
-                                                                      'margin-left': '-8px', 'display': 'inline-block',
-                                                                      'color': '#1b242b', 'font-size': '10px',
-                                                                      'background-color': '#40515e'}),
-                                 html.P("y1:", className="graph__title2", style={'display': 'inline-block',
-                                                                                          'paddingLeft': '85px',
-                                                                                          'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_4', options=options_var, searchable=True, placeholder="...",
-                                                       clearable=False, style={'width': '60px', 'height': '20px','vertical-align': 'middle',
-                                                                               'margin-left': '-8px', 'display': 'inline-block',
-                                                                               'color': '#1b242b', 'font-size': '10px',
-                                                                               'background-color': '#40515e'})
-                                 ], style={'margin-bottom':'-25px'}),
-
-                        dbc.Row([html.P("treat 1:", className="graph__title2",
-                                                    style={'display': 'inline-block',
-                                                           'paddingLeft': '5px',
-                                                           'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_2', options=options_var,searchable=True, placeholder="...",
-                                                             clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                                                     'paddingLeft': '5px', 'paddingLeft': '10px',
-                                                                                     'margin-left': '-8px', 'display': 'inline-block',
-                                                                                     'color': '#1b242b', 'font-size': '10px',
-                                                                                     'background-color': '#40515e'}),
-                                 html.P("sd1:", className="graph__title2", style={'display': 'inline-block','paddingLeft': '76px',
-                                                                                  'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_5', options=options_var, searchable=True, placeholder="...",
-                                              clearable=False, style={'width': '60px', 'height': '20px','vertical-align': 'middle',
-                                                                      'margin-left': '-8px', 'display': 'inline-block',
-                                                                      'color': '#1b242b', 'font-size': '10px',
-                                                                      'background-color': '#40515e'}),
-
-                                 ], style={'margin-bottom':'-25px'}),
-
-                        dbc.Row([html.P("treat 2:", className="graph__title2",
-                                                    style={'display': 'inline-block',
-                                                           'paddingLeft': '5px',
-                                                           'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_3', options=options_var,searchable=True, placeholder="...",
-                                                                 clearable=False, style={'width': '60px','height': '20px','vertical-align': 'middle',
-                                                                                         'margin-left': '-8px', 'display': 'inline-block', 'paddingLeft': '10px',
-                                                                                         'color': '#1b242b', 'font-size': '10px',
-                                                                                         'background-color': '#40515e'}),
-                                 html.P("y2:", className="graph__title2", style={'display': 'inline-block',
-                                                                                 'paddingLeft': '85px',
-                                                                                 'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_4', options=options_var, searchable=True, placeholder="...",
-                                              clearable=False, style={'width': '60px', 'height': '20px','vertical-align': 'middle',
-                                                                      'margin-left': '-8px', 'display': 'inline-block',
-                                                                      'color': '#1b242b', 'font-size': '10px',
-                                                                      'background-color': '#40515e'})
-                                 ], style={'margin-bottom':'-25px'}),
-
-                        dbc.Row([html.P("n1:", className="graph__title2", style={'display': 'inline-block',
-                                                                         'paddingLeft': '5px',
-                                                                         'font-size': '10px'}),
-                                dcc.Dropdown(id='dropdown-1_5', options=options_var, searchable=True, placeholder="...",
-                                            clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                                    'margin-left': '-8px', 'display': 'inline-block',
-                                                                    'color': '#1b242b', 'font-size': '10px','paddingLeft': '43px',
-                                                                    'background-color': '#40515e'}),
-                                html.P("sd2:", className="graph__title2", style={'display': 'inline-block',
-                                                                         'paddingLeft': '76px',
-                                                                         'font-size': '10px'}),
-                                dcc.Dropdown(id='dropdown-1_6', options=options_var, searchable=True, placeholder="...",
-                                            clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                                    'margin-left': '-8px', 'display': 'inline-block',
-                                                                    'color': '#1b242b', 'font-size': '10px',
-                                                                    'background-color': '#40515e'})
-                                ], style = {'margin-bottom': '-25px'}),
-
-                        dbc.Row([html.P("n2:", className="graph__title2", style={'display': 'inline-block',
-                                                                      'paddingLeft': '5px',
-                                                                      'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_7', options=options_var, searchable=True, placeholder="...",
-                                   clearable=False,
-                                   style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                          'margin-left': '-8px', 'display': 'inline-block',
-                                          'color': '#1b242b', 'font-size': '10px', 'paddingLeft': '43px',
-                                          'background-color': '#40515e'})
-                      ], style={'margin-bottom': '0px'})
-
-                        ])
-
-         return selectors_row
-
-    elif search_value_format=='contrast' and search_value_outcome1=='continuous' and  search_value_outcome2=='continuous':
-         selectors_row = html.Div([
-
-                        dbc.Row([html.P("Select your variables")]),
-
-                        dbc.Row([html.P("study id:", className="graph__title2", style={'display': 'inline-block',
-                                                                                        'paddingLeft': '5px',
-                                                                                        'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_1', options=options_var,searchable=True, placeholder="...",
-                                              clearable=False, style={'width': '60px','height': '20px','vertical-align': 'middle',
-                                                                      'margin-left': '-8px', 'display': 'inline-block',
-                                                                      'color': '#1b242b', 'font-size': '10px',
-                                                                      'background-color': '#40515e'}),
-                                 html.P("y1:", className="graph__title2", style={'display': 'inline-block',
-                                                                                          'paddingLeft': '85px',
-                                                                                          'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_2', options=options_var, searchable=True, placeholder="...",
-                                                       clearable=False, style={'width': '60px', 'height': '20px','vertical-align': 'middle',
-                                                                               'margin-left': '-8px', 'display': 'inline-block',
-                                                                               'color': '#1b242b', 'font-size': '10px',
-                                                                               'background-color': '#40515e'}),
-
-                                 html.P("z1:", className="graph__title2", style={'display': 'inline-block',
-                                                                                 'paddingLeft': '98px',
-                                                                                 'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_3', options=options_var, searchable=True, placeholder="...",
-                                              clearable=False,
-                                              style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                     'margin-left': '-8px', 'display': 'inline-block',
-                                                     'color': '#1b242b', 'font-size': '10px',
-                                                     'background-color': '#40515e'}),
-
-                                 ], style={'margin-bottom':'-25px'}),
-
-                        dbc.Row([html.P("treat 1:", className="graph__title2",
-                                                    style={'display': 'inline-block',
-                                                           'paddingLeft': '5px',
-                                                           'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_4', options=options_var,searchable=True, placeholder="...",
-                                                             clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                                                     'paddingLeft': '5px', 'paddingLeft': '10px',
-                                                                                     'margin-left': '-8px', 'display': 'inline-block',
-                                                                                     'color': '#1b242b', 'font-size': '10px',
-                                                                                     'background-color': '#40515e'}),
-                                 html.P("sd1:", className="graph__title2", style={'display': 'inline-block','paddingLeft': '76px',
-                                                                                  'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_5', options=options_var, searchable=True, placeholder="...",
-                                              clearable=False, style={'width': '60px', 'height': '20px','vertical-align': 'middle',
-                                                                      'margin-left': '-8px', 'display': 'inline-block',
-                                                                      'color': '#1b242b', 'font-size': '10px',
-                                                                      'background-color': '#40515e'}),
-                                 html.P("sd1.z:", className="graph__title2",
-                                        style={'display': 'inline-block', 'paddingLeft': '76px',
-                                               'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1.6', options=options_var, searchable=True, placeholder="...",
-                                              clearable=False,
-                                              style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                     'margin-left': '-8px', 'display': 'inline-block',
-                                                     'color': '#1b242b', 'font-size': '10px',
-                                                     'background-color': '#40515e'}),
-
-                                 ], style={'margin-bottom':'-25px'}),
-
-                        dbc.Row([html.P("treat 2:", className="graph__title2",
-                                                    style={'display': 'inline-block',
-                                                           'paddingLeft': '5px',
-                                                           'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_7', options=options_var,searchable=True, placeholder="...",
-                                                                 clearable=False, style={'width': '60px','height': '20px','vertical-align': 'middle',
-                                                                                         'margin-left': '-8px', 'display': 'inline-block', 'paddingLeft': '10px',
-                                                                                         'color': '#1b242b', 'font-size': '10px',
-                                                                                         'background-color': '#40515e'}),
-                                 html.P("y2:", className="graph__title2", style={'display': 'inline-block',
-                                                                                 'paddingLeft': '85px',
-                                                                                 'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_8', options=options_var, searchable=True, placeholder="...",
-                                              clearable=False, style={'width': '60px', 'height': '20px','vertical-align': 'middle',
-                                                                      'margin-left': '-8px', 'display': 'inline-block',
-                                                                      'color': '#1b242b', 'font-size': '10px',
-                                                                      'background-color': '#40515e'}),
-                                 html.P("z2:", className="graph__title2", style={'display': 'inline-block',
-                                                                                 'paddingLeft': '98px',
-                                                                                 'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_9', options=options_var, searchable=True, placeholder="...",
-                                              clearable=False,
-                                              style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                     'margin-left': '-8px', 'display': 'inline-block',
-                                                     'color': '#1b242b', 'font-size': '10px',
-                                                     'background-color': '#40515e'})
-                                 ], style={'margin-bottom':'-25px'}),
-
-                        dbc.Row([
-                                html.P("n1:", className="graph__title2", style={'display': 'inline-block',
-                                                                             'paddingLeft': '5px',
-                                                                             'font-size': '10px'}),
-                                dcc.Dropdown(id='dropdown-1_10', options=options_var, searchable=True, placeholder="...",
-                                         clearable=False,
-                                         style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                'margin-left': '-8px', 'display': 'inline-block','paddingLeft': '43px',
-                                                'color': '#1b242b', 'font-size': '10px',
-                                                'background-color': '#40515e'}),
-
-                                html.P("sd2:", className="graph__title2", style={'display': 'inline-block',
-                                                                         'paddingLeft': '75px',
-                                                                         'font-size': '10px'}),
-                                dcc.Dropdown(id='dropdown-1_11', options=options_var, searchable=True, placeholder="...",
-                                            clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                                    'margin-left': '-8px', 'display': 'inline-block',
-                                                                    'color': '#1b242b', 'font-size': '10px',
-                                                                    'background-color': '#40515e'}),
-                                html.P("sd2.z:", className="graph__title2", style={'display': 'inline-block',
-                                                                                  'paddingLeft': '78px',
-                                                                                  'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_12', options=options_var, searchable=True, placeholder="...",
-                                              clearable=False,
-                                              style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                     'margin-left': '-8px', 'display': 'inline-block',
-                                                     'color': '#1b242b', 'font-size': '10px',
-                                                     'background-color': '#40515e'})
-                                ], style = {'margin-bottom': '-25px'}),
-
-                        dbc.Row([
-                                 html.P("n2:", className="graph__title2", style={'display': 'inline-block',
-                                                                 'paddingLeft': '5px',
-                                                                 'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_13', options=options_var, searchable=True, placeholder="...",
-                                              clearable=False,
-                                              style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                     'margin-left': '-8px', 'display': 'inline-block', 'paddingLeft': '43px',
-                                                     'color': '#1b242b', 'font-size': '10px',
-                                                     'background-color': '#40515e'}),
-                                 ], style={'margin-bottom': '0px'})
-
-                        ])
-
-         return selectors_row
-
-    elif search_value_format=='contrast' and search_value_outcome1=='binary' and  search_value_outcome2==None:
-         selectors_row = html.Div([
-
-                        dbc.Row([html.P("Select your variables")]),
-
-                        dbc.Row([html.P("study id:", className="graph__title2", style={'display': 'inline-block',
-                                                                                        'paddingLeft': '5px',
-                                                                                        'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_1', options=options_var,searchable=True, placeholder="...",
-                                              clearable=False, style={'width': '60px','height': '20px','vertical-align': 'middle',
-                                                                      'margin-left': '-8px', 'display': 'inline-block',
-                                                                      'color': '#1b242b', 'font-size': '10px',
-                                                                      'background-color': '#40515e'}),
-                                 html.P("r1:", className="graph__title2", style={'display': 'inline-block',
-                                                                                          'paddingLeft': '85px',
-                                                                                          'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_2', options=options_var, searchable=True, placeholder="...",
-                                                       clearable=False, style={'width': '60px', 'height': '20px','vertical-align': 'middle',
-                                                                               'margin-left': '-8px', 'display': 'inline-block',
-                                                                               'color': '#1b242b', 'font-size': '10px',
-                                                                               'background-color': '#40515e'})
-                                 ], style={'margin-bottom':'-25px'}),
-
-                        dbc.Row([html.P("treat 1:", className="graph__title2",
-                                                    style={'display': 'inline-block',
-                                                           'paddingLeft': '5px',
-                                                           'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_3', options=options_var,searchable=True, placeholder="...",
-                                                             clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                                                     'paddingLeft': '5px', 'paddingLeft': '10px',
-                                                                                     'margin-left': '-8px', 'display': 'inline-block',
-                                                                                     'color': '#1b242b', 'font-size': '10px',
-                                                                                     'background-color': '#40515e'}),
-                                 html.P("n1:", className="graph__title2", style={'display': 'inline-block','paddingLeft': '82px',
-                                                                                  'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_4', options=options_var, searchable=True, placeholder="...",
-                                              clearable=False, style={'width': '60px', 'height': '20px','vertical-align': 'middle',
-                                                                      'margin-left': '-8px', 'display': 'inline-block',
-                                                                      'color': '#1b242b', 'font-size': '10px',
-                                                                      'background-color': '#40515e'}),
-
-                                 ], style={'margin-bottom':'-25px'}),
-
-                        dbc.Row([html.P("treat 2:", className="graph__title2",
-                                                    style={'display': 'inline-block',
-                                                           'paddingLeft': '5px',
-                                                           'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_5', options=options_var,searchable=True, placeholder="...",
-                                                                 clearable=False, style={'width': '60px','height': '20px','vertical-align': 'middle',
-                                                                                         'margin-left': '-8px', 'display': 'inline-block', 'paddingLeft': '10px',
-                                                                                         'color': '#1b242b', 'font-size': '10px',
-                                                                                         'background-color': '#40515e'}),
-                                 html.P("r2:", className="graph__title2", style={'display': 'inline-block',
-                                                                                 'paddingLeft': '85px',
-                                                                                 'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_6', options=options_var, searchable=True, placeholder="...",
-                                              clearable=False, style={'width': '60px', 'height': '20px','vertical-align': 'middle',
-                                                                      'margin-left': '-8px', 'display': 'inline-block',
-                                                                      'color': '#1b242b', 'font-size': '10px',
-                                                                      'background-color': '#40515e'})
-                                 ], style={'margin-bottom':'-25px'}),
-
-                        dbc.Row([html.P("n2:", className="graph__title2", style={'display': 'inline-block',
-                                                                         'paddingLeft': '230px',
-                                                                         'font-size': '10px'}),
-                                dcc.Dropdown(id='dropdown-1_7', options=options_var, searchable=True, placeholder="...",
-                                            clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                                    'margin-left': '-8px', 'display': 'inline-block',
-                                                                    'color': '#1b242b', 'font-size': '10px',
-                                                                    'background-color': '#40515e'})
-                                ], style = {'margin-bottom': '0px'})
-
-                        ])
-
-         return selectors_row
-
-    elif search_value_format=='contrast' and search_value_outcome1=='binary' and  search_value_outcome2=='binary':
-         selectors_row = html.Div([
-
-                        dbc.Row([html.P("Select your variables")]),
-
-                        dbc.Row([html.P("study id:", className="graph__title2", style={'display': 'inline-block',
-                                                                                        'paddingLeft': '5px',
-                                                                                        'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_1', options=options_var,searchable=True, placeholder="...",
-                                              clearable=False, style={'width': '60px','height': '20px','vertical-align': 'middle',
-                                                                      'margin-left': '-8px', 'display': 'inline-block',
-                                                                      'color': '#1b242b', 'font-size': '10px',
-                                                                      'background-color': '#40515e'}),
-                                 html.P("r1:", className="graph__title2", style={'display': 'inline-block',
-                                                                                          'paddingLeft': '85px',
-                                                                                          'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_2', options=options_var, searchable=True, placeholder="...",
-                                                       clearable=False, style={'width': '60px', 'height': '20px','vertical-align': 'middle',
-                                                                               'margin-left': '-8px','display': 'inline-block',
-                                                                               'color': '#1b242b', 'font-size': '10px',
-                                                                               'background-color': '#40515e'}),
-
-                                 html.P("r1.z:", className="graph__title2", style={'display': 'inline-block',
-                                                                                 'paddingLeft': '98px',
-                                                                                 'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_3', options=options_var, searchable=True, placeholder="...",
-                                              clearable=False,
-                                              style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                     'margin-left': '-8px', 'display': 'inline-block',
-                                                     'color': '#1b242b', 'font-size': '10px',
-                                                     'background-color': '#40515e'}),
-
-                                 ], style={'margin-bottom':'-25px'}),
-
-                        dbc.Row([html.P("treat 1:", className="graph__title2",
-                                                    style={'display': 'inline-block',
-                                                           'paddingLeft': '5px',
-                                                           'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_4', options=options_var,searchable=True, placeholder="...",
-                                                             clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                                                     'paddingLeft': '10px', 'margin-left': '-8px', 'display': 'inline-block',
-                                                                                     'color': '#1b242b', 'font-size': '10px',
-                                                                                     'background-color': '#40515e'}),
-                                 html.P("n1:", className="graph__title2", style={'display': 'inline-block','paddingLeft': '82px',
-                                                                                  'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_5', options=options_var, searchable=True, placeholder="...",
-                                              clearable=False, style={'width': '60px', 'height': '20px','vertical-align': 'middle',
-                                                                      'margin-left': '-8px', 'display': 'inline-block',
-                                                                      'color': '#1b242b', 'font-size': '10px',
-                                                                      'background-color': '#40515e'}),
-                                 html.P("n1.z:", className="graph__title2",
-                                        style={'display': 'inline-block', 'paddingLeft': '96px',
-                                               'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_6', options=options_var, searchable=True, placeholder="...",
-                                              clearable=False,
-                                              style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                     'margin-left': '-8px', 'display': 'inline-block',
-                                                     'color': '#1b242b', 'font-size': '10px',
-                                                     'background-color': '#40515e'}),
-
-                                 ], style={'margin-bottom':'-25px'}),
-
-                        dbc.Row([html.P("treat 2:", className="graph__title2",
-                                                    style={'display': 'inline-block',
-                                                           'paddingLeft': '5px',
-                                                           'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_7', options=options_var,searchable=True, placeholder="...",
-                                                                 clearable=False, style={'width': '60px','height': '20px','vertical-align': 'middle',
-                                                                                         'margin-left': '-8px', 'display': 'inline-block', 'paddingLeft': '10px',
-                                                                                         'color': '#1b242b', 'font-size': '10px',
-                                                                                         'background-color': '#40515e'}),
-                                 html.P("r2:", className="graph__title2", style={'display': 'inline-block',
-                                                                                 'paddingLeft': '85px',
-                                                                                 'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_8', options=options_var, searchable=True, placeholder="...",
-                                              clearable=False, style={'width': '60px', 'height': '20px','vertical-align': 'middle',
-                                                                      'margin-left': '-8px', 'display': 'inline-block',
-                                                                      'color': '#1b242b', 'font-size': '10px',
-                                                                      'background-color': '#40515e'}),
-                                 html.P("r2.z:", className="graph__title2", style={'display': 'inline-block',
-                                                                                 'paddingLeft': '98px',
-                                                                                 'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_9', options=options_var, searchable=True, placeholder="...",
-                                              clearable=False,
-                                              style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                     'margin-left': '-8px', 'display': 'inline-block',
-                                                     'color': '#1b242b', 'font-size': '10px',
-                                                     'background-color': '#40515e'})
-                                 ], style={'margin-bottom':'-25px'}),
-
-                        dbc.Row([html.P("n2:", className="graph__title2", style={'display': 'inline-block',
-                                                                         'paddingLeft': '230px',
-                                                                         'font-size': '10px'}),
-                                dcc.Dropdown(id='dropdown-1_10', options=options_var, searchable=True, placeholder="...",
-                                            clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                                    'margin-left': '-8px', 'display': 'inline-block',
-                                                                    'color': '#1b242b', 'font-size': '10px',
-                                                                    'background-color': '#40515e'}),
-                                html.P("n2.z:", className="graph__title2", style={'display': 'inline-block',
-                                                                                  'paddingLeft': '96px',
-                                                                                  'font-size': '10px'}),
-                                 dcc.Dropdown(id='dropdown-1_11', options=options_var, searchable=True, placeholder="...",
-                                              clearable=False,
-                                              style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                     'margin-left': '-8px', 'display': 'inline-block',
-                                                     'color': '#1b242b', 'font-size': '10px',
-                                                     'background-color': '#40515e'})
-                                ], style = {'margin-bottom': '0px'})
-
-                        ])
-
-         return selectors_row
-
-    else: return None
 
 ### --- update graph layout with dropdown: graph layout --- ###
 @app.callback(Output('cytoscape', 'layout'),
@@ -1299,9 +674,10 @@ def parse_contents(contents, filename):
                Output('cytoscape', 'elements'),
                Output("file-list", "children")],
               [Input('datatable-upload', 'contents'),
-               Input('dropdown-1_1', 'children')],
+               # Input('dropdown-0-0', 'children')
+               ],
               [State('datatable-upload', 'filename')])
-def get_new_data(contents, dd1, filename):
+def get_new_data(contents, filename):
     def apply_r_func(func, df):
         with localconverter(ro.default_converter + pandas2ri.converter):
             df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
@@ -1311,7 +687,6 @@ def get_new_data(contents, dd1, filename):
     if contents is None:
         data = GLOBAL_DATA['net_data']
     else:
-        print(dd1)
         data = parse_contents(contents, filename)
         GLOBAL_DATA['net_data'] = data = data.loc[:, ~data.columns.str.contains('^Unnamed')]  # Remove unnamed columns
         GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])

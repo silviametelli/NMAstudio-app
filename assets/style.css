@@ -259,3 +259,90 @@ h6 {
 {
     line-height: 17px;
 }
+
+.wrapper {
+        border: 2px dotted rgb(96, 139, 168);
+        width: 500px;
+      }
+    .box {
+
+        /*display: flex;*/
+        flex-wrap: wrap;
+        margin:-5px;
+      }
+      .box>* {
+        flex: 1 1 160px;
+        margin: 10px;
+      }
+
+
+
+.selectbox {
+-webkit-appearance: none;
+position: relative;
+display: inline-block;
+*display: inline;
+zoom: 1;
+margin-right: 20px;
+color:white;
+right:10;
+border:none;
+/*border: 1px solid #cccccc;*/
+/*background: none  repeat scroll 0 0 #ffffff;*/
+background: none;
+min-width: 60px;
+max-width:100px;
+width: auto;
+
+}
+
+.selectbox .Select-arrow { --accent: black;
+                            --background-image: linear-gradient(#484e55, #3A3F44 60%, #313539);
+}
+
+
+.selectbox select {
+z-index: 10;
+position: relative;
+border: none;
+background: none;
+outline: none;
+opacity: 0;
+height: 27px;
+-webkit-appearance: none;
+filter: alpha(opacity=0);
+width: 100%;
+cursor: pointer;
+
+}
+
+/*.selectbox select option {*/
+/*padding: 3px;*/
+/*text-align:right;*/
+
+/*}*/
+
+/*.selecttext {*/
+/*z-index: 9;*/
+/*position: absolute;*/
+/*right: 0px;*/
+/*display: inline-block;*/
+/**display: inline;*/
+/*zoom: 1;*/
+/*padding-top: 4px;*/
+/*background: transparent;*/
+/*color: #000;*/
+/*text-align:right;*/
+/*}*/
+
+/*.select-arrow {*/
+/*background: url(myarrow.png) no-repeat 50% 50%;*/
+/*position: absolute;*/
+/*display: inline-block;*/
+/**display: inline;*/
+/*zoom: 1;*/
+/*height: 100%;*/
+/*width: 24px;*/
+/*top: 0;*/
+/*right: 0;*/
+/*}*/

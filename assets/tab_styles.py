@@ -3,6 +3,9 @@ subtab_style = {
     'padding': '6px',
     'fontWeight': 'bold',
     'font-size':'11px',
+    'color':'grey',
+    'backgroundColor': '#40515e',
+
 }
 
 subtab_selected_style = {

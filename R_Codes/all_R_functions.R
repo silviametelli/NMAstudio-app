@@ -1,6 +1,8 @@
 options(warn=-1)
 suppressMessages(library(netmeta))
 suppressMessages(library(dplyr))
+suppressMessages(library(metafor))
+suppressMessages(library(tidyverse))
 
 ## forest plots with reference treatments
 run_NetMeta <- function(dat){
@@ -58,3 +60,9 @@ league_table <- function(dat){
         return(netleague_table$random)
 }
 
+## pairwise forest plots for all different comparisons in df
+pairwise_forest <- function(dat){
+
+       return(1)
+
+}

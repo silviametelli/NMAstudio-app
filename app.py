@@ -12,6 +12,7 @@ league_table_r = ro.globalenv['league_table']  # Get league_table from R
 import os, io, base64, pickle, shutil, time, copy
 import pandas as pd, numpy as np
 import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
+import dash_daq as daq
 import dash_table
 #from dash_extensions import Download
 import dash_cytoscape as cyto
@@ -93,10 +94,11 @@ def get_network(df, nodesize=False):
     return cy_edges + cy_nodes
 
 
-# Save default dataframe for use
+# Save default dataframe for demo use
 GLOBAL_DATA = {'net_data':pd.read_csv('db/Senn2013.csv'),
                'cinema_net_data':pd.read_csv('db/CINeMa_file.csv'),
                'forest_data':pd.read_csv('db/forest_data/forest_data.csv'),
+               'forest_data_outcome2':pd.read_csv('db/forest_data/forest_data_outcome2.csv'),
                'league_table_data':pd.read_csv('db/league_table_data/league_table.csv', index_col=0)}
 GLOBAL_DATA['default_elements'] = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
 GLOBAL_DATA['user_elements_nodesize'] = get_network(df=GLOBAL_DATA['net_data'], nodesize=True)
@@ -108,6 +110,11 @@ options_var = []
 for col in GLOBAL_DATA['net_data'].columns:
     options_var.append({'label':'{}'.format(col, col), 'value':col})
 
+options_trt = []
+edges = GLOBAL_DATA['net_data'].groupby(['treat1', 'treat2']).TE.count().reset_index()
+all_nodes = np.unique(edges[['treat1', 'treat2']].values.flatten())
+for trt in all_nodes:
+    options_trt.append({'label':'{}'.format(trt, trt), 'value':trt})
 
 ##############################################################################
 ##########################------- APP LAYOUT -------##########################
@@ -158,7 +165,7 @@ app.layout = html.Div(
                                      style={'display': 'inline-block', 'paddingLeft': '15px',
                                             'verticalAlign': 'top'})),
 
-                            html.Br()]),
+                            html.Br()], style={'margin-left':'-30px'}),
                   # html.Div([html.Div(style={'width': '10%', 'display': 'inline'}, children=[
                   #     'Node Color:', dcc.Input(id='input-bg-color', type='text') ])
                   #  ]),
@@ -183,7 +190,7 @@ app.layout = html.Div(
                           # tabs
                           html.Div([
                               dcc.Tabs([
-
+                                        # Project set up
                                   dcc.Tab(label='Project set up',children=[html.Div(children=[
                                           html.Br(),
                                           dbc.Row([dcc.Upload(html.A('Upload main data file*',
@@ -229,7 +236,7 @@ app.layout = html.Div(
 
                                   dcc.Tab(label='Forest plots', value='mainTabForest',
                                           children=[
-                                              dcc.Tabs(id='subtabs1', value='subtab1', vertical=True, persistence=True,
+                                              dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persistence=True,
                                                        children=[
                                                                  dcc.Tab(label='NMA', id='tab1', value='Tab1',
                                                                          style=subtab_style, selected_style=subtab_selected_style,
@@ -270,10 +277,78 @@ app.layout = html.Div(
                                                                         children=[html.Div([html.P(
                                                                             id='tapEdgeData-info',
                                                                             className="box__title"),
-                                                                                            html.Br()])],
-                                                                                  ),
+                                                                                            html.Br()]),
+                                                                        dcc.Loading(
+                                                                            html.Div([
+                                                                            dcc.Graph(
+                                                                                id='tapNodeData-fig-pairwise',
+                                                                                config={
+                                                                                    'modeBarButtonsToRemove': [
+                                                                                        'toggleSpikelines',
+                                                                                        "pan2d",
+                                                                                        "select2d",
+                                                                                        "lasso2d",
+                                                                                        "autoScale2d",
+                                                                                        "hoverCompareCartesian"],
+                                                                                        'toImageButtonOptions': {
+                                                                                        'format': 'png',
+                                                                                        # one of png, svg,
+                                                                                        'filename': 'custom_image',
+                                                                                        'scale': 10
+                                                                                        # Multiply title/legend/axis/canvas sizes by this factor
+                                                                                    },
+                                                                                    'displaylogo': False})])
 
-                                                                dcc.Tab(label='Two-dimensional', id='tab3', value='Tab3', style=subtab_style,selected_style=subtab_selected_style)
+                                                                                  ),
+                                                                ]),
+
+                                                                dcc.Tab(label='Two-dimensional', id='tab3', value='Tab3', style=subtab_style,selected_style=subtab_selected_style,
+                                                                        children=[html.Div([html.P(id='tapNodeData-info-bidim', className="box__title"),
+                                                                                                 html.Br()]),
+                                                                                 # html.Br(),
+                                                                            # html.Div([dbc.Row([html.H6(
+                                                                            #     "Choose reference trt:",
+                                                                            #     className="graph__title2",
+                                                                            #     style={'display': 'inline-block'}),
+                                                                            #                    html.Div(
+                                                                            #                        dcc.Dropdown(
+                                                                            #                            id='dropdown-reference-trt',
+                                                                            #                            options=options_trt,
+                                                                            #                            clearable=False,
+                                                                            #                            className="tapEdgeData-fig-class",
+                                                                            #                            style={
+                                                                            #                                'width': '100px','font size':'11px',
+                                                                            #                                'vertical-align': 'middle',
+                                                                            #                                'color': '#1b242b',
+                                                                            #                                'display': 'inline-block',
+                                                                            #                                'background-color': '#40515e',
+                                                                            #                                'padding-bottom': '5px'}),
+                                                                            #                        style={
+                                                                            #                            'display': 'inline-block',
+                                                                            #                            'margin-bottom': '-15px'})
+                                                                            #                    ])],
+                                                                        dcc.Loading(
+                                                                                html.Div([
+                                                                                    dcc.Graph(
+                                                                                        id='tapNodeData-fig-bidim',
+                                                                                        config={'editable': True,
+                                                                                            'modeBarButtonsToRemove': [
+                                                                                            'toggleSpikelines',
+                                                                                            "pan2d",
+                                                                                            "select2d",
+                                                                                            "lasso2d",
+                                                                                            "autoScale2d",
+                                                                                            "hoverCompareCartesian"],
+                                                                                            'toImageButtonOptions': {
+                                                                                            'format': 'png',
+                                                                                            # one of png, svg,
+                                                                                            'filename': 'custom_image',
+                                                                                            'scale': 10
+                                                                                            # Multiply title/legend/axis/canvas sizes by this factor
+                                                                                        },
+                                                                                        'displaylogo': False})])
+                                                                        )],
+                                                                        )
                               ])]),
 
                                   dcc.Tab(label='League Table',
@@ -530,9 +605,18 @@ def generate_stylesheet(node, dwld_button):
               [Input('cytoscape', 'tapNodeData')])
 def TapNodeData_info(data):
     if data:
-        return 'Treatment selected: ', data['label']
+        return 'Reference treatment selected: ', data['label']
     else:
         return 'Click on a node to display the associated plot'
+
+### ----- update node info on bidim forest plot  ------ ###
+@app.callback(Output('tapNodeData-info-bidim', 'children'),
+              [Input('cytoscape', 'tapNodeData')])
+def TapNodeData_info(data):
+    if data:
+        return 'Reference treatment selected: ', data['label']
+    else:
+        return 'Click on a node to choose reference treatment'
 
 
 ### ----- display forest plot on node click ------ ###
@@ -631,6 +715,100 @@ def TapNodeData_fig(data, outcome_direction):
 
     return fig
 
+### - figures on edge click: pairwise forest plots  - ###
+@app.callback(Output('tapNodeData-fig-pairwise', 'figure'),
+              Input('cytoscape', 'tapEdgeData'))
+def update_forest_pairwise(data):
+    if data:
+        pass
+    else:
+        effect_size = ''
+        df = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
+                                              'CI_width', 'CI_width_hf'])
+        fig = px.scatter(df, x=effect_size)
+        fig.update_shapes(dict(xref='x', yref='y'))
+        fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
+        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80))
+        fig.update_traces(hoverinfo='skip', hovertemplate=None)
+
+    return fig
+
+    ### ----- display bidim forest plot on node click ------ ###
+
+### ----- display dibim forest plot on node click ------ ###
+@app.callback(Output('tapNodeData-fig-bidim', 'figure'),
+              [Input('cytoscape', 'tapNodeData')])
+def TapNodeData_fig_bidim(data):
+    if data:
+        treatment = data['label']
+        df = GLOBAL_DATA['forest_data'][GLOBAL_DATA['forest_data'].Reference==treatment].copy()
+        df['CI_width'] = df.CI_upper - df.CI_lower
+        df['CI_width_hf'] = df['CI_width'] /2
+        effect_size = df.columns[1]
+        #weight_es = round(df['WEIGHT'],3)
+        df = df.sort_values(by=effect_size)
+        df_second = GLOBAL_DATA['forest_data_outcome2'][GLOBAL_DATA['forest_data_outcome2'].Reference==treatment].copy()
+        df_second['CI_width'] = df_second.CI_upper - df_second.CI_lower
+        df_second['CI_width_hf'] = df_second['CI_width'] /2
+        effect_size_2 = df_second.columns[1]
+    else:
+        effect_size = effect_size_2 = ''
+        df = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
+                                              'CI_width', 'CI_width_hf'])
+        df_second = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
+                                              'CI_width', 'CI_width_hf'])
+
+    xlog = effect_size in ('RR', 'OR')
+
+    fig = px.scatter(df, x=df[effect_size], y=df_second[effect_size_2], color=df.Treatment,
+                     error_x_minus=df.CI_lower if xlog else None,
+                     error_x=df.CI_width_hf if data else df.CI_width if xlog else None,
+                     error_y_minus=df_second.CI_lower if xlog else None,
+                     error_y=df_second.CI_width_hf if data else df_second.CI_width if xlog else None,
+                     log_x=xlog)
+
+    fig.update_layout(paper_bgcolor='#40515e',
+                      plot_bgcolor='#40515e')
+    if xlog:
+        fig.add_shape(type='line', yref='paper', y0=0, y1=1, xref='x', x0=1, x1=1,
+                      line=dict(color="white", width=1, dash='dashdot'), layer='below')
+
+    fig.update_traces(marker=dict(symbol='circle',
+                                  size=11,
+                                  opacity=0.9 if data else 0,
+                                  line=dict(color='Whitesmoke'),
+                                  #color='Whitesmoke'
+                                  )
+                      ),
+
+    fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='white', ticklen=5,
+                     tickvals=[0.1, 0.5, 1, 5] if xlog else None,
+                     ticktext=[0.1, 0.5, 1, 5] if xlog else None,
+                     range=[0.1, 1] if xlog else None,
+                     autorange=True, showline=True,
+                     zeroline=True),
+
+    fig.update_yaxes(ticks="outside", tickwidth=2, tickcolor='white', ticklen=5,
+                     tickvals=[0.1, 0.5, 1, 5] if xlog else None,
+                     ticktext=[0.1, 0.5, 1, 5] if xlog else None,
+                     range=[0.1, 1] if xlog else None,
+                     autorange=True, showline=True,
+                     zeroline=True),
+
+    fig.update_layout(clickmode='event+select',
+                      font_color="white",
+                      margin=dict(l=5, r=10, t=12, b=80),
+                      xaxis=dict(showgrid=False, tick0=0, title=f'Click to enter x label ({effect_size})'),
+                      yaxis=dict(showgrid=False, title=f'Click to enter y label ({effect_size})'),
+                      title_text='  ', title_x=0.02, title_y=.98, title_font_size=14,
+                      )
+    if not data:
+        fig.update_shapes(dict(xref='x', yref='y'))
+        fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
+        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80), coloraxis_showscale=False)
+        fig.update_traces(hoverinfo='skip', hovertemplate=None)
+
+    return fig
 
 ### ----- display information on edge click ------ ###
 @app.callback(Output('tapEdgeData-info', 'children'),
@@ -641,7 +819,7 @@ def TapEdgeData_info(data):
     else:
         return 'Click on an edge to display the associated  plot'
 
-### - display pairwise forest plot on edge click - ###
+### - display information box - ###
 @app.callback(Output('cytoscape-mouseTapEdgeData-output', 'children'),
               [Input('cytoscape', 'tapEdgeData')])
 def TapEdgeData(edge):
@@ -844,7 +1022,7 @@ def build_league_table(data, columns, style_data_conditional):
                                       'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}])
 
 
-### ----- transitivity boxplots ------ ###
+### - figures on edge click: transitivity boxplots  - ###
 @app.callback(Output('tapEdgeData-fig', 'figure'),
              [Input('dropdown-effectmod', 'value'),
               Input('cytoscape', 'tapEdgeData')])
@@ -930,6 +1108,7 @@ def update_dropdown_boxplot(value, edge):
         fig.update_traces(quartilemethod="exclusive", hoverinfo='skip', hovertemplate=None)
 
     return fig
+
 
 
 ###########################################################

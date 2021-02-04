@@ -18,7 +18,6 @@ options_nodesize = [{'label':'default',  'value':'default'},
                    ]
 
 options_colornodeby = [{'label':'default',  'value':'default'},
-                       {'label':'risk of bias',  'value':'risk of bias'},
-                       {'label':'publication year',     'value':'publication year'} ##old, recent, new
+                       {'label':'risk of bias',  'value':'risk of bias'}
                        ]
 

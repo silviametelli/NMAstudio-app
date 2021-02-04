@@ -149,7 +149,7 @@ h6 {
     position: absolute;
     left: 1%;
     font-type: sans-serif;
-    color: white;
+    color: #ffffff;
 }
 
 /*div.Select–single>.Select-control .Select-value,*/
@@ -297,7 +297,7 @@ width: auto;
 }
 
 .selectbox .Select-arrow { --accent: black;
-                            --background-image: linear-gradient(#484e55, #3A3F44 60%, #313539);
+                            --background-image: linear-gradient(#626c78, #3A3F44 60%, #313539);
 }
 
 

@@ -16,7 +16,7 @@ import dash_daq as daq
 import dash_table
 #from dash_extensions import Download
 import dash_cytoscape as cyto
-from assets.cytoscape_styleesheeet import default_stylesheet, download_stylesheet
+from assets.cytoscape_styleesheeet import get_default_stylesheet, download_stylesheet
 from assets.tab_styles import subtab_style, subtab_selected_style
 from assets.dropdowns_values import options_format, options_outcomes, options_outcomes_direction, options_nodesize, options_colornodeby
 
@@ -74,7 +74,7 @@ network_layouts = [{'label': 'circle',        'value': 'circle'},
                    {'label': 'random',        'value': 'random'}
                    ]
 
-def get_network(df, nodesize=False):
+def get_network(df, nodesize=False, pie=True):
     edges = df.groupby(['treat1', 'treat2']).TE.count().reset_index()
     all_nodes = np.unique(edges[['treat1', 'treat2']].values.flatten())
     df_n1 = df.groupby(['treat1']).n1.sum().reset_index()
@@ -85,18 +85,20 @@ def get_network(df, nodesize=False):
     cy_edges = [{'data': {'source': source, 'target': target, 'weight': weight * 2, 'weight_lab': weight}}
                 for source, target, weight in edges.values]
     if nodesize==False:
-        cy_nodes = [{"data": {"id": target, "label": target, 'classes':'genesis' }}
+        cy_nodes = [{"data": {"id": target, "label": target, 'classes':'genesis'}}
                     for target in all_nodes]
     else:
         cy_nodes = [{"data": {"id": target, "label": target, 'classes':'genesis', 'size': np.sqrt(size)*2}}
                     for target, size in all_nodes_sized.values]
-
+    if pie:
+        for el in cy_nodes:
+            el['data'].update({'pie1':4, 'pie2':1, 'pie3': 6})
     return cy_edges + cy_nodes
 
 
 # Save default dataframe for demo use
 GLOBAL_DATA = {'net_data':pd.read_csv('db/Senn2013.csv'),
-               'cinema_net_data':pd.read_csv('db/CINeMa_file.csv'),
+               'cinema_net_data':pd.read_csv('db/Cinema_report.csv'),
                'forest_data':pd.read_csv('db/forest_data/forest_data.csv'),
                'forest_data_outcome2':pd.read_csv('db/forest_data/forest_data_outcome2.csv'),
                'league_table_data':pd.read_csv('db/league_table_data/league_table.csv', index_col=0)}
@@ -172,7 +174,7 @@ app.layout = html.Div(
                   cyto.Cytoscape(id='cytoscape',
                                  elements=GLOBAL_DATA['user_elements'],
                                  style={'height': '60vh', 'width': '100%','margin-top': '-50px','margin-left': '20px'},
-                                 stylesheet=default_stylesheet)],
+                                 stylesheet=get_default_stylesheet())],
                   className="one-half column"),
                  html.Div(className='graph__title', children=[]),
                  html.Div(
@@ -245,13 +247,15 @@ app.layout = html.Div(
                                                                                    dcc.Loading(
                                                                                        html.Div([
                                                                                             dbc.Row([
-                                                                                            dbc.Col(html.P('Outcome is',style={'paddingLeft':'10px','font-size': '11px',
-                                                                                                                               'margin-bottom':'-20px','color':'black'})),
-                                                                                            dbc.Col(html.Div(dcc.RadioItems(id='dropdown-direction', options=options_outcomes_direction,
-                                                                                                                            value='beneficial', labelStyle={'display': 'inline-block'},
-                                                                                                                     style={'width': '180px', 'margin-left': '5px','paddingLeft':'60px',
-                                                                                                                            'color': '#1b242b', 'font-size': '10px', #'vertical-align':'middle',
-                                                                                                                            'background-color': '#40515e'}),style={}))
+                                                                                            dbc.Col(html.Div(daq.ToggleSwitch(id='dropdown-direction',
+                                                                                                                              label={'label':['beneficial outcome','harmful outcome'],
+                                                                                                                                     'style':{'width': '350px','font-size':'11px',
+                                                                                                                                              'margin':'auto','padding-left':'5px'}},
+                                                                                                                              value='False', size=35,
+                                                                                                                              style={'width': '250px', 'color':'white',
+                                                                                                                                    'font-size':'10px',
+                                                                                                                                     'padding-left':'-20px'},
+                                                                                                                              ),style={}))
                                                                                             ]),
                                                                                         dcc.Graph(
                                                                                             id='tapNodeData-fig',
@@ -520,7 +524,7 @@ def generate_stylesheet(node, dwld_button):
     DWNLD = False
     edge = read_edge_frompickle()
     if edge and edge['id'] is not None:
-        stylesheet = default_stylesheet + [{"selector": 'edge[id= "{}"]'.format(edge['id']),
+        stylesheet = get_default_stylesheet() + [{"selector": 'edge[id= "{}"]'.format(edge['id']),
                                            "style": {'opacity': 1,
                                                      "line-color": 'pink',
                                                      'z-index': 5000}}] if edge['id']!='RESET' else []
@@ -539,7 +543,7 @@ def generate_stylesheet(node, dwld_button):
             store_node['active']['ids'][node['data']['id']] = node
             write_node_topickle(store_node)
         if not len(store_node['active']['ids']):
-            GLOBAL_DATA['cytoscape_layout'] = download_stylesheet if DWNLD else default_stylesheet
+            GLOBAL_DATA['cytoscape_layout'] = download_stylesheet if DWNLD else get_default_stylesheet()
             return GLOBAL_DATA['cytoscape_layout'], EMPTY_SELECTION_NODES
     elif DWNLD:
         if os.path.exists('db/.temp/selected_nodes.pickle'):
@@ -548,7 +552,7 @@ def generate_stylesheet(node, dwld_button):
             store_node = EMPTY_SELECTION_NODES
     else:
         write_node_topickle(EMPTY_SELECTION_NODES)
-        GLOBAL_DATA['cytoscape_layout'] = download_stylesheet if DWNLD else default_stylesheet
+        GLOBAL_DATA['cytoscape_layout'] = download_stylesheet if DWNLD else get_default_stylesheet()
         return GLOBAL_DATA['cytoscape_layout'], EMPTY_SELECTION_NODES
 
 
@@ -623,6 +627,7 @@ def TapNodeData_info(data):
 @app.callback(Output('tapNodeData-fig', 'figure'),
               [Input('cytoscape', 'tapNodeData'),Input("dropdown-direction", "value")])
 def TapNodeData_fig(data, outcome_direction):
+    print(outcome_direction)
     if data:
         treatment = data['label']
         df = GLOBAL_DATA['forest_data'][GLOBAL_DATA['forest_data'].Reference==treatment].copy()
@@ -642,27 +647,31 @@ def TapNodeData_fig(data, outcome_direction):
                      error_x_minus='CI_lower' if xlog else None,
                      error_x='CI_width_hf' if data else 'CI_width' if xlog else None,
                      log_x=xlog,
-                     size='WEIGHT' if data else None)
+                     size=df.WEIGHT/float(1.2) if data else None)
 
-    fig.update_layout(paper_bgcolor='#40515e',
-                      plot_bgcolor='#40515e')
+    fig.update_layout(paper_bgcolor = 'rgba(0,0,0,0)',
+                      plot_bgcolor = 'rgba(0,0,0,0)')
+    # fig.update_layout(paper_bgcolor='#40515e',
+    #                   plot_bgcolor='#40515e')
     if xlog:
         fig.add_shape(type='line', yref='paper', y0=0, y1=1, xref='x', x0=1, x1=1,
-                      line=dict(color="white", width=1), layer='below')
+                      line=dict(color="black", width=1), layer='below')
     fig.update_traces(marker=dict(symbol='square',
-                                  opacity=0.9 if data else 0,
-                                  line=dict(color='Whitesmoke'), color='Whitesmoke')
+                                  opacity=0.7 if data else 0,
+                                  line=dict(color='black',width=0), color='dimgrey',
+                                  ),
+                      error_x=dict(thickness=1.3, color="black")
                       )
-    fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='white', ticklen=5,
+    fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5,
                      tickvals=[0.1, 0.5, 1, 5] if xlog else None,
                      ticktext=[0.1, 0.5, 1, 5] if xlog else None,
                      range=[0.1, 1] if xlog else None,
-                     autorange=True, showline=True,
+                     autorange=True, showline=True,linewidth=2, linecolor='black',
                      zeroline=True)
 
-    if data and outcome_direction=='beneficial':
+    if data and outcome_direction=='False':
         fig.update_layout(clickmode='event+select',
-                      font_color="white",
+                      font_color="black",
                       margin=dict(l=5, r=10, t=12, b=80),
                       xaxis=dict(showgrid=False, tick0=0, title=''),
                       yaxis=dict(showgrid=False, title=''),
@@ -672,16 +681,16 @@ def TapNodeData_fig(data, outcome_direction):
                                    dict(x=df.CI_lower.min(), ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
                                         showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='green'),
                                    dict(x=df.CI_upper.max(), ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
-                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='white'),  #'#751225'
+                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='black'),  #'#751225'
                                    dict(x=df.CI_lower.min()/2, y=-0.22, xref='x', yref='paper', text='Favours treatment',
                                         showarrow=False),
                                    dict(x=df.CI_upper.max()/2, y=-0.22, xref='x', yref='paper', text=f'Favours {treatment}',
                                         showarrow=False)]
                       )
 
-    elif data and outcome_direction=='harmful':
+    elif data and outcome_direction=='True':
         fig.update_layout(clickmode='event+select',
-                      font_color="white",
+                      font_color="black",
                       margin=dict(l=5, r=10, t=12, b=80),
                       xaxis=dict(showgrid=False, tick0=0, title=''),
                       yaxis=dict(showgrid=False, title=''),
@@ -689,7 +698,7 @@ def TapNodeData_fig(data, outcome_direction):
                       annotations=[dict(x=0, ax=0, y=-0.12, ay=-0.1, xref='x', axref='x', yref='paper',
                                         showarrow=False, text=effect_size),
                                    dict(x=df.CI_lower.min(), ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
-                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='white'),
+                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='black'),
                                    dict(x=df.CI_upper.max(), ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
                                         showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='green'),  #'#751225'
                                    dict(x=df.CI_lower.min()/2, y=-0.22, xref='x', yref='paper', text=f'Favours {treatment}',
@@ -699,7 +708,7 @@ def TapNodeData_fig(data, outcome_direction):
                       )
     else:
         fig.update_layout(clickmode='event+select',
-                      font_color="white",
+                      font_color="black",
                       margin=dict(l=5, r=10, t=12, b=80),
                       xaxis=dict(showgrid=False, tick0=0, title=''),
                       yaxis=dict(showgrid=False, title=''),
@@ -767,36 +776,40 @@ def TapNodeData_fig_bidim(data):
                      error_y=df_second.CI_width_hf if data else df_second.CI_width if xlog else None,
                      log_x=xlog)
 
-    fig.update_layout(paper_bgcolor='#40515e',
-                      plot_bgcolor='#40515e')
+    fig.update_layout(paper_bgcolor = 'rgba(0,0,0,0)',
+                      plot_bgcolor = 'rgba(0,0,0,0)')  #paper_bgcolor='#40515e', #626C78
+                      #plot_bgcolor='#40515e') #626C78
+
     if xlog:
         fig.add_shape(type='line', yref='paper', y0=0, y1=1, xref='x', x0=1, x1=1,
-                      line=dict(color="white", width=1, dash='dashdot'), layer='below')
+                      line=dict(color="black", width=1, dash='dashdot'), layer='below')
 
     fig.update_traces(marker=dict(symbol='circle',
                                   size=11,
                                   opacity=0.9 if data else 0,
                                   line=dict(color='Whitesmoke'),
                                   #color='Whitesmoke'
-                                  )
+                                  ),
+                      error_y=dict(thickness=1.3),
+                      error_x=dict(thickness=1.3),
                       ),
 
-    fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='white', ticklen=5,
+    fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5,
                      tickvals=[0.1, 0.5, 1, 5] if xlog else None,
                      ticktext=[0.1, 0.5, 1, 5] if xlog else None,
                      range=[0.1, 1] if xlog else None,
-                     autorange=True, showline=True,
+                     autorange=True, showline=True,linewidth=2, linecolor='black',
                      zeroline=True),
 
-    fig.update_yaxes(ticks="outside", tickwidth=2, tickcolor='white', ticklen=5,
+    fig.update_yaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5,
                      tickvals=[0.1, 0.5, 1, 5] if xlog else None,
                      ticktext=[0.1, 0.5, 1, 5] if xlog else None,
                      range=[0.1, 1] if xlog else None,
-                     autorange=True, showline=True,
+                     autorange=True, showline=True,linewidth=2, linecolor='black',
                      zeroline=True),
 
     fig.update_layout(clickmode='event+select',
-                      font_color="white",
+                      font_color="black",
                       margin=dict(l=5, r=10, t=12, b=80),
                       xaxis=dict(showgrid=False, tick0=0, title=f'Click to enter x label ({effect_size})'),
                       yaxis=dict(showgrid=False, title=f'Click to enter y label ({effect_size})'),
@@ -1056,21 +1069,21 @@ def update_dropdown_boxplot(value, edge):
                 fig.update_layout(clickmode='event+select',
                                   paper_bgcolor='#40515e',
                                   plot_bgcolor='#40515e',
-                                  font_color="white",
+                                  font_color="black",
                                   showlegend=False)
 
                 fig.update_traces(boxpoints='outliers', quartilemethod="inclusive",hoverinfo= "x+y",
                                   selector=dict(mode='markers'),
                                   marker=dict( opacity=1, line=dict(color='Whitesmoke', outlierwidth=2)))
 
-                fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='white', ticklen=5,
+                fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5,
                 #                 tickvals=[],
                 #                 tickvals=[x for x in range(df['Comparison'].min(), df['Comparison'].max() + 1)],
                 #                 ticktext=[x for x in range(df['Comparison'].min(), df['Comparison'].max() + 1)],
                                  showline=True,
                                  zeroline=True)
 
-                fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='white', showline=True)
+                fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='black', showline=True)
                 return fig
 
     if not value:
@@ -1078,27 +1091,26 @@ def update_dropdown_boxplot(value, edge):
             value = df['value']
             range1 = range2 = 0
 
-
     fig = px.box(df, x='Comparison', y=value,
                  range_y=[range1,range2], points= 'suspectedoutliers')
 
-    fig.update_layout(paper_bgcolor='#40515e',
-                      plot_bgcolor='#40515e',
-                      font_color="white",
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
+                      plot_bgcolor='rgba(0,0,0,0)',
+                      font_color="black",
                       showlegend=False)
 
     fig.update_traces(boxpoints='outliers', quartilemethod="inclusive", hoverinfo= "x+y",
                       marker=dict(opacity=1, line=dict(color='Whitesmoke', outlierwidth=2), color= "Whitesmoke")
                       )
 
-    fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='white', ticklen=5,
+    fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5,
                     # tickvals=[],
                      #tickvals=[x for x in range(df['Comparison'].min(), df['Comparison'].max()+1)],
                    #  ticktext=[x for x in df['Comparison']],
                      showline=True,
                      zeroline=True)
 
-    fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='white', showline=True)
+    fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='black', showline=True)
 
     if not any(value):
         fig.update_shapes(dict(xref='x', yref='y'))

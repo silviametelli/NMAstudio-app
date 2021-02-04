@@ -1,17 +1,26 @@
-
-default_stylesheet = [
-    {"selector": 'node',
-     'style': {"opacity": 1,
-               'background-color': "#07ABA0",
-               "width": "data(size)", "height": "data(size)",
-               'label': "data(label)",
-               'shape':'circle',
-               'color': "#fff"},
-     },
-    {"selector": 'edge',
-     'style': {"curve-style": "bezier",
-               'width': 'data(weight)',
-               "opacity": 0.75}}]
+def get_default_stylesheet(node_size=False, pie=False):
+    default_stylesheet = [
+        {"selector": 'node',
+         'style': {"opacity": 1,
+                   'background-color': "#07ABA0",
+                   'label': "data(label)",
+                   'shape':'circle',
+                   'color': "#fff"},
+         },
+        {"selector": 'edge',
+         'style': {"curve-style": "bezier",
+                   'width': 'data(weight)',
+                   "opacity": 0.75}}]
+    if node_size:
+        default_stylesheet[0]['style'].update({"width": "data(size)", "height": "data(size)"})
+    if pie:
+        default_stylesheet[0]['style'].update({'pie-1-background-color': '#E8747C',
+                                               'pie-1-background-size': 'mapData(pie1, 0, 10, 0, 100)',
+                                               'pie-2-background-color': '#74CBE8',
+                                               'pie-2-background-size': 'mapData(pie2, 0, 10, 0, 100)',
+                                               'pie-3-background-color': '#74E883',
+                                               'pie-3-background-size': 'mapData(pie3, 0, 10, 0, 100)',})
+    return default_stylesheet
 
 
 download_stylesheet = [

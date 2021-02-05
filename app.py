@@ -74,7 +74,7 @@ network_layouts = [{'label': 'circle',        'value': 'circle'},
                    {'label': 'random',        'value': 'random'}
                    ]
 
-def get_network(df, nodesize=False, pie=True):
+def get_network(df):
     edges = df.groupby(['treat1', 'treat2']).TE.count().reset_index()
     all_nodes = np.unique(edges[['treat1', 'treat2']].values.flatten())
     df_n1 = df.groupby(['treat1']).n1.sum().reset_index()
@@ -84,15 +84,10 @@ def get_network(df, nodesize=False, pie=True):
     all_nodes_sized = pd.concat([df_n1,df_n2]).groupby(['treat']).sum().reset_index()
     cy_edges = [{'data': {'source': source, 'target': target, 'weight': weight * 2, 'weight_lab': weight}}
                 for source, target, weight in edges.values]
-    if nodesize==False:
-        cy_nodes = [{"data": {"id": target, "label": target, 'classes':'genesis'}}
-                    for target in all_nodes]
-    else:
-        cy_nodes = [{"data": {"id": target, "label": target, 'classes':'genesis', 'size': np.sqrt(size)*2}}
+    cy_nodes = [{"data": {"id": target, "label": target, 'classes':'genesis', 'size': np.sqrt(size)*2}}
                     for target, size in all_nodes_sized.values]
-    if pie:
-        for el in cy_nodes:
-            el['data'].update({'pie1':4, 'pie2':1, 'pie3': 6})
+    for el in cy_nodes:
+        el['data'].update({'pie1':4, 'pie2':1, 'pie3': 6})
     return cy_edges + cy_nodes
 
 
@@ -103,7 +98,6 @@ GLOBAL_DATA = {'net_data':pd.read_csv('db/Senn2013.csv'),
                'forest_data_outcome2':pd.read_csv('db/forest_data/forest_data_outcome2.csv'),
                'league_table_data':pd.read_csv('db/league_table_data/league_table.csv', index_col=0)}
 GLOBAL_DATA['default_elements'] = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
-GLOBAL_DATA['user_elements_nodesize'] = get_network(df=GLOBAL_DATA['net_data'], nodesize=True)
 
 GLOBAL_DATA['dwnld_bttn_calls'] = 0
 GLOBAL_DATA['WAIT'] = False
@@ -123,7 +117,7 @@ for trt in all_nodes:
 ##############################################################################
 
 app.layout = html.Div(
-    [html.Div(  # header
+    [html.Div(            # Header
              [html.Div([html.H4("VisualNMA", className="app__header__title"),
                         html.P("An interactive tool for data visualisation of network meta-analysis.",
                                className="app__header__title--grey")], className="app__header__desc"),
@@ -173,7 +167,7 @@ app.layout = html.Div(
                   #  ]),
                   cyto.Cytoscape(id='cytoscape',
                                  elements=GLOBAL_DATA['user_elements'],
-                                 style={'height': '60vh', 'width': '100%','margin-top': '-50px','margin-left': '20px'},
+                                 style={'height': '80vh', 'width': '100%','margin-top': '-50px','margin-left': '20px'},
                                  stylesheet=get_default_stylesheet())],
                   className="one-half column"),
                  html.Div(className='graph__title', children=[]),
@@ -193,17 +187,17 @@ app.layout = html.Div(
                           html.Div([
                               dcc.Tabs([
                                         # Project set up
-                                  dcc.Tab(label='Project set up',children=[html.Div(children=[
+                                  dcc.Tab(label='Set up',children=[html.Div(children=[
                                           html.Br(),
-                                          dbc.Row([dcc.Upload(html.A('Upload main data file*',
-                                                                     style={'display': 'inline-block', 'margin-left': '5px'}),
-                                                              id='datatable-upload', multiple=False),
-                                                              html.Ul(id="file-list",
-                                                                      style={'display': 'inline-block', 'margin-left': '5px'})]
-                                                  ),
-                                          dbc.Row([dcc.Upload(html.A('Upload CINeMA grading file',style={'display': 'inline-block', 'margin-left': '5px'}), id='datatable-secondfile-upload', multiple=False),
-                                                              html.Ul(id="file2-list",style={'display': 'inline-block', 'margin-left': '5px'})]
-                                                  ),
+                                          dbc.Row([dbc.Col([
+                                              dcc.Upload(html.A('Upload main data file*',
+                                                                     style={'margin-left': '5px'}),
+                                                              id='datatable-upload', multiple=False,
+                                                              style={'display': 'inline-block'})
+                                          ],style={'display': 'inline-block'}),
+                                    dbc.Col([html.Ul(id="file-list", style={'margin-left': '15px'})],
+                                            style={'display': 'inline-block'})
+                                          ]),
                                           html.Br(),
                                           dbc.Row([
                                               dbc.Col([html.P("Format*:", className="graph__title2",
@@ -244,20 +238,32 @@ app.layout = html.Div(
                                                                          style=subtab_style, selected_style=subtab_selected_style,
                                                                          children=[html.Div([html.P(id='tapNodeData-info', className="box__title"),
                                                                                                  html.Br()]),
-                                                                                   dcc.Loading(
                                                                                        html.Div([
                                                                                             dbc.Row([
-                                                                                            dbc.Col(html.Div(daq.ToggleSwitch(id='dropdown-direction',
-                                                                                                                              label={'label':['beneficial outcome','harmful outcome'],
-                                                                                                                                     'style':{'width': '350px','font-size':'11px',
-                                                                                                                                              'margin':'auto','padding-left':'5px'}},
-                                                                                                                              value='False', size=35,
-                                                                                                                              style={'width': '250px', 'color':'white',
-                                                                                                                                    'font-size':'10px',
-                                                                                                                                     'padding-left':'-20px'},
-                                                                                                                              ),style={}))
+
+                                                                                                    html.Div([html.P("Beneficial", id='forestswitchlabel1',
+                                                                                                                    style={'display': 'inline-block',
+                                                                                                                           'margin': 'auto','font-size':'10px',
+                                                                                                                           'padding-left':'20px'}),
+                                                                                                             daq.ToggleSwitch(
+                                                                                                                id='dropdown-direction',
+                                                                                                                 # on=True,
+                                                                                                                 color='',
+                                                                                                                 size=35,
+                                                                                                                 label={'label':"Outcome", 'style':dict(color='white')},
+                                                                                                                 labelPosition="top",
+                                                                                                                 style={'display': 'inline-block',
+                                                                                                                        'margin': 'auto',
+                                                                                                                        'padding-left':'20px', 'padding-right':'20px'}),
+                                                                                                             html.P('Harmful', id='forestswitchlabel2',
+                                                                                                                    style={'display': 'inline-block',
+                                                                                                                           'margin': 'auto','font-size':'10px',
+                                                                                                                           'padding-right':'20px'})
+                                                                                                             ], style={'margin-left':'auto'})
+
                                                                                             ]),
-                                                                                        dcc.Graph(
+                                                                                           dcc.Loading(
+                                                                                               dcc.Graph(
                                                                                             id='tapNodeData-fig',
                                                                                             config={
                                                                                                     'modeBarButtonsToRemove': [
@@ -274,8 +280,8 @@ app.layout = html.Div(
                                                                                                     'scale': 10
                                                                                                     # Multiply title/legend/axis/canvas sizes by this factor
                                                                                                     },
-                                                                                            'displaylogo': False}) ])
-                                                                              )
+                                                                                            'displaylogo': False})) ])
+
                                                        ]),
                                                                 dcc.Tab(label='Pairwise', id='tab2', value='Tab2', style=subtab_style,selected_style=subtab_selected_style,
                                                                         children=[html.Div([html.P(
@@ -356,11 +362,21 @@ app.layout = html.Div(
                               ])]),
 
                                   dcc.Tab(label='League Table',
-                                      children=[html.Div([html.Br(),
-                                                          html.Div(id='legend_table_legend',
+                                      children=[html.Div([dbc.Row([dbc.Col([
+                                              dcc.Upload(html.A('Upload CINeMA file',
+                                                                     style={'margin-left': '5px'}),
+                                                              id='datatable-secondfile-upload', multiple=False,
+                                                              style={'display': 'inline-block'})
+                                          ],style={'display': 'inline-block'}),
+                                    dbc.Col([html.Ul(id="file2-list", style={'margin-left': '15px'})],
+                                            style={'display': 'inline-block'}
+                                            )]),
+                                                          html.Br(),
+                                                          html.Div(id='league_table_legend',
                                                                    style={'float': 'right',
                                                                           'padding': '5px 5px 5px 5px'}),
-                                                          html.Div(id='legend_table')])]),
+                                                          html.Div(id='league_table')
+                                      ])]),
 
                                   dcc.Tab(label='Transitivity',children=[
                                           html.Div([dbc.Row([html.H6("Choose effect modifier:", className="graph__title2",
@@ -515,68 +531,78 @@ def get_image(button):
 @app.callback([Output('cytoscape', 'stylesheet'),
                Output('__storage_nodes', 'loading_state')],
               [Input('cytoscape', 'tapNode'),
+               Input('cytoscape','selectedNodeData'),
+               Input('cytoscape','elements'),
+               Input('cytoscape','selectedEdgeData'),
+               Input('node-color-dropdown', 'value'),
+               Input('node-size-dropdown', 'value'),
                Input("btn-get-png", "n_clicks")
                ])
-def generate_stylesheet(node, dwld_button):
-    FOLLOWER_COLOR = '#07ABA0'
-    FOLLOWING_COLOR = '#07ABA0'
+def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata, pie, node_size, dwld_button):
+    FOLLOWER_COLOR, FOLLOWING_COLOR = '#07ABA0', '#07ABA0'
     NODE_SHAPE = 'ellipse' # One of  'ellipse', 'triangle', 'rectangle', 'diamond', 'pentagon', 'hexagon', 'heptagon', 'octagon', 'star', 'polygon'
     DWNLD = False
-    edge = read_edge_frompickle()
-    if edge and edge['id'] is not None:
-        stylesheet = get_default_stylesheet() + [{"selector": 'edge[id= "{}"]'.format(edge['id']),
-                                           "style": {'opacity': 1,
-                                                     "line-color": 'pink',
-                                                     'z-index': 5000}}] if edge['id']!='RESET' else []
-        write_edge_topickle(EMPTY_SELECTION_EDGES)
-        return stylesheet, EMPTY_SELECTION_NODES
+    pie = pie=='risk of bias'
+    node_size = node_size=='n.randomized'
+    stylesheet = get_default_stylesheet(pie=pie, node_size=node_size)
+    store_node = read_node_frompickle()
+    edgedata = [el['data'] for el in elements if 'target' in el['data'].keys()]
+    all_nodes_id = [el['data']['id'] for el in elements if 'target' not in el['data'].keys()]
+
+
     if dwld_button and dwld_button > GLOBAL_DATA['dwnld_bttn_calls']:
         GLOBAL_DATA['dwnld_bttn_calls'] += 1
         DWNLD = True
     GLOBAL_DATA['WAIT'] = DWNLD
-    if node and not DWNLD:
-        store_node = read_node_frompickle()
-        if node['data']['id'] in store_node['active']['ids'].keys():
-            del store_node['active']['ids'][node['data']['id']]
-            write_node_topickle(store_node)
-        else:
-            store_node['active']['ids'][node['data']['id']] = node
-            write_node_topickle(store_node)
-        if not len(store_node['active']['ids']):
-            GLOBAL_DATA['cytoscape_layout'] = download_stylesheet if DWNLD else get_default_stylesheet()
-            return GLOBAL_DATA['cytoscape_layout'], EMPTY_SELECTION_NODES
+    if slct_nodesdata and not DWNLD:
+        selected_nodes_id = [d['id'] for d in slct_nodesdata]
+        all_slct_src_trgt = list({e['source'] for e in edgedata if e['source'] in selected_nodes_id
+                                  or e['target'] in selected_nodes_id}
+                                 | {e['target'] for e in edgedata if e['source'] in selected_nodes_id
+                                    or e['target'] in selected_nodes_id})
+        # print(store_node['active']['ids'].keys())
+        # if node['data']['id'] in store_node['active']['ids'].keys():
+        #     del store_node['active']['ids'][node['data']['id']]
+        #     write_node_topickle(store_node)
+        # else:
+        #     store_node['active']['ids'][node['data']['id']] = node
+        #     write_node_topickle(store_node)
+        # if not len(store_node['active']['ids']):
+        #     GLOBAL_DATA['cytoscape_layout'] = download_stylesheet if DWNLD else get_default_stylesheet()
+        #     return GLOBAL_DATA['cytoscape_layout'], EMPTY_SELECTION_NODES
     elif DWNLD:
         if os.path.exists('db/.temp/selected_nodes.pickle'):
             store_node = read_node_frompickle()
         else:
             store_node = EMPTY_SELECTION_NODES
-    else:
-        write_node_topickle(EMPTY_SELECTION_NODES)
-        GLOBAL_DATA['cytoscape_layout'] = download_stylesheet if DWNLD else get_default_stylesheet()
-        return GLOBAL_DATA['cytoscape_layout'], EMPTY_SELECTION_NODES
-
-
-    stylesheet = [{"selector": 'node',
-                   'style': {'opacity': 0.2, 'color': "#1b242b" if DWNLD else "white",
-                             'label': "data(label)",
-                             'background-color': "#07ABA0", 'shape': NODE_SHAPE}},
-                  {'selector': 'edge',
-                   'style': {'opacity': 0.1, 'width': 'data(weight)',
-                             "curve-style": "bezier"}}]+[
-                  {"selector": 'node[id = "{}"]'.format(id),
-                   "style": {'background-color': '#07ABA0',
-                             "border-color": "#751225", "border-width": 5, "border-opacity": 1,
-                             "opacity": 1,
-                             "label": "data(label)",
-                             "color": "#1b242b" if DWNLD else "white",
-                             "text-opacity": 1,
-                             'shape': 'ellipse',
-                             # "font-size": 12,
-                             'z-index': 9999}}
-                  for id in store_node['active']['ids']]
-    for nd in store_node['active']['ids'].values():
-        for edge in nd['edgesData']:
-            if edge['source'] in store_node['active']['ids']:
+    # else:
+    #     # write_node_topickle(EMPTY_SELECTION_NODES)
+    #     GLOBAL_DATA['cytoscape_layout'] = download_stylesheet if DWNLD else get_default_stylesheet()
+    #     return GLOBAL_DATA['cytoscape_layout'], EMPTY_SELECTION_NODES
+    # {"selector": 'node',
+    #  'style': {'opacity': 0.2, 'color': "#1b242b" if DWNLD else "white",
+    #            'label': "data(label)",
+    #            'background-color': "#07ABA0", 'shape': NODE_SHAPE}},
+    # {'selector': 'edge',
+    #  'style': {'opacity': 0.1, 'width': 'data(weight)',
+    #            "curve-style": "bezier"}}
+    if slct_nodesdata:
+        stylesheet = get_default_stylesheet(pie=pie, node_size=node_size,
+                                            nodes_opacity=0.2, edges_opacity=0.1)+[
+                      {"selector": 'node[id = "{}"]'.format(id),
+                       "style": {"border-color": "#751225", "border-width": 5, "border-opacity": 1,
+                                 "opacity": 1}}
+                      for id in selected_nodes_id ] + [
+            {"selector": 'edge[id= "{}"]'.format(edge['id']),
+            "style": {'opacity': 1, # "line-color": 'pink',
+            'z-index': 5000}} for edge in edgedata if edge['source'] in selected_nodes_id
+                                                      or edge['target'] in selected_nodes_id] +[
+            {"selector": 'node[id = "{}"]'.format(id),
+             "style": {"opacity": 1}}
+        for id in all_nodes_id if id not in slct_nodesdata and id in all_slct_src_trgt]
+    if slct_edgedata and False:  # Not doing anything at the moment
+        for edge in edgedata:
+            if edge['source'] in selected_nodes_id:
                 stylesheet.append({
                     "selector": 'node[id = "{}"]'.format(edge['target']),
                     "style": {'background-color': FOLLOWING_COLOR, 'opacity': 0.9}})
@@ -586,17 +612,16 @@ def generate_stylesheet(node, dwld_button):
                                              # "mid-target-arrow-color": FOLLOWING_COLOR,
                                              # "mid-target-arrow-shape": "vee",
                                              'z-index': 5000}})
-
-            if edge['target'] in store_node['active']['ids']:
+            if edge['target'] in selected_nodes_id:
                 stylesheet.append({"selector": 'node[id = "{}"]'.format(edge['source']),
                                    "style": {'background-color': FOLLOWER_COLOR,
                                              'opacity': 0.9,
                                              'z-index': 9999}})
                 stylesheet.append({"selector": 'edge[id= "{}"]'.format(edge['id']),
                                    "style": {'opacity': 1,
-                                             # "line-color": FOLLOWER_COLOR,
-                                             # "mid-target-arrow-color": FOLLOWER_COLOR,
-                                             # "mid-target-arrow-shape": "vee",
+                                             "line-color": FOLLOWER_COLOR,
+                                             "mid-target-arrow-color": FOLLOWER_COLOR,
+                                             "mid-target-arrow-shape": "vee",
                                              'z-index': 5000}})
 
     GLOBAL_DATA['cytoscape_layout'] = stylesheet
@@ -625,9 +650,9 @@ def TapNodeData_info(data):
 
 ### ----- display forest plot on node click ------ ###
 @app.callback(Output('tapNodeData-fig', 'figure'),
-              [Input('cytoscape', 'tapNodeData'),Input("dropdown-direction", "value")])
+              [Input('cytoscape', 'tapNodeData'),
+               Input("dropdown-direction", "value")])
 def TapNodeData_fig(data, outcome_direction):
-    print(outcome_direction)
     if data:
         treatment = data['label']
         df = GLOBAL_DATA['forest_data'][GLOBAL_DATA['forest_data'].Reference==treatment].copy()
@@ -667,9 +692,9 @@ def TapNodeData_fig(data, outcome_direction):
                      ticktext=[0.1, 0.5, 1, 5] if xlog else None,
                      range=[0.1, 1] if xlog else None,
                      autorange=True, showline=True,linewidth=2, linecolor='black',
-                     zeroline=True)
+                     zeroline=True, zerolinecolor='black')
 
-    if data and outcome_direction=='False':
+    if data:
         fig.update_layout(clickmode='event+select',
                       font_color="black",
                       margin=dict(l=5, r=10, t=12, b=80),
@@ -679,33 +704,17 @@ def TapNodeData_fig(data, outcome_direction):
                       annotations=[dict(x=0, ax=0, y=-0.12, ay=-0.1, xref='x', axref='x', yref='paper',
                                         showarrow=False, text=effect_size),
                                    dict(x=df.CI_lower.min(), ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
-                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='green'),
+                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3,
+                                        arrowcolor='green' if outcome_direction else 'black'),
                                    dict(x=df.CI_upper.max(), ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
-                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='black'),  #'#751225'
+                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3,
+                                        arrowcolor='black' if outcome_direction else 'green'),  #'#751225'
                                    dict(x=df.CI_lower.min()/2, y=-0.22, xref='x', yref='paper', text='Favours treatment',
                                         showarrow=False),
                                    dict(x=df.CI_upper.max()/2, y=-0.22, xref='x', yref='paper', text=f'Favours {treatment}',
                                         showarrow=False)]
                       )
 
-    elif data and outcome_direction=='True':
-        fig.update_layout(clickmode='event+select',
-                      font_color="black",
-                      margin=dict(l=5, r=10, t=12, b=80),
-                      xaxis=dict(showgrid=False, tick0=0, title=''),
-                      yaxis=dict(showgrid=False, title=''),
-                      title_text='  ', title_x=0.02, title_y=.98, title_font_size=14,
-                      annotations=[dict(x=0, ax=0, y=-0.12, ay=-0.1, xref='x', axref='x', yref='paper',
-                                        showarrow=False, text=effect_size),
-                                   dict(x=df.CI_lower.min(), ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
-                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='black'),
-                                   dict(x=df.CI_upper.max(), ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
-                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3, arrowcolor='green'),  #'#751225'
-                                   dict(x=df.CI_lower.min()/2, y=-0.22, xref='x', yref='paper', text=f'Favours {treatment}',
-                                        showarrow=False),
-                                   dict(x=df.CI_upper.max()/2, y=-0.22, xref='x', yref='paper', text='Favours treatment',
-                                        showarrow=False)]
-                      )
     else:
         fig.update_layout(clickmode='event+select',
                       font_color="black",
@@ -740,7 +749,7 @@ def update_forest_pairwise(data):
         fig.update_layout(margin=dict(l=100, r=100, t=12, b=80))
         fig.update_traces(hoverinfo='skip', hovertemplate=None)
 
-    return fig
+        return fig
 
     ### ----- display bidim forest plot on node click ------ ###
 
@@ -776,8 +785,8 @@ def TapNodeData_fig_bidim(data):
                      error_y=df_second.CI_width_hf if data else df_second.CI_width if xlog else None,
                      log_x=xlog)
 
-    fig.update_layout(paper_bgcolor = 'rgba(0,0,0,0)',
-                      plot_bgcolor = 'rgba(0,0,0,0)')  #paper_bgcolor='#40515e', #626C78
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
+                      plot_bgcolor='rgba(0,0,0,0)')  #paper_bgcolor='#40515e', #626C78
                       #plot_bgcolor='#40515e') #626C78
 
     if xlog:
@@ -787,7 +796,7 @@ def TapNodeData_fig_bidim(data):
     fig.update_traces(marker=dict(symbol='circle',
                                   size=11,
                                   opacity=0.9 if data else 0,
-                                  line=dict(color='Whitesmoke'),
+                                  line=dict(color='black'),
                                   #color='Whitesmoke'
                                   ),
                       error_y=dict(thickness=1.3),
@@ -799,14 +808,14 @@ def TapNodeData_fig_bidim(data):
                      ticktext=[0.1, 0.5, 1, 5] if xlog else None,
                      range=[0.1, 1] if xlog else None,
                      autorange=True, showline=True,linewidth=2, linecolor='black',
-                     zeroline=True),
+                     zeroline=True, zerolinecolor='gray', zerolinewidth=1),
 
     fig.update_yaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5,
                      tickvals=[0.1, 0.5, 1, 5] if xlog else None,
                      ticktext=[0.1, 0.5, 1, 5] if xlog else None,
                      range=[0.1, 1] if xlog else None,
                      autorange=True, showline=True,linewidth=2, linecolor='black',
-                     zeroline=True),
+                     zeroline=True, zerolinecolor='gray', zerolinewidth=1),
 
     fig.update_layout(clickmode='event+select',
                       font_color="black",
@@ -817,6 +826,7 @@ def TapNodeData_fig_bidim(data):
                       )
     if not data:
         fig.update_shapes(dict(xref='x', yref='y'))
+        fig.update_xaxes(zerolinecolor='gray', zerolinewidth=1)
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
         fig.update_layout(margin=dict(l=100, r=100, t=12, b=80), coloraxis_showscale=False)
         fig.update_traces(hoverinfo='skip', hovertemplate=None)
@@ -924,11 +934,11 @@ def get_new_data_cinema(contents, filename):
 ### ----- display Data Table and League Table ------ ###
 @app.callback([Output('datatable-upload-container', 'data'),
                Output('datatable-upload-container', 'columns'),
-               Output('legend_table', 'children'),
-               Output('legend_table_legend', 'children')],
-              [Input('__storage_nodes', 'loading_state'),
+               Output('league_table', 'children'),
+               Output('league_table_legend', 'children')],
+              [Input('cytoscape','selectedNodeData'),
                Input('__storage_netdata', 'children'),
-               Input('cytoscape', 'tapEdgeData')]
+               Input('cytoscape', 'selectedEdgeData')]
               )
 def update_output(store_node, data, store_edge):
     data = pd.read_json(data, orient='split').round(3)
@@ -938,9 +948,9 @@ def update_output(store_node, data, store_edge):
                 .pivot_table(index='treat1', columns='treat2', values='rob')
                 .reindex(index=treatments, columns=treatments, fill_value=np.nan))
     # Filter according to cytoscape selection
-    if store_node['active']['ids']:
-        slctd_trmnts = [nd['data']['label'] for nd in store_node['active']['ids'].values()]
-        data = data[data.treat1.isin(slctd_trmnts) | data.treat2.isin(slctd_trmnts) ]
+    if store_node:
+        slctd_trmnts = [nd['id'] for nd in store_node]
+        # data = data[data.treat1.isin(slctd_trmnts) | data.treat2.isin(slctd_trmnts) ]
         if len(slctd_trmnts)>1:
             leaguetable = leaguetable.loc[slctd_trmnts, slctd_trmnts]
             robs        = robs.loc[slctd_trmnts, slctd_trmnts]
@@ -993,10 +1003,10 @@ def update_output(store_node, data, store_edge):
     leaguetable_cols = [{"name": c, "id": c} for c in leaguetable.columns]
     leaguetable = leaguetable.to_dict('records')
 
-    if store_edge and not store_node['active']['ids']:
-  #  if store_edge['active']['ids'] and not store_node['active']['ids']:
-        slctd_edge = [store_edge['source'], store_edge['target']]
-        data = data[data.treat1.isin(slctd_edge) & data.treat2.isin(slctd_edge)]
+    if store_edge or store_node:
+        slctd_elms = {e['source'] for e in store_edge} | {e['target'] for e in store_edge} if store_edge else set()
+        slctd_elms |= {n['id'] for n in store_node} if store_node else set()
+        data = data[data.treat1.isin(slctd_elms) | data.treat2.isin(slctd_elms)]
         # Prepare for output
         data_cols = [{"name": c, "id": c} for c in data.columns]
         data_output = data.to_dict('records')
@@ -1121,7 +1131,15 @@ def update_dropdown_boxplot(value, edge):
 
     return fig
 
-
+@app.callback([Output("forestswitchlabel1", "style"),
+               Output("forestswitchlabel2", "style")],
+              [Input("dropdown-direction", "value")])
+def color_forest_toggle(toggle_value):
+    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+              'display': 'inline-block', 'margin': 'auto', 'padding-left':'20px'}
+    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+              'display': 'inline-block', 'margin': 'auto', 'padding-right':'20px',}
+    return style1, style2
 
 ###########################################################
 ########################### MAIN ##########################

@@ -1,16 +1,17 @@
-def get_default_stylesheet(node_size=False, pie=False):
+def get_default_stylesheet(node_size=False, pie=False, nodes_opacity=1, edges_opacity=0.75):
     default_stylesheet = [
         {"selector": 'node',
-         'style': {"opacity": 1,
+         'style': {"opacity": nodes_opacity,
                    'background-color': "#07ABA0",
                    'label': "data(label)",
                    'shape':'circle',
-                   'color': "#fff"},
+                   'color': "#fff"
+                   },
          },
         {"selector": 'edge',
          'style': {"curve-style": "bezier",
                    'width': 'data(weight)',
-                   "opacity": 0.75}}]
+                   "opacity": edges_opacity}}]
     if node_size:
         default_stylesheet[0]['style'].update({"width": "data(size)", "height": "data(size)"})
     if pie:

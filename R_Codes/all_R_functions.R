@@ -1,6 +1,7 @@
 options(warn=-1)
 suppressMessages(library(netmeta))
 suppressMessages(library(dplyr))
+suppressMessages(library(meta))
 suppressMessages(library(metafor))
 suppressMessages(library(tidyverse))
 
@@ -15,7 +16,7 @@ run_NetMeta <- function(dat){
                                          comb.random = TRUE,
                                          backtransf = TRUE,
                                          reference.group = treatment)
-              ### Design Matrix
+              ### Values
               treatment_list <- nma_temp$trts[nma_temp$trts!=treatment]
               TE <-  nma_temp$TE.random[, treatment]
               TE_names <- names(TE)[sapply(TE, is.numeric)]
@@ -61,8 +62,14 @@ league_table <- function(dat){
 }
 
 ## pairwise forest plots for all different comparisons in df
-pairwise_forest <- function(dat){
-
-       return(1)
-
-}
+## sorted_dat: dat sorted by treatemnt comparison
+#pairwise_forest <- function(sorted_dat){
+#       sorted_dat %>% mutate(comparisonsID = group_indices(., sorted_dat$treat1, sorted_dat$treat2)
+#       DFs_pairwise <- list()
+#       for comp in comparisonsID:
+#         model_temp = metagen(TE=sorted_dat$TE,seTE=sqrt(sorted_dat$seTE), studlab = sorted_dat$studlab,
+#                              comb.random = TRUE,sm="MD")
+#
+#
+#       return(DFs_pairwise)
+#}

@@ -1,4 +1,5 @@
-def get_default_stylesheet(node_size=False, pie=False, nodes_opacity=1, edges_opacity=0.75):
+
+def get_stylesheet(node_size=False, pie=False, nodes_opacity=1, edges_opacity=0.75):
     default_stylesheet = [
         {"selector": 'node',
          'style': {"opacity": nodes_opacity,

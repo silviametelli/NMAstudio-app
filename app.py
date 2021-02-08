@@ -16,12 +16,13 @@ import dash_daq as daq
 import dash_table
 #from dash_extensions import Download
 import dash_cytoscape as cyto
-from assets.cytoscape_styleesheeet import get_default_stylesheet, download_stylesheet
+from assets.cytoscape_styleesheeet import get_stylesheet
 from assets.tab_styles import subtab_style, subtab_selected_style
-from assets.dropdowns_values import options_format, options_outcomes, options_outcomes_direction, options_nodesize, options_colornodeby
+from assets.dropdowns_values import *
 
 from dash.dependencies import Input, Output, State
 import plotly.express as px
+import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
 #--------------------------------------------------------------------------------------------------------------------#
@@ -52,27 +53,20 @@ write_edge_topickle(EMPTY_SELECTION_EDGES)
 GRAPH_INTERVAL = os.environ.get("GRAPH_INTERVAL", 5000)
 
 app = dash.Dash(__name__, meta_tags=[{"name": "viewport",
-                                      "content": "width=device-width, initial-scale=1"}])
+                                      "content": "width=device-width, initial-scale=1"}],
+                suppress_callback_exceptions=True)
 server = app.server
 
 styles = {
-    'output': {
-        'overflow-y': 'scroll',
-        'overflow-wrap': 'break-word',
-        'height': 'calc(100% - 25px)',
-        'border': 'thin lightgrey solid'
-    },
+    'output': {'overflow-y': 'scroll',
+               'overflow-wrap': 'break-word',
+               'height': 'calc(100% - 25px)',
+               'border': 'thin lightgrey solid'},
     'tab': {'height': 'calc(98vh - 115px)'}
 }
 # Load extra layouts
 cyto.load_extra_layouts()
-network_layouts = [{'label': 'circle',        'value': 'circle'},
-                   {'label': 'wide',          'value': 'breadthfirst'},
-                   {'label': 'grid',          'value': 'grid'},
-                   {'label': 'spread',        'value': 'spread'},
-                   {'label': 'cola',          'value': 'cola'},
-                   {'label': 'random',        'value': 'random'}
-                   ]
+
 
 def get_network(df):
     edges = df.groupby(['treat1', 'treat2']).TE.count().reset_index()
@@ -92,11 +86,11 @@ def get_network(df):
 
 
 # Save default dataframe for demo use
-GLOBAL_DATA = {'net_data':pd.read_csv('db/Senn2013.csv'),
-               'cinema_net_data':pd.read_csv('db/Cinema_report.csv'),
-               'forest_data':pd.read_csv('db/forest_data/forest_data.csv'),
-               'forest_data_outcome2':pd.read_csv('db/forest_data/forest_data_outcome2.csv'),
-               'league_table_data':pd.read_csv('db/league_table_data/league_table.csv', index_col=0)}
+GLOBAL_DATA = {'net_data': pd.read_csv('db/Senn2013.csv'),
+               'cinema_net_data': pd.read_csv('db/Cinema_report.csv'),
+               'forest_data': pd.read_csv('db/forest_data/forest_data.csv'),
+               'forest_data_outcome2': pd.read_csv('db/forest_data/forest_data_outcome2.csv'),
+               'league_table_data': pd.read_csv('db/league_table_data/league_table.csv', index_col=0)}
 GLOBAL_DATA['default_elements'] = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
 
 GLOBAL_DATA['dwnld_bttn_calls'] = 0
@@ -127,48 +121,17 @@ app.layout = html.Div(
                       className="app__header__logo")],
              className="app__header"),
     html.Div([html.Div(   # NMA Graph
-                 [html.Div([dbc.Row([
-                                dbc.Col([
-                                    html.H6("Graph layout", className="graph__title",style={'display': 'inline-block','font-size':'11px'}),
-                                    html.Div(dcc.Dropdown(id='graph-layout-dropdown', options=network_layouts, clearable=False,
-                                                          value='circle', style={'width':'75px',
-                                                                                 'color': '#1b242b','font-size':'10.5px',
-                                                                                 'background-color': '#40515e'}),
-                                                  style={'display': 'inline-block', 'margin-bottom':'-10px','margin-left': '-8px'})],
-                                                  width={"size": 3, "order": "last", "offset": 1}, lg=3, style={'display': 'inline-block'}),
-                                dbc.Col([
-                                     html.H6("Node size", className="graph__title",style={'display': 'inline-block','font-size':'11px'}),
-                                     html.Div(dcc.Dropdown(id='node-size-dropdown', options=options_nodesize, clearable=False, className='',
-                                                  value='default', style={'width':'75px',
-                                                                         'color': '#1b242b','font-size':'10.5px',
-                                                                         'background-color': '#40515e'}),
-                                                  style={'display': 'inline-block', 'margin-bottom':'-10px','margin-left': '-8px'})],
-                                                  width={"size": 3, "order": "last", "offset": 2},lg=3, style={'display': 'inline-block'}),
-                                dbc.Col([
-                                      html.H6("Node color", className="graph__title", style={'display': 'inline-block','font-size':'11px'}),
-                                      html.Div(dcc.Dropdown(id='node-color-dropdown', options=options_colornodeby, clearable=False,
-                                                  className='',
-                                                  value='default', style={'width': '75px','font-size':'10.5px',
-                                                                         'color': '#1b242b',
-                                                                         'background-color': '#40515e'}),
-                                                  style={'display': 'inline-block', 'margin-bottom': '-10px', 'margin-left': '-8px'})],
-                                                  width={"size": 3, "order": "last", "offset": 3},lg=3, style={'display': 'inline-block'})
-                                 ]),
-                            dbc.Row(html.Div(html.Button("Save", id="btn-get-png", #size='sm',
-                                                         style={'color': 'green',
-                                                                          'height': '33px','margin-left': '8px',
-                                                                          'verticalAlign': 'top'}),
-                                     style={'display': 'inline-block', 'paddingLeft': '15px',
-                                            'verticalAlign': 'top'})),
-
-                            html.Br()], style={'margin-left':'-30px'}),
-                  # html.Div([html.Div(style={'width': '10%', 'display': 'inline'}, children=[
-                  #     'Node Color:', dcc.Input(id='input-bg-color', type='text') ])
-                  #  ]),
-                  cyto.Cytoscape(id='cytoscape',
+                 [html.Div([dbc.Row([html.Div(Dropdown_graphlayout, style={'display': 'inline-block', 'font-size': '11px'}),
+                                     html.Div(Dropdown_nodesize,    style={'display': 'inline-block', 'font-size': '11px'}),
+                                     html.Div(Dropdown_nodecolor,   style={'display': 'inline-block', 'font-size': '11px'}),
+                                     html.A(html.Img(src="/assets/NETD.png", style={'width':'50px','filter':'invert()'}),
+                                                     id="btn-get-png", style={'display': 'inline-block'})
+                                     ]),
+                 ], style={'margin-left':'-30px'}),
+                         cyto.Cytoscape(id='cytoscape',   #responsive=True,
                                  elements=GLOBAL_DATA['user_elements'],
-                                 style={'height': '80vh', 'width': '100%','margin-top': '-50px','margin-left': '20px'},
-                                 stylesheet=get_default_stylesheet())],
+                                 style={'height': '75vh', 'width': '125%','margin-top': '0px','margin-left': '-100px'},
+                                 stylesheet=get_stylesheet())],
                   className="one-half column"),
                  html.Div(className='graph__title', children=[]),
                  html.Div(
@@ -360,6 +323,8 @@ app.layout = html.Div(
                                                                         )],
                                                                         )
                               ])]),
+                                  dcc.Tab(label='Funnel plots', children=[html.P("Work in Progress..")
+                                                                          ]),
 
                                   dcc.Tab(label='League Table',
                                       children=[html.Div([dbc.Row([dbc.Col([
@@ -378,31 +343,33 @@ app.layout = html.Div(
                                                           html.Div(id='league_table')
                                       ])]),
 
-                                  dcc.Tab(label='Transitivity',children=[
-                                          html.Div([dbc.Row([html.H6("Choose effect modifier:", className="graph__title2",
-                                                                  style={'display': 'inline-block'}),
-                                                          html.Div(
+                                  dcc.Tab(label='Transitivity',
+                                          children=[
+                                              html.Div([dbc.Row([html.P("Choose effect modifier:", className="graph__title2",
+                                                                  style={'display': 'inline-block', 'vertical-align': 'middle', 'font-size':'12px','margin-bottom':'-10px'}),
                                                               dcc.Dropdown(id='dropdown-effectmod', options=options_var,
-                                                                           clearable=False,className="tapEdgeData-fig-class",
-                                                                           style={'width': '170px','vertical-align': 'middle',
-                                                                                  'color': '#1b242b','display': 'inline-block',
-                                                                                  'background-color': '#40515e','padding-bottom':'5px'}),
-                                                              style={'display': 'inline-block', 'margin-bottom': '-15px'})
-                                                  ])]),
+                                                                           clearable=True, className="tapEdgeData-fig-class",
+                                                                           style={'width': '100px','height': '30px', 'vertical-align': 'top',
+                                                                                  'color': '#1b242b','display': 'inline-block','margin-bottom': '-5px',
+                                                                                  'background-color': '#40515e','padding-bottom':'0px'})
+                                                   ]) ]),
+
                                         dcc.Graph(id='tapEdgeData-fig',
-                                                  config={'modeBarButtonsToRemove':['toggleSpikelines', "pan2d",
+                                                  config={'editable': True,
+                                                          'modeBarButtonsToRemove':['toggleSpikelines', "pan2d",
                                                                                     "select2d", "lasso2d", "autoScale2d",
                                                                                     "hoverCompareCartesian"],
-                                                                                    'toImageButtonOptions': {'format': 'png', # one of png, svg,
-                                                                                                              'filename': 'custom_image',
-                                                                                                              'scale': 10  # Multiply title/legend/axis/canvas sizes by this factor
-                                                                                                              },
-                                                                                    'displaylogo':False})]),
+                                                           'toImageButtonOptions': {'format': 'png', # one of png, svg,
+                                                                                    'filename': 'custom_image',
+                                                                                    'scale': 10  # Multiply title/legend/axis/canvas sizes by this factor
+                                                                                    },
+                                                           'displaylogo':False})]),
 
-                                  dcc.Tab(label='Data', children=[html.Div(
-                                                                dash_table.DataTable(
+                                  dcc.Tab(label='Data',
+                                          children=[html.Div([
+                                                     dash_table.DataTable(
                                                                      id='datatable-upload-container',
-                                                                     editable=True,
+                                                                     editable=False,
                                                                      style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
                                                                                  'color': 'white',
                                                                                  'border': '1px solid #5d6d95',
@@ -421,30 +388,32 @@ app.layout = html.Div(
                                                                                    'border': '1px solid #5d6d95'},
                                                                      style_table={'overflowX': 'scroll',
                                                                                   'overflowY': 'auto',
-                                                                                  'height': '100%',
+                                                                                  'height': '99%',
                                                                                   'max-height': '400px',
-                                                                                  'width':'100%',
+                                                                                  'width':'99%',
                                                                                   'max-width':'calc(40vw)',
                                                                                   'padding': '5px 5px 5px 5px'},
                                                                      css=[
                                                                           {'selector': 'tr:hover',
                                                                            'rule': 'background-color: rgba(0, 0, 0, 0);'},
                                                                           {'selector': 'td:hover',
-                                                                           'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}
-                                                                          ])
+                                                                           'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}])
+                                              ]
                                                 )])
-                                  ],colors={"border": "#1b242b", "primary": "#1b242b", "background": "#1b242b"},
-                                    style=dict(color='#40515e')),
+                                  ], colors={"border": "#1b242b", "primary": "#1b242b", "background": "#1b242b"},
+                                     style=dict(color='#40515e')),
                                     ],
                                       className="graph__container second"),
                       ], className="one-half column")
     ],
               className="app__content"),
         html.P('Copyright © 2020. All rights reserved.', className='__footer'),
-        html.Div(id='__storage_nodes', style={'display': 'none'}),
-        html.Div(id='__storage_edges', style={'display': 'none'}),
         html.Div(id='__storage_netdata', style={'display': 'none'}),
-        html.Div(id='__storage_netdata_cinema', style={'display': 'none'})
+        html.Div(id='__storage_netdata_cinema', style={'display': 'none'}),
+        # dcc.Interval(id='interval-component',
+        #              interval=1*1000, # in milliseconds
+        #              n_intervals=0)
+
     ],
     className="app__container")
 
@@ -504,90 +473,60 @@ def update_options(search_value_format, search_value_outcome1, search_value_outc
 
 ### --- update graph layout with dropdown: graph layout --- ###
 @app.callback(Output('cytoscape', 'layout'),
-             [Input('graph-layout-dropdown', 'value')])
+             [Input('graph-layout-dropdown', 'children')])
 def update_cytoscape_layout(layout):
-        return {'name': layout,
+        return {'name': layout.lower() if layout else 'circle',
                 'animate': True}
 
 ### ----- save network plot as png ------ ###
 @app.callback(Output("cytoscape", "generateImage"),
-              Input("btn-get-png", "n_clicks"))
+              Input("btn-get-png", "n_clicks"),
+              prevent_initial_call=True)
 def get_image(button):
     GLOBAL_DATA['WAIT'] = True
     while GLOBAL_DATA['WAIT']:
-        time.sleep(0.1)
+        time.sleep(0.05)
     action = 'store'
     ctx = dash.callback_context
     if ctx.triggered:
         input_id = ctx.triggered[0]["prop_id"].split(".")[0]
-        if input_id != "tabs":
-            action = "download"
+        if input_id != "tabs": action = "download"
+    #print('End of get_image download function')
     return {'type': 'png','action': action,
             'options':{#'bg':'#40515e',
                        'scale':5}}
 
 
 ### ----- update graph layout on node click ------ ###
-@app.callback([Output('cytoscape', 'stylesheet'),
-               Output('__storage_nodes', 'loading_state')],
+@app.callback(Output('cytoscape', 'stylesheet'),
               [Input('cytoscape', 'tapNode'),
                Input('cytoscape','selectedNodeData'),
                Input('cytoscape','elements'),
                Input('cytoscape','selectedEdgeData'),
-               Input('node-color-dropdown', 'value'),
-               Input('node-size-dropdown', 'value'),
-               Input("btn-get-png", "n_clicks")
+               Input('dd_nclr', 'children'),
+               Input('dd_nds', 'children'),
+               Input("btn-get-png", "n_clicks"),
                ])
-def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata, pie, node_size, dwld_button):
+def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
+                        pie, dd_nds,
+                        dwld_button):
+    #print('generating stylesheet')
+    node_size = dd_nds or 'Default'
+    node_size = node_size=='Tot randomized'
+    pie = pie=='Risk of Bias'
     FOLLOWER_COLOR, FOLLOWING_COLOR = '#07ABA0', '#07ABA0'
-    NODE_SHAPE = 'ellipse' # One of  'ellipse', 'triangle', 'rectangle', 'diamond', 'pentagon', 'hexagon', 'heptagon', 'octagon', 'star', 'polygon'
-    DWNLD = False
-    pie = pie=='risk of bias'
-    node_size = node_size=='n.randomized'
-    stylesheet = get_default_stylesheet(pie=pie, node_size=node_size)
-    store_node = read_node_frompickle()
+    stylesheet = get_stylesheet(pie=pie, node_size=node_size)
     edgedata = [el['data'] for el in elements if 'target' in el['data'].keys()]
     all_nodes_id = [el['data']['id'] for el in elements if 'target' not in el['data'].keys()]
 
-
-    if dwld_button and dwld_button > GLOBAL_DATA['dwnld_bttn_calls']:
-        GLOBAL_DATA['dwnld_bttn_calls'] += 1
-        DWNLD = True
-    GLOBAL_DATA['WAIT'] = DWNLD
-    if slct_nodesdata and not DWNLD:
+    if slct_nodesdata:
         selected_nodes_id = [d['id'] for d in slct_nodesdata]
         all_slct_src_trgt = list({e['source'] for e in edgedata if e['source'] in selected_nodes_id
                                   or e['target'] in selected_nodes_id}
                                  | {e['target'] for e in edgedata if e['source'] in selected_nodes_id
                                     or e['target'] in selected_nodes_id})
-        # print(store_node['active']['ids'].keys())
-        # if node['data']['id'] in store_node['active']['ids'].keys():
-        #     del store_node['active']['ids'][node['data']['id']]
-        #     write_node_topickle(store_node)
-        # else:
-        #     store_node['active']['ids'][node['data']['id']] = node
-        #     write_node_topickle(store_node)
-        # if not len(store_node['active']['ids']):
-        #     GLOBAL_DATA['cytoscape_layout'] = download_stylesheet if DWNLD else get_default_stylesheet()
-        #     return GLOBAL_DATA['cytoscape_layout'], EMPTY_SELECTION_NODES
-    elif DWNLD:
-        if os.path.exists('db/.temp/selected_nodes.pickle'):
-            store_node = read_node_frompickle()
-        else:
-            store_node = EMPTY_SELECTION_NODES
-    # else:
-    #     # write_node_topickle(EMPTY_SELECTION_NODES)
-    #     GLOBAL_DATA['cytoscape_layout'] = download_stylesheet if DWNLD else get_default_stylesheet()
-    #     return GLOBAL_DATA['cytoscape_layout'], EMPTY_SELECTION_NODES
-    # {"selector": 'node',
-    #  'style': {'opacity': 0.2, 'color': "#1b242b" if DWNLD else "white",
-    #            'label': "data(label)",
-    #            'background-color': "#07ABA0", 'shape': NODE_SHAPE}},
-    # {'selector': 'edge',
-    #  'style': {'opacity': 0.1, 'width': 'data(weight)',
-    #            "curve-style": "bezier"}}
-    if slct_nodesdata:
-        stylesheet = get_default_stylesheet(pie=pie, node_size=node_size,
+
+        stylesheet = get_stylesheet(pie=pie, node_size=node_size,
                                             nodes_opacity=0.2, edges_opacity=0.1)+[
                       {"selector": 'node[id = "{}"]'.format(id),
                        "style": {"border-color": "#751225", "border-width": 5, "border-opacity": 1,
@@ -624,9 +563,13 @@ def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata, pie, node
                                              "mid-target-arrow-shape": "vee",
                                              'z-index': 5000}})
 
-    GLOBAL_DATA['cytoscape_layout'] = stylesheet
+    if dwld_button and dwld_button > GLOBAL_DATA['dwnld_bttn_calls']:
+        GLOBAL_DATA['dwnld_bttn_calls'] += 1
+        stylesheet[0]['style']['color'] = 'black'
+        time.sleep(0.05)
+
     GLOBAL_DATA['WAIT'] = False
-    return stylesheet, store_node
+    return stylesheet
 
 
 ### ----- update node info on NMA forest plot  ------ ###
@@ -640,7 +583,8 @@ def TapNodeData_info(data):
 
 ### ----- update node info on bidim forest plot  ------ ###
 @app.callback(Output('tapNodeData-info-bidim', 'children'),
-              [Input('cytoscape', 'tapNodeData')])
+              [Input('cytoscape', 'tapNodeData')],
+              prevent_initial_call=True)
 def TapNodeData_info(data):
     if data:
         return 'Reference treatment selected: ', data['label']
@@ -733,25 +677,6 @@ def TapNodeData_fig(data, outcome_direction):
 
     return fig
 
-### - figures on edge click: pairwise forest plots  - ###
-@app.callback(Output('tapNodeData-fig-pairwise', 'figure'),
-              Input('cytoscape', 'tapEdgeData'))
-def update_forest_pairwise(data):
-    if data:
-        pass
-    else:
-        effect_size = ''
-        df = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
-                                              'CI_width', 'CI_width_hf'])
-        fig = px.scatter(df, x=effect_size)
-        fig.update_shapes(dict(xref='x', yref='y'))
-        fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
-        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80))
-        fig.update_traces(hoverinfo='skip', hovertemplate=None)
-
-        return fig
-
-    ### ----- display bidim forest plot on node click ------ ###
 
 ### ----- display dibim forest plot on node click ------ ###
 @app.callback(Output('tapNodeData-fig-bidim', 'figure'),
@@ -844,7 +769,7 @@ def TapEdgeData_info(data):
 
 ### - display information box - ###
 @app.callback(Output('cytoscape-mouseTapEdgeData-output', 'children'),
-              [Input('cytoscape', 'tapEdgeData')])
+              [Input('cytoscape', 'selectedEdgeData')])
 def TapEdgeData(edge):
 
     if edge:
@@ -853,9 +778,9 @@ def TapEdgeData(edge):
     #         write_edge_topickle(EMPTY_SELECTION_EDGES)
     #     else:                            # New click: reset layout on nodes and select layout on edge
     #         write_edge_topickle(edge)
-        n_studies = edge['weight_lab']
+        n_studies = edge[0]['weight_lab']
         studies_str = f"{n_studies}" + (' studies' if n_studies>1 else ' study')
-        return f"{edge['source'].upper()} vs {edge['target'].upper()}: {studies_str}"
+        return f"{edge[0]['source'].upper()} vs {edge[0]['target'].upper()}: {studies_str}"
     else:
 
         return "Click on an edge to get information."
@@ -938,8 +863,7 @@ def get_new_data_cinema(contents, filename):
                Output('league_table_legend', 'children')],
               [Input('cytoscape','selectedNodeData'),
                Input('__storage_netdata', 'children'),
-               Input('cytoscape', 'selectedEdgeData')]
-              )
+               Input('cytoscape', 'selectedEdgeData')])
 def update_output(store_node, data, store_edge):
     data = pd.read_json(data, orient='split').round(3)
     leaguetable = GLOBAL_DATA['league_table_data'].copy(deep=True)
@@ -950,8 +874,7 @@ def update_output(store_node, data, store_edge):
     # Filter according to cytoscape selection
     if store_node:
         slctd_trmnts = [nd['id'] for nd in store_node]
-        # data = data[data.treat1.isin(slctd_trmnts) | data.treat2.isin(slctd_trmnts) ]
-        if len(slctd_trmnts)>1:
+        if len(slctd_trmnts)>0:
             leaguetable = leaguetable.loc[slctd_trmnts, slctd_trmnts]
             robs        = robs.loc[slctd_trmnts, slctd_trmnts]
             treatments = slctd_trmnts
@@ -960,7 +883,6 @@ def update_output(store_node, data, store_edge):
     N_BINS = 5
     bounds = np.arange(N_BINS + 1)/N_BINS
 
-    # leaguetable_colr = leaguetable.copy(deep=True)
     leaguetable_colr = robs.copy(deep=True)
     np.fill_diagonal(leaguetable_colr.values, np.nan)
     leaguetable_colr = leaguetable_colr.astype(np.float64)
@@ -997,8 +919,6 @@ def update_output(store_node, data, store_edge):
                    'backgroundColor': 'rgb(26, 36, 43)'})
 
     # Prepare for output
-    data_cols = [{"name": c, "id": c} for c in data.columns]
-    data_output = data.to_dict('records')
     leaguetable = leaguetable.reset_index().rename(columns={'index':'Treatment'})
     leaguetable_cols = [{"name": c, "id": c} for c in leaguetable.columns]
     leaguetable = leaguetable.to_dict('records')
@@ -1007,11 +927,9 @@ def update_output(store_node, data, store_edge):
         slctd_elms = {e['source'] for e in store_edge} | {e['target'] for e in store_edge} if store_edge else set()
         slctd_elms |= {n['id'] for n in store_node} if store_node else set()
         data = data[data.treat1.isin(slctd_elms) | data.treat2.isin(slctd_elms)]
-        # Prepare for output
-        data_cols = [{"name": c, "id": c} for c in data.columns]
-        data_output = data.to_dict('records')
 
-        return data_output, data_cols, build_league_table(leaguetable, leaguetable_cols, styles), legend
+    data_cols = [{"name": c, "id": c} for c in data.columns]
+    data_output = data.to_dict('records')
 
     return data_output, data_cols, build_league_table(leaguetable, leaguetable_cols, styles), legend
 
@@ -1036,7 +954,8 @@ def build_league_table(data, columns, style_data_conditional):
                                 style_table={'overflow': 'auto',
                                              'width': '100%',
                                              'max-width': 'calc(40vw)',
-                                             'padding': '5px 5px 5px 5px'},
+                                             # 'padding': '5px 5px 5px 5px'
+                                             },
                                 css=[{"selector": "table",
                                       "rule": "width: 100%; "},
                                      {'selector': 'tr:hover',
@@ -1048,89 +967,127 @@ def build_league_table(data, columns, style_data_conditional):
 ### - figures on edge click: transitivity boxplots  - ###
 @app.callback(Output('tapEdgeData-fig', 'figure'),
              [Input('dropdown-effectmod', 'value'),
-              Input('cytoscape', 'tapEdgeData')])
-
-def update_dropdown_boxplot(value, edge):
+              Input('cytoscape', 'selectedEdgeData')])
+def update_boxplot(value, edges):
+    active, non_active = '#1f77b4', '#797B7D'  #'#0757AD', '#797B7D'
     if value:
-            df = GLOBAL_DATA['net_data'].copy()
-            df = df[['treat1', 'treat2',value]]
-            #df['Comparison'] = df.groupby(['treat1', 'treat2'], sort=False).ngroup().add(1)
-            df['Comparison'] = (df['treat1'] + str(' ') + str('vs') + str(' ') + df['treat2'])
-            range1 = df[value].min() - 5
-            range2 = df[value].max() + 5
-            if edge:
-                df = GLOBAL_DATA['net_data'].copy()
-                df = df[['treat1', 'treat2', value]]
-                df['Comparison'] = (df['treat1'] + str(' ') +str('vs') + str(' ') + df['treat2'])
-                range1 = df[value].min() - 5
-                range2 = df[value].max() + 5
-                df['mycolor'] = np.where(((df['treat1']==edge['source']) & (df['treat2']==edge['target'])),
-                                         'blue', 'Whitesmoke')
-                #df = df.sort_values(by='Comparison')
-                mycolormap={}
-                for c in range(len(df['Comparison'])):
-                    mycolormap[df['Comparison'][c]]=df['mycolor'][c]
+            df = GLOBAL_DATA['net_data'][['treat1', 'treat2', value]].copy()
+            df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
+            df = df.sort_values(by='Comparison').reset_index()
+            margin = (df[value].max() - df[value].min()) * .4  # 40%
+            range1 = df[value].min() - margin
+            range2 = df[value].max() + margin
+            df['color'] = non_active
+            df['selected'] = 'nonactive'
 
-                fig = px.box(df, x='Comparison', y=value, color='mycolor', #color_discrete_map=mycolormap,
-                            color_discrete_sequence=['Whitesmoke','blue'] ,
-                            range_y=[range1, range2], points='suspectedoutliers'
+            slctd_comps = []
+            for edge in edges or []:
+                src, trgt = edge['source'], edge['target']
+                slctd_comps += [f'{src} vs {trgt}']
+            # if df.Comparison.iloc[0] in slctd_comps:    ## for px express only
+            #     active, non_active = non_active, active
+            for ind, row in df.iterrows():
+                df.loc[ind, 'color'] = active if row.Comparison in slctd_comps else non_active
+                df.loc[ind, 'selected'] = 'active' if row.Comparison in slctd_comps else 'nonactive'
+
+            unique_comparisons = df.Comparison.sort_values().unique()
+            fig = go.Figure(data=[go.Box(y=df[df.Comparison == comp][value],
+                                         name=comp,
+                                         width=.6,
+                                         marker_color=active if comp in slctd_comps else non_active
+                                         )
+                                  for comp in unique_comparisons]
+                            # +[go.Scatter(xaxis='x2')]
                             )
-
-                fig.update_layout(clickmode='event+select',
-                                  paper_bgcolor='#40515e',
-                                  plot_bgcolor='#40515e',
-                                  font_color="black",
-                                  showlegend=False)
-
-                fig.update_traces(boxpoints='outliers', quartilemethod="inclusive",hoverinfo= "x+y",
-                                  selector=dict(mode='markers'),
-                                  marker=dict( opacity=1, line=dict(color='Whitesmoke', outlierwidth=2)))
-
-                fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5,
-                #                 tickvals=[],
-                #                 tickvals=[x for x in range(df['Comparison'].min(), df['Comparison'].max() + 1)],
-                #                 ticktext=[x for x in range(df['Comparison'].min(), df['Comparison'].max() + 1)],
-                                 showline=True,
-                                 zeroline=True)
-
-                fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='black', showline=True)
-                return fig
-
-    if not value:
-            df = pd.DataFrame([[0] * 2], columns=['Comparison', 'value'])
+    else:
+            df = pd.DataFrame([[0] * 3], columns=['Comparison', 'value', 'selected'])
             value = df['value']
             range1 = range2 = 0
+            fig = go.Figure(data=[go.Box(y=df['value'])])
+            fig.update_layout(margin=dict(l=100, r=100, t=12, b=80), xaxis=dict(showgrid=False, tick0=0, title=''),
+                              yaxis=dict(showgrid=False, tick0=0, title=''))
 
-    fig = px.box(df, x='Comparison', y=value,
-                 range_y=[range1,range2], points= 'suspectedoutliers')
+    #
+    # fig.update_layout(
+    # xaxis=dict(
+    #     range=[0, len(unique_comparisons)],
+    #     tickfont=dict(color=active),
+    #     tickmode='array',
+    #     tickvals=[n+1 for n,_ in enumerate(unique_comparisons)],
+    #     ticktext=[comp if comp in slctd_comps else ''
+    #               for n, comp in enumerate(unique_comparisons)],
+    # ),
+    # xaxis2=dict(
+    #     range=[0, len(unique_comparisons)],
+    #     tickfont=dict(color=non_active),
+    #     tickmode='array',
+    #     tickvals=[n+1 for n,_ in enumerate(unique_comparisons)],
+    #     ticktext=[comp if comp not in slctd_comps else ''
+    #               for n, comp in enumerate(unique_comparisons)],
+    #     overlaying="x",
+    #     side="bottom",
+    # ),
+    # )
 
-    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
+    fig.update_layout(clickmode='event+select',
+                      paper_bgcolor='rgba(0,0,0,0)',
                       plot_bgcolor='rgba(0,0,0,0)',
                       font_color="black",
-                      showlegend=False)
+                      yaxis_range=[range1, range2],
+                      showlegend=False,
+                      font=dict(
+                          #family="sans serif",
+                          size=11,
+                          #color="RebeccaPurple" if edges else 'black'
+                      ),
+                      xaxis=dict(showgrid=False, tick0=0),
+                      yaxis=dict(showgrid=False)
+                      )
 
-    fig.update_traces(boxpoints='outliers', quartilemethod="inclusive", hoverinfo= "x+y",
-                      marker=dict(opacity=1, line=dict(color='Whitesmoke', outlierwidth=2), color= "Whitesmoke")
+    fig.update_traces(boxpoints='outliers', quartilemethod="inclusive",hoverinfo= "x+y",
+                      selector=dict(mode='markers'), showlegend=False,opacity=1,
+                      marker=dict(opacity=1, line=dict(color='black', outlierwidth=2))
                       )
 
     fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5,
-                    # tickvals=[],
-                     #tickvals=[x for x in range(df['Comparison'].min(), df['Comparison'].max()+1)],
-                   #  ticktext=[x for x in df['Comparison']],
-                     showline=True,
-                     zeroline=True)
+                     showline=True, zerolinecolor='black',tickangle=30, linecolor='black')
 
-    fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='black', showline=True)
+    fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='black', showline=True, linecolor='black')
+
 
     if not any(value):
         fig.update_shapes(dict(xref='x', yref='y'))
+        fig.update_xaxes(tickvals=[], ticktext=[],zerolinecolor='gray', zerolinewidth=1, tickangle=0)
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
-      #  fig.update_xaxes(tickvals=[], ticktext=[], visible=False)
-        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80))
+        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80), xaxis=dict(showgrid=False, tick0=0, title=''),
+                          yaxis=dict(showgrid=False, tick0=0, title=''))
         fig.update_traces(quartilemethod="exclusive", hoverinfo='skip', hovertemplate=None)
 
     return fig
 
+
+### - figures on edge click: pairwise forest plots  - ###
+@app.callback(Output('tapNodeData-fig-pairwise', 'figure'),
+              Input('cytoscape', 'tapEdgeData'))
+def update_forest_pairwise(data):
+    if data:
+        pass
+    else:
+        effect_size = ''
+        df = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
+                                              'CI_width', 'CI_width_hf'])
+        fig = px.scatter(df, x=effect_size)
+        fig.update_shapes(dict(xref='x', yref='y'))
+        fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
+        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80))
+        fig.update_traces(hoverinfo='skip', hovertemplate=None)
+
+        return fig
+
+    ### ----- display bidim forest plot on node click ------ ###
+
+
+### -------------- toggle switch ---------------- ###
 @app.callback([Output("forestswitchlabel1", "style"),
                Output("forestswitchlabel2", "style")],
               [Input("dropdown-direction", "value")])
@@ -1140,6 +1097,53 @@ def color_forest_toggle(toggle_value):
     style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
               'display': 'inline-block', 'margin': 'auto', 'padding-right':'20px',}
     return style1, style2
+
+###########################################################
+############ Bootstrap Dropdowns ##########################
+###########################################################
+@app.callback([Output('dd_nds', 'children')],
+              [Input('dd_nds_default', 'n_clicks_timestamp'),Input('dd_nds_default', 'children'),
+               Input('dd_nds_tot_rnd', 'n_clicks_timestamp'),Input('dd_nds_tot_rnd', 'children'),
+               Input('dd_nds_other', 'n_clicks_timestamp'),Input('dd_nds_other', 'children')],
+              prevent_initial_call=True)
+def which_dd_nds(default_t, default_v, tot_rnd_t, tot_rnd_v, other_t, other_v):
+    values = [default_v, tot_rnd_v, other_v]
+    dd_nds = [default_t or 0, tot_rnd_t or 0, other_t or 0]
+    which = dd_nds.index(max(dd_nds))
+    return [values[which]]
+
+@app.callback([Output('dd_nclr', 'children')],
+              [Input('dd_nclr_default', 'n_clicks_timestamp'),Input('dd_nclr_default', 'children'),
+               Input('dd_nclr_rob', 'n_clicks_timestamp'),Input('dd_nclr_rob', 'children')],
+              prevent_initial_call=True)
+def which_dd_nds(default_t, default_v, rob_t, rob_v):
+    values = [default_v, rob_v]
+    dd_nclr = [default_t or 0, rob_t or 0]
+    which = dd_nclr.index(max(dd_nclr))
+    return [values[which]]
+
+
+flatten = lambda t: [item for sublist in t for item in sublist]
+@app.callback([Output('graph-layout-dropdown', 'children')],
+              flatten([[Input(f'dd_ngl_{item.lower()}', 'n_clicks_timestamp'),
+                        Input(f'dd_ngl_{item.lower()}', 'children')]
+                        for item in ['Circle', 'Breadthfirst', 'Grid', 'Spread', 'Cose', 'Random', 'Cola',
+                                     'Cose-Bilkent', 'Euler', 'Dagre', 'Klay']
+                      ]),
+              prevent_initial_call=True)
+def which_dd_nds(circle_t, circle_v, breadthfirst_t, breadthfirst_v,
+                 grid_t, grid_v, spread_t, spread_v, cose_t, cose_v, random_t, random_v,
+                 cola_t, cola_v, cose_bilkent_t, cose_bilkent_v, euler_t, euler_v,
+                 dagre_t, dagre_v, klay_t, klay_v):
+    values = [circle_v,breadthfirst_v,grid_v,spread_v,cose_v,random_v,  cola_v, cose_bilkent_v,
+             euler_v, dagre_v, klay_v]
+    times = [circle_t, breadthfirst_t, grid_t, spread_t, cose_t, random_t, cola_t, cose_bilkent_t,
+             euler_t, dagre_t, klay_t]
+    dd_ngl = [t or 0 for t in times]
+    which = dd_ngl.index(max(dd_ngl))
+    return [values[which]]
+
+
 
 ###########################################################
 ########################### MAIN ##########################

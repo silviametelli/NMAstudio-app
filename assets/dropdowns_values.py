@@ -12,12 +12,32 @@ options_outcomes_direction = [{'label':'beneficial',  'value':'beneficial'},
                              {'label':'harmful',     'value':'harmful'}
                              ]
 
-options_nodesize = [{'label':'default',  'value':'default'},
-                    {'label':'tot randomized',  'value':'n.randomized'},
-                    {'label':'other',     'value':'other'}
-                   ]
+import dash_bootstrap_components as dbc, dash_html_components as html
 
-options_colornodeby = [{'label':'default',  'value':'default'},
-                       {'label':'risk of bias',  'value':'risk of bias'}
-                       ]
-
+Dropdown_nodesize = dbc.DropdownMenu(
+    label="Node size",
+    children=[
+        dbc.DropdownMenuItem("Default", id='dd_nds_default'),
+        dbc.DropdownMenuItem("Tot randomized", id='dd_nds_tot_rnd'),
+        dbc.DropdownMenuItem("Other", id='dd_nds_other'),
+        html.Div(id='dd_nds', style={'display': 'none'}),
+    ], style={'display': 'inline-block',}
+)
+Dropdown_nodecolor = dbc.DropdownMenu(
+    label="Node color",
+    children=[
+        dbc.DropdownMenuItem("Default", id='dd_nclr_default'),
+        dbc.DropdownMenuItem("Risk of Bias", id='dd_nclr_rob'),
+        html.Div(id='dd_nclr', style={'display': 'none'}),
+    ], style={'display': 'inline-block',}
+)
+Dropdown_graphlayout = dbc.DropdownMenu(
+    label="Graph Layout",
+    children=[
+        dbc.DropdownMenuItem(item, id=f'dd_ngl_{item.lower()}')
+        for item in ['Circle', 'Breadthfirst', 'Grid', 'Spread', 'Cose', 'Random', 'Cola',
+                     'Cose-Bilkent', 'Euler', 'Dagre', 'Klay']
+             ] + [html.Div(id='graph-layout-dropdown', style={'display': 'none'})
+             ],
+    style={'display': 'inline-block',}
+)

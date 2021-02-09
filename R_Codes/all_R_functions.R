@@ -63,13 +63,30 @@ league_table <- function(dat){
 
 ## pairwise forest plots for all different comparisons in df
 ## sorted_dat: dat sorted by treatemnt comparison
-#pairwise_forest <- function(sorted_dat){
-#       sorted_dat %>% mutate(comparisonsID = group_indices(., sorted_dat$treat1, sorted_dat$treat2)
-#       DFs_pairwise <- list()
-#       for comp in comparisonsID:
-#         model_temp = metagen(TE=sorted_dat$TE,seTE=sqrt(sorted_dat$seTE), studlab = sorted_dat$studlab,
-#                              comb.random = TRUE,sm="MD")
-#
-#
-#       return(DFs_pairwise)
-#}
+pairwise_forest <- function(dat){
+
+  DFs_pairwise <- list()
+  dat %>% arrange(dat, treat1, treat2)
+  dat$ID <- dat %>% group_indices(treat1, treat2)
+
+  for (id in dat$ID){
+    dat_temp <- dat[which(dat$ID==id), ]
+    model_temp = metagen(TE=TE,seTE=sqrt(seTE), studlab = studlab, data=dat_temp,
+                         comb.random = T, sm="MD")
+
+    studlab <- dat_temp$studlab
+    t1 <- dat_temp$treat1
+    t2 <- dat_temp$treat2
+    TE <- model_temp$TE.random
+    se <- model_temp$seTE.random
+    ci_lo <- TE-1.96*se ## if MD
+    ci_up <- TE+1.96*se
+    TEweights <- 1/se
+
+    df <- data.frame(TE, id, studlab, t1, t2, ci_lo, ci_up, TEweights)
+    colnames(df) <- c( "MD", "id", "studlab", "treat1", "treat2", "CI_lower", "CI_upper", "WEIGHT")
+    DFs_pairwise[[id]] <- df
+  }
+  DFs_pairwise <- do.call('rbind', DFs_pairwise)
+  return(DFs_pairwise)
+}

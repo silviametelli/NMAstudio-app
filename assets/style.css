@@ -311,3 +311,11 @@ img:hover {
     border-radius: 10px;
     filter: invert();
 }
+
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 3.75em;
+  height: 2.125em;
+}

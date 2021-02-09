@@ -35,8 +35,8 @@ Dropdown_graphlayout = dbc.DropdownMenu(
     label="Graph Layout",
     children=[
         dbc.DropdownMenuItem(item, id=f'dd_ngl_{item.lower()}')
-        for item in ['Circle', 'Breadthfirst', 'Grid', 'Spread', 'Cose', 'Random', 'Cola',
-                     'Cose-Bilkent', 'Euler', 'Dagre', 'Klay']
+        for item in ['Circle', 'Breadthfirst', 'Grid', 'Spread', 'Cose', 'Cola',
+                     'Cose-Bilkent', 'Dagre', 'Klay']
              ] + [html.Div(id='graph-layout-dropdown', style={'display': 'none'})
              ],
     style={'display': 'inline-block',}

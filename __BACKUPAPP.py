@@ -216,27 +216,37 @@ app.layout = html.Div(
                                                                                                  html.Div([html.P(
                                                                                                      "Beneficial",
                                                                                                      id='forestswitchlabel1',
-                                                                                                     style={'display': 'inline-block',
-                                                                                                            'margin': 'auto',
-                                                                                                            'font-size': '10px',
-                                                                                                            'padding-left': '50px'}),
+                                                                                                     style={
+                                                                                                         'display': 'inline-block',
+                                                                                                          'margin': 'auto',
+                                                                                                          'font-size': '10px',
+                                                                                                         'padding-left': '50px'}),
                                                                                                            daq.ToggleSwitch(
-                                                                                                               id='toggle_forest_direction',
-                                                                                                               color='', size=30,
-                                                                                                               label={'label': "Outcome",
-                                                                                                                      'style': dict(color='white')},
+                                                                                                               id='dropdown-direction',
+                                                                                                               color='',
+                                                                                                               size=30,
+                                                                                                               label={
+                                                                                                                   'label': "Outcome",
+                                                                                                                   'style': dict(
+                                                                                                                       color='white')},
                                                                                                                labelPosition="top",
-                                                                                                               style={'display': 'inline-block',
-                                                                                                                      'margin': 'auto',
-                                                                                                                      'padding-left': '20px',
-                                                                                                                      'padding-right': '20px'}),
-                                                                                                           html.P('Harmful',
+                                                                                                               style={
+                                                                                                                   'display': 'inline-block',
+                                                                                                                   'margin': 'auto',
+                                                                                                                   'padding-left': '20px',
+                                                                                                                   'padding-right': '20px'}),
+                                                                                                           html.P(
+                                                                                                               'Harmful',
                                                                                                                id='forestswitchlabel2',
-                                                                                                               style={'display': 'inline-block',
-                                                                                                                      'margin': 'auto',
-                                                                                                                      'font-size': '10px',
-                                                                                                                      'padding-right': '20px'})
-                                                                                                           ], style={'margin-left': '53%'})
+                                                                                                               style={
+                                                                                                                   'display': 'inline-block',
+                                                                                                                   'margin': 'auto',
+                                                                                                                   'font-size': '10px',
+                                                                                                                   'padding-right': '20px'})
+                                                                                                           ], style={
+                                                                                                    # 'margin-left': '305px',
+                                                                                                     'margin-left': '53%'
+                                                                                                 })
 
                                                                                              ]),
                                                                                              ]),
@@ -343,7 +353,6 @@ app.layout = html.Div(
                                   dcc.Tab(label='Funnel plots', children=[html.P("Work in Progress..")
                                                                           ]),
 
-
                                   dcc.Tab(label='League Table',
                                       children=[html.Div([dbc.Row([dbc.Col([
                                               dcc.Upload(html.A('Upload CINeMA file',
@@ -353,28 +362,7 @@ app.layout = html.Div(
                                           ],style={'display': 'inline-block'}),
                                     dbc.Col([html.Ul(id="file2-list", style={'margin-left': '15px'})],
                                             style={'display': 'inline-block'}
-                                            ),
-                                    dbc.Col([html.Div([html.P("Risk of Bias", id='cinemaswitchlabel1',
-                                                              style={'display': 'inline-block', 'margin': 'auto',
-                                                                     'font-size': '12px',
-                                                                     'padding-left': '10px'}),
-                                                       daq.ToggleSwitch(id='rob_vs_cinema',
-                                                                        color='', size=30,
-                                                                        # label={'label': "Color",
-                                                                        #        'style': dict(fontsize=10, color='white')},
-                                                                        labelPosition="bottom",
-                                                                        style={'display': 'inline-block',
-                                                                               'margin': 'auto',
-                                                                               'padding-left': '10px',
-                                                                               'padding-right': '10px'}),
-                                                       html.P('CINeMA Confidence', id='cinemaswitchlabel2',
-                                                              style={'display': 'inline-block', 'margin': 'auto',
-                                                                     'font-size': '12px',
-                                                                     'padding-right': '0px'})
-                                        ], style={'margin-left': '53%'})
-
-                                      ], )
-                                      ]),
+                                            )]),
                                                           html.Br(),
                                                           html.Div(id='league_table_legend',
                                                                    style={'float': 'right',
@@ -382,7 +370,7 @@ app.layout = html.Div(
                                                           html.Div(id='league_table')
                                       ])]),
 
-                                  dcc.Tab(label='Trans.',
+                                  dcc.Tab(label='Transitivity',
                                           children=[
                                               html.Div([dbc.Row([html.P("Choose effect modifier:", className="graph__title2",
                                                                   style={'display': 'inline-block', 'vertical-align': 'middle', 'font-size':'12px','margin-bottom':'-10px'}),
@@ -633,7 +621,7 @@ def TapNodeData_info(data):
 ### ----- display forest plot on node click ------ ###
 @app.callback(Output('tapNodeData-fig', 'figure'),
               [Input('cytoscape', 'selectedNodeData'),
-               Input("toggle_forest_direction", "value")])
+               Input("dropdown-direction", "value")])
 def TapNodeData_fig(data, outcome_direction):
     if data:
         treatment = data[0]['label']
@@ -905,31 +893,14 @@ def get_new_data_cinema(contents, filename):
                Output('league_table_legend', 'children')],
               [Input('cytoscape','selectedNodeData'),
                Input('__storage_netdata', 'children'),
-               Input('cytoscape', 'selectedEdgeData'),
-               Input('rob_vs_cinema', 'value')
-               ])
-def update_output(store_node, data, store_edge, toggle_cinema):
+               Input('cytoscape', 'selectedEdgeData')])
+def update_output(store_node, data, store_edge):
     data = pd.read_json(data, orient='split').round(3)
     leaguetable = GLOBAL_DATA['league_table_data'].copy(deep=True)
     treatments = np.unique(data[['treat1', 'treat2']].values.flatten())
     robs = (data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
                 .pivot_table(index='treat1', columns='treat2', values='rob')
                 .reindex(index=treatments, columns=treatments, fill_value=np.nan))
-    if toggle_cinema:
-        confidence_map = {k:n for n,k in enumerate(['very low', 'low', 'medium', 'high'])}
-        # GLOBAL_DATA['league_table_data']
-        comparisons = GLOBAL_DATA['cinema_net_data'].Comparison.str.split(':', expand=True)
-        confidence = GLOBAL_DATA['cinema_net_data']['Confidence rating'].str.lower().map(confidence_map)
-        comprs_conf_ut = comparisons.copy()         # Upper triangle
-        comparisons.columns = [1,0]                 # To get lower triangle
-        comprs_conf_lt = comparisons[[0,1]]         # Lower triangle
-        comprs_conf_ut['Confidence'] = confidence
-        comprs_conf_lt['Confidence'] = confidence
-        comprs_conf = pd.concat([comprs_conf_ut, comprs_conf_lt])
-        comprs_conf = comprs_conf.pivot_table(index=0, columns=1, values='Confidence')
-
-        robs = comprs_conf
-
     # Filter according to cytoscape selection
     if store_node:
         slctd_trmnts = [nd['id'] for nd in store_node]
@@ -997,7 +968,8 @@ def build_league_table(data, columns, style_data_conditional):
                                      'color': 'white',
                                      'border': '1px solid #5d6d95',
                                      'font-family': 'sans-serif',
-                                     'textOverflow': 'ellipsis'},
+                                     'textOverflow': 'ellipsis'
+                                     },
                                 data=data,
                                 columns=columns,
                                 export_format="csv",
@@ -1179,7 +1151,7 @@ def update_forest_pairwise(edges):
                  autorange=True, showline=True, linewidth=2, linecolor='black',
                  zeroline=True, zerolinecolor='black')
 
-    if not edges:
+    if not any(edges):
         fig.update_shapes(dict(xref='x', yref='y'))
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
         fig.update_layout(margin=dict(l=100, r=100, t=12, b=80))
@@ -1188,26 +1160,15 @@ def update_forest_pairwise(edges):
     return fig
 
 
-### -------------- toggle switch forest ---------------- ###
+### -------------- toggle switch ---------------- ###
 @app.callback([Output("forestswitchlabel1", "style"),
                Output("forestswitchlabel2", "style")],
-              [Input("toggle_forest_direction", "value")])
+              [Input("dropdown-direction", "value")])
 def color_forest_toggle(toggle_value):
     style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
               'display': 'inline-block', 'margin': 'auto', 'padding-left':'20px'}
     style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
               'display': 'inline-block', 'margin': 'auto', 'padding-right':'20px',}
-    return style1, style2
-
-### -------------- toggle switch league table ---------------- ###
-@app.callback([Output("cinemaswitchlabel1", "style"),
-               Output("cinemaswitchlabel2", "style")],
-              [Input("rob_vs_cinema", "value")])
-def color_leaguetable_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8','font-size': '12px',
-              'display': 'inline-block', 'margin': 'auto', 'padding-left':'10px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray','font-size': '12px',
-              'display': 'inline-block', 'margin': 'auto', 'padding-right':'0px',}
     return style1, style2
 
 ###########################################################

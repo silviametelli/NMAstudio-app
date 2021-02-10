@@ -77,14 +77,17 @@ pairwise_forest <- function(dat){
     studlab <- dat_temp$studlab
     t1 <- dat_temp$treat1
     t2 <- dat_temp$treat2
-    TE <- model_temp$TE.random
+    TE <- model_temp$TE
+    TE_diamond <- model_temp$TE.random
     se <- model_temp$seTE.random
-    ci_lo <- TE-1.96*se ## if MD
-    ci_up <- TE+1.96*se
-    TEweights <- 1/se
+    ci_lo <- TE_diamond-1.96*se ## if MD
+    ci_up <- TE_diamond+1.96*se
+    ci_lo_individual <- TE-1.96*dat_temp$seTE ## if MD
+    ci_up_individual <- TE+1.96*dat_temp$seTE
+    TEweights <- model_temp$w.random
 
-    df <- data.frame(TE, id, studlab, t1, t2, ci_lo, ci_up, TEweights)
-    colnames(df) <- c( "MD", "id", "studlab", "treat1", "treat2", "CI_lower", "CI_upper", "WEIGHT")
+    df <- data.frame(TE, TE_diamond, id, studlab, t1, t2, ci_lo_individual, ci_up_individual, ci_lo, ci_up, TEweights)
+    colnames(df) <- c( "MD", "TE_diamond", "id", "studlab", "treat1", "treat2", "CI_lower", "CI_upper","CI_lower_diamond", "CI_upper_diamond", "WEIGHT")
     DFs_pairwise[[id]] <- df
   }
   DFs_pairwise <- do.call('rbind', DFs_pairwise)

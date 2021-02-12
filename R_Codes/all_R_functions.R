@@ -56,7 +56,7 @@ league_table <- function(dat){
         # - network estimates of first outcome in lower triangle
         # - network estimates of second outcome in upper triangle
         netleague_table <- netleague(nma_primary, nma_secondary, digits = 2,
-                                     backtransf = TRUE, ci = FALSE)
+                                     backtransf = TRUE, ci = TRUE)
 
         return(netleague_table$random)
 }

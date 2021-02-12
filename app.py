@@ -1,3 +1,5 @@
+#!/usr/bin/env/ python
+
 import warnings
 warnings.filterwarnings("ignore")
 #---------R2Py Resources --------------------------------------------------------------------------------------------#
@@ -128,8 +130,10 @@ app.layout = html.Div(
              className="app__header"),
     html.Div([html.Div(   # NMA Graph
                  [html.Div([dbc.Row([html.Div(Dropdown_graphlayout, style={'display': 'inline-block', 'font-size': '11px'}),
-                                     html.Div(Dropdown_nodesize,    style={'display': 'inline-block', 'font-size': '11px'}),
-                                     html.Div(Dropdown_nodecolor,   style={'display': 'inline-block', 'font-size': '11px'}),
+                                     html.Div(Dropdown_edgesize, style={'display': 'inline-block', 'font-size': '11px'}),
+                                     html.Div(Dropdown_nodesize, style={'display': 'inline-block', 'font-size': '11px'}),
+                                     html.Div(Dropdown_nodecolor, style={'display': 'inline-block', 'font-size': '11px'}),
+                                     #html.Div(Input_color, style={'display': 'inline-block', 'font-size': '10px'}),
                                      html.A(html.Img(src="/assets/NETD.png", style={'width':'50px','filter':'invert()'}),
                                                     # title='save graph',
                                                      id="btn-get-png", style={'display': 'inline-block'}),
@@ -140,10 +144,10 @@ app.layout = html.Div(
                                                  target='btn-get-png')
                                      ]),
 
-                 ], style={'margin-left':'-30px'}),
+                 ], style={'margin-left':'-30px', 'margin-right':'-30px'}),
                          cyto.Cytoscape(id='cytoscape',   #responsive=True,
                                  elements=GLOBAL_DATA['user_elements'],
-                                 style={'height': '75vh', 'width': '125%','margin-top': '0px','margin-left': '-100px'},
+                                 style={'height': '75vh', 'width': '125%','margin-top': '15px','margin-left': '-100px'},
                                  stylesheet=get_stylesheet())],
                   className="one-half column"),
                  html.Div(className='graph__title', children=[]),
@@ -206,17 +210,19 @@ app.layout = html.Div(
                                                        style={'display': 'inline-block', 'margin-bottom': '-15px'})],width="auto", style={'display': 'inline-block'})
                                           ]),
                                    html.Div(id='second-selection') ]),
+
                                                    dcc.Tab(label='Data', style=subtab_style, selected_style=subtab_selected_style,
-                                                           children=[html.Div([
+                                                           children=[html.Div([#html.Br(),
                                                                dash_table.DataTable(
                                                                    id='datatable-upload-container',
                                                                    editable=False,
+                                                                   export_format="csv",
                                                                    style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
                                                                                'color': 'white',
                                                                                'border': '1px solid #5d6d95',
                                                                                'textOverflow': 'ellipsis',
                                                                                'font-family': 'sans-serif',
-                                                                               'foontSize': 10
+                                                                               'foontSize': 10,
                                                                                },
                                                                    style_data_conditional=[
                                                                        {'if': {'row_index': 'odd'},
@@ -232,6 +238,7 @@ app.layout = html.Div(
                                                                                 'height': '99%',
                                                                                 'max-height': '400px',
                                                                                 'width': '99%',
+                                                                                'margin-top':'43px',
                                                                                 'max-width': 'calc(40vw)',
                                                                                 'padding': '5px 5px 5px 5px'},
                                                                    css=[
@@ -243,6 +250,46 @@ app.layout = html.Div(
                                                            )]),
 
                                   ])]) ]),
+                                  dcc.Tab(label='Transitivity',
+                                          children=[
+                                              html.Div(
+                                                  [dbc.Row([html.P("Choose effect modifier:", className="graph__title2",
+                                                                   style={'display': 'inline-block',
+                                                                          'vertical-align': 'middle',
+                                                                          'font-size': '12px',
+                                                                          'margin-bottom': '-10px'}),
+                                                            dcc.Dropdown(id='dropdown-effectmod', options=options_var,
+                                                                         clearable=True,
+                                                                         className="tapEdgeData-fig-class",
+                                                                         style={'width': '150px', 'height': '30px',
+                                                                                'vertical-align': 'top',
+                                                                                'color': '#1b242b',
+                                                                                'display': 'inline-block',
+                                                                                'margin-bottom': '0px',
+                                                                                'background-color': '#40515e',
+                                                                                'padding-bottom': '5px'})
+                                                            ])]),
+                                              dcc.Graph(id='tapEdgeData-fig',
+                                                        config={'editable': True,
+                                                                'edits': dict(annotationPosition=True,
+                                                                              annotationTail=True,
+                                                                              annotationText=True, axisTitleText=True,
+                                                                              colorbarPosition=True,
+                                                                              colorbarTitleText=True,
+                                                                              titleText=False,
+                                                                              legendPosition=True, legendText=True,
+                                                                              shapePosition=True),
+                                                                'modeBarButtonsToRemove': ['toggleSpikelines', "pan2d",
+                                                                                           "select2d", "lasso2d",
+                                                                                           "autoScale2d",
+                                                                                           "hoverCompareCartesian"],
+                                                                'toImageButtonOptions': {'format': 'png',
+                                                                                         # one of png, svg,
+                                                                                         'filename': 'custom_image',
+                                                                                         'scale': 10
+                                                                                         # Multiply title/legend/axis/canvas sizes by this factor
+                                                                                         },
+                                                                'displaylogo': False})]),
 
                                   dcc.Tab(label='Forest plots', value='mainTabForest',children=[
                                               dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persistence=True,
@@ -425,33 +472,6 @@ app.layout = html.Div(
                                                                           html.Br()]),]
                                           ),
 
-                                  dcc.Tab(label='Transitivity',
-                                          children=[
-                                              html.Div([dbc.Row([html.P("Choose effect modifier:", className="graph__title2",
-                                                                  style={'display': 'inline-block', 'vertical-align': 'middle', 'font-size':'12px','margin-bottom':'-10px'}),
-                                                              dcc.Dropdown(id='dropdown-effectmod', options=options_var,
-                                                                           clearable=True, className="tapEdgeData-fig-class",
-                                                                           style={'width': '150px','height': '30px', 'vertical-align': 'top',
-                                                                                  'color': '#1b242b','display': 'inline-block','margin-bottom': '0px',
-                                                                                  'background-color': '#40515e','padding-bottom':'5px'})
-                                                   ]) ]),
-                                        dcc.Graph(id='tapEdgeData-fig',
-                                                  config={'editable': True,
-                                                          'edits': dict(annotationPosition=True, annotationTail=True,
-                                                                        annotationText=True, axisTitleText=True,
-                                                                        colorbarPosition=True, colorbarTitleText=True,
-                                                                        titleText=False,
-                                                                        legendPosition=True, legendText=True,
-                                                                        shapePosition=True),
-                                                          'modeBarButtonsToRemove':['toggleSpikelines', "pan2d",
-                                                                                    "select2d", "lasso2d", "autoScale2d",
-                                                                                    "hoverCompareCartesian"],
-                                                           'toImageButtonOptions': {'format': 'png', # one of png, svg,
-                                                                                    'filename': 'custom_image',
-                                                                                    'scale': 10  # Multiply title/legend/axis/canvas sizes by this factor
-                                                                                    },
-                                                           'displaylogo':False})]),
-
 
                                   ], colors={"border": "#1b242b", "primary": "#1b242b", "background": "#1b242b"},
                                      style=dict(color='#40515e')),
@@ -550,6 +570,16 @@ def get_image(button):
                        'scale':5}}
 
 
+##### ------- modal color button ---------- #####
+@app.callback(Output("modal", "is_open"),
+             [Input("open", "n_clicks"), Input("close", "n_clicks")],
+             [State("modal", "is_open")],
+             )
+def toggle_modal(n1, n2, is_open):
+    if n1 or n2:
+        return not is_open
+    return is_open
+
 ### ----- update graph layout on node click ------ ###
 @app.callback(Output('cytoscape', 'stylesheet'),
               [Input('cytoscape', 'tapNode'),
@@ -558,17 +588,26 @@ def get_image(button):
                Input('cytoscape','selectedEdgeData'),
                Input('dd_nclr', 'children'),
                Input('dd_nds', 'children'),
-               Input("btn-get-png", "n_clicks"),
-               ])
+               Input('dd_egs', 'children'),
+               Input('node_color', 'value'),
+               Input("btn-get-png", "n_clicks")]
+               )
 def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
-                        pie, dd_nds,
-                        dwld_button):
-    #print('generating stylesheet')
+                        dd_nclr, dd_nds,dd_egs, nd_col, dwld_button):
     node_size = dd_nds or 'Default'
     node_size = node_size=='Tot randomized'
-    pie = pie=='Risk of Bias'
+    edge_size = dd_egs or 'Default'
+    edge_size = edge_size=='Number of studies'
+    nd_colr =  dd_nclr or 'Default'
+    if nd_colr=='Default' or None:
+        nd_col='#07ABA0'
+    pie = dd_nclr=='Risk of Bias'
+    if nd_colr not in  ['Default', 'Risk of Bias']:
+        nd_col=nd_col
+    else:
+        nd_col='#07ABA0'
     FOLLOWER_COLOR, FOLLOWING_COLOR = '#07ABA0', '#07ABA0'
-    stylesheet = get_stylesheet(pie=pie, node_size=node_size)
+    stylesheet = get_stylesheet(nd_col=nd_col, pie=pie, node_size=node_size, edge_size=edge_size)
     edgedata = [el['data'] for el in elements if 'target' in el['data'].keys()]
     all_nodes_id = [el['data']['id'] for el in elements if 'target' not in el['data'].keys()]
 
@@ -579,7 +618,7 @@ def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                                  | {e['target'] for e in edgedata if e['source'] in selected_nodes_id
                                     or e['target'] in selected_nodes_id})
 
-        stylesheet = get_stylesheet(pie=pie, node_size=node_size,
+        stylesheet = get_stylesheet(nd_col=str(nd_col), pie=pie, node_size=node_size,
                                             nodes_opacity=0.2, edges_opacity=0.1)+[
                       {"selector": 'node[id = "{}"]'.format(id),
                        "style": {"border-color": "#751225", "border-width": 5, "border-opacity": 1,
@@ -645,8 +684,17 @@ def TapNodeData_info(data):
     else:
         return 'Click on a node to choose reference treatment'
 
-### ----- update node info on funnel plot  ------ ###
+### ----- update edge information on pairwise plot ------ ###
+@app.callback(Output('tapEdgeData-info', 'children'),
+              Input('cytoscape', 'selectedEdgeData'))
+def TapEdgeData_info(data):
+    if data:
+        return 'Selected comparison: ', f"{data[0]['source'].upper()} vs {data[0]['target'].upper()}"
+    else:
+        return 'Click on an edge to display the associated  plot'
 
+
+### ----- update node info on funnel plot  ------ ###
 @app.callback(Output('tapNodeData-info-funnel', 'children'),
               [Input('cytoscape', 'tapNodeData')],
               #prevent_initial_call=True
@@ -827,14 +875,6 @@ def TapNodeData_fig_bidim(data):
 
     return fig
 
-### ----- display information on edge click ------ ###
-@app.callback(Output('tapEdgeData-info', 'children'),
-              Input('cytoscape', 'tapEdgeData'))
-def TapEdgeData_info(data):
-    if data:
-        return 'Selected comparison: ', f"{data['source'].upper()} vs {data['target'].upper()}"
-    else:
-        return 'Click on an edge to display the associated  plot'
 
 ### - display information box - ###
 @app.callback(Output('cytoscape-mouseTapEdgeData-output', 'children'),
@@ -1033,12 +1073,13 @@ def build_league_table(data, columns, style_data_conditional, tips):
                                 data=data,
                                 columns=columns,
                                 export_format="csv",
-                               tooltip_data=[
+                                #state='active',
+                                tooltip_data=[
                                    {col['id']:{'value': f"**Average ROB:** {tip[col['id']]}\n\n**Reason for Downgrading:**",
                                                'type':'markdown'} if col['id']!='Treatment' else None
                                     for col in columns
                                     } for rn, (_, tip) in enumerate(tips.iterrows())
-                               ],
+                                ],
                                 tooltip_delay=200,
                                 tooltip_duration=None,
                                 style_data_conditional=style_data_conditional,
@@ -1234,6 +1275,9 @@ def update_forest_pairwise(edge):
                          linecolor='rgba(0,0,0,0)',
                          secondary_y = True,
                          row=1, col=1, zeroline=False)
+        fig.add_vline(
+            x=center, line_width=1, line_dash='dash', line_color='black'
+        )
 
 
 
@@ -1318,13 +1362,25 @@ def which_dd_nds(default_t, default_v, tot_rnd_t, tot_rnd_v, other_t, other_v):
     which = dd_nds.index(max(dd_nds))
     return [values[which]]
 
+@app.callback([Output('dd_egs', 'children')],
+              [Input('dd_egs_default', 'n_clicks_timestamp'),Input('dd_egs_default', 'children'),
+               Input('dd_egs_tot_rnd', 'n_clicks_timestamp'),Input('dd_egs_tot_rnd', 'children'),
+               Input('dd_egs_other', 'n_clicks_timestamp'),Input('dd_egs_other', 'children')],
+              prevent_initial_call=True)
+def which_dd_egs(default_t, default_v, nstud_t, nstud_v, other_t, other_v):
+    values = [default_v, nstud_v, other_v]
+    dd_egs = [default_t or 0, nstud_t or 0, other_t or 0]
+    which = dd_egs.index(max(dd_egs))
+    return [values[which]]
+
 @app.callback([Output('dd_nclr', 'children')],
               [Input('dd_nclr_default', 'n_clicks_timestamp'),Input('dd_nclr_default', 'children'),
-               Input('dd_nclr_rob', 'n_clicks_timestamp'),Input('dd_nclr_rob', 'children')],
+               Input('dd_nclr_rob', 'n_clicks_timestamp'),Input('dd_nclr_rob', 'children'),
+               Input('dd_nclr_input', 'n_clicks_timestamp'),Input('dd_nclr_input', 'children')],
               prevent_initial_call=True)
-def which_dd_nds(default_t, default_v, rob_t, rob_v):
-    values = [default_v, rob_v]
-    dd_nclr = [default_t or 0, rob_t or 0]
+def which_dd_nds(default_t, default_v, rob_t, rob_v, col_t, col_v):
+    values = [default_v, rob_v, col_v] #col_v['props']['value']
+    dd_nclr = [default_t or 0, rob_t or 0, col_t or 0]
     which = dd_nclr.index(max(dd_nclr))
     return [values[which]]
 

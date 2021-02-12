@@ -12,7 +12,14 @@ options_outcomes_direction = [{'label':'beneficial',  'value':'beneficial'},
                              {'label':'harmful',     'value':'harmful'}
                              ]
 
+import dash_core_components as dcc
 import dash_bootstrap_components as dbc, dash_html_components as html
+
+Input_color = dcc.Input(id="node_color",
+                type="text",
+                style={'background-color':'#40515e','margin-left':'-px', 'font-size':'10.5px', 'padding-left':'-2px'},
+                placeholder="Type color name / Hex")
+
 
 Dropdown_nodesize = dbc.DropdownMenu(
     label="Node size",
@@ -23,14 +30,36 @@ Dropdown_nodesize = dbc.DropdownMenu(
         html.Div(id='dd_nds', style={'display': 'none'}),
     ], style={'display': 'inline-block',}
 )
+
+modal = html.Div(
+    [dbc.Button("Choose your color", id="open"),
+     dbc.Modal([
+                dbc.ModalBody(Input_color),
+                dbc.ModalFooter(dbc.Button("Close", id="close", className="ml-auto"))
+                ],
+            id="modal",style={'background-color':'#40515e','margin-left':'-px', 'font-size':'10.5px', 'padding-left':'-2px'})])
+
+# Dropdown_nodecolor = dbc.DropdownMenu(
+#     label="Node color",
+#     children=[
+#         dbc.DropdownMenuItem("Default", id='dd_nclr_default'),
+#         dbc.DropdownMenuItem("Risk of Bias", id='dd_nclr_rob'),
+#         dbc.DropdownMenuItem("Choose your color", id='dd_nclr_input'),
+#         html.Div(id='dd_nclr', style={'display': 'none'}),
+#     ], style={'display': 'inline-block',}
+# )
+
 Dropdown_nodecolor = dbc.DropdownMenu(
     label="Node color",
     children=[
         dbc.DropdownMenuItem("Default", id='dd_nclr_default'),
         dbc.DropdownMenuItem("Risk of Bias", id='dd_nclr_rob'),
+        dbc.DropdownMenuItem(Input_color, id='dd_nclr_input'), ### or modal
         html.Div(id='dd_nclr', style={'display': 'none'}),
-    ], style={'display': 'inline-block',}
+        ], style={'display': 'inline-block',}
 )
+
+
 Dropdown_graphlayout = dbc.DropdownMenu(
     label="Graph Layout",
     children=[
@@ -41,3 +70,14 @@ Dropdown_graphlayout = dbc.DropdownMenu(
              ],
     style={'display': 'inline-block',}
 )
+
+Dropdown_edgesize = dbc.DropdownMenu(
+    label="Edge size",
+    children=[
+        dbc.DropdownMenuItem("Default", id='dd_egs_default'),
+        dbc.DropdownMenuItem("Number of studies", id='dd_egs_tot_rnd'),
+        dbc.DropdownMenuItem("Other", id='dd_egs_other'),
+        html.Div(id='dd_egs', style={'display': 'none'}),
+    ], style={'display': 'inline-block',}
+)
+

@@ -429,6 +429,8 @@ there.
  */
 @import url(https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&display=swap);
 :root {
+    --app-background-color: #1b242b;
+    --dropdownmenu-hover-background-color: #798d8f;
     --blue: #2c3e50;
     --indigo: #6610f2;
     --purple: #6f42c1;
@@ -482,7 +484,7 @@ article, aside, figcaption, figure, footer, header, hgroup, main, nav, section {
 /*    line-height: 1.5;*/
 /*    color: #212529;*/
 /*    text-align: left;*/
-/*    background-color: #fff*/
+/*    background-color: var(--white)*/
 /*}*/
 
 [tabindex="-1"]:focus:not(:focus-visible) {outline: 0 !important}
@@ -524,7 +526,7 @@ select { word-wrap: normal }
     border: 1px solid transparent;
     /*padding: 1rem 1rem;*/
 
-    color: #fff !important;
+    color: var(--white) !important;
     letter-spacing: 0.3rem !important;
     /*padding: 0px 25px 25px 25px;*/
     /*margin-bottom: 0px !important;*/
@@ -545,12 +547,12 @@ select { word-wrap: normal }
 a.btn.disabled, fieldset:disabled a.btn {pointer-events: none}
 
 .btn-primary {
-    color: #fff;
+    color: var(--white);
     background-color: #2c3e50;
     border-color: #2c3e50
 }
 .btn-primary:hover {
-    color: #fff;
+    color: var(--white);
     background-color: #1e2b37;
     border-color: #1a252f
 }
@@ -572,37 +574,37 @@ a.btn.disabled, fieldset:disabled a.btn {pointer-events: none}
 }
 .btn-primary:not(:disabled):not(.disabled).active:focus, .btn-primary:not(:disabled):not(.disabled):active:focus, .show > .btn-primary.dropdown-toggle:focus {
     box-shadow: 0 0 0 .2rem
-    rgba(76, 91, 106, .5)
+    /*rgba(76, 91, 106, .5)*/
 }
 .btn-secondary { /*THIS ONE FOR DROPDOWNS*/
     color: #fff;
-    background-color: #1B242B;
-    border-color:  #1B242B
+    background-color: var(--app-background-color);
+    border-color:  var(--app-background-color);
 }
 .btn-secondary:hover {
     color: #fff;
-    background-color: #798d8f;
-    border-color: #798d8f
+    background-color: var(--dropdownmenu-hover-background-color);
+    border-color: var(--dropdownmenu-hover-background-color);
 }
 .btn-secondary.focus, .btn-secondary:focus {
     color: #fff;
-    background-color: #798d8f;
-    border-color: #798d8f;
-    box-shadow: 0 0 0 .2rem rgba(165, 179, 179, .5)
+    background-color: var(--dropdownmenu-hover-background-color);
+    border-color: #529637;
+    box-shadow: 0 0 0 .2rem rgb(178, 137, 61)
 }
 .btn-secondary.disabled, .btn-secondary:disabled {
     color: #fff;
     background-color: #95a5a6;
-    border-color: #95a5a6
+    border-color: #bf29d3
 }
 .btn-secondary:not(:disabled):not(.disabled).active, .btn-secondary:not(:disabled):not(.disabled):active, .show > .btn-secondary.dropdown-toggle {
     color: #fff;
-    background-color: #798d8f;
-    border-color: #738789
+    background-color: #738789;
+    /*border-color: #738789*/
 }
-.btn-secondary:not(:disabled):not(.disabled).active:focus, .btn-secondary:not(:disabled):not(.disabled):active:focus, .show > .btn-secondary.dropdown-toggle:focus {
-    box-shadow: 0 0 0 .2rem rgba(165, 179, 179, .5)
-}
+/*.btn-secondary:not(:disabled):not(.disabled).active:focus, .btn-secondary:not(:disabled):not(.disabled):active:focus, .show > .btn-secondary.dropdown-toggle:focus {*/
+/*    box-shadow: 0 0 0 .2rem rgba(165, 179, 179, .5)*/
+/*}*/
 .btn-success {
     color: #fff;
     background-color: #18bc9c;
@@ -945,7 +947,7 @@ a.btn.disabled, fieldset:disabled a.btn {pointer-events: none}
 }
 .btn-group-sm > .btn, .btn-sm {
     padding: .25rem .5rem;
-    font-size: .825rem;
+    font-size: 1rem;
     line-height: 1.5;
     border-radius: .2rem
 }
@@ -990,13 +992,13 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
     display: none;
     /*float: left;*/
     /*min-width: 10rem;*/
-    /*padding: .5rem 0;*/
-    /*margin: .125rem 0 0;*/
+    /*padding: .5rem 0 0 0;*/
+    margin: .15rem 0 0;
     /*!*font-size: .9375rem;*!*/
     /*color: #212529;*/
     /*text-align: left;*/
     /*list-style: none;*/
-    background-color: #1b242b;
+    background-color: var(--app-background-color);
     background-clip: padding-box;
     /*border: 1px solid rgba(0, 0, 0, .15);*/
     border-radius: .25rem
@@ -1063,7 +1065,11 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
     right: 100%;
     left: auto;
     margin-top: 0;
-    margin-right: .125rem
+    margin-right: .125rem;
+    border-top: .3em solid transparent;
+    border-left: .3em solid transparent;
+    border-right: .3em solid transparent;
+    border-bottom: .3em solid transparent;
 }
 .dropleft .dropdown-toggle::after {
     display: inline-block;
@@ -1078,7 +1084,8 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
     vertical-align: .255em;
     content: "";
     border-top: .3em solid transparent;
-    border-right: .3em solid;
+    border-left: .3em solid transparent;
+    border-right: .3em solid transparent;
     border-bottom: .3em solid transparent
 }
 .dropleft .dropdown-toggle:empty::after {margin-left: 0}
@@ -1091,7 +1098,7 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
     height: 0;
     margin: .5rem 0;
     overflow: hidden;
-    border-top: 1px solid #ecf0f1
+    /*border-top: 1px solid #ecf0f1*/
 }
 .dropdown-item {
     display: block;
@@ -1099,7 +1106,7 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
     padding: .25rem 1.5rem;
     clear: both;
     font-weight: 400;
-    color: #b1b2b2;
+    color: #b1b2b2;   /* COLOR OF TEXT IN DROPDOWN ITEM*/
     text-align: inherit;
     white-space: nowrap;
     background-color: transparent;
@@ -1120,14 +1127,17 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
     pointer-events: none;
     background-color: transparent
 }
-.dropdown-menu.show {display: block}
+.dropdown-menu.show {
+    display: block;
+    color: var(--app-background-color);
+}
 
 .dropdown-header {
     display: block;
     padding: .5rem 1.5rem;
     margin-bottom: 0;
     /*font-size: .825rem;*/
-    color: #95a5a6;
+    color: #2cd3de;
     white-space: nowrap
 }
 
@@ -1171,28 +1181,42 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
 .modal{position:fixed;top:0;right:0;bottom:0;left:0;z-index:1050;display:none;overflow:hidden;outline:0}
 .modal-dialog{position:relative;width:auto;margin:.5rem;pointer-events:none}
 .modal.fade .modal-dialog{transition:-webkit-transform .3s ease-out;transition:transform .3s ease-out;transition:transform .3s ease-out,-webkit-transform .3s ease-out;-webkit-transform:translate(0,-25%);transform:translate(0,-25%)}
-/*@media screen and (prefers-reduced-motion:reduce){.modal.fade .modal-dialog{transition:none}}*/
-/*.modal.show .modal-dialog{-webkit-transform:translate(0,0);transform:translate(0,0)}*/
+@media screen and (prefers-reduced-motion:reduce){.modal.fade .modal-dialog{transition:none}}
+.modal.show .modal-dialog{-webkit-transform:translate(0,0);transform:translate(0,0)}
 .modal-dialog-centered{display:-ms-flexbox;display:flex;-ms-flex-align:center;align-items:center;min-height:calc(100% - (.5rem * 2))}
 .modal-dialog-centered::before{display:block;height:calc(100vh - (.5rem * 2));content:""}
-.modal-content{position:relative;display:-ms-flexbox;display:flex;-ms-flex-direction:column;flex-direction:column;width:100%;pointer-events:auto;background-color:#fff;background-clip:padding-box;border:1px solid rgba(0,0,0,.2);border-radius:.3rem;outline:0}
+.modal-content{position:relative;display:-ms-flexbox;display:flex;-ms-flex-direction:column;flex-direction:column;width:100%;pointer-events:auto;
+    background-color:var(--app-background-color);
+    background-clip:padding-box;
+    border:1px solid rgba(0,0,0,.2);border-radius:.3rem;outline:0}
 .modal-backdrop{position:fixed;top:0;right:0;bottom:0;left:0;z-index:1040;background-color:#000}
 .modal-backdrop.fade{opacity:0}.modal-backdrop.show{opacity:.5}
-/*.modal-header{display:-ms-flexbox;display:flex;-ms-flex-align:start;align-items:flex-start;-ms-flex-pack:justify;justify-content:space-between;padding:1rem;border-bottom:1px solid #e9ecef;border-top-left-radius:.3rem;border-top-right-radius:.3rem}*/
-/*.modal-header .close{padding:1rem;margin:-1rem -1rem -1rem auto}*/
-/*.modal-title{margin-bottom:0;line-height:1.5}*/
-/*.modal-body{position:relative;-ms-flex:1 1 auto;flex:1 1 auto;padding:1rem}*/
+.modal-header{display:-ms-flexbox;
+    display:flex;
+    color: #fff;
+    -ms-flex-align:start;
+    align-items:flex-start;
+    -ms-flex-pack:justify;
+    justify-content:space-between;
+    padding:1rem;
+    border-bottom:1px solid #e9ecef;
+    border-top-left-radius:.3rem;
+    border-top-right-radius:.3rem}
+.modal-header .close{padding:1rem;
+                     margin:-1rem -1rem -1rem auto}
+.modal-title{margin-bottom:0;line-height:1.5}
+.modal-body{position:relative;-ms-flex:1 1 auto;flex:1 1 auto;padding:1rem}
 .modal-body,
 .modal-body .dropdown {position: static;}
 .modal-body .dropdown-menu {
   top: 100px;
   left: 20px;
 }
-/*.modal-footer{display:-ms-flexbox;display:flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:end;justify-content:flex-end;padding:1rem;border-top:1px solid #e9ecef}*/
-/*.modal-footer>:not(:first-child){margin-left:.25rem}*/
-/*.modal-footer>:not(:last-child){margin-right:.25rem}*/
-/*.modal-scrollbar-measure{position:absolute;top:-9999px;width:50px;height:50px;overflow:scroll}*/
+.modal-footer{display:-ms-flexbox;display:flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:end;justify-content:flex-end;padding:1rem;border-top:1px solid #e9ecef}
+.modal-footer>:not(:first-child){margin-left:.25rem}
+.modal-footer>:not(:last-child){margin-right:.25rem}
+.modal-scrollbar-measure{position:absolute;top:-9999px;width:50px;height:50px;overflow:scroll}
 @media (min-width:576px){.modal-dialog{max-width:500px;margin:1.75rem auto}
 .modal-dialog-centered{min-height:calc(100% - (1.75rem * 2))}
 .modal-dialog-centered::before{height:calc(100vh - (1.75rem * 2))}
-/*.modal-sm{max-width:300px}}@media (min-width:992px){.modal-lg{max-width:800px}}*/
+.modal-sm{max-width:300px}}@media (min-width:992px){.modal-lg{max-width:800px}}

@@ -1,5 +1,3 @@
-#!/usr/bin/env/ python
-
 import warnings
 warnings.filterwarnings("ignore")
 #---------R2Py Resources --------------------------------------------------------------------------------------------#
@@ -97,6 +95,11 @@ GLOBAL_DATA = {'net_data': pd.read_csv('db/Senn2013.csv'),
                'league_table_data': pd.read_csv('db/league_table_data/league_table.csv', index_col=0)}
 GLOBAL_DATA['default_elements'] = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
 
+GLOBAL_DATA['y_max'] = GLOBAL_DATA['net_data'].year.max()
+GLOBAL_DATA['y_min'] = GLOBAL_DATA['net_data'].year.min()
+GLOBAL_DATA['marks_range'] = {n: f'{n}' for n in GLOBAL_DATA['net_data'].year.sort_values().unique()[:2]}
+print(GLOBAL_DATA['marks_range'])
+
 GLOBAL_DATA['dwnld_bttn_calls'] = 0
 GLOBAL_DATA['WAIT'] = False
 
@@ -117,7 +120,6 @@ for trt in all_nodes:
 #     html.Summary(html.P("An interactive tool for data visualisation of network meta-analysis.",
 #                         style={'font-family': 'sans-serif', 'font-size': '1em'})),
 #     dcc.Markdown(intro_text)]),
-
 app.layout = html.Div(
     [html.Div(            # Header
              [html.Div([html.H4("VisualNMA", className="app__header__title"),
@@ -130,17 +132,19 @@ app.layout = html.Div(
              className="app__header"),
     html.Div([html.Div(   # NMA Graph
                  [html.Div([dbc.Row([html.Div(Dropdown_graphlayout, style={'display': 'inline-block', 'font-size': '11px'}),
-                                     html.Div(Dropdown_edgesize, style={'display': 'inline-block', 'font-size': '11px'}),
-                                     html.Div(Dropdown_nodesize, style={'display': 'inline-block', 'font-size': '11px'}),
-                                     html.Div(Dropdown_nodecolor, style={'display': 'inline-block', 'font-size': '11px'}),
+                                     html.Div(modal, style={'display': 'inline-block', 'font-size': '11px'}),
+                                     # html.Div(Dropdown_edgesize, style={'display': 'inline-block', 'font-size': '11px'}),
+                                     # html.Div(Dropdown_nodesize, style={'display': 'inline-block', 'font-size': '11px'}),
+                                     # html.Div(Dropdown_nodecolor, style={'display': 'inline-block', 'font-size': '11px'}),
                                      #html.Div(Input_color, style={'display': 'inline-block', 'font-size': '10px'}),
                                      html.A(html.Img(src="/assets/NETD.png", style={'width':'50px','filter':'invert()'}),
                                                     # title='save graph',
                                                      id="btn-get-png", style={'display': 'inline-block'}),
                                      dbc.Tooltip("save graph", style={'color':'white',
                                                                       'font-size':9,
+                                                                      'margin-left': '10px',
                                                                       'letter-spacing': '0.3rem'
-                                                                      },
+                                                                      },placement='right',
                                                  target='btn-get-png')
                                      ]),
 
@@ -212,7 +216,21 @@ app.layout = html.Div(
                                    html.Div(id='second-selection') ]),
 
                                                    dcc.Tab(label='Data', style=subtab_style, selected_style=subtab_selected_style,
-                                                           children=[html.Div([#html.Br(),
+                                                           children=[
+                                                               # html.Div([html.P("Select years:", style={'display': 'inline-block','color':'white',
+                                                               #                                                'margin-right': '10px'}),
+                                                               #          html.Div(dcc.RangeSlider(id='my-range-slider',
+                                                               #                                   min=GLOBAL_DATA['y_min'],
+                                                               #                                   max=GLOBAL_DATA['y_max'],
+                                                               #                                   step=1,
+                                                               #                                   marks={GLOBAL_DATA['y_min']:str(GLOBAL_DATA['y_min']),
+                                                               #                                          GLOBAL_DATA['y_max']: str(GLOBAL_DATA['y_max'])},
+                                                               #                                   tooltip={'always_visible': True, 'placement':'bottom'},
+                                                               #                                   value=[GLOBAL_DATA['y_min'],GLOBAL_DATA['y_max']], allowCross=False,),
+                                                               #          style={'display': 'inline-block','width':'75%', 'margin-left': '10px','margin-top': '5px',
+                                                               #                 'color':'white'})
+                                                               #                 ]),
+                                                               html.Div([#html.Br(),
                                                                dash_table.DataTable(
                                                                    id='datatable-upload-container',
                                                                    editable=False,
@@ -245,8 +263,7 @@ app.layout = html.Div(
                                                                        {'selector': 'tr:hover',
                                                                         'rule': 'background-color: rgba(0, 0, 0, 0);'},
                                                                        {'selector': 'td:hover',
-                                                                        'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}])
-                                                           ]
+                                                                        'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}])]
                                                            )]),
 
                                   ])]) ]),
@@ -491,10 +508,9 @@ app.layout = html.Div(
     className="app__container")
 
 
-##################################################################################
+# ----------------------------------  App Interactivity ------------------------------------------ #
 ##################################################################################
 ################################ CALLBACKS #######################################
-##################################################################################
 ##################################################################################
 
 ### ---------------- PROJECT SETUP --------------- ###
@@ -564,21 +580,9 @@ def get_image(button):
     if ctx.triggered:
         input_id = ctx.triggered[0]["prop_id"].split(".")[0]
         if input_id != "tabs": action = "download"
-    #print('End of get_image download function')
     return {'type': 'png','action': action,
             'options':{#'bg':'#40515e',
                        'scale':5}}
-
-
-##### ------- modal color button ---------- #####
-@app.callback(Output("modal", "is_open"),
-             [Input("open", "n_clicks"), Input("close", "n_clicks")],
-             [State("modal", "is_open")],
-             )
-def toggle_modal(n1, n2, is_open):
-    if n1 or n2:
-        return not is_open
-    return is_open
 
 ### ----- update graph layout on node click ------ ###
 @app.callback(Output('cytoscape', 'stylesheet'),
@@ -586,28 +590,23 @@ def toggle_modal(n1, n2, is_open):
                Input('cytoscape','selectedNodeData'),
                Input('cytoscape','elements'),
                Input('cytoscape','selectedEdgeData'),
-               Input('dd_nclr', 'children'),
+               Input('dd_nclr', 'children'), Input('node_color_input', 'value'),
                Input('dd_nds', 'children'),
                Input('dd_egs', 'children'),
-               Input('node_color', 'value'),
+              # Input('node_color', 'value'),
                Input("btn-get-png", "n_clicks")]
                )
 def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
-                        dd_nclr, dd_nds,dd_egs, nd_col, dwld_button):
+                        dd_nclr, custom_nd_clr, dd_nds,dd_egs, dwld_button):
+    _DFLT_ND_CLR = '#07ABA0'
+    nodes_color = (custom_nd_clr or _DFLT_ND_CLR) if dd_nclr!='Default' else _DFLT_ND_CLR
     node_size = dd_nds or 'Default'
     node_size = node_size=='Tot randomized'
-    edge_size = dd_egs or 'Default'
-    edge_size = edge_size=='Number of studies'
-    nd_colr =  dd_nclr or 'Default'
-    if nd_colr=='Default' or None:
-        nd_col='#07ABA0'
+    edge_size = dd_egs or 'Number of studies'
+    edge_size = edge_size=='No size'
     pie = dd_nclr=='Risk of Bias'
-    if nd_colr not in  ['Default', 'Risk of Bias']:
-        nd_col=nd_col
-    else:
-        nd_col='#07ABA0'
     FOLLOWER_COLOR, FOLLOWING_COLOR = '#07ABA0', '#07ABA0'
-    stylesheet = get_stylesheet(nd_col=nd_col, pie=pie, node_size=node_size, edge_size=edge_size)
+    stylesheet = get_stylesheet(pie=pie, nd_col=nodes_color, node_size=node_size, edge_size=edge_size)
     edgedata = [el['data'] for el in elements if 'target' in el['data'].keys()]
     all_nodes_id = [el['data']['id'] for el in elements if 'target' not in el['data'].keys()]
 
@@ -618,7 +617,7 @@ def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                                  | {e['target'] for e in edgedata if e['source'] in selected_nodes_id
                                     or e['target'] in selected_nodes_id})
 
-        stylesheet = get_stylesheet(nd_col=str(nd_col), pie=pie, node_size=node_size,
+        stylesheet = get_stylesheet(pie=pie, nd_col=nodes_color, node_size=node_size,
                                             nodes_opacity=0.2, edges_opacity=0.1)+[
                       {"selector": 'node[id = "{}"]'.format(id),
                        "style": {"border-color": "#751225", "border-width": 5, "border-opacity": 1,
@@ -895,7 +894,6 @@ def TapEdgeData(edge):
         return "Click on an edge to get information."
 
 def parse_contents(contents, filename):
-    #print(contents)
     content_type, content_string = contents.split(',')
     decoded = base64.b64decode(content_string)
     if 'csv' in filename:    # Assume that the user uploaded a CSV file
@@ -904,12 +902,13 @@ def parse_contents(contents, filename):
     elif 'xls' in filename:  # Assume that the user uploaded an excel file
         return pd.read_excel(io.BytesIO(decoded))
 
+
 ### ----- upload main data file ------ ###
 @app.callback([Output('__storage_netdata', 'children'),
                Output('cytoscape', 'elements'),
                Output("file-list", "children")],
               [Input('datatable-upload', 'contents'),
-               # Input('dropdown-0-0', 'children')
+               #Input('my-range-slider', 'value')
                ],
               [State('datatable-upload', 'filename')])
 def get_new_data(contents, filename):
@@ -921,17 +920,19 @@ def get_new_data(contents, filename):
         return df_result
     if contents is None:
         data = GLOBAL_DATA['net_data']
+        #data = data[(data.year>=year_range[0])&(data.year<=year_range[1])]
+        elements = GLOBAL_DATA['user_elements'] = get_network(df=data)
     else:
         data = parse_contents(contents, filename)
+        data = data[(data.year >= year_range[0]) & (data.year <= year_range[1])]
         GLOBAL_DATA['net_data'] = data = data.loc[:, ~data.columns.str.contains('^Unnamed')]  # Remove unnamed columns
-        GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
+        elements = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
         GLOBAL_DATA['forest_data'] = apply_r_func(func=run_NetMeta_r, df=data)
         GLOBAL_DATA['forest_data_pairwise'] = apply_r_func(func=pairwise_forest_r, df=data)
         leaguetable  = apply_r_func(func=league_table_r, df=data)
         leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
         leaguetable = leaguetable.reset_index().rename(columns={'index':'Treatments'})
         GLOBAL_DATA['league_table_data'] = leaguetable
-    elements = GLOBAL_DATA['user_elements']
     if filename is not None:
         return data.to_json(orient='split'), elements, f'{filename}'
     else:
@@ -949,6 +950,7 @@ def get_new_data(contents, filename):
     #     return [html.Li("No files yet!")]
     # else:
     #     file_string = [html.Li(file_download_link(filename)) for filename in files]
+
 
 ### ----- upload CINeMA data file ------ ###
 @app.callback([Output('__storage_netdata_cinema', 'children'), Output("file2-list", "children")],
@@ -977,6 +979,7 @@ def get_new_data_cinema(contents, filename):
                Input('rob_vs_cinema', 'value')
                ])
 def update_output(store_node, data, store_edge, toggle_cinema):
+    print('JELLOWSFOUAHFOIAH')
     data = pd.read_json(data, orient='split').round(3)
     leaguetable = GLOBAL_DATA['league_table_data'].copy(deep=True)
     treatments = np.unique(data[['treat1', 'treat2']].values.flatten())
@@ -1173,11 +1176,9 @@ def update_boxplot(value, edges):
                       font_color="black",
                       yaxis_range=[range1, range2],
                       showlegend=False,
-                      font=dict(
-                          #family="sans serif",
-                          size=11,
-                          #color="RebeccaPurple" if edges else 'black'
-                      ),
+                      font=dict(#family="sans serif", #size=11,
+                                 color='black'
+                                ),
                       xaxis=dict(showgrid=False, tick0=0),
                       yaxis=dict(showgrid=False)
                       )
@@ -1337,6 +1338,7 @@ def color_forest_toggle(toggle_value):
               'display': 'inline-block', 'margin': 'auto', 'padding-right':'20px',}
     return style1, style2
 
+
 ### -------------- toggle switch league table ---------------- ###
 @app.callback([Output("cinemaswitchlabel1", "style"),
                Output("cinemaswitchlabel2", "style")],
@@ -1348,9 +1350,10 @@ def color_leaguetable_toggle(toggle_value):
               'display': 'inline-block', 'margin': 'auto', 'padding-right':'0px',}
     return style1, style2
 
-###########################################################
-############ Bootstrap Dropdowns ##########################
-###########################################################
+#################################################################
+############ Bootstrap Dropdowns callbacks ######################
+#################################################################
+
 @app.callback([Output('dd_nds', 'children')],
               [Input('dd_nds_default', 'n_clicks_timestamp'),Input('dd_nds_default', 'children'),
                Input('dd_nds_tot_rnd', 'n_clicks_timestamp'),Input('dd_nds_tot_rnd', 'children'),
@@ -1373,16 +1376,17 @@ def which_dd_egs(default_t, default_v, nstud_t, nstud_v, other_t, other_v):
     which = dd_egs.index(max(dd_egs))
     return [values[which]]
 
-@app.callback([Output('dd_nclr', 'children')],
+@app.callback([Output('dd_nclr', 'children'), Output('close_modal_dd_nclr_input', 'n_clicks'), Output("open_modal_dd_nclr_input", "n_clicks")],
               [Input('dd_nclr_default', 'n_clicks_timestamp'),Input('dd_nclr_default', 'children'),
                Input('dd_nclr_rob', 'n_clicks_timestamp'),Input('dd_nclr_rob', 'children'),
-               Input('dd_nclr_input', 'n_clicks_timestamp'),Input('dd_nclr_input', 'children')],
+               Input('close_modal_dd_nclr_input', 'n_clicks'),
+               ],
               prevent_initial_call=True)
-def which_dd_nds(default_t, default_v, rob_t, rob_v, col_t, col_v):
-    values = [default_v, rob_v, col_v] #col_v['props']['value']
-    dd_nclr = [default_t or 0, rob_t or 0, col_t or 0]
+def which_dd_nds(default_t, default_v, rob_t, rob_v, closing_modal):
+    values = [default_v, rob_v]
+    dd_nclr = [default_t or 0, rob_t or 0]
     which = dd_nclr.index(max(dd_nclr))
-    return [values[which]]
+    return values[which] if not closing_modal else None, None, None
 
 
 flatten = lambda t: [item for sublist in t for item in sublist]
@@ -1405,7 +1409,17 @@ def which_dd_nds(circle_t, circle_v, breadthfirst_t, breadthfirst_v,
     which = dd_ngl.index(max(dd_ngl))
     return [values[which]]
 
-
+#################################################################
+############ Bootstrap Modals callbacks ######################
+#################################################################
+@app.callback(Output("modal", "is_open"),
+              [Input("open_modal_dd_nclr_input", "n_clicks"),
+               Input("close_modal_dd_nclr_input", "n_clicks")],
+              )
+def toggle_modal(open_t, close):
+    if open_t: return True
+    if close: return False
+    return False
 
 ###########################################################
 ########################### MAIN ##########################

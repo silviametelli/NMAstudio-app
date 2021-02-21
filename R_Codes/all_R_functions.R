@@ -7,8 +7,7 @@ suppressMessages(library(tidyverse))
 
 ## forest plots with reference treatments
 run_NetMeta <- function(dat){
-       treatments <- c(dat$treat1, dat$treat2)
-       treatments <- treatments[!duplicated(treatments)]
+       treatments <- unique(c(dat$treat1, dat$treat2)) # TODO:  MOVE IT TO PYTHON
        ALL_DFs <- list()
        for (treatment in treatments){
               nma_temp <- netmeta(dat$TE, dat$seTE, dat$treat1, dat$treat2, dat$studlab,

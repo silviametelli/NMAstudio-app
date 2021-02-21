@@ -12,12 +12,12 @@ def get_stylesheet(node_size=False, nd_col='#07ABA0', edge_size=False, pie=False
          },
         {"selector": 'edge',
          'style': {"curve-style": "bezier",
-                   #'width': 'data(weight)',
+                   'width': 'data(weight)',
                    "opacity": edges_opacity}}]
     if node_size:
         default_stylesheet[0]['style'].update({"width": "data(size)", "height": "data(size)"})
     if edge_size:
-        default_stylesheet[1]['style'].update({"width": "data(weight)"})
+        default_stylesheet[1]['style'].update({"width": None})
     if pie:
         default_stylesheet[0]['style'].update({'pie-1-background-color': '#E8747C',
                                                'pie-1-background-size': 'mapData(pie1, 0, 10, 0, 100)',

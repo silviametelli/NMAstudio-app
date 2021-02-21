@@ -1,4 +1,4 @@
-# Dash Meta Analysis
+# Dash Network Meta Analysis
 
 ## About this app
 

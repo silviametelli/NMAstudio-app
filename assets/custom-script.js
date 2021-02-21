@@ -1,3 +1,3 @@
-$('.dd_nclr_input').click(function(event){
-     event.stopPropagation();
- });
+// $('.dd_nclr_input').click(function(event){
+//      event.stopPropagation();
+//  });

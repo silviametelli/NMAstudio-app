@@ -54,7 +54,7 @@ Dropdown_nodecolor = dbc.DropdownMenu(
 
 
 Dropdown_graphlayout_inner = dbc.DropdownMenu(
-    label="Auto Layout",bs_size="sm",
+    label="Graph Layout",bs_size="sm",
     children=[
         dbc.DropdownMenuItem(item, id=f'dd_ngl_{item.lower()}')
         for item in ['Circle', 'Breadthfirst', 'Grid', 'Spread', 'Cose', 'Cola',
@@ -80,9 +80,15 @@ modal = dbc.Modal([dbc.ModalHeader("Node color selection"),
                   ],
             id="modal",style={'background-color':'#40515e','margin-left':'-px', 'font-size':'10.5px', 'padding-left':'-2px'})
 
+modal_data = dbc.Modal([
+                   dbc.ModalBody(''),
+                   dbc.ModalFooter(dbc.Button("Close", id="close_modal_data_expand", className="ml-auto"))
+                  ],
+            id="modal_data",style={'background-color':'#40515e'})
+
 
 Dropdown_graphlayout = dbc.DropdownMenu(
-    label="Graph Layout",
+    label="Graph Settings",
     children=[Dropdown_graphlayout_inner, Dropdown_edgesize, Dropdown_nodesize, Dropdown_nodecolor],
     style={'display': 'inline-block'},
 )

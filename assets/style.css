@@ -328,23 +328,27 @@ img:hover {
     position: absolute;
     top: 0px;
     margin-left: 5px;
+    margin-bottom: 5px;
     line-height: 1.3;
     padding: 4px 4px 4px 4px;
-    vertical-align: top;
+    vertical-align: middle;
     font-size: 11px;
     font-type: sans-serif;
+    font-weight: 900;
     [...]
 }
 
 #datatable-upload-container .export{
     position: absolute;
-    top: 7px;
+    top: -10px;
+    bottom: 0px;
     margin-left: 5px;
     line-height: 1.3;
     padding: 4px 4px 4px 4px;
-    vertical-align: top;
+    vertical-align: middle;
     font-size: 11px;
     font-type: sans-serif;
+    font-weight: 900;
     [...]
 }
 

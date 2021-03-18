@@ -1,7 +1,7 @@
 # Title     :  R function for VisualNMA
 # Objective :  compute NMA output via netmeta
 # Created by:  Silvia Metelli
-# Created on: 16/11/2020
+# Created on: 16/03/2021
 
 options(warn=-1)
 suppressMessages(library(netmeta))
@@ -10,7 +10,10 @@ suppressMessages(library(meta))
 suppressMessages(library(metafor))
 suppressMessages(library(tidyverse))
 
-## forest plots with reference treatments
+## forest plots for all reference treatments
+## league table for both outcomes (if present)
+## comparison adjusted funnel plots
+
 run_NetMeta <- function(dat){
        treatments <- unique(c(dat$treat1, dat$treat2)) # TODO:  MOVE IT TO PYTHON
        ALL_DFs <- list()
@@ -37,8 +40,27 @@ run_NetMeta <- function(dat){
               df['Reference'] <- treatment
               ALL_DFs[[treatment]] <- df
        }
+       nma_primary <- nma_temp
+       if("TE2" %in% colnames(dat)){
+          nma_secondary <- netmeta(TE=dat$TE2, seTE=dat$seTE2,
+                                 treat1=dat$treat1, treat2=dat$treat2,
+                                 studlab=dat$studlab,
+                                 sm = "MD",
+                                 comb.random = TRUE,
+                                 backtransf = TRUE,
+                                 reference.group = treatment)
+       netleague_table <- netleague(nma_primary, nma_secondary, digits = 2, bracket="(",
+                                     backtransf = TRUE, ci = TRUE, separator=',')
+        }else{
+          netleague_table <- netleague(nma_primary, digits = 2, bracket="(",
+                                     backtransf = TRUE, ci = TRUE, separator=',')
+        }
+        lt <- netleague_table$random
+        colnames(lt)<- treatments
+        rownames(lt)<- treatments
+
        ALL_DFs <- do.call('rbind', ALL_DFs)
-       return(ALL_DFs)
+       return(ALL_DFs, lt, funnel) #### return data for nma forest plots, league table, funnel plots
 }
 
 ## league tables for two outcomes
@@ -51,6 +73,7 @@ league_table <- function(dat){
                                comb.random = TRUE,
                                backtransf = TRUE,
                                reference.group = dat$treat2[1])
+
         if("TE2" %in% colnames(dat)){
           nma_secondary <- netmeta(TE=dat$TE2, seTE=dat$seTE2,
                                  treat1=dat$treat1, treat2=dat$treat2,
@@ -72,23 +95,6 @@ league_table <- function(dat){
         rownames(lt)<- treatments
         return(lt)
 }
-
-## comparison adjusted funnel plots
-funnel_plot <- function(dat,ref){
-        nma <- netmeta(TE=dat$TE, seTE=dat$seTE,
-                       treat1=dat$treat1, treat2=dat$treat2,
-                       studlab=dat$studlab,
-                       sm = "MD", ## or OR TODO
-                       comb.random = TRUE,
-                       backtransf = TRUE,
-                       reference.group = ref)
-        ordered_strategies <- unique(c(dat$treat1, dat$treat2))
-        ordered_strategies <- c(ordered_strategies, ref)
-        netfun <- funnel(nmaresults.e,order=ordered_strategies)
-        funneldata <- droplevels(subset(netfun,treat2==ref))
-  return(funneldata)
-}
-
 
 ## pairwise forest plots for all different comparisons in df
 ## sorted_dat: dat sorted by treatemnt comparison
@@ -122,3 +128,4 @@ pairwise_forest <- function(dat){
   DFs_pairwise <- do.call('rbind', DFs_pairwise)
   return(DFs_pairwise)
 }
+

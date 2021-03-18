@@ -1,3 +1,4 @@
+#--------------------------------------------------------------------------------------------------------------------#
 import warnings
 warnings.filterwarnings("ignore")
 #---------R2Py Resources --------------------------------------------------------------------------------------------#
@@ -21,7 +22,8 @@ from assets.cytoscape_styleesheeet import get_stylesheet
 from assets.tab_styles import subtab_style, subtab_selected_style
 from assets.dropdowns_values import *
 
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, MATCH, ALL
+
 import plotly.express as px
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
@@ -95,17 +97,24 @@ GLOBAL_DATA = {'net_data': pd.read_csv('db/Senn2013.csv'),
                'league_table_data': pd.read_csv('db/league_table_data/league_table.csv', index_col=0)}
 GLOBAL_DATA['default_elements'] = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
 
+
+replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
+leaguetable = GLOBAL_DATA['league_table_data'].copy(deep=True)
+GLOBAL_DATA['league_table_data'] = pd.DataFrame([[replace_and_strip(col) for col in list(row)]
+                                                 for idx, row in leaguetable.iterrows()], columns=leaguetable.columns, index=leaguetable.index)
+#print(GLOBAL_DATA['league_table_data'])
+
+#for year slider
 GLOBAL_DATA['y_max'] = GLOBAL_DATA['net_data'].year.max()
 GLOBAL_DATA['y_min'] = GLOBAL_DATA['net_data'].year.min()
 GLOBAL_DATA['marks_range'] = {n: f'{n}' for n in GLOBAL_DATA['net_data'].year.sort_values().unique()[:2]}
-print(GLOBAL_DATA['marks_range'])
+#print(GLOBAL_DATA['marks_range'])
 
 GLOBAL_DATA['dwnld_bttn_calls'] = 0
 GLOBAL_DATA['WAIT'] = False
 
-options_var = []
-for col in GLOBAL_DATA['net_data'].columns:
-    options_var.append({'label':'{}'.format(col, col), 'value':col})
+OPTIONS_VAR = [{'label':'{}'.format(col, col), 'value':col} for col in GLOBAL_DATA['net_data'].columns]
+
 
 options_trt = []
 edges = GLOBAL_DATA['net_data'].groupby(['treat1', 'treat2']).TE.count().reset_index()
@@ -114,17 +123,21 @@ for trt in all_nodes:
     options_trt.append({'label':'{}'.format(trt, trt), 'value':trt})
 
 ##############################################################################
+##############################################################################
 ##########################------- APP LAYOUT -------##########################
 ##############################################################################
-# html.Details(id="intro-text", children=[
-#     html.Summary(html.P("An interactive tool for data visualisation of network meta-analysis.",
-#                         style={'font-family': 'sans-serif', 'font-size': '1em'})),
-#     dcc.Markdown(intro_text)]),
+##############################################################################
+
+
+#documentation='bla bla'
+#dcc.Markdown(documentation)
 app.layout = html.Div(
     [html.Div(            # Header
              [html.Div([html.H4("VisualNMA", className="app__header__title"),
                         html.P("An interactive tool for data visualisation of network meta-analysis.",
-                               className="app__header__title--grey")], className="app__header__desc"),
+                               className="app__header__title--grey"),
+
+                        ], className="app__header__desc"),
 
              html.Div([html.Img(src=app.get_asset_url("logo_universite_paris.jpg"),
                                 className="app__menu__img")],
@@ -138,7 +151,6 @@ app.layout = html.Div(
                                      # html.Div(Dropdown_nodecolor, style={'display': 'inline-block', 'font-size': '11px'}),
                                      #html.Div(Input_color, style={'display': 'inline-block', 'font-size': '10px'}),
                                      html.A(html.Img(src="/assets/NETD.png", style={'width':'50px','filter':'invert()'}),
-                                                    # title='save graph',
                                                      id="btn-get-png", style={'display': 'inline-block'}),
                                      dbc.Tooltip("save graph", style={'color':'white',
                                                                       'font-size':9,
@@ -217,20 +229,10 @@ app.layout = html.Div(
 
                                                    dcc.Tab(label='Data', style=subtab_style, selected_style=subtab_selected_style,
                                                            children=[
-                                                               # html.Div([html.P("Select years:", style={'display': 'inline-block','color':'white',
-                                                               #                                                'margin-right': '10px'}),
-                                                               #          html.Div(dcc.RangeSlider(id='my-range-slider',
-                                                               #                                   min=GLOBAL_DATA['y_min'],
-                                                               #                                   max=GLOBAL_DATA['y_max'],
-                                                               #                                   step=1,
-                                                               #                                   marks={GLOBAL_DATA['y_min']:str(GLOBAL_DATA['y_min']),
-                                                               #                                          GLOBAL_DATA['y_max']: str(GLOBAL_DATA['y_max'])},
-                                                               #                                   tooltip={'always_visible': True, 'placement':'bottom'},
-                                                               #                                   value=[GLOBAL_DATA['y_min'],GLOBAL_DATA['y_max']], allowCross=False,),
-                                                               #          style={'display': 'inline-block','width':'75%', 'margin-left': '10px','margin-top': '5px',
-                                                               #                 'color':'white'})
-                                                               #                 ]),
-                                                               html.Div([#html.Br(),
+                                                               html.Div([html.Button('Expand', 'data-expand',n_clicks=0,
+                                                                                     style={'margin-left':'80px', 'margin-top':'10px', 'padding': '4px 4px 4px 4px',
+                                                                                            'margin-bottom':'-31px','color':'white', 'fontSize': 11, 'font-weight': '900',
+                                                                                            'font-family': 'sans-serif', 'display': 'inline-block', 'vertical-align': 'middle'}),
                                                                dash_table.DataTable(
                                                                    id='datatable-upload-container',
                                                                    editable=False,
@@ -240,7 +242,7 @@ app.layout = html.Div(
                                                                                'border': '1px solid #5d6d95',
                                                                                'textOverflow': 'ellipsis',
                                                                                'font-family': 'sans-serif',
-                                                                               'foontSize': 10,
+                                                                               'fontSize': 11,
                                                                                },
                                                                    style_data_conditional=[
                                                                        {'if': {'row_index': 'odd'},
@@ -275,7 +277,7 @@ app.layout = html.Div(
                                                                           'vertical-align': 'middle',
                                                                           'font-size': '12px',
                                                                           'margin-bottom': '-10px'}),
-                                                            dcc.Dropdown(id='dropdown-effectmod', options=options_var,
+                                                            dcc.Dropdown(id='dropdown-effectmod', options=OPTIONS_VAR,
                                                                          clearable=True,
                                                                          className="tapEdgeData-fig-class",
                                                                          style={'width': '150px', 'height': '30px',
@@ -486,7 +488,42 @@ app.layout = html.Div(
                                       ])]),
 
                                   dcc.Tab(label='Funnel plots', children=[html.Div([html.P(id='tapNodeData-info-funnel', className="box__title"),
-                                                                          html.Br()]),]
+                                                                          html.Br()]),
+                                                                          dcc.Loading(
+                                                                              html.Div([
+                                                                                  dcc.Graph(
+                                                                                      id='tapNodeData-fig-funnel',
+                                                                                      config={'editable': True,
+                                                                                              'showTips': True,
+                                                                                              'edits': dict(
+                                                                                                  annotationPosition=True,
+                                                                                                  annotationTail=True,
+                                                                                                  annotationText=True,
+                                                                                                  axisTitleText=True,
+                                                                                                  colorbarPosition=True,
+                                                                                                  colorbarTitleText=True,
+                                                                                                  titleText=False,
+                                                                                                  legendPosition=True,
+                                                                                                  legendText=True,
+                                                                                                  shapePosition=True),
+                                                                                              'modeBarButtonsToRemove': [
+                                                                                                  'toggleSpikelines',
+                                                                                                  "pan2d",
+                                                                                                  "select2d",
+                                                                                                  "lasso2d",
+                                                                                                  "autoScale2d",
+                                                                                                  "hoverCompareCartesian"],
+                                                                                              'toImageButtonOptions': {
+                                                                                                  'format': 'png',
+                                                                                                  # one of png, svg,
+                                                                                                  'filename': 'custom_image',
+                                                                                                  'scale': 10
+                                                                                                  # Multiply title/legend/axis/canvas sizes by this factor
+                                                                                              },
+                                                                                              'displaylogo': False})])
+                                                                          )
+                                                                          ],
+
                                           ),
 
 
@@ -516,10 +553,18 @@ app.layout = html.Div(
 ### ---------------- PROJECT SETUP --------------- ###
 @app.callback(Output("second-selection", "children"),
               #Output("my-dynamic-dropdown2", "options"),
-              [Input("dropdown-format", "value"),
+              [Input('datatable-upload', 'contents'),
+               Input("dropdown-format", "value"),
                Input("dropdown-outcome1", "value"),
-               Input("dropdown-outcome2", "value")])
-def update_options(search_value_format, search_value_outcome1, search_value_outcome2):
+               Input("dropdown-outcome2", "value")],
+              [State('datatable-upload', 'filename')])
+def update_options(contents, search_value_format, search_value_outcome1, search_value_outcome2, filename):
+    if contents is None:
+        data = GLOBAL_DATA['net_data']
+    else:
+        data = parse_contents(contents, filename)
+    options_var = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
+
 
     if search_value_format is None: return None
     col_vars = [[]]*3
@@ -532,30 +577,31 @@ def update_options(search_value_format, search_value_outcome1, search_value_outc
         else:
             return None
     elif search_value_format == 'contrast':
-        col_vars[0] = ['treat 1', 'treat 2', 'rob']
+        col_vars[0] = ['studlab', 'treat 1', 'treat 2', 'rob']
         if search_value_outcome1 == 'continuous':
-            col_vars[0] += ['n1', 'n2']
+            col_vars[0] += ['n1',  'n2']
             col_vars[1] = ['y1', 'sd1', 'y2', 'sd2']
         elif search_value_outcome1 == 'binary':
             col_vars[1] = ['r1', 'n1', 'r2', 'n2']
         else:
             return None
-
+    vars_names = [[f'{search_value_format}.{c}' for c in col_vars[0]],
+                 [f'{search_value_outcome1}.{c}' for c in col_vars[1]]]
     selectors_row = html.Div(
         [dbc.Row([html.P("Select your variables")])]+[
          dbc.Row([dbc.Col(dbc.Row(
                  [html.P(f"{name}:", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
                                                                    'margin-left': '0px', 'font-size': '10px'}),
-                 dcc.Dropdown(id=f'dropdown-{nrow}-{ncol}', options=options_var, searchable=True, placeholder="...", #className="box",
+                 dcc.Dropdown(id={'type':'dataselectors','index':f'dropdown-{var_name}'}, options=options_var, searchable=True, placeholder="...", #className="box",
                               clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
                                                       'margin-left': '-8px',
                                                       'padding-left':'0px',
                                                       'display': 'inline-block',
                                                       'color': '#1b242b', 'font-size': '10px',
                                                       'background-color': '#40515e'})]), style={'margin-bottom': '0px'})
-                            for nrow, name in enumerate(col_var)],
+                            for var_name, name in zip(var_names, col_var)],
                 style={'display': 'inline-block'})
-        for ncol, col_var in enumerate(col_vars)]
+        for var_names, col_var in zip(vars_names, col_vars)]
     )
     return selectors_row
 
@@ -874,6 +920,46 @@ def TapNodeData_fig_bidim(data):
 
     return fig
 
+### ----- display funnel plot on node click ------ ###
+@app.callback(Output('tapNodeData-fig-funnel', 'figure'),
+              [Input('cytoscape', 'selectedNodeData')])
+def TapNodeData_fig_funnel(data):
+    if data:
+        treatment = data[0]['label']
+        df = GLOBAL_DATA['forest_data'][GLOBAL_DATA['forest_data'].Reference==treatment].copy()
+        df['CI_width'] = df.CI_upper - df.CI_lower
+        df['CI_width_hf'] = df['CI_width'] /2
+        effect_size = df.columns[1]
+        df = df.sort_values(by=effect_size)
+    else:
+        effect_size   = ''
+        df = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
+                                              'CI_width', 'CI_width_hf'])
+        df_second = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
+                                              'CI_width', 'CI_width_hf'])
+
+    fig = px.scatter(df, x=df[effect_size])
+
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
+                      plot_bgcolor='rgba(0,0,0,0)')  #paper_bgcolor='#40515e', #626C78
+                      #plot_bgcolor='#40515e') # #626C78
+
+    fig.update_layout(clickmode='event+select',
+                      font_color="black",
+                      margin=dict(l=10, r=10, t=12, b=80),
+                      xaxis=dict(showgrid=False, tick0=0, title=f'Effect size centered at comparison-specific effect'),
+                      yaxis=dict(showgrid=False, title=f'Standard Error'),
+                      title_text='  ', title_x=0.02, title_y=.98, title_font_size=14,
+                      )
+    if not data:
+        fig.update_shapes(dict(xref='x', yref='y'))
+        fig.update_xaxes(zerolinecolor='black', zerolinewidth=1,  title='')
+        fig.update_yaxes(tickvals=[], ticktext=[], visible=False, title='')
+        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80), coloraxis_showscale=False)
+        fig.update_traces(hoverinfo='skip', hovertemplate=None)
+
+    return fig
+
 
 ### - display information box - ###
 @app.callback(Output('cytoscape-mouseTapEdgeData-output', 'children'),
@@ -908,28 +994,52 @@ def parse_contents(contents, filename):
                Output('cytoscape', 'elements'),
                Output("file-list", "children")],
               [Input('datatable-upload', 'contents'),
-               #Input('my-range-slider', 'value')
+               Input({'type': 'dataselectors', 'index': ALL}, 'value'),
+               Input("dropdown-format", "value"),
+               Input("dropdown-outcome1", "value"),
+               Input("dropdown-outcome2", "value")
                ],
-              [State('datatable-upload', 'filename')])
-def get_new_data(contents, filename):
+              [State('datatable-upload', 'filename')]
+              )
+def get_new_data(contents, dataselectors, search_value_format, search_value_outcome1, search_value_outcome2, filename):
+    #print(dataselectors)
     def apply_r_func(func, df):
         with localconverter(ro.default_converter + pandas2ri.converter):
             df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
         func_r_res = func(dat=df_r)  # Invoke R function and get the result
         df_result = pandas2ri.rpy2py(func_r_res).reset_index(drop=True)  # Convert back to a pandas.DataFrame.
         return df_result
-    if contents is None:
+    if contents is None or not all(dataselectors):
         data = GLOBAL_DATA['net_data']
-        #data = data[(data.year>=year_range[0])&(data.year<=year_range[1])]
         elements = GLOBAL_DATA['user_elements'] = get_network(df=data)
     else:
         data = parse_contents(contents, filename)
-        data = data[(data.year >= year_range[0]) & (data.year <= year_range[1])]
+        var_dict = dict()
+        if search_value_format == 'long':
+            if search_value_outcome1 == 'continuous':
+                studlab, treat, rob, TE, seTE, n = dataselectors
+                var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', TE: 'TE', seTE: 'seTE', n: 'n'}
+            elif search_value_outcome1 == 'binary':
+                studlab, treat, rob, r, n = dataselectors
+                var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', r: 'r', n: 'n'}
+        elif search_value_format == 'contrast':
+            if search_value_outcome1 == 'continuous':
+                studlab, treat1, treat2, n1, n2, rob, TE1, seTE1, TE2, seTE2 = dataselectors
+                var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', n1: 'n1', n2: 'n2',
+                            rob: 'rob', TE1: 'TE1', seTE1: 'seTE1', TE2: 'TE2', seTE2: 'seTE2'}
+            elif search_value_outcome1 == 'binary':
+                studlab, treat1, treat2, n1, n2, rob, r1, r2 = dataselectors
+                var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', n1: 'n1', n2: 'n2',
+                            rob: 'rob', r1: 'r1', r2: 'r2'}
+        data.rename(columns=var_dict, inplace=True)
+        OPTIONS_VAR = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
         GLOBAL_DATA['net_data'] = data = data.loc[:, ~data.columns.str.contains('^Unnamed')]  # Remove unnamed columns
         elements = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
         GLOBAL_DATA['forest_data'] = apply_r_func(func=run_NetMeta_r, df=data)
         GLOBAL_DATA['forest_data_pairwise'] = apply_r_func(func=pairwise_forest_r, df=data)
-        leaguetable  = apply_r_func(func=league_table_r, df=data)
+        leaguetable_r  = apply_r_func(func=league_table_r, df=data)
+        leaguetable = pd.DataFrame([[replace_and_strip(col) for col in list(row)]
+                                                 for idx, row in leaguetable_r.iterrows()], columns=leaguetable_r.columns, index=leaguetable_r.index)
         leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
         leaguetable = leaguetable.reset_index().rename(columns={'index':'Treatments'})
         GLOBAL_DATA['league_table_data'] = leaguetable
@@ -979,7 +1089,6 @@ def get_new_data_cinema(contents, filename):
                Input('rob_vs_cinema', 'value')
                ])
 def update_output(store_node, data, store_edge, toggle_cinema):
-    print('JELLOWSFOUAHFOIAH')
     data = pd.read_json(data, orient='split').round(3)
     leaguetable = GLOBAL_DATA['league_table_data'].copy(deep=True)
     treatments = np.unique(data[['treat1', 'treat2']].values.flatten())
@@ -1072,10 +1181,13 @@ def build_league_table(data, columns, style_data_conditional, tips):
                                      'color': 'white',
                                      'border': '1px solid #5d6d95',
                                      'font-family': 'sans-serif',
+                                     'fontSize': 12,
+                                     'textAlign': 'center',
+                                     'whiteSpace': 'pre-line',  #'inherit', nowrap
                                      'textOverflow': 'ellipsis'},
                                 data=data,
                                 columns=columns,
-                                export_format="csv",
+                                export_format="csv", #xlsx
                                 #state='active',
                                 tooltip_data=[
                                    {col['id']:{'value': f"**Average ROB:** {tip[col['id']]}\n\n**Reason for Downgrading:**",
@@ -1098,7 +1210,7 @@ def build_league_table(data, columns, style_data_conditional, tips):
                                              'max-width': 'calc(40vw)',
                                              # 'padding': '5px 5px 5px 5px'
                                              },
-                                css=[{"selector": "table",
+                                css=[{"selector": '.dash-cell div.dash-cell-value', #"table",
                                       "rule": "width: 100%; "},
                                      {'selector': 'tr:hover',
                                       'rule': 'background-color: rgba(0, 0, 0, 0);'},
@@ -1410,7 +1522,7 @@ def which_dd_nds(circle_t, circle_v, breadthfirst_t, breadthfirst_v,
     return [values[which]]
 
 #################################################################
-############ Bootstrap Modals callbacks ######################
+############### Bootstrap Modals callbacks ######################
 #################################################################
 @app.callback(Output("modal", "is_open"),
               [Input("open_modal_dd_nclr_input", "n_clicks"),

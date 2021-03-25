@@ -78,13 +78,13 @@ funnel_plot <- function(dat,ref){
         nma <- netmeta(TE=dat$TE, seTE=dat$seTE,
                        treat1=dat$treat1, treat2=dat$treat2,
                        studlab=dat$studlab,
-                       sm = "MD", ## or OR TODO
+                       sm = "MD", ## or OR TODO: pass effect size to func
                        comb.random = TRUE,
                        backtransf = TRUE,
                        reference.group = ref)
         ordered_strategies <- unique(c(dat$treat1, dat$treat2))
         ordered_strategies <- c(ordered_strategies, ref)
-        netfun <- funnel(nmaresults.e,order=ordered_strategies)
+        netfun <- funnel(nma, order=ordered_strategies)
         funneldata <- droplevels(subset(netfun,treat2==ref))
   return(funneldata)
 }

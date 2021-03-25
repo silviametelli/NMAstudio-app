@@ -595,7 +595,7 @@ a.btn.disabled, fieldset:disabled a.btn {pointer-events: none}
 .btn-secondary.disabled, .btn-secondary:disabled {
     color: #fff;
     background-color: #95a5a6;
-    border-color: #bf29d3
+    border-color: #ffffff
 }
 .btn-secondary:not(:disabled):not(.disabled).active, .btn-secondary:not(:disabled):not(.disabled):active, .show > .btn-secondary.dropdown-toggle {
     color: #fff;

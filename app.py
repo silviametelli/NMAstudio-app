@@ -14,8 +14,7 @@ pairwise_forest_r = ro.globalenv['pairwise_forest'] # Get pairwise_forest from R
 import os, io, base64, pickle, shutil, time, copy
 import pandas as pd, numpy as np
 import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
-import dash_daq as daq
-import dash_table
+import dash_daq as daq, dash_table
 #from dash_extensions import Download
 import dash_cytoscape as cyto
 from assets.cytoscape_styleesheeet import get_stylesheet
@@ -28,6 +27,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
+from assets.COLORS import *
 #--------------------------------------------------------------------------------------------------------------------#
 
 def write_node_topickle(store_node):
@@ -128,7 +128,6 @@ for trt in all_nodes:
 ##############################################################################
 ##############################################################################
 
-
 #documentation='bla bla'
 #dcc.Markdown(documentation)
 app.layout = html.Div(
@@ -146,10 +145,9 @@ app.layout = html.Div(
     html.Div([html.Div(   # NMA Graph
                  [html.Div([dbc.Row([html.Div(Dropdown_graphlayout, style={'display': 'inline-block', 'font-size': '11px'}),
                                      html.Div(modal, style={'display': 'inline-block', 'font-size': '11px'}),
-                                     # html.Div(Dropdown_edgesize, style={'display': 'inline-block', 'font-size': '11px'}),
-                                     # html.Div(Dropdown_nodesize, style={'display': 'inline-block', 'font-size': '11px'}),
-                                     # html.Div(Dropdown_nodecolor, style={'display': 'inline-block', 'font-size': '11px'}),
-                                     #html.Div(Input_color, style={'display': 'inline-block', 'font-size': '10px'}),
+                                     html.Div(modal_data, style={'display': 'inline-block', 'font-size': '11px'}),
+                                     html.Div(modal_data_table, style={'display': 'inline-block', 'font-size': '11px'}),
+                                     html.Div(modal_league_table, style={'display': 'inline-block', 'font-size': '11px'}),
                                      html.A(html.Img(src="/assets/NETD.png", style={'width':'50px','filter':'invert()'}),
                                                      id="btn-get-png", style={'display': 'inline-block'}),
                                      dbc.Tooltip("save graph", style={'color':'white',
@@ -188,55 +186,50 @@ app.layout = html.Div(
                                                children=[
                                         dcc.Tab(label='Setup', id='tab_set', value='Tabset',
                                                                          style=subtab_style, selected_style=subtab_selected_style, children=[
-                                          dbc.Row([dbc.Col([html.Br(),
-                                              dcc.Upload(html.A('Upload main data file*',
-                                                                     style={'margin-left': '5px'}),
-                                                              id='datatable-upload', multiple=False,
-                                                              style={'display': 'inline-block'})
-                                          ],style={'display': 'inline-block'}),
-                                    dbc.Col([html.Ul(id="file-list", style={'margin-left': '15px'})],
-                                            style={'display': 'inline-block'})
-                                          ]),
-                                          dbc.Row([html.Br(),
-                                              dbc.Col([html.P("Format*:", className="graph__title2",
-                                                       style={'display': 'inline-block', 'margin-left': '5px',
-                                                              'paddingLeft': '5px','font-size': '11px','vertical-alignment':'middle'}),
-                                                       html.Div(dcc.RadioItems(id='dropdown-format',
-                                                                               options=options_format,
-                                                                               style={'width': '80px', 'margin-left': '-20px',
-                                                                       'color': '#1b242b', 'font-size': '10px',
-                                                                       'background-color': '#40515e'}),
-                                                                style={'display': 'inline-block', 'margin-bottom': '-15px'})],
-                                                      width="auto", style={'display': 'inline-block'}),
-
-                                              dbc.Col([html.P(["1",html.Sup("st"), " outcome*:"], className="graph__title2",
-                                                            style={'display': 'inline-block', 'paddingLeft': '10px','font-size': '11px'}),
-                                                   html.Div(dcc.RadioItems(id='dropdown-outcome1', options=options_outcomes,
-                                                                          style={'width': '80px', 'margin-left': '-20px',
-                                                                                 'color': '#1b242b', 'font-size': '10px',
-                                                                                 'background-color': '#40515e'}),
-                                                             style={'display': 'inline-block', 'margin-bottom': '-15px'})],width="auto", style={'display': 'inline-block'}),
-
-                                              dbc.Col([html.P(["2",html.Sup("nd"), " outcome:"], className="graph__title2",
-                                                      style={'display': 'inline-block', 'paddingLeft': '10px','font-size': '11px'}),
-                                              html.Div(dcc.RadioItems(id='dropdown-outcome2', options=options_outcomes,
-                                                                    style={'width': '80px', 'margin-left': '-20px',
-                                                                           'color': '#1b242b', 'font-size': '10px',
-                                                                           'background-color': '#40515e'}),
-                                                       style={'display': 'inline-block', 'margin-bottom': '-15px'})],width="auto", style={'display': 'inline-block'})
-                                          ]),
-                                   html.Div(id='second-selection') ]),
+                                                ]),
 
                                                    dcc.Tab(label='Data', style=subtab_style, selected_style=subtab_selected_style,
                                                            children=[
-                                                               html.Div([html.Button('Expand', 'data-expand',n_clicks=0,
-                                                                                     style={'margin-left':'80px', 'margin-top':'10px', 'padding': '4px 4px 4px 4px',
-                                                                                            'margin-bottom':'-31px','color':'white', 'fontSize': 11, 'font-weight': '900',
-                                                                                            'font-family': 'sans-serif', 'display': 'inline-block', 'vertical-align': 'middle'}),
+                                                               html.Div([html.Button('Upload your data', 'data-upload', n_clicks=0,
+                                                                                     style={'margin-left':'10px', 'padding': '4px 4px 4px 4px','margin-top': '15px',
+                                                                                            'color':'white', 'fontSize': 11, 'font-weight': '900',
+                                                                                            'font-family': 'sans-serif', 'display': 'inline-block',
+                                                                                            'vertical-align': 'middle'}),
+                                                                   html.A(html.Img(src="/assets/expand.png",
+                                                                                   style={'width':'34px',
+                                                                                          'filter':'invert()',
+                                                                                          'margin-top': '15px',
+                                                                                          'border-radius': '1px',
+                                                                                          }),
+                                                                                   id="data-expand",
+                                                                          style={'display': 'inline-block',
+                                                                                 'margin-left':'10px',
+                                                                                 }),
+                                                                   dbc.Tooltip("expand table", style={'color':'white',
+                                                                                                      'font-size':9,
+                                                                                                      'margin-left': '10px',
+                                                                                                      'letter-spacing': '0.3rem'},
+                                                                               placement='right',
+                                                                               target='data-expand'),
+                                                                   html.Div(dcc.Slider(min=1995, max=2008, step=1,
+                                                                                       marks={1995:{'label':'1995', 'style':{'color':'white'}},
+                                                                                              2008:{'label':'2008', 'style':{'color':'white'}}},
+                                                                                       value=2008,
+                                                                                       updatemode='drag',
+                                                                                       id='slider-year',
+                                                                                       tooltip=dict(placement='top')),
+                                                                             style={'display': 'inline-block',
+                                                                                    'width': '40%',
+                                                                                    'float':'right',
+                                                                                    'color':CLR_BCKGRND2,
+                                                                                    'padding-top': '25px',
+                                                                                    'margin-right': '10px',
+                                                                                    'margin-left': '15px'}),
+                                                                         html.Br(),#html.Br(),
                                                                dash_table.DataTable(
                                                                    id='datatable-upload-container',
                                                                    editable=False,
-                                                                   export_format="csv",
+                                                                   # export_format="csv",
                                                                    style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
                                                                                'color': 'white',
                                                                                'border': '1px solid #5d6d95',
@@ -258,7 +251,6 @@ app.layout = html.Div(
                                                                                 'height': '99%',
                                                                                 'max-height': '400px',
                                                                                 'width': '99%',
-                                                                                'margin-top':'43px',
                                                                                 'max-width': 'calc(40vw)',
                                                                                 'padding': '5px 5px 5px 5px'},
                                                                    css=[
@@ -478,9 +470,18 @@ app.layout = html.Div(
                                                                      'padding-right': '0px'})
                                         ], style={'text-align': 'right', 'margin-left': '50%', 'width':'100%'})
 
-                                      ], style={'display': 'inline-block'})
-                                      ]),
-
+                                      ], style={'display': 'inline-block'}),
+                                      ]),html.Div([html.Button('Expand', 'league-expand', n_clicks=0,
+                                                                        style={'margin-left': '5px',
+                                                                               # 'margin-top': '10px',
+                                                                               'padding': '4px 4px 4px 4px',
+                                                                               'margin-bottom': '-80px',
+                                                                               'color': 'white', 'fontSize': 11,
+                                                                               'font-weight': '900',
+                                                                               'font-family': 'sans-serif',
+                                                                               'display': 'inline-block',
+                                                                               'vertical-align': 'middle'})]),
+                                          html.Br(), html.Br(),
                                                           html.Div(id='league_table_legend',
                                                                    style={'float': 'right',
                                                                           'padding': '5px 5px 5px 5px'}),
@@ -552,7 +553,6 @@ app.layout = html.Div(
 
 ### ---------------- PROJECT SETUP --------------- ###
 @app.callback(Output("second-selection", "children"),
-              #Output("my-dynamic-dropdown2", "options"),
               [Input('datatable-upload', 'contents'),
                Input("dropdown-format", "value"),
                Input("dropdown-outcome1", "value"),
@@ -588,17 +588,20 @@ def update_options(contents, search_value_format, search_value_outcome1, search_
     vars_names = [[f'{search_value_format}.{c}' for c in col_vars[0]],
                  [f'{search_value_outcome1}.{c}' for c in col_vars[1]]]
     selectors_row = html.Div(
-        [dbc.Row([html.P("Select your variables")])]+[
+        [dbc.Row([html.P("Select your variables", style={'color':'white'})])]+[
          dbc.Row([dbc.Col(dbc.Row(
                  [html.P(f"{name}:", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
-                                                                   'margin-left': '0px', 'font-size': '10px'}),
-                 dcc.Dropdown(id={'type':'dataselectors','index':f'dropdown-{var_name}'}, options=options_var, searchable=True, placeholder="...", #className="box",
-                              clearable=False, style={'width': '60px', 'height': '20px', 'vertical-align': 'middle',
-                                                      'margin-left': '-8px',
-                                                      'padding-left':'0px',
+                                                                   'margin-left': '0px', 'font-size': '12px'}),
+                 dcc.Dropdown(id={'type':'dataselectors','index':f'dropdown-{var_name}'},
+                              options=options_var, searchable=True, placeholder="...", className="box",
+                              clearable=False, style={'width': '80px', #'height': '30px',
+                                                      'vertical-align': 'middle',
+                                                      'margin-bottom': '10px',
+                                                      # 'padding-bottom':'10px',
                                                       'display': 'inline-block',
                                                       'color': '#1b242b', 'font-size': '10px',
-                                                      'background-color': '#40515e'})]), style={'margin-bottom': '0px'})
+                                                      'background-color': CLR_BCKGRND})]),
+                              style={'margin-bottom': '0px'})
                             for var_name, name in zip(var_names, col_var)],
                 style={'display': 'inline-block'})
         for var_names, col_var in zip(vars_names, col_vars)]
@@ -644,8 +647,7 @@ def get_image(button):
                )
 def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                         dd_nclr, custom_nd_clr, dd_nds,dd_egs, dwld_button):
-    _DFLT_ND_CLR = '#07ABA0'
-    nodes_color = (custom_nd_clr or _DFLT_ND_CLR) if dd_nclr!='Default' else _DFLT_ND_CLR
+    nodes_color = (custom_nd_clr or DFLT_ND_CLR) if dd_nclr!='Default' else DFLT_ND_CLR
     node_size = dd_nds or 'Default'
     node_size = node_size=='Tot randomized'
     edge_size = dd_egs or 'Number of studies'
@@ -737,7 +739,6 @@ def TapEdgeData_info(data):
         return 'Selected comparison: ', f"{data[0]['source'].upper()} vs {data[0]['target'].upper()}"
     else:
         return 'Click on an edge to display the associated  plot'
-
 
 ### ----- update node info on funnel plot  ------ ###
 @app.callback(Output('tapNodeData-info-funnel', 'children'),
@@ -1002,7 +1003,6 @@ def parse_contents(contents, filename):
               [State('datatable-upload', 'filename')]
               )
 def get_new_data(contents, dataselectors, search_value_format, search_value_outcome1, search_value_outcome2, filename):
-    #print(dataselectors)
     def apply_r_func(func, df):
         with localconverter(ro.default_converter + pandas2ri.converter):
             df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
@@ -1081,14 +1081,27 @@ def get_new_data_cinema(contents, filename):
 ### ----- display Data Table and League Table ------ ###
 @app.callback([Output('datatable-upload-container', 'data'),
                Output('datatable-upload-container', 'columns'),
+               Output('datatable-upload-container-expanded', 'data'),
+               Output('datatable-upload-container-expanded', 'columns'),
                Output('league_table', 'children'),
-               Output('league_table_legend', 'children')],
+               Output('modal_league_table_data', 'children'),
+               Output('league_table_legend', 'children'),
+               Output('modal_league_table_legend', 'children'),
+               Output('rob_vs_cinema', 'value'),
+               Output('rob_vs_cinema_modal', 'value')
+               ],
               [Input('cytoscape','selectedNodeData'),
                Input('__storage_netdata', 'children'),
                Input('cytoscape', 'selectedEdgeData'),
-               Input('rob_vs_cinema', 'value')
+               Input('rob_vs_cinema', 'value'),
+               Input('rob_vs_cinema_modal', 'value'),
+               Input('slider-year', 'value')
                ])
-def update_output(store_node, data, store_edge, toggle_cinema):
+def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value):
+    triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
+    if 'rob_vs_cinema.value' in triggered:         toggle_cinema_modal = toggle_cinema
+    elif 'rob_vs_cinema_modal.value' in triggered: toggle_cinema = toggle_cinema_modal
+
     data = pd.read_json(data, orient='split').round(3)
     leaguetable = GLOBAL_DATA['league_table_data'].copy(deep=True)
     treatments = np.unique(data[['treat1', 'treat2']].values.flatten())
@@ -1171,12 +1184,12 @@ def update_output(store_node, data, store_edge, toggle_cinema):
                   | (data.treat1+data.treat2).isin(slctd_edgs) | (data.treat2+data.treat1).isin(slctd_edgs)]
 
     data_cols = [{"name": c, "id": c} for c in data.columns]
-    data_output = data.to_dict('records')
+    data_output = data[data.year<=slider_value].to_dict('records')
+    league_table = build_league_table(leaguetable, leaguetable_cols, styles, tips)
+    league_table_modal = build_league_table(leaguetable, leaguetable_cols, styles, tips, modal=True)
+    return [data_output, data_cols]*2 + [league_table, league_table_modal] + [legend]*2 + [toggle_cinema, toggle_cinema_modal]
 
-    return data_output, data_cols, build_league_table(leaguetable, leaguetable_cols, styles, tips), legend
-
-def build_league_table(data, columns, style_data_conditional, tips):
-
+def build_league_table(data, columns, style_data_conditional, tips, modal=False):
     return dash_table.DataTable(style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
                                      'color': 'white',
                                      'border': '1px solid #5d6d95',
@@ -1187,7 +1200,7 @@ def build_league_table(data, columns, style_data_conditional, tips):
                                      'textOverflow': 'ellipsis'},
                                 data=data,
                                 columns=columns,
-                                export_format="csv", #xlsx
+                                 # export_format="csv", #xlsx
                                 #state='active',
                                 tooltip_data=[
                                    {col['id']:{'value': f"**Average ROB:** {tip[col['id']]}\n\n**Reason for Downgrading:**",
@@ -1205,10 +1218,15 @@ def build_league_table(data, columns, style_data_conditional, tips):
                                 style_header_conditional=[{'if': {'column_id': 'Treatment',
                                                                   'header_index': 0},
                                                            'fontWeight': 'bold'}],
-                                style_table={'overflow': 'auto',
-                                             'width': '100%',
-                                             'max-width': 'calc(40vw)',
-                                             # 'padding': '5px 5px 5px 5px'
+                                style_table={'overflow': 'auto', 'width': '100%',
+                                             'max-width': 'calc(40vw)'} if not modal else {
+                                             'overflowX': 'scroll',
+                                             'overflowY': 'auto',
+                                             'height': '90%',
+                                             'max-height': 'calc(70vh)',
+                                             'width': '99%',
+                                             'margin-top': '10px',
+                                             'padding': '5px 5px 5px 5px'
                                              },
                                 css=[{"selector": '.dash-cell div.dash-cell-value', #"table",
                                       "rule": "width: 100%; "},
@@ -1521,9 +1539,13 @@ def which_dd_nds(circle_t, circle_v, breadthfirst_t, breadthfirst_v,
     which = dd_ngl.index(max(dd_ngl))
     return [values[which]]
 
+
+
 #################################################################
 ############### Bootstrap Modals callbacks ######################
 #################################################################
+
+#----- node color modal -----#
 @app.callback(Output("modal", "is_open"),
               [Input("open_modal_dd_nclr_input", "n_clicks"),
                Input("close_modal_dd_nclr_input", "n_clicks")],
@@ -1532,6 +1554,48 @@ def toggle_modal(open_t, close):
     if open_t: return True
     if close: return False
     return False
+#----- data selector modal -------#
+@app.callback(Output("modal_data", "is_open"),
+              [Input("data-upload", "n_clicks"),
+               Input("submit_modal_data", "n_clicks")],
+              [State("modal_data", "is_open"),
+               State({'type': 'dataselectors', 'index': ALL}, 'value')],
+              )
+def data_modal(open, submit, is_open, dataselectors):
+    if open:
+        return not is_open
+    elif submit:
+        # do your stuff
+        return not is_open
+
+@app.callback(Output("submit_modal_data", "disabled"),
+              Input({'type': 'dataselectors', 'index': ALL}, 'value'))
+def modal_submit_button(dataselectors):
+    return not all(dataselectors) if len(dataselectors) else True
+
+#----- data expand modal -----#
+@app.callback(
+    Output("modal_data_table", "is_open"),
+    [Input("data-expand", "n_clicks"),
+     Input("close-data-expanded", "n_clicks")],
+    [State("modal_data_table", "is_open")],
+)
+def toggle_modal(open, close, is_open):
+    if open or close:
+        return not is_open
+    return is_open
+
+#----- league expand modal -----#
+@app.callback(
+    Output("modal_league_table", "is_open"),
+    [Input("league-expand", "n_clicks"),
+     Input("close-league-expanded", "n_clicks")],
+    [State("modal_league_table", "is_open")],
+)
+def toggle_modal(open, close, is_open):
+    if open or close:
+        return not is_open
+    return is_open
 
 ###########################################################
 ########################### MAIN ##########################

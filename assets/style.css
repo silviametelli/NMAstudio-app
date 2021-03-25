@@ -199,8 +199,8 @@ h6 {margin-top: 0;}
 
     #{dropdown-1}_#{$i} .Select-placeholder {
         color: dodgerblue;
-        /*background: #394046;*/
-         #background-image: linear-gradient(#484e55, #3A3F44 60%, #313539);
+        /*background: #348f24;*/
+        /* #background-image: linear-gradient(#484e55, #a941ee 60%, #313539);*/
          left: 0;
          line-height: 20px;
          padding-left: 14px;
@@ -220,6 +220,7 @@ h6 {margin-top: 0;}
 .Select--single>.Select-control .Select-value, .Select-placeholder
 {
     line-height: 17px;
+    background: #95a5a6;
 }
 
 .wrapper {
@@ -259,7 +260,7 @@ width: auto;
 }
 
 .selectbox .Select-arrow { --accent: black;
-                            --background-image: linear-gradient(#626c78, #3A3F44 60%, #313539);
+                            --background-image: linear-gradient(#3d912a, #3A3F44 60%, #313539);
 }
 
 
@@ -340,9 +341,10 @@ img:hover {
 
 #datatable-upload-container .export{
     position: absolute;
-    top: -10px;
+    top: -34px;
     bottom: 0px;
     margin-left: 5px;
+    margin-top: 43px;
     line-height: 1.3;
     padding: 4px 4px 4px 4px;
     vertical-align: middle;
@@ -355,3 +357,53 @@ img:hover {
 #dd_nclr_input .dropdown-menu {
 :not(.dropdown-item)
 }
+
+.rc-slider-track {
+  background-color: #7e95cc;
+}
+
+.rc-slider-dot-active {
+  border-color: #1a5dae;
+  border: solid 2px #7e95cc;
+  background-color: #7e95cc;
+
+}
+.rc-slider-handle {
+  background-color: #7e95cc;
+  border-color: #751226;
+}
+.rc-slider-handle:hover {
+  border-color: #96dbfa;
+}
+.rc-slider-handle-active:active {
+    border-color: #7e95cc;
+}
+.rc-slider-tooltip-inner {
+  padding: 6px 2px;
+  min-width: 24px;
+  height: 24px;
+  font-size: 12px;
+  line-height: 1;
+  color: #060505;
+  text-align: center;
+  text-decoration: none;
+  background-color: #e1e0e0;
+  border-radius: 6px;
+  box-shadow: 0 0 0px #d9d9d9;
+}
+.rc-slider-tooltip-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+}
+.rc-slider-tooltip-placement-top .rc-slider-tooltip-arrow {
+  bottom: 4px;
+  left: 50%;
+  margin-left: -4px;
+  border-width: 4px 4px 0;
+  border-top-color: #e1e0e0;
+}
+
+

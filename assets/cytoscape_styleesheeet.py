@@ -20,11 +20,12 @@ def get_stylesheet(node_size=False, nd_col='#07ABA0', edge_size=False, pie=False
         default_stylesheet[1]['style'].update({"width": None})
     if pie:
         default_stylesheet[0]['style'].update({'pie-1-background-color': '#E8747C',
-                                               'pie-1-background-size': 'mapData(pie1, 0, 10, 0, 100)',
+                                               'pie-1-background-size': 'mapData(pie3, 0, 1, 0, 100)',
                                                'pie-2-background-color': '#74CBE8',
-                                               'pie-2-background-size': 'mapData(pie2, 0, 10, 0, 100)',
+                                               'pie-2-background-size': 'mapData(pie2, 0, 1, 0, 100)',
                                                'pie-3-background-color': '#74E883',
-                                               'pie-3-background-size': 'mapData(pie3, 0, 10, 0, 100)',})
+                                               'pie-3-background-size': 'mapData(pie1, 0, 1, 0, 100)',
+         })
     return default_stylesheet
 
 

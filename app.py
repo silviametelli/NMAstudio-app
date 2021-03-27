@@ -73,18 +73,22 @@ cyto.load_extra_layouts()
 
 def get_network(df):
     edges = df.groupby(['treat1', 'treat2']).TE.count().reset_index()
-    all_nodes = np.unique(edges[['treat1', 'treat2']].values.flatten())
-    df_n1 = df.groupby(['treat1']).n1.sum().reset_index()
-    df_n1 = df_n1.rename(columns={'treat1': 'treat', 'n1':'n'})
-    df_n2 = df.groupby(['treat2']).n2.sum().reset_index()
-    df_n2 = df_n2.rename(columns={'treat2': 'treat', 'n2':'n'})
-    all_nodes_sized = pd.concat([df_n1,df_n2]).groupby(['treat']).sum().reset_index()
-    cy_edges = [{'data': {'source': source, 'target': target, 'weight': weight * 2, 'weight_lab': weight}}
+    df_n1g = df.rename(columns={'treat1': 'treat', 'n1':'n'}).groupby(['treat'])
+    df_n2g = df.rename(columns={'treat2': 'treat', 'n2':'n'}).groupby(['treat'])
+    df_n1, df_n2 = df_n1g.n.sum(), df_n2g.n.sum()
+    all_nodes_sized = df_n1.add(df_n2, fill_value=0)
+    df_n1, df_n2 = df_n1g.rob.value_counts(), df_n2g.rob.value_counts()
+    all_nodes_robs = df_n1.add(df_n2, fill_value=0).rename(('count')).unstack('rob', fill_value=0)
+    all_nodes_sized = pd.concat([all_nodes_sized, all_nodes_robs], axis=1).reset_index()
+    for c in {1,2,3}.difference(all_nodes_sized): all_nodes_sized[c] = 0
+    cy_edges = [{'data': {'source': source,  'target': target,
+                          'weight': weight * 2, 'weight_lab': weight}}
                 for source, target, weight in edges.values]
-    cy_nodes = [{"data": {"id": target, "label": target, 'classes':'genesis', 'size': np.sqrt(size)*2}}
-                    for target, size in all_nodes_sized.values]
-    for el in cy_nodes:
-        el['data'].update({'pie1':4, 'pie2':1, 'pie3': 6})
+    cy_nodes = [{"data": {"id": target, "label": target,
+                          'classes':'genesis',
+                          'size': np.sqrt(size)*2,
+                          'pie1':r1/(r1+r2+r3), 'pie2':r2/(r1+r2+r3), 'pie3': r3/(r1+r2+r3)}}
+                for target, size, r1, r2, r3 in all_nodes_sized.values]
     return cy_edges + cy_nodes
 
 
@@ -102,13 +106,10 @@ replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
 leaguetable = GLOBAL_DATA['league_table_data'].copy(deep=True)
 GLOBAL_DATA['league_table_data'] = pd.DataFrame([[replace_and_strip(col) for col in list(row)]
                                                  for idx, row in leaguetable.iterrows()], columns=leaguetable.columns, index=leaguetable.index)
-#print(GLOBAL_DATA['league_table_data'])
 
 #for year slider
-GLOBAL_DATA['y_max'] = GLOBAL_DATA['net_data'].year.max()
 GLOBAL_DATA['y_min'] = GLOBAL_DATA['net_data'].year.min()
-GLOBAL_DATA['marks_range'] = {n: f'{n}' for n in GLOBAL_DATA['net_data'].year.sort_values().unique()[:2]}
-#print(GLOBAL_DATA['marks_range'])
+GLOBAL_DATA['y_max'] = GLOBAL_DATA['net_data'].year.max()
 
 GLOBAL_DATA['dwnld_bttn_calls'] = 0
 GLOBAL_DATA['WAIT'] = False
@@ -161,7 +162,8 @@ app.layout = html.Div(
                  ], style={'margin-left':'-30px', 'margin-right':'-30px'}),
                          cyto.Cytoscape(id='cytoscape',   #responsive=True,
                                  elements=GLOBAL_DATA['user_elements'],
-                                 style={'height': '75vh', 'width': '125%','margin-top': '15px','margin-left': '-100px'},
+                                 style={'height': '75vh', 'width': '125%','margin-top': '15px',
+                                        'margin-right': '0px','margin-left': '-100px'},
                                  stylesheet=get_stylesheet())],
                   className="one-half column"),
                  html.Div(className='graph__title', children=[]),
@@ -181,10 +183,10 @@ app.layout = html.Div(
                           html.Div([
                               dcc.Tabs([
                                         # Project set up
-                                  dcc.Tab(label='Setup & Data',children=[html.Div(children=[
-                                      dcc.Tabs(id='subtabs_DAT', value='subtab_DAT', vertical=False, persistence=True,
-                                               children=[
-                                        dcc.Tab(label='Setup', id='tab_set', value='Tabset',
+                                  dcc.Tab(label='Setup & Data',  children=[html.Div(children=[
+                               dcc.Tabs(id='subtabs_DAT', value='subtab_DAT', vertical=False, persistence=True,
+                                        children=[
+                                            dcc.Tab(label='Setup', id='tab_set', value='Tabset',
                                                                          style=subtab_style, selected_style=subtab_selected_style, children=[
                                                 ]),
 
@@ -211,15 +213,16 @@ app.layout = html.Div(
                                                                                                       'letter-spacing': '0.3rem'},
                                                                                placement='right',
                                                                                target='data-expand'),
-                                                                   html.Div(dcc.Slider(min=1995, max=2008, step=1,
-                                                                                       marks={1995:{'label':'1995', 'style':{'color':'white'}},
-                                                                                              2008:{'label':'2008', 'style':{'color':'white'}}},
-                                                                                       value=2008,
+                                                                   html.Div(dcc.Slider(min=GLOBAL_DATA["y_min"], max=GLOBAL_DATA["y_max"] , step=1,
+                                                                                       marks={GLOBAL_DATA["y_min"]:{'label':str(GLOBAL_DATA["y_min"]), 'style':{'color':'white'}},
+                                                                                              GLOBAL_DATA["y_max"]:{'label':str(GLOBAL_DATA["y_max"]), 'style':{'color':'white'}}
+                                                                                              },
+                                                                                       value=GLOBAL_DATA['y_max'],
                                                                                        updatemode='drag',
                                                                                        id='slider-year',
                                                                                        tooltip=dict(placement='top')),
                                                                              style={'display': 'inline-block',
-                                                                                    'width': '40%',
+                                                                                    'width': '50%',
                                                                                     'float':'right',
                                                                                     'color':CLR_BCKGRND2,
                                                                                     'padding-top': '25px',
@@ -471,17 +474,25 @@ app.layout = html.Div(
                                         ], style={'text-align': 'right', 'margin-left': '50%', 'width':'100%'})
 
                                       ], style={'display': 'inline-block'}),
-                                      ]),html.Div([html.Button('Expand', 'league-expand', n_clicks=0,
-                                                                        style={'margin-left': '5px',
-                                                                               # 'margin-top': '10px',
-                                                                               'padding': '4px 4px 4px 4px',
-                                                                               'margin-bottom': '-80px',
-                                                                               'color': 'white', 'fontSize': 11,
-                                                                               'font-weight': '900',
-                                                                               'font-family': 'sans-serif',
-                                                                               'display': 'inline-block',
-                                                                               'vertical-align': 'middle'})]),
-                                          html.Br(), html.Br(),
+                                      ]),
+                                          html.A(html.Img(src="/assets/expand.png",
+                                                          style={'width': '34px',
+                                                                 'filter': 'invert()',
+                                                                 'margin-top': '5px',
+                                                                 'margin-bottom': '5px',
+                                                                 'border-radius': '1px',
+                                                                 }),
+                                                 id="league-expand",
+                                                 style={'display': 'inline-block',
+                                                        'margin-left': '10px',
+                                                        }),
+                                          dbc.Tooltip("expand table", style={'color': 'white',
+                                                                             'font-size': 9,
+                                                                             'margin-left': '10px',
+                                                                             'letter-spacing': '0.3rem'},
+                                                      placement='right',
+                                                      target='league-expand'),
+                                          #html.Br(),
                                                           html.Div(id='league_table_legend',
                                                                    style={'float': 'right',
                                                                           'padding': '5px 5px 5px 5px'}),
@@ -544,7 +555,6 @@ app.layout = html.Div(
 
     ],
     className="app__container")
-
 
 # ----------------------------------  App Interactivity ------------------------------------------ #
 ##################################################################################
@@ -886,8 +896,7 @@ def TapNodeData_fig_bidim(data):
                                   #color='Whitesmoke'
                                   ),
                       error_y=dict(thickness=1.3),
-                      error_x=dict(thickness=1.3),
-                      ),
+                      error_x=dict(thickness=1.3),),
 
     fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5,
                      tickvals=[0.1, 0.5, 1, 5] if xlog else None,
@@ -998,11 +1007,12 @@ def parse_contents(contents, filename):
                Input({'type': 'dataselectors', 'index': ALL}, 'value'),
                Input("dropdown-format", "value"),
                Input("dropdown-outcome1", "value"),
-               Input("dropdown-outcome2", "value")
+               Input("dropdown-outcome2", "value"),
+               Input('slider-year', 'value')
                ],
               [State('datatable-upload', 'filename')]
               )
-def get_new_data(contents, dataselectors, search_value_format, search_value_outcome1, search_value_outcome2, filename):
+def get_new_data(contents, dataselectors, search_value_format, search_value_outcome1, search_value_outcome2, slider_year, filename):
     def apply_r_func(func, df):
         with localconverter(ro.default_converter + pandas2ri.converter):
             df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
@@ -1011,7 +1021,8 @@ def get_new_data(contents, dataselectors, search_value_format, search_value_outc
         return df_result
     if contents is None or not all(dataselectors):
         data = GLOBAL_DATA['net_data']
-        elements = GLOBAL_DATA['user_elements'] = get_network(df=data)
+        GLOBAL_DATA['user_elements'] = get_network(df=data)
+        elements = get_network(df=data[data.year <= slider_year])
     else:
         data = parse_contents(contents, filename)
         var_dict = dict()
@@ -1167,7 +1178,7 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
             styles.append({'if': {'filter_query':f'{{Treatment}} = {{{treat_r}}}',
                                   'column_id': treat_c},
                            'backgroundColor': cmap[clr_indx] if not empty else '#40515e',
-                           'color': 'rgb(26, 36, 43)' if not empty else 'gray' if diag else 'white'})
+                           'color': 'rgb(26, 36, 43)' if not empty else '#d6d6d6' if diag else 'white'})
     styles.append({'if': {'column_id': 'Treatment'},
                    'backgroundColor': 'rgb(26, 36, 43)'})
 

@@ -117,22 +117,19 @@ modal_league_table = dbc.Modal([
                      dbc.ModalHeader([dbc.Row([html.Div("League Table", style={'display': 'inline-block'}),
                                                html.Div([html.P("Risk of Bias", id='cinemaswitchlabel1_modal',
                                                                   style={'display': 'inline-block', 'margin': 'auto',
-                                                                         'font-size': '12px',
-                                                                         'padding-left': '10px'}),
+                                                                         'font-size': '12px', 'padding-left': '10px'}),
                                                         daq.ToggleSwitch(id='rob_vs_cinema_modal',
                                                                          color='', size=30,
                                                                          labelPosition="bottom",
                                                                          style={'display': 'inline-block',
                                                                                 'margin': 'auto',
-                                                                                'padding-left': '10px',
-                                                                                'padding-right': '10px'}),
+                                                                                'padding-left': '10px', 'padding-right': '10px'}),
                                                         html.P('CINeMA grade', id='cinemaswitchlabel2_modal',
                                                                 style={'display': 'inline-block', 'margin': 'auto',
-                                                                       'font-size': '12px',
-                                                                       'padding-right': '0px'})
-                                                ], style={'display': 'inline-block', 'float':'right'})
-                                              ],style={'width': '100%'})
-                                      ], style={'width': '100%'}),
+                                                                       'font-size': '12px', 'padding-right': '0px'})],
+                                                        style={'display': 'inline-block', 'text-align':'right', }) # Closes Div
+                                              ],style={'width': '100%', "max-width": "none"}) # Closes Row
+                                      ], style={'width': '100%', "max-width": "none"}), # Closes Header
                      dbc.ModalBody([html.Div(id='league-expand-body'),
                                     html.Div(id='modal_league_table_legend',
                                              style={'float': 'right',

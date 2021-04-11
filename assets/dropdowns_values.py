@@ -1,7 +1,4 @@
 ####### contains all lists of values (except for data variables) for the app dropdowns #######
-
-import dash_core_components as dcc
-import dash_bootstrap_components as dbc, dash_html_components as html
 from assets.modal_values import *
 
 
@@ -14,20 +11,10 @@ Dropdown_nodesize = dbc.DropdownMenu(
     label="Node size", direction="right",bs_size="sm",
     children=[dbc.DropdownMenuItem("Default", id='dd_nds_default'),
               dbc.DropdownMenuItem("Tot randomized", id='dd_nds_tot_rnd'),
-              dbc.DropdownMenuItem("Other", id='dd_nds_other'),
               html.Div(id='dd_nds', style={'display': 'none'}),
               ],
 )
 
-# Dropdown_nodecolor = dbc.DropdownMenu(
-#     label="Node color",
-#     children=[
-#         dbc.DropdownMenuItem("Default", id='dd_nclr_default'),
-#         dbc.DropdownMenuItem("Risk of Bias", id='dd_nclr_rob'),
-#         dbc.DropdownMenuItem("Choose your color", id='dd_nclr_input'),
-#         html.Div(id='dd_nclr', style={'display': 'none'}),
-#     ], style={'display': 'inline-block',}
-# )
 
 Dropdown_nodecolor = dbc.DropdownMenu(
     label="Node color", direction="right",bs_size="sm",
@@ -55,12 +42,9 @@ Dropdown_edgesize = dbc.DropdownMenu(
     children=[
         dbc.DropdownMenuItem("Number of studies", id='dd_egs_tot_rnd'),
         dbc.DropdownMenuItem("No size", id='dd_egs_default'),
-        dbc.DropdownMenuItem("Other", id='dd_egs_other'),
         html.Div(id='dd_egs', style={'display': 'none'}),
     ],
 )
-
-
 
 
 Dropdown_graphlayout = dbc.DropdownMenu(

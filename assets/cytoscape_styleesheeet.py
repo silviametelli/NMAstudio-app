@@ -7,7 +7,8 @@ def get_stylesheet(node_size=False, nd_col='#07ABA0', edge_size=False, pie=False
                    'line-color':'black',
                    'label': "data(label)",
                    'shape':'circle',
-                   'color': "#fff"
+                   # 'color': "#1b242b"
+                    'color': "#fff"
                    },
          },
         {"selector": 'edge',
@@ -55,7 +56,8 @@ stylesheet = [{'selector': 'node',
                          'label': "data(label)",
            #              'size': "data(size)",
                          # 'background-color': "#07ABA0",
-                         'color': "#fff"
+                         # 'color':'#1b242b',
+                          'color': "#fff"
                          }},
 
               {'selector': 'edge',

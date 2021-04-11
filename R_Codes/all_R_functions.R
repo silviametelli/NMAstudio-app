@@ -74,16 +74,16 @@ league_table <- function(dat){
 }
 
 ## comparison adjusted funnel plots
-funnel_plot <- function(dat,ref){
+funnel_plot <- function(dat,ref_vec){
         nma <- netmeta(TE=dat$TE, seTE=dat$seTE,
                        treat1=dat$treat1, treat2=dat$treat2,
                        studlab=dat$studlab,
                        sm = "MD", ## or OR TODO: pass effect size to func
                        comb.random = TRUE,
                        backtransf = TRUE,
-                       reference.group = ref)
+                       reference.group = ref_vec[1])
         ordered_strategies <- unique(c(dat$treat1, dat$treat2))
-        ordered_strategies <- c(ordered_strategies, ref)
+        ordered_strategies <- c(ordered_strategies, ref_vec)
         netfun <- funnel(nma, order=ordered_strategies)
         funneldata <- droplevels(subset(netfun,treat2==ref))
   return(funneldata)

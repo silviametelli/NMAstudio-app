@@ -1,3 +1,8 @@
+# Title     :  Dash NMA app
+# Objective :  visualization tabs based on network interactivity
+# Created by:  Silvia Metelli
+# Created on: 10/11/2020
+
 #--------------------------------------------------------------------------------------------------------------------#
 import warnings
 warnings.filterwarnings("ignore")
@@ -18,16 +23,15 @@ import dash_daq as daq, dash_table
 #from dash_extensions import Download
 import dash_cytoscape as cyto
 from assets.cytoscape_styleesheeet import get_stylesheet
-from assets.tab_styles import subtab_style, subtab_selected_style
 from assets.dropdowns_values import *
-
 from dash.dependencies import Input, Output, State, MATCH, ALL
-
 import plotly.express as px
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
-from assets.COLORS import *
+from navbar import Navbar
+from layouts import *
+
 #--------------------------------------------------------------------------------------------------------------------#
 
 def write_node_topickle(store_node):
@@ -57,8 +61,17 @@ GRAPH_INTERVAL = os.environ.get("GRAPH_INTERVAL", 5000)
 
 app = dash.Dash(__name__, meta_tags=[{"name": "viewport",
                                       "content": "width=device-width, initial-scale=1"}],
+                #external_stylesheets=[dbc.themes.BOOTSTRAP],
                 suppress_callback_exceptions=True)
+
+app.config.suppress_callback_exceptions = True
+
 server = app.server
+
+app.layout = html.Div([
+    dcc.Location(id='url', refresh=False),
+    html.Div(id='page-content')
+])
 
 styles = {
     'output': {'overflow-y': 'scroll',
@@ -67,10 +80,11 @@ styles = {
                'border': 'thin lightgrey solid'},
     'tab': {'height': 'calc(98vh - 115px)'}
 }
+
 # Load extra layouts
 cyto.load_extra_layouts()
 
-
+## CREATE NETWORK FUNCTION
 def get_network(df):
     edges = df.groupby(['treat1', 'treat2']).TE.count().reset_index()
     df_n1g = df.rename(columns={'treat1': 'treat', 'n1':'n'}).groupby(['treat'])
@@ -123,443 +137,51 @@ all_nodes = np.unique(edges[['treat1', 'treat2']].values.flatten())
 for trt in all_nodes:
     options_trt.append({'label':'{}'.format(trt, trt), 'value':trt})
 
-##############################################################################
-##############################################################################
-##########################------- APP LAYOUT -------##########################
-##############################################################################
-##############################################################################
 
-#documentation='bla bla'
-#dcc.Markdown(documentation)
-app.layout = html.Div(
-    [html.Div(            # Header
-             [html.Div([html.H4("VisualNMA", className="app__header__title"),
-                        html.P("An interactive tool for data visualisation of network meta-analysis.",
-                               className="app__header__title--grey"),
+def Homepage():
+    layout_home = html.Div([nav, home_layout])
+    return layout_home
 
-                        ], className="app__header__desc"),
+nav = Navbar()
 
-             html.Div([html.Img(src=app.get_asset_url("logo_universite_paris.jpg"),
-                                className="app__menu__img")],
-                      className="app__header__logo")],
-             className="app__header"),
-    html.Div([html.Div(   # NMA Graph
-                 [html.Div([dbc.Row([html.Div(Dropdown_graphlayout, style={'display': 'inline-block', 'font-size': '11px'}),
-                                     html.Div(modal, style={'display': 'inline-block', 'font-size': '11px'}),
-                                     html.Div(modal_data, style={'display': 'inline-block', 'font-size': '11px'}),
-                                     html.Div(modal_data_table, style={'display': 'inline-block', 'font-size': '11px'}),
-                                     html.Div(modal_league_table, style={'display': 'inline-block', 'font-size': '11px'}),
-                                     html.A(html.Img(src="/assets/NETD.png", style={'width':'50px','filter':'invert()'}),
-                                                     id="btn-get-png", style={'display': 'inline-block'}),
-                                     dbc.Tooltip("save graph", style={'color':'white',
-                                                                      'font-size':9,
-                                                                      'margin-left': '10px',
-                                                                      'letter-spacing': '0.3rem'
-                                                                      },placement='right',
-                                                 target='btn-get-png')
-                                     ]),
+# ------------------------------ app interactivity ----------------------------------#
 
-                 ], style={'margin-left':'-30px', 'margin-right':'-30px'}),
-                         cyto.Cytoscape(id='cytoscape',   #responsive=True,
-                                 elements=GLOBAL_DATA['user_elements'],
-                                 style={'height': '75vh', 'width': '125%','margin-top': '15px',
-                                        'margin-right': '0px','margin-left': '-100px'},
-                                 stylesheet=get_stylesheet())],
-                  className="one-half column"),
-                 html.Div(className='graph__title', children=[]),
-                 html.Div(
-                      [html.Div(  # Information
-                           [html.Div([dbc.Row([
-                                              html.H6("Information", className="box__title"),
-                                             # html.H6("Download button here?")
-                                              ]),
-                                      ]),
-                            html.Div([html.P(id='cytoscape-mouseTapEdgeData-output', className="info_box"),
-                                      html.Br()],
-                                      className="content_information"),
-                            html.Div([],className="auto__container")],
-                          className="info__container"),
-                          # tabs
-                          html.Div([
-                              dcc.Tabs([
-                                        # Project set up
-                                  dcc.Tab(label='Setup & Data',  children=[html.Div(children=[
-                               dcc.Tabs(id='subtabs_DAT', value='subtab_DAT', vertical=False, persistence=True,
-                                        children=[
-                                            dcc.Tab(label='Setup', id='tab_set', value='Tabset',
-                                                                         style=subtab_style, selected_style=subtab_selected_style, children=[
-                                                ]),
+#####################################################################################
+#####################################################################################
+################################ MULTIPAGE CALLBACKS ################################
+#####################################################################################
+#####################################################################################
 
-                                                   dcc.Tab(label='Data', style=subtab_style, selected_style=subtab_selected_style,
-                                                           children=[
-                                                               html.Div([html.Button('Upload your data', 'data-upload', n_clicks=0,
-                                                                                     style={'margin-left':'10px', 'padding': '4px 4px 4px 4px','margin-top': '15px',
-                                                                                            'color':'white', 'fontSize': 11, 'font-weight': '900',
-                                                                                            'font-family': 'sans-serif', 'display': 'inline-block',
-                                                                                            'vertical-align': 'middle'}),
-                                                                   html.A(html.Img(src="/assets/expand.png",
-                                                                                   style={'width':'34px',
-                                                                                          'filter':'invert()',
-                                                                                          'margin-top': '15px',
-                                                                                          'border-radius': '1px',
-                                                                                          }),
-                                                                                   id="data-expand",
-                                                                          style={'display': 'inline-block',
-                                                                                 'margin-left':'10px',
-                                                                                 }),
-                                                                   dbc.Tooltip("expand table", style={'color':'white',
-                                                                                                      'font-size':9,
-                                                                                                      'margin-left': '10px',
-                                                                                                      'letter-spacing': '0.3rem'},
-                                                                               placement='right',
-                                                                               target='data-expand'),
-                                                                   html.Div(dcc.Slider(min=GLOBAL_DATA["y_min"], max=GLOBAL_DATA["y_max"] , step=1,
-                                                                                       marks={GLOBAL_DATA["y_min"]:{'label':str(GLOBAL_DATA["y_min"]), 'style':{'color':'white'}},
-                                                                                              GLOBAL_DATA["y_max"]:{'label':str(GLOBAL_DATA["y_max"]), 'style':{'color':'white'}}
-                                                                                              },
-                                                                                       value=GLOBAL_DATA['y_max'],
-                                                                                       updatemode='drag',
-                                                                                       id='slider-year',
-                                                                                       tooltip=dict(placement='top')),
-                                                                             style={'display': 'inline-block',
-                                                                                    'width': '50%',
-                                                                                    'float':'right',
-                                                                                    'color':CLR_BCKGRND2,
-                                                                                    'padding-top': '25px',
-                                                                                    'margin-right': '10px',
-                                                                                    'margin-left': '15px'}),
-                                                                         html.Br(),#html.Br(),
-                                                               dash_table.DataTable(
-                                                                   id='datatable-upload-container',
-                                                                   editable=False,
-                                                                   # export_format="csv",
-                                                                   style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
-                                                                               'color': 'white',
-                                                                               'border': '1px solid #5d6d95',
-                                                                               'textOverflow': 'ellipsis',
-                                                                               'font-family': 'sans-serif',
-                                                                               'fontSize': 11,
-                                                                               },
-                                                                   style_data_conditional=[
-                                                                       {'if': {'row_index': 'odd'},
-                                                                        'backgroundColor': 'rgba(0,0,0,0.2)'},
-                                                                       {'if': {'state': 'active'},
-                                                                        'backgroundColor': 'rgba(0, 116, 217, 0.3)',
-                                                                        'border': '1px solid rgb(0, 116, 217)'}],
-                                                                   style_header={'backgroundColor': 'rgb(26, 36, 43)',
-                                                                                 'fontWeight': 'bold',
-                                                                                 'border': '1px solid #5d6d95'},
-                                                                   style_table={'overflowX': 'scroll',
-                                                                                'overflowY': 'auto',
-                                                                                'height': '99%',
-                                                                                'max-height': '400px',
-                                                                                'width': '99%',
-                                                                                'max-width': 'calc(40vw)',
-                                                                                'padding': '5px 5px 5px 5px'},
-                                                                   css=[
-                                                                       {'selector': 'tr:hover',
-                                                                        'rule': 'background-color: rgba(0, 0, 0, 0);'},
-                                                                       {'selector': 'td:hover',
-                                                                        'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}])]
-                                                           )]),
-
-                                  ])]) ]),
-                                  dcc.Tab(label='Transitivity',
-                                          children=[
-                                              html.Div(
-                                                  [dbc.Row([html.P("Choose effect modifier:", className="graph__title2",
-                                                                   style={'display': 'inline-block',
-                                                                          'vertical-align': 'middle',
-                                                                          'font-size': '12px',
-                                                                          'margin-bottom': '-10px'}),
-                                                            dcc.Dropdown(id='dropdown-effectmod', options=OPTIONS_VAR,
-                                                                         clearable=True,
-                                                                         className="tapEdgeData-fig-class",
-                                                                         style={'width': '150px', 'height': '30px',
-                                                                                'vertical-align': 'top',
-                                                                                'color': '#1b242b',
-                                                                                'display': 'inline-block',
-                                                                                'margin-bottom': '0px',
-                                                                                'background-color': '#40515e',
-                                                                                'padding-bottom': '5px'})
-                                                            ])]),
-                                              dcc.Graph(id='tapEdgeData-fig',
-                                                        config={'editable': True,
-                                                                'edits': dict(annotationPosition=True,
-                                                                              annotationTail=True,
-                                                                              annotationText=True, axisTitleText=True,
-                                                                              colorbarPosition=True,
-                                                                              colorbarTitleText=True,
-                                                                              titleText=False,
-                                                                              legendPosition=True, legendText=True,
-                                                                              shapePosition=True),
-                                                                'modeBarButtonsToRemove': ['toggleSpikelines', "pan2d",
-                                                                                           "select2d", "lasso2d",
-                                                                                           "autoScale2d",
-                                                                                           "hoverCompareCartesian"],
-                                                                'toImageButtonOptions': {'format': 'png',
-                                                                                         # one of png, svg,
-                                                                                         'filename': 'custom_image',
-                                                                                         'scale': 10
-                                                                                         # Multiply title/legend/axis/canvas sizes by this factor
-                                                                                         },
-                                                                'displaylogo': False})]),
-
-                                  dcc.Tab(label='Forest plots', value='mainTabForest',children=[
-                                              dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persistence=True,
-                                                       children=[
-                                                                 dcc.Tab(label='NMA', id='tab1', value='Tab1',
-                                                                         style=subtab_style, selected_style=subtab_selected_style,
-                                                                         children=[html.Div([dbc.Row([
-                                                                                                 dbc.Col(html.P(id='tapNodeData-info', className="box__title",
-                                                                                                        style={'display': 'inline-block'})),
-                                                                                                 dbc.Col([html.P(
-                                                                                                     "Beneficial",
-                                                                                                     id='forestswitchlabel1',
-                                                                                                     style={'display': 'inline-block',
-                                                                                                            'margin': 'auto',
-                                                                                                            'font-size': '10px',
-                                                                                                            'padding-left': '50px'}),
-                                                                                                           daq.ToggleSwitch(
-                                                                                                               id='toggle_forest_direction',
-                                                                                                               color='', size=30,vertical=False,
-                                                                                                               label={'label': "Outcome",
-                                                                                                                      'style': dict(color='white',font='10px')},
-                                                                                                               labelPosition="top",
-                                                                                                               style={'display': 'inline-block',
-                                                                                                                      'margin': 'auto', 'font-size':'10px',
-                                                                                                                      'padding-left': '20px',
-                                                                                                                      'padding-right': '20px'}),
-                                                                                                           html.P('Harmful',
-                                                                                                               id='forestswitchlabel2',
-                                                                                                               style={'display': 'inline-block',
-                                                                                                                      'margin': 'auto',
-                                                                                                                      'font-size': '10px',
-                                                                                                                      'padding-right': '20px'})
-                                                                                                           ], style={'margin-left': '53%'})
-
-                                                                                             ]),
-                                                                                             ]),
-                                                                                       html.Div([
-                                                                                           dcc.Loading(
-                                                                                               dcc.Graph(
-                                                                                            id='tapNodeData-fig',
-                                                                                            config={
-                                                                                                    'modeBarButtonsToRemove': [
-                                                                                                    'toggleSpikelines',
-                                                                                                    "pan2d",
-                                                                                                    "select2d",
-                                                                                                    "lasso2d",
-                                                                                                    "autoScale2d",
-                                                                                                    "hoverCompareCartesian"],
-                                                                                                    'toImageButtonOptions': {
-                                                                                                    'format': 'png',
-                                                                                                    # one of png, svg,
-                                                                                                    'filename': 'custom_image',
-                                                                                                    'scale': 10
-                                                                                                    # Multiply title/legend/axis/canvas sizes by this factor
-                                                                                                    },
-                                                                                            'displaylogo': False})) ])
-
-                                                       ]),
-                                                                dcc.Tab(label='Pairwise', id='tab2', value='Tab2', style=subtab_style,selected_style=subtab_selected_style,
-                                                                        children=[html.Div([html.P(
-                                                                            id='tapEdgeData-info',
-                                                                            className="box__title"),
-                                                                                            html.Br()]),
-                                                                        dcc.Loading(
-                                                                            html.Div([
-                                                                            dcc.Graph(
-                                                                                id='tapEdgeData-fig-pairwise',
-                                                                                config={
-                                                                                    'modeBarButtonsToRemove': [
-                                                                                        'toggleSpikelines',
-                                                                                        "pan2d",
-                                                                                        "select2d",
-                                                                                        "lasso2d",
-                                                                                        "autoScale2d",
-                                                                                        "hoverCompareCartesian"],
-                                                                                        'toImageButtonOptions': {
-                                                                                        'format': 'png',
-                                                                                        # one of png, svg,
-                                                                                        'filename': 'custom_image',
-                                                                                        'scale': 10
-                                                                                        # Multiply title/legend/axis/canvas sizes by this factor
-                                                                                    },
-                                                                                    'displaylogo': False})])
-
-                                                                                  ),
-                                                                ]),
-
-                                                                dcc.Tab(label='Two-dimensional', id='tab3', value='Tab3', style=subtab_style,selected_style=subtab_selected_style,
-                                                                        children=[html.Div([html.P(id='tapNodeData-info-bidim', className="box__title"),
-                                                                                                 html.Br()]),
-                                                                                 # html.Br(),
-                                                                            # html.Div([dbc.Row([html.H6(
-                                                                            #     "Choose reference trt:",
-                                                                            #     className="graph__title2",
-                                                                            #     style={'display': 'inline-block'}),
-                                                                            #                    html.Div(
-                                                                            #                        dcc.Dropdown(
-                                                                            #                            id='dropdown-reference-trt',
-                                                                            #                            options=options_trt,
-                                                                            #                            clearable=False,
-                                                                            #                            className="tapEdgeData-fig-class",
-                                                                            #                            style={
-                                                                            #                                'width': '100px','font size':'11px',
-                                                                            #                                'vertical-align': 'middle',
-                                                                            #                                'color': '#1b242b',
-                                                                            #                                'display': 'inline-block',
-                                                                            #                                'background-color': '#40515e',
-                                                                            #                                'padding-bottom': '5px'}),
-                                                                            #                        style={
-                                                                            #                            'display': 'inline-block',
-                                                                            #                            'margin-bottom': '-15px'})
-                                                                            #                    ])],
-                                                                        dcc.Loading(
-                                                                                html.Div([
-                                                                                    dcc.Graph(
-                                                                                        id='tapNodeData-fig-bidim',
-                                                                                        config={'editable': True,
-                                                                                                'showTips':True,
-                                                                                                'edits': dict(annotationPosition=True, annotationTail=True, annotationText=True, axisTitleText=True,
-                                                                                                              colorbarPosition=True,colorbarTitleText=True, titleText=False,
-                                                                                                              legendPosition=True, legendText=True, shapePosition=True),
-                                                                                            'modeBarButtonsToRemove': [
-                                                                                            'toggleSpikelines',
-                                                                                            "pan2d",
-                                                                                            "select2d",
-                                                                                            "lasso2d",
-                                                                                            "autoScale2d",
-                                                                                            "hoverCompareCartesian"],
-                                                                                            'toImageButtonOptions': {
-                                                                                            'format': 'png',
-                                                                                            # one of png, svg,
-                                                                                            'filename': 'custom_image',
-                                                                                            'scale': 10
-                                                                                            # Multiply title/legend/axis/canvas sizes by this factor
-                                                                                        },
-                                                                                        'displaylogo': False})])
-                                                                        )],
-                                                                        )
-                              ])]),
-
-                                  dcc.Tab(label='League table',
-                                      children=[html.Div([dbc.Row([dbc.Col([
-                                              dcc.Upload(html.A('Upload CINeMA file',
-                                                              style={'margin-left': '5px'}),
-                                                              id='datatable-secondfile-upload', multiple=False,
-                                                              style={'display': 'inline-block','font-size':'12px'})
-                                          ],style={'display': 'inline-block'}),
-                                    dbc.Col([html.Ul(id="file2-list", style={'margin-left': '15px'})],
-                                            style={'display': 'inline-block', 'margin-top':'10px', 'margin-bottom':'10px'}
-                                            ),
-                                    dbc.Col([html.Div([html.P("Risk of Bias", id='cinemaswitchlabel1',
-                                                              style={'display': 'inline-block', 'margin': 'auto',
-                                                                     'font-size': '12px',
-                                                                     'padding-left': '10px'}),
-                                                       daq.ToggleSwitch(id='rob_vs_cinema',
-                                                                        color='', size=30,
-                                                                        # label={'label': "Color",
-                                                                        #        'style': dict(fontsize=10, color='white')},
-                                                                        labelPosition="bottom",
-                                                                        style={'display': 'inline-block',
-                                                                               'margin': 'auto',
-                                                                               'padding-left': '10px',
-                                                                               'padding-right': '10px'}),
-                                                       html.P('CINeMA grade', id='cinemaswitchlabel2',
-                                                              style={'display': 'inline-block', 'margin': 'auto',
-                                                                     'font-size': '12px',
-                                                                     'padding-right': '0px'})
-                                        ], style={'text-align': 'right', 'margin-left': '50%', 'width':'100%'})
-
-                                      ], style={'display': 'inline-block'}),
-                                      ]),
-                                          html.A(html.Img(src="/assets/expand.png",
-                                                          style={'width': '34px',
-                                                                 'filter': 'invert()',
-                                                                 'margin-top': '5px',
-                                                                 'margin-bottom': '5px',
-                                                                 'border-radius': '1px',
-                                                                 }),
-                                                 id="league-expand",
-                                                 style={'display': 'inline-block',
-                                                        'margin-left': '10px',
-                                                        }),
-                                          dbc.Tooltip("expand table", style={'color': 'white',
-                                                                             'font-size': 9,
-                                                                             'margin-left': '10px',
-                                                                             'letter-spacing': '0.3rem'},
-                                                      placement='right',
-                                                      target='league-expand'),
-                                          #html.Br(),
-                                                          html.Div(id='league_table_legend',
-                                                                   style={'float': 'right',
-                                                                          'padding': '5px 5px 5px 5px'}),
-                                                          html.Div(id='league_table')
-                                      ])]),
-
-                                  dcc.Tab(label='Funnel plots', children=[html.Div([html.P(id='tapNodeData-info-funnel', className="box__title"),
-                                                                          html.Br()]),
-                                                                          dcc.Loading(
-                                                                              html.Div([
-                                                                                  dcc.Graph(
-                                                                                      id='tapNodeData-fig-funnel',
-                                                                                      config={'editable': True,
-                                                                                              'showTips': True,
-                                                                                              'edits': dict(
-                                                                                                  annotationPosition=True,
-                                                                                                  annotationTail=True,
-                                                                                                  annotationText=True,
-                                                                                                  axisTitleText=True,
-                                                                                                  colorbarPosition=True,
-                                                                                                  colorbarTitleText=True,
-                                                                                                  titleText=False,
-                                                                                                  legendPosition=True,
-                                                                                                  legendText=True,
-                                                                                                  shapePosition=True),
-                                                                                              'modeBarButtonsToRemove': [
-                                                                                                  'toggleSpikelines',
-                                                                                                  "pan2d",
-                                                                                                  "select2d",
-                                                                                                  "lasso2d",
-                                                                                                  "autoScale2d",
-                                                                                                  "hoverCompareCartesian"],
-                                                                                              'toImageButtonOptions': {
-                                                                                                  'format': 'png',
-                                                                                                  # one of png, svg,
-                                                                                                  'filename': 'custom_image',
-                                                                                                  'scale': 10
-                                                                                                  # Multiply title/legend/axis/canvas sizes by this factor
-                                                                                              },
-                                                                                              'displaylogo': False})])
-                                                                          )
-                                                                          ],
-
-                                          ),
+# Update the index
+@app.callback(Output('page-content', 'children'), [Input('url', 'pathname')])
+def display_page(pathname):
+    if pathname == '/home':
+        return Homepage()
+    elif pathname == '/doc':
+        return doc_layout
+    else:
+        return Homepage()
 
 
-                                  ], colors={"border": "#1b242b", "primary": "#1b242b", "background": "#1b242b"},
-                                     style=dict(color='#40515e')),
-                                    ],
-                                      className="graph__container second"),
-                      ], className="one-half column")
-    ],
-              className="app__content"),
-        html.P('Copyright © 2020. All rights reserved.', className='__footer'),
-        html.Div(id='__storage_netdata', style={'display': 'none'}),
-        html.Div(id='__storage_netdata_cinema', style={'display': 'none'}),
-        # dcc.Interval(id='interval-component',
-        #              interval=1*1000, # in milliseconds
-        #              n_intervals=0)
+# Update which link is active in the navbar
+@app.callback(Output('homepage-link', 'active'),
+              [Input('url', 'pathname')])
+def set_homepage_active(pathname):
+    return pathname == '/home'
 
-    ],
-    className="app__container")
 
-# ----------------------------------  App Interactivity ------------------------------------------ #
-##################################################################################
-################################ CALLBACKS #######################################
-##################################################################################
+@app.callback(Output('docpage-link', 'active'), [Input('url', 'pathname')])
+def set_docpage_active(pathname):
+    return pathname == '/doc'
+
+
+
+#####################################################################################
+#####################################################################################
+################## -------- ALL PLOTS/TABLES CALLBACKS --------- ####################
+#####################################################################################
+#####################################################################################
+
 
 ### ---------------- PROJECT SETUP --------------- ###
 @app.callback(Output("second-selection", "children"),
@@ -652,7 +274,6 @@ def get_image(button):
                Input('dd_nclr', 'children'), Input('node_color_input', 'value'),
                Input('dd_nds', 'children'),
                Input('dd_egs', 'children'),
-              # Input('node_color', 'value'),
                Input("btn-get-png", "n_clicks")]
                )
 def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
@@ -728,7 +349,7 @@ def TapNodeData_info(data):
     if data:
         return 'Reference treatment: ', data[0]['label']
     else:
-        return 'Click on a node to choose reference treatment'
+        return 'Click on a node to choose reference'
 
 ### ----- update node info on bidim forest plot  ------ ###
 @app.callback(Output('tapNodeData-info-bidim', 'children'),
@@ -739,7 +360,7 @@ def TapNodeData_info(data):
     if data:
         return 'Reference treatment selected: ', data[0]['label']
     else:
-        return 'Click on a node to choose reference treatment'
+        return 'Click on a node to choose reference'
 
 ### ----- update edge information on pairwise plot ------ ###
 @app.callback(Output('tapEdgeData-info', 'children'),
@@ -790,8 +411,6 @@ def TapNodeData_fig(data, outcome_direction):
 
     fig.update_layout(paper_bgcolor = 'rgba(0,0,0,0)',
                       plot_bgcolor = 'rgba(0,0,0,0)')
-    # fig.update_layout(paper_bgcolor='#40515e',
-    #                   plot_bgcolor='#40515e')
     if xlog:
         fig.add_shape(type='line', yref='paper', y0=0, y1=1, xref='x', x0=1, x1=1,
                       line=dict(color="black", width=1), layer='below')
@@ -841,7 +460,7 @@ def TapNodeData_fig(data, outcome_direction):
 
     if not data:
         fig.update_shapes(dict(xref='x', yref='y'))
-        fig.update_xaxes(zerolinecolor='black', zerolinewidth=1,  title='')
+        fig.update_xaxes(zerolinecolor='black', zerolinewidth=1,  title='', visible=False)
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
         fig.update_layout(margin=dict(l=100, r=100, t=12, b=80))
         fig.update_traces(hoverinfo='skip', hovertemplate=None)
@@ -923,53 +542,12 @@ def TapNodeData_fig_bidim(data):
                       )
     if not data:
         fig.update_shapes(dict(xref='x', yref='y'))
-        fig.update_xaxes(zerolinecolor='black', zerolinewidth=1,  title='')
-        fig.update_yaxes(tickvals=[], ticktext=[], visible=False, title='')
-        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80), coloraxis_showscale=False)
+        fig.update_xaxes(zerolinecolor='black', zerolinewidth=1,  title='', visible=False)
+        fig.update_yaxes(tickvals=[], ticktext=[], title='', visible=False)
+        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80), coloraxis_showscale=False) ## remove visible=False to show initial axes
         fig.update_traces(hoverinfo='skip', hovertemplate=None)
 
     return fig
-
-### ----- display funnel plot on node click ------ ###
-@app.callback(Output('tapNodeData-fig-funnel', 'figure'),
-              [Input('cytoscape', 'selectedNodeData')])
-def TapNodeData_fig_funnel(data):
-    if data:
-        treatment = data[0]['label']
-        df = GLOBAL_DATA['forest_data'][GLOBAL_DATA['forest_data'].Reference==treatment].copy()
-        df['CI_width'] = df.CI_upper - df.CI_lower
-        df['CI_width_hf'] = df['CI_width'] /2
-        effect_size = df.columns[1]
-        df = df.sort_values(by=effect_size)
-    else:
-        effect_size   = ''
-        df = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
-                                              'CI_width', 'CI_width_hf'])
-        df_second = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
-                                              'CI_width', 'CI_width_hf'])
-
-    fig = px.scatter(df, x=df[effect_size])
-
-    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
-                      plot_bgcolor='rgba(0,0,0,0)')  #paper_bgcolor='#40515e', #626C78
-                      #plot_bgcolor='#40515e') # #626C78
-
-    fig.update_layout(clickmode='event+select',
-                      font_color="black",
-                      margin=dict(l=10, r=10, t=12, b=80),
-                      xaxis=dict(showgrid=False, tick0=0, title=f'Effect size centered at comparison-specific effect'),
-                      yaxis=dict(showgrid=False, title=f'Standard Error'),
-                      title_text='  ', title_x=0.02, title_y=.98, title_font_size=14,
-                      )
-    if not data:
-        fig.update_shapes(dict(xref='x', yref='y'))
-        fig.update_xaxes(zerolinecolor='black', zerolinewidth=1,  title='')
-        fig.update_yaxes(tickvals=[], ticktext=[], visible=False, title='')
-        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80), coloraxis_showscale=False)
-        fig.update_traces(hoverinfo='skip', hovertemplate=None)
-
-    return fig
-
 
 ### - display information box - ###
 @app.callback(Output('cytoscape-mouseTapEdgeData-output', 'children'),
@@ -1152,11 +730,11 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
 
     g, y, lb, r = '#5aa469', '#f8d49d', '#75cfb8', '#d35d6e'
     #cmap = [clrs.to_hex(plt.get_cmap('RdYlGn_r', N_BINS)(n)) for n in range(N_BINS)]
-    cmap = [g, y, r] if not toggle_cinema else [g, lb, y, r]
+    cmap = [g, y, r] if not toggle_cinema else [r, y, lb, g]
     legend_height = '4px'
     legend = [html.Div(style={'display': 'inline-block', 'width': '100px'},
                        children=[html.Div(),
-                                 html.Small('Risk of bias: ' if not toggle_cinema else 'CINeMA grade: ',
+                                 html.Small('Risk of bias: ' if not toggle_cinema else 'CINeMA rating: ',
                                             style={'color':'white'})])]
     legend += [html.Div(style={'display': 'inline-block', 'width': '60px'},
                                children=[html.Div(style={'backgroundColor': cmap[n],
@@ -1230,7 +808,8 @@ def build_league_table(data, columns, style_data_conditional, tips, modal=False)
                                                                   'header_index': 0},
                                                            'fontWeight': 'bold'}],
                                 style_table={'overflow': 'auto', 'width': '100%',
-                                             'max-width': 'calc(40vw)'} if not modal else {
+                                             'max-height': '400px',
+                                             'max-width': 'calc(52vw)'} if not modal else {
                                              'overflowX': 'scroll',
                                              'overflowY': 'auto',
                                              'height': '90%',
@@ -1252,7 +831,7 @@ def build_league_table(data, columns, style_data_conditional, tips, modal=False)
              [Input('dropdown-effectmod', 'value'),
               Input('cytoscape', 'selectedEdgeData')])
 def update_boxplot(value, edges):
-    active, non_active = '#1f77b4', '#797B7D'  #'#0757AD', '#797B7D'
+    active, non_active = '#1B58E2', '#4C5353'   #'#797B7D'  #'#0757AD', '#797B7D'
     if value:
             df = GLOBAL_DATA['net_data'][['treat1', 'treat2', value]].copy()
             df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
@@ -1279,7 +858,6 @@ def update_boxplot(value, edges):
                                          marker_color=active if comp in slctd_comps else non_active
                                          )
                                   for comp in unique_comparisons]
-                            # +[go.Scatter(xaxis='x2')]
                             )
     else:
             df = pd.DataFrame([[0] * 3], columns=['Comparison', 'value', 'selected'])
@@ -1289,27 +867,6 @@ def update_boxplot(value, edges):
             fig.update_layout(margin=dict(l=100, r=100, t=12, b=80), xaxis=dict(showgrid=False, tick0=0, title=''),
                               yaxis=dict(showgrid=False, tick0=0, title=''))
 
-    #
-    # fig.update_layout(
-    # xaxis=dict(
-    #     range=[0, len(unique_comparisons)],
-    #     tickfont=dict(color=active),
-    #     tickmode='array',
-    #     tickvals=[n+1 for n,_ in enumerate(unique_comparisons)],
-    #     ticktext=[comp if comp in slctd_comps else ''
-    #               for n, comp in enumerate(unique_comparisons)],
-    # ),
-    # xaxis2=dict(
-    #     range=[0, len(unique_comparisons)],
-    #     tickfont=dict(color=non_active),
-    #     tickmode='array',
-    #     tickvals=[n+1 for n,_ in enumerate(unique_comparisons)],
-    #     ticktext=[comp if comp not in slctd_comps else ''
-    #               for n, comp in enumerate(unique_comparisons)],
-    #     overlaying="x",
-    #     side="bottom",
-    # ),
-    # )
 
     fig.update_layout(clickmode='event+select',
                       paper_bgcolor='rgba(0,0,0,0)',
@@ -1337,7 +894,7 @@ def update_boxplot(value, edges):
 
     if not any(value):
         fig.update_shapes(dict(xref='x', yref='y'))
-        fig.update_xaxes(tickvals=[], ticktext=[],zerolinecolor='gray', zerolinewidth=1, tickangle=0)
+        fig.update_xaxes(tickvals=[], ticktext=[],zerolinecolor='gray', zerolinewidth=1, tickangle=0, visible=False)
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
         fig.update_layout(margin=dict(l=100, r=100, t=12, b=80), xaxis=dict(showgrid=False, tick0=0, title=''),
                           yaxis=dict(showgrid=False, tick0=0, title='')),
@@ -1408,7 +965,8 @@ def update_forest_pairwise(edge):
                          linewidth=2,
                          zeroline=True, zerolinecolor='black', zerolinewidth=1),
         fig.update_layout(xaxis=dict(showgrid=False, tick0=0, title=''),
-                          yaxis=dict(showgrid=False, title=''),)
+                          yaxis=dict(showgrid=False, title=''),
+                          )
         fig.add_trace(go.Scatter(x=romb(center, width)['x'],y=romb(center, width)['y'],
                                  fill="toself", mode="lines", line=dict(color='black'), fillcolor='#1f77b4'), secondary_y=True)
         fig.update_yaxes(range=[-.3,1+df.studlab.shape[0]],
@@ -1443,7 +1001,7 @@ def update_forest_pairwise(edge):
 
     else:
         fig.update_shapes(dict(xref='x', yref='y'))
-        fig.update_xaxes(zerolinecolor='black', zerolinewidth=1,  title='')
+        fig.update_xaxes(zerolinecolor='black', zerolinewidth=1,  title='', visible=False)
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
         fig.update_layout(margin=dict(l=100, r=100, t=12, b=80))
         fig.update_traces(hoverinfo='skip', hovertemplate=None)
@@ -1491,29 +1049,28 @@ def color_leaguetable_toggle(toggle_value):
               'display': 'inline-block', 'margin': 'auto', 'padding-right':'0px',}
     return style1, style2
 
+
 #################################################################
 ############ Bootstrap Dropdowns callbacks ######################
 #################################################################
 
 @app.callback([Output('dd_nds', 'children')],
               [Input('dd_nds_default', 'n_clicks_timestamp'),Input('dd_nds_default', 'children'),
-               Input('dd_nds_tot_rnd', 'n_clicks_timestamp'),Input('dd_nds_tot_rnd', 'children'),
-               Input('dd_nds_other', 'n_clicks_timestamp'),Input('dd_nds_other', 'children')],
+               Input('dd_nds_tot_rnd', 'n_clicks_timestamp'),Input('dd_nds_tot_rnd', 'children')],
               prevent_initial_call=True)
-def which_dd_nds(default_t, default_v, tot_rnd_t, tot_rnd_v, other_t, other_v):
-    values = [default_v, tot_rnd_v, other_v]
-    dd_nds = [default_t or 0, tot_rnd_t or 0, other_t or 0]
+def which_dd_nds(default_t, default_v, tot_rnd_t, tot_rnd_v):
+    values = [default_v, tot_rnd_v]
+    dd_nds = [default_t or 0, tot_rnd_t or 0]
     which = dd_nds.index(max(dd_nds))
     return [values[which]]
 
 @app.callback([Output('dd_egs', 'children')],
               [Input('dd_egs_default', 'n_clicks_timestamp'),Input('dd_egs_default', 'children'),
-               Input('dd_egs_tot_rnd', 'n_clicks_timestamp'),Input('dd_egs_tot_rnd', 'children'),
-               Input('dd_egs_other', 'n_clicks_timestamp'),Input('dd_egs_other', 'children')],
+               Input('dd_egs_tot_rnd', 'n_clicks_timestamp'),Input('dd_egs_tot_rnd', 'children')],
               prevent_initial_call=True)
-def which_dd_egs(default_t, default_v, nstud_t, nstud_v, other_t, other_v):
-    values = [default_v, nstud_v, other_v]
-    dd_egs = [default_t or 0, nstud_t or 0, other_t or 0]
+def which_dd_egs(default_t, default_v, nstud_t, nstud_v):
+    values = [default_v, nstud_v]
+    dd_egs = [default_t or 0, nstud_t or 0]
     which = dd_egs.index(max(dd_egs))
     return [values[which]]
 
@@ -1549,7 +1106,6 @@ def which_dd_nds(circle_t, circle_v, breadthfirst_t, breadthfirst_v,
     dd_ngl = [t or 0 for t in times]
     which = dd_ngl.index(max(dd_ngl))
     return [values[which]]
-
 
 
 #################################################################
@@ -1608,10 +1164,11 @@ def toggle_modal(open, close, is_open):
         return not is_open
     return is_open
 
-###########################################################
-########################### MAIN ##########################
-###########################################################
+##################################################################
+########################### MAIN #################################
+##################################################################
 
-if __name__ == "__main__":
-    app.run_server(debug=True, host='127.0.0.1')
-    #app.run_server(debug=False)
+if __name__ == '__main__':
+    app.run_server(debug=True, port=8888)
+
+

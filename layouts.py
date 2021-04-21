@@ -7,6 +7,7 @@ from assets.Tabs.tabtransitivity import tab_trstvty, boxplot
 from assets.Tabs.tabforests import tab_forests
 from assets.Tabs.tableaguetable import tab_league
 from assets.Tabs.tabfunnel import tab_funnel
+from assets.Tabs.tabranking import tab_ranking
 
 from assets.COLORS import *
 
@@ -95,8 +96,8 @@ home_layout = html.Div(className="app__container", children=[
                             children=html.Div(className='control-tab', children=[tab_funnel])
                         ),
                         dcc.Tab(style={'color':'grey', 'display': 'flex', 'justify-content':'center', 'align-items':'center'},
-                            label='Ranking plot',
-                            children=html.Div(className='control-tab')
+                            label='Ranking plots',
+                            children=html.Div(className='control-tab', children=[tab_ranking])
                         ),
 
 

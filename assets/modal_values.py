@@ -35,7 +35,7 @@ modal_data = dbc.Modal([
                                                                      id='datatable-upload', multiple=False,
                                                                      style={'display': 'inline-block'})
                                                  ],style={'display': 'inline-block'}),
-                                           dbc.Col([html.Ul(id="file-list", style={'margin-left': '15px', 'color':'white','opacity':'60%'})],
+                                           dbc.Col([html.Br(),html.Ul(id="file-list", style={'margin-left': '15px', 'color':'white','opacity':'60%'})],
                                                    style={'display': 'inline-block'})
                                                  ]),
                                                  dbc.Row([html.Br(),
@@ -50,7 +50,7 @@ modal_data = dbc.Modal([
                                                                        style={'display': 'inline-block', 'margin-bottom': '0px'})],
                                                              width="auto", style={'display': 'inline-block'}),
 
-                                                     dbc.Col([html.P(["1",html.Sup("st"), " outcome*:"], className="gragraph settingph__title2",
+                                                     dbc.Col([html.P(["1",html.Sup("st"), " outcome*:"], className="graph__title2",
                                                                    style={'display': 'inline-block', 'paddingLeft': '10px','font-size': '11px'}),
                                                           html.Div(dcc.RadioItems(id='dropdown-outcome1', options=options_outcomes,
                                                                                  style={'width': '80px', 'margin-left': '-20px',

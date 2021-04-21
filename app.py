@@ -115,6 +115,17 @@ GLOBAL_DATA = {'net_data': pd.read_csv('db/Senn2013.csv'),
                'league_table_data': pd.read_csv('db/league_table_data/league_table.csv', index_col=0)}
 GLOBAL_DATA['default_elements'] = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
 
+if 'rob' not in GLOBAL_DATA['net_data'].select_dtypes(include=['int16', 'int32', 'int64', 'float16', 'float32', 'float64']).columns:
+        if any(GLOBAL_DATA['net_data']['rob'].str.contains('l|m|h')):
+           GLOBAL_DATA['net_data']['rob'].replace({'l':1,'m':2,'h':3}, inplace=True)
+        elif any(GLOBAL_DATA['net_data']['rob'].str.contains('L|M|H')):
+          GLOBAL_DATA['net_data']['rob'].replace({'L': 1, 'M': 2, 'H': 3}, inplace=True)
+else:
+    pass
+
+##add columns TE,seTE from raw data
+GLOBAL_DATA['net_data']['TE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[0]
+GLOBAL_DATA['net_data']['seTE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[1]
 
 replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
 leaguetable = GLOBAL_DATA['league_table_data'].copy(deep=True)
@@ -621,8 +632,22 @@ def get_new_data(contents, dataselectors, search_value_format, search_value_outc
                 var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', n1: 'n1', n2: 'n2',
                             rob: 'rob', r1: 'r1', r2: 'r2'}
         data.rename(columns=var_dict, inplace=True)
+
+        if 'rob' not in GLOBAL_DATA['net_data'].select_dtypes(
+                include=['int16', 'int32', 'int64', 'float16', 'float32', 'float64']).columns:
+            if any(GLOBAL_DATA['net_data']['rob'].str.contains('l|m|h')):
+                GLOBAL_DATA['net_data']['rob'].replace({'l': 1, 'm': 2, 'h': 3}, inplace=True)
+            elif any(GLOBAL_DATA['net_data']['rob'].str.contains('L|M|H')):
+                GLOBAL_DATA['net_data']['rob'].replace({'L': 1, 'M': 2, 'H': 3}, inplace=True)
+        else:
+            pass
+        GLOBAL_DATA['net_data']['TE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[0]
+        GLOBAL_DATA['net_data']['seTE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[1]
         OPTIONS_VAR = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
         GLOBAL_DATA['net_data'] = data = data.loc[:, ~data.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+        data['type_outcome1'] = search_value_outcome1
+        #data['search_value_outcome2'] = search_value_outcome2 if search_value_outcome2
+
         elements = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
         GLOBAL_DATA['forest_data'] = apply_r_func(func=run_NetMeta_r, df=data)
         GLOBAL_DATA['forest_data_pairwise'] = apply_r_func(func=pairwise_forest_r, df=data)
@@ -889,7 +914,8 @@ def update_boxplot(value, edges):
     fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5,
                      showline=True, zerolinecolor='black',tickangle=30, linecolor='black')
 
-    fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='black', showline=True, linecolor='black')
+    fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='black',
+                     showline=True, linecolor='black')
 
 
     if not any(value):

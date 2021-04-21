@@ -12,10 +12,10 @@ tab_trstvty = html.Div([dbc.Row([html.P("Choose effect modifier:", className="gr
                                                style={'width': '150px', 'height': '30px',
                                                       'display': 'inline-block', # 'background-color': '#40515e'
                                                       })
-                                  ])])
+                                  ])], style={'margin-top':'4px'})
 
-boxplot = dcc.Graph(id='tapEdgeData-fig',
-                    style={'height': '99%',
+boxplot = html.Div([dcc.Graph(id='tapEdgeData-fig',
+                     style={'height': '99%',
                            'max-height': '400px',
                            'width': '99%',
                            'max-width': 'calc(52vw)'},
@@ -37,3 +37,4 @@ boxplot = dcc.Graph(id='tapEdgeData-fig',
                                                                'scale': 10 # Multiply title/legend/axis/canvas sizes by this factor
                                                                },
                                           'displaylogo': False})
+                    ], style={'margin-top':'-25px'})

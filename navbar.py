@@ -9,10 +9,10 @@ UP_LOGO = "/assets/logos/logo_universite_paris.jpg"
 
 def Navbar():
     home_button = dbc.NavItem(dbc.NavLink('HOME', href="/home", external_link=True,
-                                          style = {'color':'white','font-family': "serif",
+                                          style = {'color':'white','font-family': "sans-serif ",
                                                    'font-size':'11px' }))
     doc_button = dbc.NavItem(dbc.NavLink('DOCUMENTATION', href="/doc", external_link=True,
-                                         style = {'color':'white','font-family': "serif",
+                                         style = {'color':'white','font-family': "sans-serif ",
                                                   'font-size': '11px' }))
     navbar = dbc.Navbar([
             dbc.Col(html.Img(src=NMASTUDIO_LOGO, height="60px", style={'filter': 'invert()',

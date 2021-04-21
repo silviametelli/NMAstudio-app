@@ -25,7 +25,7 @@ tab_league = html.Div([dbc.Row([
                               style={'display': 'inline-block', 'margin': 'auto',
                                      'font-size': '12px',
                                      'padding-right': '0px'})
-                       ], style={'float':'right','text-align':'right','margin-left': '60%',
+                       ], style={'float':'right','margin-left': '50%',
                                  'width': '100%', 'margin-top': '10px'})
 
              ], style={'display': 'inline-block'})]),

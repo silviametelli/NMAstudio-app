@@ -35,7 +35,7 @@ tab_forests = dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persisten
                                                        'margin': 'auto',
                                                        'font-size': '10px',
                                                        'padding-right': '20px'})
-                                     ], style={'margin-left': '52%','margin-top':'-2%', 'font-size':'0.8em'})
+                                     ], style={'float':'right', 'margin-left': '48%','margin-top':'-2%', 'font-size':'0.8em'})
 
                                  ]),
                                  ]),

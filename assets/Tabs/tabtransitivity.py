@@ -34,7 +34,7 @@ boxplot = html.Div([dcc.Graph(id='tapEdgeData-fig',
                                                                  "hoverCompareCartesian"],
                                           'toImageButtonOptions': {'format': 'png', # one of png, svg,
                                                                'filename': 'custom_image',
-                                                               'scale': 10 # Multiply title/legend/axis/canvas sizes by this factor
+                                                              # 'scale': 8 # Multiply title/legend/axis/canvas sizes by this factor
                                                                },
                                           'displaylogo': False})
                     ], style={'margin-top':'-25px'})

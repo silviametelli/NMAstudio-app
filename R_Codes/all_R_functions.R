@@ -15,7 +15,7 @@ run_NetMeta <- function(dat){
        treatments <- unique(c(dat$treat1, dat$treat2)) # TODO:  MOVE IT TO PYTHON
        ALL_DFs <- list()
        for (treatment in treatments){
-              if(dat$type_outcome1=="continuous"){sm <- "MD"}
+              if(dat$type_outcome1[1]=="continuous"){sm <- "MD"}
               else{sm <- "OR"}
               nma_temp <- netmeta(dat$TE, dat$seTE, dat$treat1, dat$treat2, dat$studlab,
                                          sm = sm,
@@ -45,7 +45,7 @@ run_NetMeta <- function(dat){
 
 ## league tables for two outcomes
 league_table <- function(dat){
-              if(dat$type_outcome1=="continuous"){sm1 <- "MD"}
+              if(dat$type_outcome1[1]=="continuous"){sm1 <- "MD"}
               else{sm1 <- "OR"}
         treatments <- sort(unique(c(dat$treat1, dat$treat2)))
         nma_primary <- netmeta(TE=dat$TE, seTE=dat$seTE,
@@ -56,7 +56,7 @@ league_table <- function(dat){
                                backtransf = TRUE,
                                reference.group = dat$treat2[1])
         if("TE2" %in% colnames(dat)){
-          if(dat$type_outcome1=="continuous"){sm2 <- "MD"}
+          if(dat$type_outcome1[1]=="continuous"){sm2 <- "MD"}
           else{sm2 <- "OR"}
           nma_secondary <- netmeta(TE=dat$TE2, seTE=dat$seTE2,
                                  treat1=dat$treat1, treat2=dat$treat2,
@@ -99,7 +99,8 @@ funnel_plot <- function(dat,ref_vec){
 ## pairwise forest plots for all different comparisons in df
 ## sorted_dat: dat sorted by treatemnt comparison
 pairwise_forest <- function(dat){
-
+  if(dat$type_outcome1[1]=="continuous"){sm <- "MD"}
+  else{sm <- "OR"}
   DFs_pairwise <- list()
   dat %>% arrange(dat, treat1, treat2)
   dat$ID <- dat %>% group_indices(treat1, treat2)

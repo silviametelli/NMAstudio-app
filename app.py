@@ -19,19 +19,13 @@ pairwise_forest_r = ro.globalenv['pairwise_forest'] # Get pairwise_forest from R
 import os, io, base64, pickle, shutil, time, copy
 import pandas as pd, numpy as np
 import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
-import dash_daq as daq, dash_table
-#from dash_extensions import Download
-import dash_cytoscape as cyto
-from assets.cytoscape_styleesheeet import get_stylesheet
-from assets.dropdowns_values import *
 from dash.dependencies import Input, Output, State, MATCH, ALL
 import plotly.express as px
 import plotly.graph_objects as go
-import matplotlib.pyplot as plt
-import matplotlib.colors as clrs
 from navbar import Navbar
+from assets.effect_sizes import OR_effect_measure, MD_effect_measure
+from demo_data import get_demo_data
 from layouts import *
-
 #--------------------------------------------------------------------------------------------------------------------#
 
 def write_node_topickle(store_node):
@@ -86,6 +80,7 @@ cyto.load_extra_layouts()
 
 ## CREATE NETWORK FUNCTION
 def get_network(df):
+    df = df.dropna(subset=['TE', 'seTE'])
     edges = df.groupby(['treat1', 'treat2']).TE.count().reset_index()
     df_n1g = df.rename(columns={'treat1': 'treat', 'n1':'n'}).groupby(['treat'])
     df_n2g = df.rename(columns={'treat2': 'treat', 'n2':'n'}).groupby(['treat'])
@@ -96,51 +91,19 @@ def get_network(df):
     all_nodes_sized = pd.concat([all_nodes_sized, all_nodes_robs], axis=1).reset_index()
     for c in {1,2,3}.difference(all_nodes_sized): all_nodes_sized[c] = 0
     cy_edges = [{'data': {'source': source,  'target': target,
-                          'weight': weight * 2, 'weight_lab': weight}}
+                          'weight': weight * 1, 'weight_lab': weight}}
                 for source, target, weight in edges.values]
     cy_nodes = [{"data": {"id": target, "label": target,
                           'classes':'genesis',
-                          'size': np.sqrt(size)*2,
+                          'size': np.sqrt(size)*1,
                           'pie1':r1/(r1+r2+r3), 'pie2':r2/(r1+r2+r3), 'pie3': r3/(r1+r2+r3)}}
                 for target, size, r1, r2, r3 in all_nodes_sized.values]
     return cy_edges + cy_nodes
 
-
-# Save default dataframe for demo use
-GLOBAL_DATA = {'net_data': pd.read_csv('db/Senn2013.csv'),
-               'cinema_net_data': pd.read_csv('db/Cinema_report.csv'),
-               'forest_data': pd.read_csv('db/forest_data/forest_data.csv'),
-               'forest_data_pairwise': pd.read_csv('db/forest_data/forest_data_pairwise.csv'),
-               'forest_data_outcome2': pd.read_csv('db/forest_data/forest_data_outcome2.csv'),
-               'league_table_data': pd.read_csv('db/league_table_data/league_table.csv', index_col=0)}
+GLOBAL_DATA = get_demo_data()
 GLOBAL_DATA['default_elements'] = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
 
-if 'rob' not in GLOBAL_DATA['net_data'].select_dtypes(include=['int16', 'int32', 'int64', 'float16', 'float32', 'float64']).columns:
-        if any(GLOBAL_DATA['net_data']['rob'].str.contains('l|m|h')):
-           GLOBAL_DATA['net_data']['rob'].replace({'l':1,'m':2,'h':3}, inplace=True)
-        elif any(GLOBAL_DATA['net_data']['rob'].str.contains('L|M|H')):
-          GLOBAL_DATA['net_data']['rob'].replace({'L': 1, 'M': 2, 'H': 3}, inplace=True)
-else:
-    pass
-
-##add columns TE,seTE from raw data
-GLOBAL_DATA['net_data']['TE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[0]
-GLOBAL_DATA['net_data']['seTE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[1]
-
-replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
-leaguetable = GLOBAL_DATA['league_table_data'].copy(deep=True)
-GLOBAL_DATA['league_table_data'] = pd.DataFrame([[replace_and_strip(col) for col in list(row)]
-                                                 for idx, row in leaguetable.iterrows()], columns=leaguetable.columns, index=leaguetable.index)
-
-#for year slider
-GLOBAL_DATA['y_min'] = GLOBAL_DATA['net_data'].year.min()
-GLOBAL_DATA['y_max'] = GLOBAL_DATA['net_data'].year.max()
-
-GLOBAL_DATA['dwnld_bttn_calls'] = 0
-GLOBAL_DATA['WAIT'] = False
-
 OPTIONS_VAR = [{'label':'{}'.format(col, col), 'value':col} for col in GLOBAL_DATA['net_data'].columns]
-
 
 options_trt = []
 edges = GLOBAL_DATA['net_data'].groupby(['treat1', 'treat2']).TE.count().reset_index()
@@ -420,7 +383,7 @@ def TapNodeData_fig(data, outcome_direction):
                      log_x=xlog,
                      size=df.WEIGHT/float(1.2) if data else None)
 
-    fig.update_layout(paper_bgcolor = 'rgba(0,0,0,0)',
+    fig.update_layout(paper_bgcolor = 'rgba(0,0,0,0)', ## transparent bg
                       plot_bgcolor = 'rgba(0,0,0,0)')
     if xlog:
         fig.add_shape(type='line', yref='paper', y0=0, y1=1, xref='x', x0=1, x1=1,
@@ -512,15 +475,20 @@ def TapNodeData_fig_bidim(data):
                      log_x=xlog)
 
     fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
-                      plot_bgcolor='rgba(0,0,0,0)')  #paper_bgcolor='#40515e', #626C78
-                      #plot_bgcolor='#40515e') #626C78
+                      plot_bgcolor='rgba(0,0,0,0)',
+                      autosize=True,
+                      legend = dict(itemsizing ='trace', itemclick = "toggle",
+                                    itemdoubleclick = "toggleothers",
+                                    orientation= 'h', y= -0.25, xanchor='auto',
+                                    font = dict(size = 10)) if df['Treatment'].unique().size>13 else dict(itemsizing ='trace', itemclick = "toggle", itemdoubleclick = "toggleothers", orientation= 'v', font = dict(size = 10))
+                      )
 
     if xlog:
         fig.add_shape(type='line', yref='paper', y0=0, y1=1, xref='x', x0=1, x1=1,
                       line=dict(color="black", width=1, dash='dashdot'), layer='below')
 
     fig.update_traces(marker=dict(symbol='circle',
-                                  size=11,
+                                  size=9,
                                   opacity=1 if data else 0,
                                   line=dict(color='black'),
                                   #color='Whitesmoke'
@@ -641,8 +609,8 @@ def get_new_data(contents, dataselectors, search_value_format, search_value_outc
                 GLOBAL_DATA['net_data']['rob'].replace({'L': 1, 'M': 2, 'H': 3}, inplace=True)
         else:
             pass
-        GLOBAL_DATA['net_data']['TE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[0]
-        GLOBAL_DATA['net_data']['seTE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[1]
+        #GLOBAL_DATA['net_data']['TE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[0]
+        #GLOBAL_DATA['net_data']['seTE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[1]
         OPTIONS_VAR = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
         GLOBAL_DATA['net_data'] = data = data.loc[:, ~data.columns.str.contains('^Unnamed')]  # Remove unnamed columns
         data['type_outcome1'] = search_value_outcome1
@@ -718,7 +686,7 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
 
     data = pd.read_json(data, orient='split').round(3)
     leaguetable = GLOBAL_DATA['league_table_data'].copy(deep=True)
-    treatments = np.unique(data[['treat1', 'treat2']].values.flatten())
+    treatments = np.unique(data[['treat1', 'treat2']].dropna().values.flatten())
     robs = (data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
                 .pivot_table(index='treat1', columns='treat2', values='rob')
                 .reindex(index=treatments, columns=treatments, fill_value=np.nan))
@@ -798,6 +766,7 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
                   | (data.treat1+data.treat2).isin(slctd_edgs) | (data.treat2+data.treat1).isin(slctd_edgs)]
 
     data_cols = [{"name": c, "id": c} for c in data.columns]
+    data.year = data.year
     data_output = data[data.year<=slider_value].to_dict('records')
     league_table = build_league_table(leaguetable, leaguetable_cols, styles, tips)
     league_table_modal = build_league_table(leaguetable, leaguetable_cols, styles, tips, modal=True)
@@ -808,10 +777,10 @@ def build_league_table(data, columns, style_data_conditional, tips, modal=False)
                                      'color': 'white',
                                      'border': '1px solid #5d6d95',
                                      'font-family': 'sans-serif',
-                                     'fontSize': 12,
+                                     'fontSize': 11,
                                      'textAlign': 'center',
                                      'whiteSpace': 'pre-line',  #'inherit', nowrap
-                                     'textOverflow': 'ellipsis'},
+                                     'textOverflow': 'string'}, #'ellipsis'
                                 data=data,
                                 columns=columns,
                                  # export_format="csv", #xlsx
@@ -836,7 +805,7 @@ def build_league_table(data, columns, style_data_conditional, tips, modal=False)
                                              'max-height': '400px',
                                              'max-width': 'calc(52vw)'} if not modal else {
                                              'overflowX': 'scroll',
-                                             'overflowY': 'auto',
+                                             'overflowY': 'scroll',
                                              'height': '90%',
                                              'max-height': 'calc(70vh)',
                                              'width': '99%',
@@ -859,9 +828,11 @@ def update_boxplot(value, edges):
     active, non_active = '#1B58E2', '#4C5353'   #'#797B7D'  #'#0757AD', '#797B7D'
     if value:
             df = GLOBAL_DATA['net_data'][['treat1', 'treat2', value]].copy()
+            df = df.dropna(subset=[value])
             df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
             df = df.sort_values(by='Comparison').reset_index()
-            margin = (df[value].max() - df[value].min()) * .4  # 40%
+            df[value] = pd.to_numeric(df[value], errors='coerce')
+            margin = (df[value].max() - df[value].min()) * .3  # 30%
             range1 = df[value].min() - margin
             range2 = df[value].max() + margin
             df['color'] = non_active
@@ -877,9 +848,10 @@ def update_boxplot(value, edges):
                 df.loc[ind, 'selected'] = 'active' if row.Comparison in slctd_comps else 'nonactive'
 
             unique_comparisons = df.Comparison.sort_values().unique()
+            unique_comparisons = unique_comparisons[~pd.isna(unique_comparisons)]
             fig = go.Figure(data=[go.Box(y=df[df.Comparison == comp][value],
                                          name=comp,
-                                         width=.6,
+                                         #width=0.6,
                                          marker_color=active if comp in slctd_comps else non_active
                                          )
                                   for comp in unique_comparisons]
@@ -911,8 +883,8 @@ def update_boxplot(value, edges):
                       marker=dict(opacity=1, line=dict(color='black', outlierwidth=2))
                       )
 
-    fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5,
-                     showline=True, zerolinecolor='black',tickangle=30, linecolor='black')
+    fig.update_xaxes(ticks="outside", tickwidth=1, tickcolor='black', ticklen=5,  tickmode='linear',
+                     showline=True, linecolor='black', type="category") #tickangle=30,
 
     fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='black',
                      showline=True, linecolor='black')

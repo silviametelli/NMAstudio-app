@@ -3,7 +3,7 @@ from assets.COLORS import *
 
 tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, persistence=True,
                              children=[
-                         dcc.Tab(label='Heatmat', id='tab-rank1', value='Tab-rank1', className='control-tab',
+                         dcc.Tab(label='Heatmap', id='tab-rank1', value='Tab-rank1', className='control-tab',
                                  selected_style={'height':'6px', 'display': 'flex', 'justify-content':'center', 'align-items':'center',
                                                  'font-size':'12px', 'color':'grey'},
                                  style={'height':'6px', 'display': 'flex', 'justify-content':'center', 'align-items':'center',

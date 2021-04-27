@@ -114,11 +114,11 @@ Grid
     .nine.columns {width: 74.0%;}
     .ten.columns {width: 82.6666666667%;}
     .eleven.columns {width: 91.3333333333%;}
-    .twelve.columns {width: 100%;margin-left: 0;}
+    .twelve.columns {width: 100%; margin-left: 0;}
     .one-third.column {width: 30.6666666667%;}
     .two-thirds.column {width: 65.3333333333%;}
     .one-half.column {width: 44%;}
-    .one-half-2.column {width: 52%}
+    .one-half-2.column {width: 52%;}
 
     /* Offsets */
     .offset-by-one.column,
@@ -157,7 +157,7 @@ Grid
    NOTE
 html is set to 62.5% so that all the REM measurements throughout Skeleton
 are based on 10px sizing. So basically 1.5rem = 15px :) */
-html {font-size: 62.5%;}
+html {font-size: 62%;}
 body {
     font-size: 1.5em; /* currently ems cause chrome bug misinterpreting rems on body element */
     line-height: 1.6;

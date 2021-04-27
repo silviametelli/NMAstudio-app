@@ -1,0 +1,10 @@
+"Treatment","MD","CI_lower","CI_upper","WEIGHT"
+"Acarbose",0.285,-0.221,0.79,1.938
+"Benfluorex",0.396,-0.241,1.03,1.538
+"Miglitol",0.177,-0.369,0.72,1.796
+"Pioglitazone",-0.002,-0.444,0.44,2.217
+"Placebo",1.127,0.824,1.43,3.241
+"Rosiglitazone",-0.107,-0.43,0.22,3.027
+"Sitagliptin",0.557,-0.2,1.31,1.295
+"Sulfonylurea",0.71,0.249,1.17,2.125
+"Vildagliptin",0.427,-0.329,1.18,1.297

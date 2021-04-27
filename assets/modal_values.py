@@ -82,9 +82,11 @@ modal_data_table = dbc.Modal([
                                       style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
                                                   'color': 'white',
                                                   'border': '1px solid #5d6d95',
-                                                  'textOverflow': 'ellipsis',
                                                   'font-family': 'sans-serif',
                                                   'fontSize': 11,
+                                                  'textAlign': 'center',
+                                                  'whiteSpace': 'pre-line',  # 'inherit', nowrap
+                                                  'textOverflow': 'ellipsis'
                                                   },
                                       style_data_conditional=[
                                           {'if': {'row_index': 'odd'},
@@ -96,7 +98,7 @@ modal_data_table = dbc.Modal([
                                                     'fontWeight': 'bold',
                                                     'border': '1px solid #5d6d95'},
                                       style_table={'overflowX': 'scroll',
-                                                   'overflowY': 'auto',
+                                                   'overflowY': 'scroll',
                                                    'height': '90%',
                                                    'max-height': 'calc(70vh)',
                                                    'width': '99%',

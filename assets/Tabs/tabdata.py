@@ -1,3 +1,4 @@
+import numpy as np
 from app import  GLOBAL_DATA
 from assets.dropdowns_values import *
 
@@ -17,14 +18,14 @@ tab_data = html.Div([
                                                        'letter-spacing': '0.3rem'},
                                                  placement='right', target='data-expand'),
                      html.Div(dcc.Slider(min=GLOBAL_DATA["y_min"], max=GLOBAL_DATA["y_max"],
-                                         step=1,
-                                         marks={GLOBAL_DATA["y_min"]: {
-                                             'label': str(GLOBAL_DATA["y_min"]),
-                                             'style': {'color': 'white'}},
-                                             GLOBAL_DATA["y_max"]: {
-                                                 'label': str(GLOBAL_DATA["y_max"]),
-                                                 'style': {'color': 'white'}}
-                                         },
+                                         step=None,
+                                         marks = {int(x): {'label': str(x),
+                                                           'style': {'color': 'white', 'font-size':'10px',
+                                                                     'opacity':1 if x in (GLOBAL_DATA['y_min'],
+                                                                                          GLOBAL_DATA['y_max']) else 0
+                                                                     }}
+                                                    for x in np.unique(GLOBAL_DATA['net_data']['year'].dropna()).astype('int')
+                                                 },
                                          value=GLOBAL_DATA['y_max'],
                                          updatemode='drag',
                                          id='slider-year',

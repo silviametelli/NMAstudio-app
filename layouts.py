@@ -41,8 +41,8 @@ home_layout = html.Div(className="app__container", children=[
                                        ], style={'margin-left': '-20px'}),
                      cyto.Cytoscape(id='cytoscape',  # responsive=True,
                             elements=GLOBAL_DATA['user_elements'],
-                            style={'height': '75vh', 'width': '97%', 'margin-top': '15px',
-                                    'margin-left': '-10px'},
+                            style={'height': '75vh', 'width': '99%', 'margin-top': '10px',
+                                    'margin-left': '-10px','margin-right': '-10px'},
                             stylesheet=get_stylesheet()),
 
                     html.P('Copyright © 2020. All rights reserved.', className='__footer'),
@@ -111,4 +111,4 @@ home_layout = html.Div(className="app__container", children=[
 )
 
 
-doc_layout = html.Div([nav, html.H1('Doc')])
+doc_layout = html.Div([nav, html.H1('Source code available at https://github.com/silviametelli/network-meta-analysis')])

@@ -25,10 +25,9 @@ tab_league = html.Div([dbc.Row([
                               style={'display': 'inline-block', 'margin': 'auto',
                                      'font-size': '12px',
                                      'padding-right': '0px'})
-                       ], style={'float':'right','margin-left': '50%',
-                                 'width': '100%', 'margin-top': '10px'})
+                       ], className="inrow_style")
 
-             ], style={'display': 'inline-block'})]),
+             ], style={'display': 'inline-block', 'flex-direction': 'row' })]),
             html.Br(),
             html.A(html.Img(src="/assets/icons/expand.png",
                     style={'width': '34px',

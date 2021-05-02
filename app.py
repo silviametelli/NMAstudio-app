@@ -13,38 +13,25 @@ from rpy2.robjects.conversion import localconverter
 r = ro.r
 r['source']('R_Codes/all_R_functions.R')  # Loading the function we have defined in R.
 run_NetMeta_r = ro.globalenv['run_NetMeta']    # Get run_NetMeta from R
-league_table_r = ro.globalenv['league_table']  # Get league_table from R
+league_table_r = ro.globalenv['league_rank']  # Get league_table from R
 pairwise_forest_r = ro.globalenv['pairwise_forest'] # Get pairwise_forest from R
 #--------------------------------------------------------------------------------------------------------------------#
-import os, io, base64, pickle, shutil, time, copy
-import pandas as pd, numpy as np
+import os, io, base64, shutil, time, pandas as pd, numpy as np
 import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State, MATCH, ALL
-import plotly.express as px
-import plotly.graph_objects as go
-from navbar import Navbar
+import plotly.express as px, plotly.graph_objects as go
 from assets.effect_sizes import OR_effect_measure, MD_effect_measure
 from demo_data import get_demo_data
 from layouts import *
 #--------------------------------------------------------------------------------------------------------------------#
-
-def write_node_topickle(store_node):
-    with open('db/.temp/selected_nodes.pickle', 'wb') as f:
-        pickle.dump(store_node, f, protocol=pickle.HIGHEST_PROTOCOL)
-def read_node_frompickle():
-    return pickle.load(open('db/.temp/selected_nodes.pickle', 'rb'))
-def write_edge_topickle(store_edge):
-    with open('db/.temp/selected_edges.pickle', 'wb') as f:
-        pickle.dump(store_edge, f, protocol=pickle.HIGHEST_PROTOCOL)
-def read_edge_frompickle():
-    return pickle.load(open('db/.temp/selected_edges.pickle', 'rb'))
-
-UPLOAD_DIRECTORY = "db/.temp/UPLOAD_DIRECTORY"
+from utils import write_node_topickle, read_node_frompickle, write_edge_topickle, read_edge_frompickle, get_network
+from PATHS import TEMP_PATH
+UPLOAD_DIRECTORY = f"{TEMP_PATH}/UPLOAD_DIRECTORY"
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
 
-shutil.rmtree('db/.temp', ignore_errors=True)
-os.makedirs('db/.temp', exist_ok=True)
+shutil.rmtree(TEMP_PATH, ignore_errors=True)
+os.makedirs(TEMP_PATH, exist_ok=True)
 
 EMPTY_SELECTION_NODES = {'active': {'ids': dict()}}
 EMPTY_SELECTION_EDGES = {'id': None}
@@ -62,79 +49,39 @@ app.config.suppress_callback_exceptions = True
 
 server = app.server
 
-app.layout = html.Div([
-    dcc.Location(id='url', refresh=False),
-    html.Div(id='page-content')
-])
-
-styles = {
-    'output': {'overflow-y': 'scroll',
-               'overflow-wrap': 'break-word',
-               'height': 'calc(100% - 25px)',
-               'border': 'thin lightgrey solid'},
-    'tab': {'height': 'calc(98vh - 115px)'}
-}
+app.layout = html.Div([dcc.Location(id='url', refresh=False),
+                       html.Div(id='page-content')])
 
 # Load extra layouts
 cyto.load_extra_layouts()
 
-## CREATE NETWORK FUNCTION
-def get_network(df):
-    df = df.dropna(subset=['TE', 'seTE'])
-    edges = df.groupby(['treat1', 'treat2']).TE.count().reset_index()
-    df_n1g = df.rename(columns={'treat1': 'treat', 'n1':'n'}).groupby(['treat'])
-    df_n2g = df.rename(columns={'treat2': 'treat', 'n2':'n'}).groupby(['treat'])
-    df_n1, df_n2 = df_n1g.n.sum(), df_n2g.n.sum()
-    all_nodes_sized = df_n1.add(df_n2, fill_value=0)
-    df_n1, df_n2 = df_n1g.rob.value_counts(), df_n2g.rob.value_counts()
-    all_nodes_robs = df_n1.add(df_n2, fill_value=0).rename(('count')).unstack('rob', fill_value=0)
-    all_nodes_sized = pd.concat([all_nodes_sized, all_nodes_robs], axis=1).reset_index()
-    for c in {1,2,3}.difference(all_nodes_sized): all_nodes_sized[c] = 0
-    cy_edges = [{'data': {'source': source,  'target': target,
-                          'weight': weight * 1, 'weight_lab': weight}}
-                for source, target, weight in edges.values]
-    cy_nodes = [{"data": {"id": target, "label": target,
-                          'classes':'genesis',
-                          'size': np.sqrt(size)*1,
-                          'pie1':r1/(r1+r2+r3), 'pie2':r2/(r1+r2+r3), 'pie3': r3/(r1+r2+r3)}}
-                for target, size, r1, r2, r3 in all_nodes_sized.values]
-    return cy_edges + cy_nodes
-
 GLOBAL_DATA = get_demo_data()
 GLOBAL_DATA['default_elements'] = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
 
-OPTIONS_VAR = [{'label':'{}'.format(col, col), 'value':col} for col in GLOBAL_DATA['net_data'].columns]
+OPTIONS_VAR = [{'label':'{}'.format(col), 'value':col} for col in GLOBAL_DATA['net_data'].columns]
 
-options_trt = []
-edges = GLOBAL_DATA['net_data'].groupby(['treat1', 'treat2']).TE.count().reset_index()
-all_nodes = np.unique(edges[['treat1', 'treat2']].values.flatten())
-for trt in all_nodes:
-    options_trt.append({'label':'{}'.format(trt, trt), 'value':trt})
+# edges = GLOBAL_DATA['net_data'].groupby(['treat1', 'treat2']).TE.count().reset_index()
+# all_nodes = np.unique(edges[['treat1', 'treat2']].values.flatten())
+# options_trt = [{'label':'{}'.format(trt, trt), 'value':trt}
+#                for trt in all_nodes]
 
 
-def Homepage():
-    layout_home = html.Div([nav, home_layout])
-    return layout_home
-
-nav = Navbar()
 
 # ------------------------------ app interactivity ----------------------------------#
 
 #####################################################################################
-#####################################################################################
 ################################ MULTIPAGE CALLBACKS ################################
-#####################################################################################
 #####################################################################################
 
 # Update the index
 @app.callback(Output('page-content', 'children'), [Input('url', 'pathname')])
 def display_page(pathname):
     if pathname == '/home':
-        return Homepage()
+        return Homepage(GLOBAL_DATA)
     elif pathname == '/doc':
         return doc_layout
     else:
-        return Homepage()
+        return Homepage(GLOBAL_DATA)
 
 
 # Update which link is active in the navbar
@@ -205,8 +152,8 @@ def update_options(contents, search_value_format, search_value_outcome1, search_
                                                       'margin-bottom': '10px',
                                                       # 'padding-bottom':'10px',
                                                       'display': 'inline-block',
-                                                      'color': '#1b242b', 'font-size': '10px',
-                                                      'background-color': CLR_BCKGRND})]),
+                                                      'color': CLR_BCKGRND_old, 'font-size': '10px',
+                                                      'background-color': CLR_BCKGRND_old})]),
                               style={'margin-bottom': '0px'})
                             for var_name, name in zip(var_names, col_var)],
                 style={'display': 'inline-block'})
@@ -217,7 +164,8 @@ def update_options(contents, search_value_format, search_value_outcome1, search_
 
 ### --- update graph layout with dropdown: graph layout --- ###
 @app.callback(Output('cytoscape', 'layout'),
-             [Input('graph-layout-dropdown', 'children')])
+             [Input('graph-layout-dropdown', 'children')],
+              prevent_initial_call=False)
 def update_cytoscape_layout(layout):
         return {'name': layout.lower() if layout else 'circle',
                 'animate': True}
@@ -258,7 +206,7 @@ def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
     edge_size = dd_egs or 'Number of studies'
     edge_size = edge_size=='No size'
     pie = dd_nclr=='Risk of Bias'
-    FOLLOWER_COLOR, FOLLOWING_COLOR = '#07ABA0', '#07ABA0'
+    FOLLOWER_COLOR, FOLLOWING_COLOR = DFLT_ND_CLR, DFLT_ND_CLR
     stylesheet = get_stylesheet(pie=pie, nd_col=nodes_color, node_size=node_size, edge_size=edge_size)
     edgedata = [el['data'] for el in elements if 'target' in el['data'].keys()]
     all_nodes_id = [el['data']['id'] for el in elements if 'target' not in el['data'].keys()]
@@ -369,19 +317,19 @@ def TapNodeData_fig(data, outcome_direction):
         df['CI_width_hf'] = df['CI_width'] /2
         effect_size = df.columns[1]
         #weight_es = round(df['WEIGHT'],3)
-        df = df.sort_values(by=effect_size)
+        df = df.sort_values(by=effect_size, ascending=False)
     else:
         effect_size = ''
         df = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
                                               'CI_width', 'CI_width_hf'])
 
     xlog = effect_size in ('RR', 'OR')
-
     fig = px.scatter(df, x=effect_size, y="Treatment",
                      error_x_minus='CI_lower' if xlog else None,
                      error_x='CI_width_hf' if data else 'CI_width' if xlog else None,
                      log_x=xlog,
-                     size=df.WEIGHT/float(1.2) if data else None)
+                     size_max=10,
+                     size=df.WEIGHT if data else None)
 
     fig.update_layout(paper_bgcolor = 'rgba(0,0,0,0)', ## transparent bg
                       plot_bgcolor = 'rgba(0,0,0,0)')
@@ -389,16 +337,17 @@ def TapNodeData_fig(data, outcome_direction):
         fig.add_shape(type='line', yref='paper', y0=0, y1=1, xref='x', x0=1, x1=1,
                       line=dict(color="black", width=1), layer='below')
     fig.update_traces(marker=dict(symbol='square',
-                                  opacity=0.7 if data else 0,
-                                  line=dict(color='dimgrey',width=0), color='dimgrey',
+                                  opacity=0.8 if data else 0,
+                                  line=dict(color='#313539',width=0), color='#313539',
                                   ),
                       error_x=dict(thickness=1.3, color="black")
                       )
     fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5,
-                     tickvals=[0.1, 0.5, 1, 5] if xlog else None,
-                     ticktext=[0.1, 0.5, 1, 5] if xlog else None,
-                     range=[0.1, 1] if xlog else None,
-                     autorange=True, showline=True,linewidth=2, linecolor='black',
+                     #categoryorder='category descending',
+                     tickvals=[0.05, 0.5, 1, 5] if xlog else None,
+                     ticktext=[0.05, 0.5, 1, 5] if xlog else None,
+                     range=[0.1, 5] if xlog else None,
+                     autorange=True, showline=True,linewidth=1, linecolor='black',
                      zeroline=True, zerolinecolor='black')
 
     if data:
@@ -411,14 +360,14 @@ def TapNodeData_fig(data, outcome_direction):
                       annotations=[dict(x=0, ax=0, y=-0.12, ay=-0.1, xref='x', axref='x', yref='paper',
                                         showarrow=False, text=effect_size),
                                    dict(x=df.CI_lower.min(), ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
-                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3,
+                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=2.5,
                                         arrowcolor='green' if outcome_direction else 'black'),
                                    dict(x=df.CI_upper.max(), ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
-                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=3,
+                                        showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=2.5,
                                         arrowcolor='black' if outcome_direction else 'green'),  #'#751225'
-                                   dict(x=df.CI_lower.min()/2, y=-0.22, xref='x', yref='paper', text='Favours treatment',
+                                   dict(x=1-abs(df.CI_lower.min()) if xlog else 0-abs(df.CI_upper.min()), y=-0.22, xref='x', yref='paper', text='Favours treatment',
                                         showarrow=False),
-                                   dict(x=df.CI_upper.max()/2, y=-0.22, xref='x', yref='paper', text=f'Favours {treatment}',
+                                   dict(x=1+abs(df.CI_upper.max()) if xlog else 0-abs(df.CI_upper.max()), y=-0.22, xref='x', yref='paper', text=f'Favours {treatment}',
                                         showarrow=False)]
                       )
 
@@ -479,8 +428,10 @@ def TapNodeData_fig_bidim(data):
                       autosize=True,
                       legend = dict(itemsizing ='trace', itemclick = "toggle",
                                     itemdoubleclick = "toggleothers",
-                                    orientation= 'h', y= -0.25, xanchor='auto',
-                                    font = dict(size = 10)) if df['Treatment'].unique().size>13 else dict(itemsizing ='trace', itemclick = "toggle", itemdoubleclick = "toggleothers", orientation= 'v', font = dict(size = 10))
+                                    #orientation='v', xanchor='auto',
+                                    traceorder='normal',
+                                    orientation= 'h', y= 1.25, xanchor='auto',
+                                    font = dict(size = 10)) if df['Treatment'].unique().size>10 else dict(itemsizing ='trace', itemclick = "toggle", itemdoubleclick = "toggleothers", orientation= 'v', font = dict(size = 10))
                       )
 
     if xlog:
@@ -500,14 +451,14 @@ def TapNodeData_fig_bidim(data):
                      tickvals=[0.1, 0.5, 1, 5] if xlog else None,
                      ticktext=[0.1, 0.5, 1, 5] if xlog else None,
                      range=[0.1, 1] if xlog else None,
-                     autorange=True, showline=True,linewidth=2, linecolor='black',
+                     autorange=True, showline=True,linewidth=1, linecolor='black',
                      zeroline=True, zerolinecolor='gray', zerolinewidth=1),
 
     fig.update_yaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5,
                      tickvals=[0.1, 0.5, 1, 5] if xlog else None,
                      ticktext=[0.1, 0.5, 1, 5] if xlog else None,
                      range=[0.1, 1] if xlog else None,
-                     autorange=True, showline=True,linewidth=2, linecolor='black',
+                     autorange=True, showline=True,linewidth=1, linecolor='black',
                      zeroline=True, zerolinecolor='gray', zerolinewidth=1),
 
     fig.update_layout(clickmode='event+select',
@@ -543,7 +494,6 @@ def TapEdgeData(edge):
         studies_str = f"{n_studies}" + (' studies' if n_studies>1 else ' study')
         return f"{edge[0]['source'].upper()} vs {edge[0]['target'].upper()}: {studies_str}"
     else:
-
         return "Click on an edge to get information."
 
 def parse_contents(contents, filename):
@@ -620,8 +570,9 @@ def get_new_data(contents, dataselectors, search_value_format, search_value_outc
         GLOBAL_DATA['forest_data'] = apply_r_func(func=run_NetMeta_r, df=data)
         GLOBAL_DATA['forest_data_pairwise'] = apply_r_func(func=pairwise_forest_r, df=data)
         leaguetable_r  = apply_r_func(func=league_table_r, df=data)
+        replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
         leaguetable = pd.DataFrame([[replace_and_strip(col) for col in list(row)]
-                                                 for idx, row in leaguetable_r.iterrows()], columns=leaguetable_r.columns, index=leaguetable_r.index)
+                                     for idx, row in leaguetable_r.iterrows()], columns=leaguetable_r.columns, index=leaguetable_r.index)
         leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
         leaguetable = leaguetable.reset_index().rename(columns={'index':'Treatments'})
         GLOBAL_DATA['league_table_data'] = leaguetable
@@ -768,8 +719,11 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
     data_cols = [{"name": c, "id": c} for c in data.columns]
     data.year = data.year
     data_output = data[data.year<=slider_value].to_dict('records')
-    league_table = build_league_table(leaguetable, leaguetable_cols, styles, tips)
-    league_table_modal = build_league_table(leaguetable, leaguetable_cols, styles, tips, modal=True)
+    league_table_styles = {'output': {'overflow-y': 'scroll', 'overflow-wrap': 'break-word',
+                                      'height': 'calc(100% - 25px)', 'border': 'thin lightgrey solid'},
+                           'tab': {'height': 'calc(98vh - 115px)'}}
+    league_table = build_league_table(leaguetable, leaguetable_cols, league_table_styles, tips)
+    league_table_modal = build_league_table(leaguetable, leaguetable_cols, league_table_styles, tips, modal=True)
     return [data_output, data_cols]*2 + [league_table, league_table_modal] + [legend]*2 + [toggle_cinema, toggle_cinema_modal]
 
 def build_league_table(data, columns, style_data_conditional, tips, modal=False):
@@ -825,14 +779,14 @@ def build_league_table(data, columns, style_data_conditional, tips, modal=False)
              [Input('dropdown-effectmod', 'value'),
               Input('cytoscape', 'selectedEdgeData')])
 def update_boxplot(value, edges):
-    active, non_active = '#1B58E2', '#4C5353'   #'#797B7D'  #'#0757AD', '#797B7D'
+    active, non_active = '#1B58E2', '#313539' #'#4C5353'
     if value:
             df = GLOBAL_DATA['net_data'][['treat1', 'treat2', value]].copy()
             df = df.dropna(subset=[value])
             df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
             df = df.sort_values(by='Comparison').reset_index()
             df[value] = pd.to_numeric(df[value], errors='coerce')
-            margin = (df[value].max() - df[value].min()) * .3  # 30%
+            margin = (df[value].max() - df[value].min()) * .25  # 25%
             range1 = df[value].min() - margin
             range2 = df[value].max() + margin
             df['color'] = non_active
@@ -851,6 +805,7 @@ def update_boxplot(value, edges):
             unique_comparisons = unique_comparisons[~pd.isna(unique_comparisons)]
             fig = go.Figure(data=[go.Box(y=df[df.Comparison == comp][value],
                                          name=comp,
+                                         #jitter=0.2,
                                          #width=0.6,
                                          marker_color=active if comp in slctd_comps else non_active
                                          )
@@ -871,6 +826,7 @@ def update_boxplot(value, edges):
                       font_color="black",
                       yaxis_range=[range1, range2],
                       showlegend=False,
+                      autosize=True,
                       font=dict(#family="sans serif", #size=11,
                                  color='black'
                                 ),
@@ -884,7 +840,7 @@ def update_boxplot(value, edges):
                       )
 
     fig.update_xaxes(ticks="outside", tickwidth=1, tickcolor='black', ticklen=5,  tickmode='linear',
-                     showline=True, linecolor='black', type="category") #tickangle=30,
+                     showline=True, linecolor='black', type="category",autorange=True) #tickangle=30,
 
     fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='black',
                      showline=True, linecolor='black')
@@ -895,8 +851,15 @@ def update_boxplot(value, edges):
         fig.update_xaxes(tickvals=[], ticktext=[],zerolinecolor='gray', zerolinewidth=1, tickangle=0, visible=False)
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
         fig.update_layout(margin=dict(l=100, r=100, t=12, b=80), xaxis=dict(showgrid=False, tick0=0, title=''),
-                          yaxis=dict(showgrid=False, tick0=0, title='')),
+                          yaxis=dict(showgrid=False, tick0=0, title=''),
+                          annotations=[{
+                              "text": "Check if transitivity holds in the network: compare the distributions  <br>"
+                                        "of your potential effect modifiers across the different comparisons <br> <br>"
+                                       "NB: the boxplots should be relatively aligned one to another",
+                              "font": {"size": 16, "color":"white", 'family':'sans-serif'}}]
+                          ),
         fig.update_traces(quartilemethod="exclusive", hoverinfo='skip', hovertemplate=None)
+
 
     return fig
 

@@ -3,8 +3,7 @@ from assets.modal_values import *
 
 
 options_outcomes_direction = [{'label':'beneficial',  'value':'beneficial'},
-                             {'label':'harmful',     'value':'harmful'}
-                             ]
+                             {'label':'harmful',     'value':'harmful'}]
 
 
 Dropdown_nodesize = dbc.DropdownMenu(

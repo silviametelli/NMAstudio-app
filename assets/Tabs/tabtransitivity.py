@@ -1,7 +1,7 @@
 import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
 from app import OPTIONS_VAR
 
-tab_trstvty = html.Div([dbc.Row([html.P("Choose effect modifier:", className="graph__title2",
+tab_trstvty = html.Div([html.Div([dbc.Row([html.P("Choose effect modifier:", className="graph__title2",
                                          style={'display': 'inline-block',
                                                 'verticalAlign':"top",
                                                 'font-size': '12px',
@@ -12,12 +12,11 @@ tab_trstvty = html.Div([dbc.Row([html.P("Choose effect modifier:", className="gr
                                                style={'width': '150px', 'height': '30px',
                                                       'display': 'inline-block', # 'background-color': '#40515e'
                                                       })
-                                  ])], style={'margin-top':'4px'})
-
-boxplot = html.Div([dcc.Graph(id='tapEdgeData-fig',
-                     style={'height': '99%',
-                           'max-height': '400px',
-                           'width': '99%',
+                                  ])], style={'margin-top':'4px'}),
+                html.Div([dcc.Graph(id='tapEdgeData-fig',
+                     style={'height': '98%',
+                          'max-height': 'calc(52vw)',
+                           'width': '100%',
                            'max-width': 'calc(52vw)'},
                                   config={'editable': True,
                                           'edits': dict(annotationPosition=True,
@@ -30,11 +29,11 @@ boxplot = html.Div([dcc.Graph(id='tapEdgeData-fig',
                                                     shapePosition=True),
                                           'modeBarButtonsToRemove': ['toggleSpikelines', "pan2d",
                                                                  "select2d", "lasso2d",
-                                                                 "autoScale2d",
+                                                                 "autoScale2d", 'resetScale2d',
                                                                  "hoverCompareCartesian"],
                                           'toImageButtonOptions': {'format': 'png', # one of png, svg,
                                                                'filename': 'custom_image',
                                                               # 'scale': 8 # Multiply title/legend/axis/canvas sizes by this factor
                                                                },
                                           'displaylogo': False})
-                    ], style={'margin-top':'-25px'})
+                    ], style={'margin-top':'-20px'})])

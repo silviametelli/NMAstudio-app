@@ -135,7 +135,7 @@ modal_league_table = dbc.Modal([
                                                         html.P('CINeMA rating', id='cinemaswitchlabel2_modal',
                                                                 style={'display': 'inline-block', 'margin': 'auto',
                                                                        'font-size': '12px', 'padding-right': '0px'})],
-                                                        style={'display': 'inline-block', 'text-align':'right','float':'right'}) # Closes Div
+                                                        className='inrow_style_2') # Closes Div
                                               ],style={'width': '100%', "max-width": "none"}) # Closes Row
                                       ], style={'width': '100%', "max-width": "none"}), # Closes Header
                      dbc.ModalBody([html.Div(id='league-expand-body'),

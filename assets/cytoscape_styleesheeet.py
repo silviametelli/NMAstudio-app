@@ -1,5 +1,6 @@
+from assets.COLORS import *
 
-def get_stylesheet(node_size=False, nd_col='#07ABA0', edge_size=False, pie=False, nodes_opacity=1, edges_opacity=0.75):
+def get_stylesheet(node_size=False, nd_col=DFLT_ND_CLR, edge_size=False, pie=False, nodes_opacity=1, edges_opacity=0.75):
     default_stylesheet = [
         {"selector": 'node',
          'style': {"opacity": nodes_opacity,
@@ -23,7 +24,8 @@ def get_stylesheet(node_size=False, nd_col='#07ABA0', edge_size=False, pie=False
     if edge_size:
         default_stylesheet[1]['style'].update({"width": None})
     if pie:
-        default_stylesheet[0]['style'].update({'pie-1-background-color': '#E8747C',
+        default_stylesheet[0]['style'].update({
+                                               'pie-1-background-color': '#E8747C',
                                                'pie-1-background-size': 'mapData(pie3, 0, 1, 0, 100)',
                                                'pie-2-background-color': '#f8d49d', #'#74CBE8',
                                                'pie-2-background-size': 'mapData(pie2, 0, 1, 0, 100)',

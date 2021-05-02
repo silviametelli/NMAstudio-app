@@ -45,7 +45,7 @@ PLotly.js
  */
 @import url(https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&display=swap);
 :root {
-    --app-background-color:#1b242b;
+    --app-background-color:#1b242b; /*#1b242b;*/
     --dropdownmenu-hover-background-color: #798d8f;
     --blue: #2c3e50;
     --indigo: #6610f2;
@@ -359,6 +359,13 @@ label > .label-body {
 }
 
 
+/*change color of tab window div */
+/*.tab-content{*/
+/*    background-color:#303136;*/
+/*    color:#fff;*/
+/*    padding:5px*/
+/*}*/
+
 /* Lists
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 ul {list-style: circle inside;}
@@ -594,8 +601,10 @@ a.btn.disabled, fieldset:disabled a.btn {pointer-events: none}
 .btn-secondary.focus, .btn-secondary:focus {
     color: #fff;
     background-color: var(--dropdownmenu-hover-background-color);
-    border-color: #529637;
-    box-shadow: 0 0 0 .2rem rgb(178, 137, 61)
+    border-color: none;
+    box-shadow: none
+    /*border-color: #529637;*/
+    /*box-shadow: 0 0 0 .2rem rgb(178, 137, 61)*/
 }
 .btn-secondary.disabled, .btn-secondary:disabled {
     color: #fff;

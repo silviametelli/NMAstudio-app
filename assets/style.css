@@ -564,6 +564,6 @@ li a {
 /* NAVBAR color */
 @keyframes
 button.bg-light:hover{background-color:#dae0e5!important}
-.bg-dark{background-color: #36726e !important}  a.bg-dark:focus,a.bg-dark:hover,button.bg-dark:focus
+.bg-dark{background-color: var(--CLR_BCKGRND) !important}  a.bg-dark:focus,a.bg-dark:hover,button.bg-dark:focus
 /*var(--CLR_BCKGRND)*/
-/* #2d605d*/
+/* #36726e color green as nodes */

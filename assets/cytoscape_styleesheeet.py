@@ -11,8 +11,7 @@ def get_stylesheet(node_size=False, nd_col=DFLT_ND_CLR, edge_size=False, pie=Fal
                    'line-color':'black',
                    'label': "data(label)",
                    'shape':'circle',
-                   # 'color': "#1b242b"
-                    'color': "#fff"
+                   'color': "#fff" #"#1b242b"
                    },
          },
         {"selector": 'edge',

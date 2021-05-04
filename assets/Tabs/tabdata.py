@@ -61,7 +61,7 @@ tab_data = html.Div([
                          style_table={'overflowX': 'scroll',
                                      'overflowY': 'auto',
                                      'height': '99%',
-                                     'max-height': '400px',
+                                     'max-height': '420px',
                                      'width': '99%',
                                      'max-width': 'calc(52vw)',
                                      'padding': '5px 5px 5px 5px'},

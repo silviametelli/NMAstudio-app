@@ -22,7 +22,7 @@ import os, io, base64, shutil, time, pandas as pd, numpy as np
 import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State, MATCH, ALL
 import plotly.express as px, plotly.graph_objects as go
-from assets.effect_sizes import OR_effect_measure, MD_effect_measure
+from assets.effect_sizes import get_OR, get_RR, get_MD
 from demo_data import get_demo_data
 from layouts import *
 # --------------------------------------------------------------------------------------------------------------------#
@@ -340,13 +340,13 @@ def TapNodeData_fig(data, outcome_direction):
         treatment = data[0]['label']
         df = GLOBAL_DATA['forest_data'][GLOBAL_DATA['forest_data'].Reference == treatment].copy()
         effect_size = df.columns[1]
-        df['Treatment'] += ' ' * 20
+        df['Treatment'] += ' ' * 15
         df['CI_width'] = df.CI_upper - df.CI_lower
         df['lower_error'] = df[effect_size] - df.CI_lower
         df['CI_width_hf'] = df['CI_width'] / 2
         df['WEIGHT'] = round(df['WEIGHT'], 3)
-        df['CI'] = '(' + round(df["CI_lower"],2).astype(str) + ', ' + round(df["CI_upper"],2).astype(str) + ')'
-        df[effect_size] = round(df[effect_size], 2)
+        CI_lower, CI_upper = df["CI_lower"].map('{:,.2f}'.format), df["CI_upper"].map('{:,.2f}'.format),
+        df['CI'] = '(' + CI_lower.astype(str) + ', ' + CI_upper.astype(str) + ')'
         df = df.sort_values(by=effect_size, ascending=False)
     else:
         effect_size = ''
@@ -374,13 +374,13 @@ def TapNodeData_fig(data, outcome_direction):
 
     fig.update_traces(marker=dict(symbol='circle',
                                   opacity=0.8 if data else 0,
-                                  line=dict(color='#313539', width=0),
-                                  color='#ef563b'),
-                      error_x=dict(thickness=2.6, color="#313539")  # '#313539' dark grey
+                                  line=dict(color='DarkSlateGrey'),
+                                  color='green'),
+                      error_x=dict(thickness=2.1, color='#313539')  # '#ef563b' nice orange trace
                       )
     fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black',
                      ticklen=5,
-                     categoryorder='category descending' if outcome_direction=="Beneficial" else 'category ascending',
+                     categoryorder='category descending' if outcome_direction else 'category ascending',
                      # dtick=1,
                      autorange=False,
                      showline=True, linewidth=1, linecolor='black',
@@ -389,25 +389,37 @@ def TapNodeData_fig(data, outcome_direction):
     if data:
         fig.update_layout(clickmode='event+select',
                           font_color="black",
+                          modebar= dict(orientation = 'v', bgcolor = 'rgba(0,0,0,0)'),
                           #width=500,
                           margin=dict(l=5, r=10, t=12, b=80),
                           xaxis=dict(showgrid=False,
                                      #tick0=0, # TODO: JUST EXPLAIN IT!!!
                                      title=''),
                           yaxis=dict(showgrid=False, title=''),
-                          #title_text='  ', title_x=0.02, title_y=.98, title_font_size=14,
                           annotations=[dict(x=0, ax=0, y=-0.12, ay=-0.1, xref='x', axref='x', yref='paper',
                                              showarrow=False, text=effect_size),
-                          #              dict(x=df.CI_lower.min(), ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
-                          #                   showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=2.5,
-                          #                   arrowcolor='green' if outcome_direction else 'black'),
-                          #              dict(x=df.CI_upper.max(), ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
-                          #                   showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=2.5,
-                          #                   arrowcolor='black' if outcome_direction else 'green'),  #'#751225'
-                          #              dict(x=1-abs(df.CI_lower.min()) if xlog else 0-abs(df.CI_upper.min()), y=-0.22, xref='x', yref='paper', text='Favours treatment',
-                          #                   showarrow=False),
-                          #              dict(x=1+abs(df.CI_upper.max()) if xlog else 0-abs(df.CI_upper.max()), y=-0.22, xref='x', yref='paper', text=f'Favours {treatment}',
-                          #                   showarrow=False)
+                                       dict(x=np.floor(np.log10(min(low_rng, 0.1))) if xlog else df.CI_lower.min(),
+                                            ax=0, y=-0.14, ay=-0.1,
+                                            xref='x', axref='x', yref='paper',
+                                            showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.8,
+                                            arrowcolor='green' if outcome_direction else 'black'),
+                                       dict(x= np.floor(np.log10(max([up_rng, 10]))) if xlog else df.CI_upper.max(),
+                                            ax=0, y=-0.14, ay=-0.1,
+                                            xref='x', axref='x', yref='paper',
+                                            showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.8,
+                                            arrowcolor='black' if outcome_direction else 'green'),  #'#751225'
+                                       dict(x=np.floor(np.log10(min(low_rng, 0.1)))/2 if xlog else df.CI_lower.min()/2,
+                                            y=-0.22,  xref='x', yref='paper',
+                                            text='Favours treatment' if outcome_direction else f'Favours {treatment}',
+                                            showarrow=False),
+                                       dict(x=np.floor(np.log10(max([up_rng, 10])))/2 if xlog else df.CI_upper.max()/2, y=-0.22,
+                                            xref='x', yref='paper',
+                                            text=f'Favours {treatment}'if outcome_direction else 'Favours treatment',
+                                            showarrow=False),
+                                       dict(x=-0.37, y=1.013, align='center',
+                                            xref='paper', yref='paper',
+                                            text='<b>Treatment</b>',
+                                            showarrow=False),
                                  ]
                           )
 
@@ -418,18 +430,27 @@ def TapNodeData_fig(data, outcome_direction):
 
         fig.update_layout(
             yaxis2=dict(tickvals = [*range(df.shape[0])],
-                        ticktext=[' '*20 + '{:.2f}   {:<15}'.format(x,y)
+                        ticktext=[' '*15 + '{:.2f}   {:<15}'.format(x,y)
                                   for x, y in zip(df[effect_size].values, df['CI'].values)],
                         showgrid=False,  zeroline=False,
-                        titlefont=dict(color=DFLT_ND_CLR),
-                        tickfont=dict(color=DFLT_ND_CLR),
+                        titlefont=dict(color='black'),
+                        tickfont=dict(color='black'),
                         type='category',
                         range=[-1.4, df.shape[0]],
                         anchor="x", overlaying="y",
                         side="right"),
-
         ),
 
+        fig.add_annotation(x=1.27, y=1.02, align='center',
+             xref='paper', yref='y domain',
+             text=f'<b>{effect_size}</b>',
+             showarrow=False)
+
+
+        fig.add_annotation(x=1.5, y=1.02, align='center',
+                           xref='paper', yref='y2 domain',
+                           text='<b>95% CI</b>',
+                           showarrow=False)
 
     else:
         fig.update_layout(clickmode='event+select',
@@ -445,7 +466,8 @@ def TapNodeData_fig(data, outcome_direction):
         fig.update_shapes(dict(xref='x', yref='y'))
         fig.update_xaxes(zerolinecolor='black', zerolinewidth=1, title='', visible=False)
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
-        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80))
+        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80),
+                          modebar= dict(orientation = 'v', bgcolor = 'rgba(0,0,0,0)'))
         fig.update_traces(hoverinfo='skip', hovertemplate=None)
 
     return fig
@@ -458,14 +480,17 @@ def TapNodeData_fig_bidim(data):
     if data:
         treatment = data[0]['label']
         df = GLOBAL_DATA['forest_data'][GLOBAL_DATA['forest_data'].Reference == treatment].copy()
-        df['CI_width'] = df.CI_upper - df.CI_lower
-        df['CI_width_hf'] = df['CI_width'] / 2
         effect_size = df.columns[1]
-        # weight_es = round(df['WEIGHT'],3)
-        df = df.sort_values(by=effect_size)
+        df['CI_width'] = df.CI_upper - df.CI_lower
+        df['lower_error_1'] = df[effect_size] - df.CI_lower
+        df['CI_width_hf'] = df['CI_width'] / 2
+        df['WEIGHT'] = round(df['WEIGHT'], 3)
+        df = df.sort_values(by=effect_size, ascending=False)
+        #second outcome
         df_second = GLOBAL_DATA['forest_data_outcome2'][
-            GLOBAL_DATA['forest_data_outcome2'].Reference == treatment].copy()
+        GLOBAL_DATA['forest_data_outcome2'].Reference == treatment].copy()
         df_second['CI_width'] = df_second.CI_upper - df_second.CI_lower
+        df_second['lower_error_2'] = df_second[effect_size] - df_second.CI_lower
         df_second['CI_width_hf'] = df_second['CI_width'] / 2
         effect_size_2 = df_second.columns[1]
     else:
@@ -476,17 +501,25 @@ def TapNodeData_fig_bidim(data):
                                                      'CI_width', 'CI_width_hf'])
 
     xlog = effect_size in ('RR', 'OR')
+    up_rng, low_rng = df.CI_upper.max(), df.CI_lower.min()
+    up_rng = 10**np.floor(np.log10(up_rng)) if xlog else None
+    low_rng = 10 ** np.floor(np.log10(low_rng)) if xlog else None
 
     fig = px.scatter(df, x=df[effect_size], y=df_second[effect_size_2], color=df.Treatment,
-                     error_x_minus=df.CI_lower if xlog else None,
-                     error_x=df.CI_width_hf if data else df.CI_width if xlog else None,
-                     error_y_minus=df_second.CI_lower if xlog else None,
+                     error_x_minus=df['lower_error_1'] if xlog else None,
+                     error_x='CI_width_hf' if xlog else 'CI_width' if data else None,
+                     error_y_minus=df_second['lower_error_2'] if xlog else None,
                      error_y=df_second.CI_width_hf if data else df_second.CI_width if xlog else None,
-                     log_x=xlog)
+                     log_x=xlog,
+                     log_y=xlog,
+                     size_max = 10,
+                     range_x = [min(low_rng, 0.1), max([up_rng, 10])] if xlog else None
+                     )
 
     fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
                       plot_bgcolor='rgba(0,0,0,0)',
                       autosize=True,
+                      modebar=dict(orientation='v', bgcolor='rgba(0,0,0,0)'),
                       legend=dict(itemsizing='trace', itemclick="toggle",
                                   itemdoubleclick="toggleothers",
                                   # orientation='v', xanchor='auto',
@@ -498,8 +531,8 @@ def TapNodeData_fig_bidim(data):
                       )
 
     if xlog:
-        fig.add_shape(type='line', yref='paper', y0=0, y1=1, xref='x', x0=1, x1=1,
-                      line=dict(color="black", width=1, dash='dashdot'), layer='below')
+        fig.add_hline(y=1,line=dict(color="black", width=1, dash='dashdot'))
+        fig.add_vline(x=1,line=dict(color="black", width=1, dash='dashdot'))
 
     fig.update_traces(marker=dict(symbol='circle',
                                   size=9,
@@ -510,17 +543,17 @@ def TapNodeData_fig_bidim(data):
                       error_y=dict(thickness=1.3),
                       error_x=dict(thickness=1.3), ),
 
-    fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5,
-                     tickvals=[0.1, 0.5, 1, 5] if xlog else None,
-                     ticktext=[0.1, 0.5, 1, 5] if xlog else None,
-                     range=[0.1, 1] if xlog else None,
+    fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5, dtick=1,
+                  #   tickvals=[0.1, 0.5, 1, 5] if xlog else None,
+                  #   ticktext=[0.1, 0.5, 1, 5] if xlog else None,
+                  #   range=[0.1, 1] if xlog else None,
                      autorange=True, showline=True, linewidth=1, linecolor='black',
                      zeroline=True, zerolinecolor='gray', zerolinewidth=1),
 
-    fig.update_yaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5,
-                     tickvals=[0.1, 0.5, 1, 5] if xlog else None,
-                     ticktext=[0.1, 0.5, 1, 5] if xlog else None,
-                     range=[0.1, 1] if xlog else None,
+    fig.update_yaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5, dtick=1,
+                   #  tickvals=[0.1, 0.5, 1, 5] if xlog else None,
+                   #  ticktext=[0.1, 0.5, 1, 5] if xlog else None,
+                   #  range=[0.1, 1] if xlog else None,
                      autorange=True, showline=True, linewidth=1, linecolor='black',
                      zeroline=True, zerolinecolor='gray', zerolinewidth=1),
 
@@ -892,7 +925,7 @@ def update_boxplot(value, edges):
         df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
         df = df.sort_values(by='Comparison').reset_index()
         df[value] = pd.to_numeric(df[value], errors='coerce')
-        margin = (df[value].max() - df[value].min()) * .25  # 25%
+        margin = (df[value].max() - df[value].min()) * .1  # 10%
         range1 = df[value].min() - margin
         range2 = df[value].max() + margin
         df['color'] = non_active
@@ -934,6 +967,7 @@ def update_boxplot(value, edges):
                       paper_bgcolor='rgba(0,0,0,0)',
                       plot_bgcolor='rgba(0,0,0,0)',
                       font_color="black",
+                      modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'),
                       yaxis_range=[range1, range2],
                       showlegend=False,
                       autosize=True,
@@ -953,13 +987,14 @@ def update_boxplot(value, edges):
                      showline=True, linecolor='black', type="category", autorange=True)  # tickangle=30,
 
     fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='black',
-                     showline=True, linecolor='black')
+                     showline=True, linecolor='black', zeroline=False)
 
     if not any(value):
         fig.update_shapes(dict(xref='x', yref='y'))
-        fig.update_xaxes(tickvals=[], ticktext=[], zerolinecolor='gray', zerolinewidth=1, tickangle=0, visible=False)
+        fig.update_xaxes(tickvals=[], ticktext=[], visible=False)
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
         fig.update_layout(margin=dict(l=100, r=100, t=12, b=80), xaxis=dict(showgrid=False, tick0=0, title=''),
+                          modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'),
                           yaxis=dict(showgrid=False, tick0=0, title=''),
                           annotations=[{
                               "text": "Check whether transitivity holds in the network: compare the distributions  <br>"
@@ -1034,9 +1069,12 @@ def update_forest_pairwise(edge):
                          linecolor='rgba(0,0,0,0)',
                          linewidth=2,
                          zeroline=True, zerolinecolor='black', zerolinewidth=1),
-        fig.update_layout(xaxis=dict(showgrid=False, tick0=0, title=''),
+
+        fig.update_layout(modebar= dict(orientation = 'h', bgcolor = 'rgba(0,0,0,0)'),
+                          xaxis=dict(showgrid=False, tick0=0, title=''),
                           yaxis=dict(showgrid=False, title=''),
                           )
+
         fig.add_trace(go.Scatter(x=romb(center, width)['x'], y=romb(center, width)['y'],
                                  fill="toself", mode="lines", line=dict(color='black'), fillcolor='#1f77b4'),
                       secondary_y=True)
@@ -1047,19 +1085,8 @@ def update_forest_pairwise(edge):
                          secondary_y=True,
                          row=1, col=1, zeroline=False)
         fig.add_vline(
-            x=center, line_width=1, line_dash='dash', line_color='black'
-        )
+            x=center, line_width=1, line_dash='dash', line_color='black' )
 
-        # if xlog:
-        #     fig.add_shape(type='line', yref='paper', y0=0, y1=1, xref='x', x0=1, x1=1,
-        #               line=dict(color="black", width=1), layer='below')
-        #
-        # fig.update_traces(marker=dict(symbol='square',
-        #                           opacity=0.8 if edge else 0,
-        #                           line=dict(color='black', width=0), color='dimgrey',
-        #                           ),
-        #               error_x=dict(thickness=1.3, color="black")
-        #               )
         fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5,
                          tickvals=[0.1, 0.5, 1, 5] if xlog else None,
                          ticktext=[0.1, 0.5, 1, 5] if xlog else None,
@@ -1067,9 +1094,9 @@ def update_forest_pairwise(edge):
                          autorange=True, showline=True, linewidth=2, linecolor='black',
                          zeroline=True, zerolinecolor='black')
 
-
     else:
         fig.update_shapes(dict(xref='x', yref='y'))
+        fig.update_layout(modebar= dict(orientation = 'h', bgcolor = 'rgba(0,0,0,0)'))
         fig.update_xaxes(zerolinecolor='black', zerolinewidth=1, title='', visible=False)
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
         fig.update_layout(margin=dict(l=100, r=100, t=12, b=80))

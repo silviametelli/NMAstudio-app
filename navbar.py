@@ -15,7 +15,7 @@ def Navbar():
                                          style = {'color':'white','font-family': "sans-serif ",
                                                   'font-size': '13px' }))
     navbar = dbc.Navbar([
-            html.Div(dbc.Col(html.Img(src=NMASTUDIO_LOGO, height="55px", style={'filter': 'invert()',
+            html.Div(dbc.Col(html.Img(src=NMASTUDIO_LOGO, height="53px", style={'filter': 'invert()',
                                                                        'padding-left': '2%','padding-bottom':'0.4%',
                                                                        'padding-top':'0.4%'}), className="child", sm=3, md=2),
                      style={"border": "0.1px white solid",'padding-bottom':'0.2%', 'padding-top':'0.2%'}),

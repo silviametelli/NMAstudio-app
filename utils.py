@@ -16,7 +16,7 @@ def read_edge_frompickle():
     return pickle.load(open(f'{TEMP_PATH}/selected_edges.pickle', 'rb'))
 
 
-# CREATE NETWORK FUNCTION
+#  NETWORK FUNCTION
 
 def get_network(df):
     df = df.dropna(subset=['TE', 'seTE'])

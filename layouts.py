@@ -43,6 +43,7 @@ def home_layout(GLOBAL_DATA):
                                 elements=GLOBAL_DATA['user_elements'],
                                 style={ 'height': '75vh', 'width': '99%', 'margin-top': '10px',
                                         'margin-left': '-10px','margin-right': '-10px',  'z-index': '999',
+                                        'padding-left': '-10px'
                                        },
                                 stylesheet=get_stylesheet()),
 

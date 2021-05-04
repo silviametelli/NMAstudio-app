@@ -1,5 +1,5 @@
 import numpy as np, pandas as pd
-from assets.effect_sizes import OR_effect_measure, MD_effect_measure
+from assets.effect_sizes import get_OR, get_RR, get_MD
 
 
 def get_demo_data():

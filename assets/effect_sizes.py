@@ -1,7 +1,7 @@
 import numpy as np, pandas as pd
 
 ## OR
-def OR_effect_measure(df):
+def get_OR(df):
     for c in ['r1', 'r2', 'n1', 'n2']:
         df[c] = pd.to_numeric(df[c], errors='coerce')
     r1, r2, n1, n2 = df.r1, df.r2, df.n1, df.n2
@@ -20,7 +20,7 @@ def OR_effect_measure(df):
     return round(TE,3), round(seTE,3)
 
 ## RR #TODO: change as OR
-def RR_effect_measure(df): #TODO: check formula
+def get_RR(df): #TODO: check formula
     for c in ['r1', 'r2', 'n1', 'n2']:
         # df[c] = df[c].astype(np.float64)  # TODO:  check if this works instead!!
         df[c] = pd.to_numeric(df[c], errors='coerce')
@@ -38,7 +38,7 @@ def RR_effect_measure(df): #TODO: check formula
     return round(TE, 3), round(seTE, 3)
 
 ## MD #TODO: change as OR
-def MD_effect_measure(df):
+def get_MD(df):
     for c in ['y1', 'sd1', 'y2', 'sd2', 'n1', 'n2']:
         df[c] = pd.to_numeric(df[c], errors='coerce')
     #N =  df.n1 + df.n2

@@ -193,11 +193,10 @@ h6 {margin-top: 0;}
 }
 
 .tab-content{
-    background-color:#3d515e; /*#3d515e*/
+    background-color: #5c7780; /*#6a868f; !*#3d515e*!*/
     color: #0a0909;
     padding:5px;
 }
-
 
 
 /*div.Select–single>.Select-control .Select-value,*/
@@ -376,20 +375,19 @@ img:hover {
 :not(.dropdown-item)
 }
 
-
 .rc-slider-track {
-  background-color: #7e95cc;
+  background-color: #475684;
 }
 
 .rc-slider-handle {
-  background-color: #7e95cc;
+  background-color: #475684;
   border-color: #751226;
 }
 .rc-slider-handle:hover {
   border-color: #96dbfa;
 }
 .rc-slider-handle-active:active {
-    border-color: #7e95cc;
+    border-color: #475684;
 
 }
 .rc-slider-tooltip-inner {
@@ -422,8 +420,8 @@ img:hover {
 
 .rc-slider-dot-active {
   border-color: #1a5dae;
-  border: solid 5px #7e95cc;
-  background-color: #7e95cc;
+  border: solid 5px #475684;
+  background-color: #475684;
 }
 
 .rc-slider-dot {
@@ -446,8 +444,8 @@ img:hover {
   width: 6px;
   height: 6px;
   vertical-align: middle;
-  border: solid 5px #7e95cc;
-  background-color: #7e95cc;
+  border: solid 5px #475684;
+  background-color: #475684;
 }
 
 .rc-slider-dot:last-child {
@@ -456,8 +454,8 @@ img:hover {
   width: 6px;
   height: 6px;
   vertical-align: middle;
-  border: solid 5px #7e95cc;
-  background-color: #7e95cc;
+  border: solid 5px #475684;
+  background-color: #475684;
 }
 
 /*.modal-footer {*/

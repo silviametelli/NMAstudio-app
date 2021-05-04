@@ -355,15 +355,15 @@ def TapNodeData_fig(data, outcome_direction):
 
 
     xlog = effect_size in ('RR', 'OR')
-    up_rng = df.CI_upper.max()
-    up_rng = round(up_rng, -round(np.log10(up_rng))) if xlog else None
-    print(up_rng)
+    up_rng, low_rng = df.CI_upper.max(), df.CI_lower.min()
+    up_rng = 10**np.floor(np.log10(up_rng)) if xlog else None
+    low_rng = 10 ** np.floor(np.log10(low_rng)) if xlog else None
     fig = px.scatter(df, x=effect_size, y="Treatment",
                      error_x_minus='lower_error' if xlog else None,
                      error_x='CI_width_hf' if xlog else 'CI_width' if data else None,
                      log_x=xlog,
                      size_max=10,
-                     range_x=[0.1, up_rng] if xlog else None,
+                     range_x=[min(low_rng, 0.1), max([up_rng, 10])] if xlog else None,
                      size=df.WEIGHT if data else None)
 
     fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',  # transparent bg

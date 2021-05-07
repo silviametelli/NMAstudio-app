@@ -144,9 +144,10 @@ h6 {margin-top: 0;}
 
 .markdown_style{
     color:white;
-    padding-left:30px;
-    padding-right:30px;
+    padding-left:3%;
+    padding-right:3%;
     font-size: medium;
+    font-weight: lighter;
     font-family:sans-serif
 }
 
@@ -375,13 +376,18 @@ img:hover {
 :not(.dropdown-item)
 }
 
+
 .rc-slider-track {
   background-color: #475684;
+  border-color: black;
+  /*border: 0.05px solid #010101;*/
 }
 
 .rc-slider-handle {
   background-color: #475684;
   border-color: #751226;
+      cursor: pointer;
+
 }
 .rc-slider-handle:hover {
   border-color: #96dbfa;
@@ -438,6 +444,7 @@ img:hover {
   vertical-align: middle;
 }
 
+
 .rc-slider-dot:first-child {
   position: absolute;
   top: -2px;
@@ -447,6 +454,7 @@ img:hover {
   border: solid 5px #475684;
   background-color: #475684;
 }
+
 
 .rc-slider-dot:last-child {
   position: absolute;

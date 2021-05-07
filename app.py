@@ -390,9 +390,10 @@ def TapNodeData_fig(data, outcome_direction):
         fig.update_layout(clickmode='event+select',
                           font_color="black",
                           modebar= dict(orientation = 'v', bgcolor = 'rgba(0,0,0,0)'),
+                          autosize=True,
                           #width=500,
                           margin=dict(l=5, r=10, t=12, b=80),
-                          xaxis=dict(showgrid=False,
+                          xaxis=dict(showgrid=False, autorange=True,
                                      #tick0=0, # TODO: JUST EXPLAIN IT!!!
                                      title=''),
                           yaxis=dict(showgrid=False, title=''),
@@ -423,12 +424,14 @@ def TapNodeData_fig(data, outcome_direction):
                                  ]
                           )
 
+
         fig.add_trace(go.Scatter(x=[], y=[],
                                  marker=dict(opacity=0),
                                  showlegend=False, mode='markers',
                                  yaxis="y2"))
 
         fig.update_layout(
+            autosize=True,
             yaxis2=dict(tickvals = [*range(df.shape[0])],
                         ticktext=[' '*15 + '{:.2f}   {:<15}'.format(x,y)
                                   for x, y in zip(df[effect_size].values, df['CI'].values)],
@@ -441,13 +444,13 @@ def TapNodeData_fig(data, outcome_direction):
                         side="right"),
         ),
 
-        fig.add_annotation(x=1.27, y=1.02, align='center',
+        fig.add_annotation(x=1.27, y=1.03, align='center',
              xref='paper', yref='y domain',
              text=f'<b>{effect_size}</b>',
              showarrow=False)
 
 
-        fig.add_annotation(x=1.5, y=1.02, align='center',
+        fig.add_annotation(x=1.5, y=1.03, align='center',
                            xref='paper', yref='y2 domain',
                            text='<b>95% CI</b>',
                            showarrow=False)
@@ -487,8 +490,7 @@ def TapNodeData_fig_bidim(data):
         df['WEIGHT'] = round(df['WEIGHT'], 3)
         df = df.sort_values(by=effect_size, ascending=False)
         #second outcome
-        df_second = GLOBAL_DATA['forest_data_outcome2'][
-        GLOBAL_DATA['forest_data_outcome2'].Reference == treatment].copy()
+        df_second = GLOBAL_DATA['forest_data_outcome2'][GLOBAL_DATA['forest_data_outcome2'].Reference == treatment].copy()
         df_second['CI_width'] = df_second.CI_upper - df_second.CI_lower
         df_second['lower_error_2'] = df_second[effect_size] - df_second.CI_lower
         df_second['CI_width_hf'] = df_second['CI_width'] / 2
@@ -504,6 +506,13 @@ def TapNodeData_fig_bidim(data):
     up_rng, low_rng = df.CI_upper.max(), df.CI_lower.min()
     up_rng = 10**np.floor(np.log10(up_rng)) if xlog else None
     low_rng = 10 ** np.floor(np.log10(low_rng)) if xlog else None
+
+    if len(df_second.Treatment) > len(df.Treatment):
+        trts_rmd = set(df_second.Treatment).difference(df.Treatment)
+        df_second[df_second['Treatment'].isin(trts_rmd) == False]
+    else:
+        trts_rmd = set(df.Treatment).difference(df_second.Treatment)
+        df[df['Treatment'].isin(trts_rmd) == False]
 
     fig = px.scatter(df, x=df[effect_size], y=df_second[effect_size_2], color=df.Treatment,
                      error_x_minus=df['lower_error_1'] if xlog else None,
@@ -525,8 +534,8 @@ def TapNodeData_fig_bidim(data):
                                   # orientation='v', xanchor='auto',
                                   traceorder='normal',
                                   orientation='h', y=1.25, xanchor='auto',
-                                  font=dict(size=10)) if df['Treatment'].unique().size > 10 else dict(
-                          itemsizing='trace', itemclick="toggle", itemdoubleclick="toggleothers", orientation='v',
+                                  font=dict(size=10)) if df['Treatment'].unique().size > 10 else
+                                            dict(itemsizing='trace', itemclick="toggle", itemdoubleclick="toggleothers", orientation='v',
                           font=dict(size=10))
                       )
 
@@ -603,146 +612,132 @@ def parse_contents(contents, filename):
 
 
 ### ----- upload main data file ------ ###
-# @app.callback([Output('__storage_netdata', 'children'),
-#                Output('cytoscape', 'elements'),
-#                Output("file-list", "children")],
-#               [Input('datatable-upload', 'contents'),
-#                Input({'type': 'dataselectors', 'index': ALL}, 'value'),
-#                Input("dropdown-format", "value"),
-#                Input("dropdown-outcome1", "value"),
-#                Input("dropdown-outcome2", "value"),
-#                Input('slider-year', 'value')
-#                ],
-#               [State('datatable-upload', 'filename')]
-#               )
-# def get_new_data(contents, dataselectors, search_value_format, search_value_outcome1, search_value_outcome2, slider_year, filename):
-#     def apply_r_func(func, df):
-#         with localconverter(ro.default_converter + pandas2ri.converter):
-#             df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
-#         func_r_res = func(dat=df_r)  # Invoke R function and get the result
-#         df_result = pandas2ri.rpy2py(func_r_res).reset_index(drop=True)  # Convert back to a pandas.DataFrame.
-#         return df_result
-#     if contents is None or not all(dataselectors):
-#         data = GLOBAL_DATA['net_data']
-#         GLOBAL_DATA['user_elements'] = get_network(df=data)
-#         elements = get_network(df=data[data.year <= slider_year])
-#     else:
-#         data = parse_contents(contents, filename)
-#         var_dict = dict()
-#         if search_value_format == 'long':
-#             if search_value_outcome1 == 'continuous':
-#                 studlab, treat, rob, TE, seTE, n = dataselectors
-#                 var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', TE: 'TE', seTE: 'seTE', n: 'n'}
-#             elif search_value_outcome1 == 'binary':
-#                 studlab, treat, rob, r, n = dataselectors
-#                 var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', r: 'r', n: 'n'}
-#         elif search_value_format == 'contrast':
-#             if search_value_outcome1 == 'continuous':
-#                 studlab, treat1, treat2, n1, n2, rob, TE1, seTE1, TE2, seTE2 = dataselectors
-#                 var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', n1: 'n1', n2: 'n2',
-#                             rob: 'rob', TE1: 'TE1', seTE1: 'seTE1', TE2: 'TE2', seTE2: 'seTE2'}
-#             elif search_value_outcome1 == 'binary':
-#                 studlab, treat1, treat2, n1, n2, rob, r1, r2 = dataselectors
-#                 var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', n1: 'n1', n2: 'n2',
-#                             rob: 'rob', r1: 'r1', r2: 'r2'}
-#         data.rename(columns=var_dict, inplace=True)
-#
-#         if 'rob' not in GLOBAL_DATA['net_data'].select_dtypes(
-#                 include=['int16', 'int32', 'int64', 'float16', 'float32', 'float64']).columns:
-#             if any(GLOBAL_DATA['net_data']['rob'].str.contains('l|m|h')):
-#                 GLOBAL_DATA['net_data']['rob'].replace({'l': 1, 'm': 2, 'h': 3}, inplace=True)
-#             elif any(GLOBAL_DATA['net_data']['rob'].str.contains('L|M|H')):
-#                 GLOBAL_DATA['net_data']['rob'].replace({'L': 1, 'M': 2, 'H': 3}, inplace=True)
-#         else:
-#             pass
-#         #GLOBAL_DATA['net_data']['TE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[0]
-#         #GLOBAL_DATA['net_data']['seTE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[1]
-#         OPTIONS_VAR = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
-#         GLOBAL_DATA['net_data'] = data = data.loc[:, ~data.columns.str.contains('^Unnamed')]  # Remove unnamed columns
-#         data['type_outcome1'] = search_value_outcome1
-#         #data['search_value_outcome2'] = search_value_outcome2 if search_value_outcome2
-#
-#         elements = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
-#         GLOBAL_DATA['forest_data'] = apply_r_func(func=run_NetMeta_r, df=data)
-#         GLOBAL_DATA['forest_data_pairwise'] = apply_r_func(func=pairwise_forest_r, df=data)
-#         leaguetable_r  = apply_r_func(func=league_table_r, df=data)
-#         replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
-#         leaguetable = pd.DataFrame([[replace_and_strip(col) for col in list(row)]
-#                                      for idx, row in leaguetable_r.iterrows()], columns=leaguetable_r.columns, index=leaguetable_r.index)
-#         leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
-#         leaguetable = leaguetable.reset_index().rename(columns={'index':'Treatments'})
-#         GLOBAL_DATA['league_table_data'] = leaguetable
-#     if filename is not None:
-#         return data.to_json(orient='split'), elements, f'{filename}'
-#     else:
-#         return data.to_json(orient='split'), elements, 'No file added'
-#     # def save_file(name, content):
-#     #     data = content.encode("utf8").split(b";base64,")[1]
-#     #     with open(os.path.join(UPLOAD_DIRECTORY, name), "wb") as fp:
-#     #         fp.write(base64.decodebytes(data))
-#     #
-#     # if filename is not None and contents is not None:
-#     #     for name, data in zip(filename, contents):
-#     #         save_file(name, data)
-#     # files = uploaded_files()
-#     # if len(files) == 0:
-#     #     return [html.Li("No files yet!")]
-#     # else:
-#     #     file_string = [html.Li(file_download_link(filename)) for filename in files]
-
-
-### ----- 2nd version: upload main data file ------ ###
 @app.callback([Output('__storage_netdata', 'children'),
                Output('cytoscape', 'elements'),
                Output("file-list", "children")],
               [Input('datatable-upload', 'contents'),
+               Input({'type': 'dataselectors', 'index': ALL}, 'value'),
+               Input("dropdown-format", "value"),
+               Input("dropdown-outcome1", "value"),
+               Input("dropdown-outcome2", "value"),
                Input('slider-year', 'value')
                ],
               [State('datatable-upload', 'filename')]
               )
-def get_new_data(contents, slider_year, filename):
-    if contents:
-        GLOBAL_DATA['new_data_upload'] = parse_contents(contents, filename)
-    data = GLOBAL_DATA['net_data']
-    GLOBAL_DATA['user_elements'] = get_network(df=data)
-    elements = get_network(df=data[data.year <= slider_year])
+def get_new_data(contents, dataselectors, search_value_format, search_value_outcome1, search_value_outcome2, slider_year, filename):
+    def apply_r_func(func, df):
+        with localconverter(ro.default_converter + pandas2ri.converter):
+            df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
+        func_r_res = func(dat=df_r)  # Invoke R function and get the result
+        df_result = pandas2ri.rpy2py(func_r_res).reset_index(drop=True)  # Convert back to a pandas.DataFrame.
+        return df_result
+    if contents is None or not all(dataselectors):
+        data = GLOBAL_DATA['net_data']
+        GLOBAL_DATA['user_elements'] = get_network(df=data)
+        elements = get_network(df=data[data.year <= slider_year])
+    else:
+        data = parse_contents(contents, filename)
+        var_dict = dict()
+        if search_value_format == 'long':
+            if search_value_outcome1 == 'continuous':
+                studlab, treat, rob, TE, seTE, n = dataselectors
+                var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', TE: 'TE', seTE: 'seTE', n: 'n'}
+            elif search_value_outcome1 == 'binary':
+                studlab, treat, rob, r, n = dataselectors
+                var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', r: 'r', n: 'n'}
+        elif search_value_format == 'contrast':
+            if search_value_outcome1 == 'continuous':
+                studlab, treat1, treat2, n1, n2, rob, TE1, seTE1, TE2, seTE2 = dataselectors
+                var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', n1: 'n1', n2: 'n2',
+                            rob: 'rob', TE1: 'TE1', seTE1: 'seTE1', TE2: 'TE2', seTE2: 'seTE2'}
+            elif search_value_outcome1 == 'binary':
+                studlab, treat1, treat2, n1, n2, rob, r1, r2 = dataselectors
+                var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', n1: 'n1', n2: 'n2',
+                            rob: 'rob', r1: 'r1', r2: 'r2'}
+        data.rename(columns=var_dict, inplace=True)
 
+        if 'rob' not in GLOBAL_DATA['net_data'].select_dtypes(
+                include=['int16', 'int32', 'int64', 'float16', 'float32', 'float64']).columns:
+            if any(GLOBAL_DATA['net_data']['rob'].str.contains('l|m|h')):
+                GLOBAL_DATA['net_data']['rob'].replace({'l': 1, 'm': 2, 'h': 3}, inplace=True)
+            elif any(GLOBAL_DATA['net_data']['rob'].str.contains('L|M|H')):
+                GLOBAL_DATA['net_data']['rob'].replace({'L': 1, 'M': 2, 'H': 3}, inplace=True)
+        else:
+            pass
+        #GLOBAL_DATA['net_data']['TE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[0]
+        #GLOBAL_DATA['net_data']['seTE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[1]
+        OPTIONS_VAR = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
+        GLOBAL_DATA['net_data'] = data = data.loc[:, ~data.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+        data['type_outcome1'] = search_value_outcome1
+        #data['search_value_outcome2'] = search_value_outcome2 if search_value_outcome2
+        elements = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
+
+        GLOBAL_DATA['forest_data'] = apply_r_func(func=run_NetMeta_r, df=data)
+        GLOBAL_DATA['forest_data_pairwise'] = apply_r_func(func=pairwise_forest_r, df=data)
+        leaguetable_r  = apply_r_func(func=league_table_r, df=data)
+        replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
+        leaguetable = pd.DataFrame([[replace_and_strip(col) for col in list(row)]
+                                     for idx, row in leaguetable_r.iterrows()], columns=leaguetable_r.columns, index=leaguetable_r.index)
+        leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
+        leaguetable = leaguetable.reset_index().rename(columns={'index':'Treatments'})
+        GLOBAL_DATA['league_table_data'] = leaguetable
     if filename is not None:
-        return data.to_json(orient='split'), elements, f'{filename}'  # TODO: remove filename frorm here
+        return data.to_json(orient='split'), elements, f'{filename}'
     else:
         return data.to_json(orient='split'), elements, 'No file added'
 
-    # def save_file(name, content):
-    #     data = content.encode("utf8").split(b";base64,")[1]
-    #     with open(os.path.join(UPLOAD_DIRECTORY, name), "wb") as fp:
-    #         fp.write(base64.decodebytes(data))
-    #
-    # if filename is not None and contents is not None:
-    #     for name, data in zip(filename, contents):
-    #         save_file(name, data)
-    # files = uploaded_files()
-    # if len(files) == 0:
-    #     return [html.Li("No files yet!")]
-    # else:
-    #     file_string = [html.Li(file_download_link(filename)) for filename in files]
+# @app.callback([Output('__storage_netdata', 'children'),
+#                Output('cytoscape', 'elements'),
+#                Output("file-list", "children")],
+#               [Input('datatable-upload', 'contents'),
+#                Input('slider-year', 'value'),
+#                ],
+#               [State('datatable-upload', 'filename')]
+#               )
+# def get_new_data(contents, slider_year, filename):
+#     if contents:
+#         GLOBAL_DATA['new_data_upload'] = parse_contents(contents, filename)
+#
+#     data = GLOBAL_DATA['net_data']
+#     GLOBAL_DATA['user_elements'] = get_network(df=data)
+#     elements = get_network(df=data[data.year <= slider_year])
+#
+#     if filename is not None:
+#         return data.to_json(orient='split'), elements, f'{filename}'  # TODO: remove filename frorm here
+#     else:
+#         return data.to_json(orient='split'), elements, 'No file added'
 
 
-### ----- upload CINeMA data file ------ ###
-@app.callback([Output('__storage_netdata_cinema', 'children'), Output("file2-list", "children")],
+### ----- upload CINeMA data file 1 ------ ###
+@app.callback([Output('__storage_netdata_cinema1', 'children'),
+               Output("file2-list", "children")],
               [Input('datatable-secondfile-upload', 'contents')],
               [State('datatable-secondfile-upload', 'filename')])
 def get_new_data_cinema(contents, filename):
     if contents is None:
-        data = GLOBAL_DATA['cinema_net_data']
+        data1 = GLOBAL_DATA['cinema_net_data1']
     else:
-        data = parse_contents(contents, filename)
-        GLOBAL_DATA['cinema_net_data'] = data = data.loc[:,
-                                                ~data.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+        data1 = parse_contents(contents, filename)
+        GLOBAL_DATA['cinema_net_data1'] = data1 = data1.loc[:,data1.columns.str.contains('^Unnamed')]  # Remove unnamed columns
     if filename is not None:
-        return data.to_json(orient='split'), f'{filename}'
+        return data1.to_json(orient='split'), 'loaded' #f'{filename}'
     else:
-        return data.to_json(orient='split'), 'No file added'
+        return data1.to_json(orient='split'), ''
 
+### ----- upload CINeMA data files ------ ###
+@app.callback([Output('__storage_netdata_cinema2', 'children'), Output("file2-list-2", "children")],
+              [ Input('datatable-secondfile-upload-2', 'contents')],
+              [State('datatable-secondfile-upload-2', 'filename')])
+def get_new_data_cinema(contents, filename):
+    if contents is None:
+        data2 = GLOBAL_DATA['cinema_net_data2']
+    else:
+        data2 = parse_contents(contents, filename)
+        GLOBAL_DATA['cinema_net_data2'] = data2 = data2.loc[:, data2.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+    if filename is not None:
+        return data2.to_json(orient='split'), 'loaded' #f'{filename}'
+    else:
+        return data2.to_json(orient='split'), ''
 
 ### ----- display Data Table and League Table ------ ###
 @app.callback([Output('datatable-upload-container', 'data'),
@@ -777,18 +772,17 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
             .pivot_table(index='treat1', columns='treat2', values='rob')
             .reindex(index=treatments, columns=treatments, fill_value=np.nan))
     if toggle_cinema:
-        confidence_map = {k: n for n, k in enumerate(['very low', 'low', 'medium', 'high'])}
-        # GLOBAL_DATA['league_table_data']
-        comparisons = GLOBAL_DATA['cinema_net_data'].Comparison.str.split(':', expand=True)
-        confidence = GLOBAL_DATA['cinema_net_data']['Confidence rating'].str.lower().map(confidence_map)
+        confidence_map = {k: n for n, k in enumerate(['very low', 'low', 'moderate', 'high'])}
+        comparisons = GLOBAL_DATA['cinema_net_data1'].Comparison.str.split(':', expand=True)
+        confidence1 = GLOBAL_DATA['cinema_net_data1']['Confidence rating'].str.lower().map(confidence_map)
+        confidence2 = GLOBAL_DATA['cinema_net_data2']['Confidence rating'].str.lower().map(confidence_map)
         comprs_conf_ut = comparisons.copy()  # Upper triangle
         comparisons.columns = [1, 0]  # To get lower triangle
         comprs_conf_lt = comparisons[[0, 1]]  # Lower triangle
-        comprs_conf_ut['Confidence'] = confidence
-        comprs_conf_lt['Confidence'] = confidence
+        comprs_conf_lt['Confidence'] = confidence1
+        comprs_conf_ut['Confidence'] = confidence2
         comprs_conf = pd.concat([comprs_conf_ut, comprs_conf_lt])
         comprs_conf = comprs_conf.pivot_table(index=0, columns=1, values='Confidence')
-
         robs = comprs_conf
 
     # Filter according to cytoscape selection
@@ -826,18 +820,18 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
     df_max, df_min = leaguetable_colr.max().max(), leaguetable_colr.min().min()
     ranges = (df_max - df_min) * bounds + df_min
     ranges[-1] *= 1.001
-    styles = []
+    league_table_styles = []
     for treat_c in treatments:
         for treat_r in treatments:
             rob = robs.loc[treat_r, treat_c]
             indxs = np.where(rob < ranges)[0] if rob == rob else [0]
             clr_indx = indxs[0] - 1 if len(indxs) else 0
             diag, empty = treat_r == treat_c, rob != rob
-            styles.append({'if': {'filter_query': f'{{Treatment}} = {{{treat_r}}}',
+            league_table_styles.append({'if': {'filter_query': f'{{Treatment}} = {{{treat_r}}}',
                                   'column_id': treat_c},
                            'backgroundColor': cmap[clr_indx] if not empty else '#40515e',
                            'color': 'rgb(26, 36, 43)' if not empty else '#d6d6d6' if diag else 'white'})
-    styles.append({'if': {'column_id': 'Treatment'},
+    league_table_styles.append({'if': {'column_id': 'Treatment'},
                    'backgroundColor': 'rgb(26, 36, 43)'})
 
     # Prepare for output
@@ -855,9 +849,9 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
     data_cols = [{"name": c, "id": c} for c in data.columns]
     data.year = data.year
     data_output = data[data.year <= slider_value].to_dict('records')
-    league_table_styles = {'output': {'overflow-y': 'scroll', 'overflow-wrap': 'break-word',
-                                      'height': 'calc(100% - 25px)', 'border': 'thin lightgrey solid'},
-                           'tab': {'height': 'calc(98vh - 115px)'}}
+    # league_table_styles = {'output': {'overflow-y': 'scroll', 'overflow-wrap': 'break-word',
+    #                                   'height': 'calc(100% - 25px)', 'border': 'thin lightgrey solid'},
+    #                        'tab': {'height': 'calc(98vh - 115px)'}}
     league_table = build_league_table(leaguetable, leaguetable_cols, league_table_styles, tips)
     league_table_modal = build_league_table(leaguetable, leaguetable_cols, league_table_styles, tips, modal=True)
     return [data_output, data_cols] * 2 + [league_table, league_table_modal] + [legend] * 2 + [toggle_cinema,
@@ -870,9 +864,12 @@ def build_league_table(data, columns, style_data_conditional, tips, modal=False)
                                             'border': '1px solid #5d6d95',
                                             'font-family': 'sans-serif',
                                             'fontSize': 11,
+                                            'minWidth': '55px',
                                             'textAlign': 'center',
                                             'whiteSpace': 'pre-line',  # 'inherit', nowrap
                                             'textOverflow': 'string'},  # 'ellipsis'
+                                fixed_columns={'headers': True, 'data': 1},
+                                fixed_rows={'headers': True, 'data': 0},
                                 data=data,
                                 columns=columns,
                                 # export_format="csv", #xlsx
@@ -900,6 +897,7 @@ def build_league_table(data, columns, style_data_conditional, tips, modal=False)
                                     'overflowX': 'scroll',
                                     'overflowY': 'scroll',
                                     'height': '90%',
+                                    'minWidth': '100%',
                                     'max-height': 'calc(70vh)',
                                     'width': '99%',
                                     'margin-top': '10px',
@@ -984,9 +982,10 @@ def update_boxplot(value, edges):
                       )
 
     fig.update_xaxes(ticks="outside", tickwidth=1, tickcolor='black', ticklen=5, tickmode='linear',
-                     showline=True, linecolor='black', type="category", autorange=True)  # tickangle=30,
+                     autorange=True,
+                     showline=True, linecolor='black', type="category")  # tickangle=30,
 
-    fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='black',
+    fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='black', autorange=True,
                      showline=True, linecolor='black', zeroline=False)
 
     if not any(value):
@@ -1067,7 +1066,7 @@ def update_forest_pairwise(edge):
                          showgrid=False,
                          tickcolor='rgba(0,0,0,0)',
                          linecolor='rgba(0,0,0,0)',
-                         linewidth=2,
+                         linewidth=1,
                          zeroline=True, zerolinecolor='black', zerolinewidth=1),
 
         fig.update_layout(modebar= dict(orientation = 'h', bgcolor = 'rgba(0,0,0,0)'),
@@ -1078,11 +1077,12 @@ def update_forest_pairwise(edge):
         fig.add_trace(go.Scatter(x=romb(center, width)['x'], y=romb(center, width)['y'],
                                  fill="toself", mode="lines", line=dict(color='black'), fillcolor='#1f77b4'),
                       secondary_y=True)
+
         fig.update_yaxes(range=[-.3, 1 + df.studlab.shape[0]],
                          tickfont=dict(color='rgba(0,0,0,0)'),
                          tickcolor='rgba(0,0,0,0)',
                          linecolor='rgba(0,0,0,0)',
-                         secondary_y=True,
+                         secondary_y=True, linewidth=1,
                          row=1, col=1, zeroline=False)
         fig.add_vline(
             x=center, line_width=1, line_dash='dash', line_color='black' )
@@ -1090,8 +1090,8 @@ def update_forest_pairwise(edge):
         fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5,
                          tickvals=[0.1, 0.5, 1, 5] if xlog else None,
                          ticktext=[0.1, 0.5, 1, 5] if xlog else None,
-                         range=[0.1, 1] if xlog else None,
-                         autorange=True, showline=True, linewidth=2, linecolor='black',
+                         range=[0.1, 1] if xlog else None, zerolinewidth=1,
+                         autorange=True, showline=True, linewidth=1, linecolor='black',
                          zeroline=True, zerolinecolor='black')
 
     else:
@@ -1234,12 +1234,9 @@ def toggle_modal(open_t, close):
               )
 def data_modal(open, submit, is_open, dataselectors, data):
     if open:  # TODO: doesn't make sense given new inputs - but worrks anyways. Consider fixing when have time
-        print('a')
         if submit:
-            print("Submit button pressed - closing modal")
             new_df = GLOBAL_DATA['new_data_upload']
-            print(new_df)
-            # do your stuff  -> TODO: rename column variables and rrershape if needed (contrast/long)
+            # do your stuff  -> TODO: rename column variables and reshape if needed (contrast/long)
             # data.to_json(orient='split').round(3)
             # data = pd.read_json(data, orient='split')
             # print(data)

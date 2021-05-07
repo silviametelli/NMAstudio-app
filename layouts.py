@@ -14,7 +14,8 @@ def home_layout(GLOBAL_DATA):
     return html.Div(className="app__container", children=[
                         ### STORAGE DATA
                         html.Div(id='__storage_netdata', style={'display': 'none'}),
-                        html.Div(id='__storage_netdata_cinema', style={'display': 'none'}),
+                        html.Div(id='__storage_netdata_cinema1', style={'display': 'none'}),
+                        html.Div(id='__storage_netdata_cinema2', style={'display': 'none'}),
 
                         html.Div(
                           id='main_page',
@@ -108,16 +109,35 @@ def Homepage(GLOBAL_DATA):
     return html.Div([Navbar(), home_layout(GLOBAL_DATA)])
 ############################################  DOCUMENTATION PAGE  #######################################################
 
-doc_layout = html.Div([Navbar(), html.Br(),  html.Br(),
+doc_layout = html.Div([Navbar(), html.Br(),  html.Br(), html.Br(),
+
+html.H1("NMAstudio (version 1.1)", style={'font-size':'20px', 'color':'white', 'padding-left':'3%',
+                                          'padding-right':'3%', 'font-family':'sans-serif'}),  html.Br(),
 
 dcc.Markdown('NMAstudio is a web application to produce and visualise interactive outputs from network meta-analyses',
              className="markdown_style"),
     html.Br(),
-        html.Div([dcc.Markdown("Download a pdf version with full documentation guidelines here", className="markdown_style",
-                               style={'margin-right':'10px', 'display':'inline-block'}),
-                       html.Button('Full documentation pdf', id='full-docu-pdf', style={'color':'white', 'display':'inline-block','padding':'4px'})
+    dcc.Markdown('NMAstudio is a Plotly Dash app written in Python, and linked to the  R-package netmeta for performing analysis of the data',
+                 className="markdown_style"),
+dcc.Markdown('G. Rücker, G. Schwarzer, U. Krahn, and J. König. netmeta: Network Meta-Analysis using Frequentist Methods, 2017'
+             ,className="markdown_style"),
+    dcc.Markdown('R package version 6.6.6. https://CRAN.R-project.org/package=netmeta', className="markdown_style"),
+                       html.Br(), html.Br(),
+
+# dcc.Markdown('The methods are described in',className="markdown_style"),
+#                        html.Br(), html.Br(),
+
+                       html.Div([dcc.Markdown("Please click the button beside to download a pdf copy of the NMAstudio User Guide:", className="markdown_style",
+                               style={'margin-right':'5px', 'display':'inline-block'}),
+                       html.Button('Download documentation', id='full-docu-pdf', style={'color':'white', 'display':'inline-block','padding':'4px'})
                     ]),
-     html.Br(), html.Br(),
-       dcc.Markdown('The full source code is available at [https://github.com/silviametelli/network-meta-analysis](https://github.com/silviametelli/network-meta-analysis)'
-                           , className="markdown_style"),
-                ])
+
+    html.Br(), html.Br(), html.Br(), html.Br(),
+    dcc.Markdown(
+        'The full source code is freely available at [https://github.com/silviametelli/network-meta-analysis](https://github.com/silviametelli/network-meta-analysis)'
+        , className="markdown_style"),
+
+
+
+                       ]),
+

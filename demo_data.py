@@ -5,7 +5,8 @@ from assets.effect_sizes import get_OR, get_RR, get_MD
 def get_demo_data():
     # Save default dataframes for demo use
     GLOBAL_DATA = {'net_data':             pd.read_csv('db/psoriasis_wide.csv'),
-                   'cinema_net_data':      pd.read_csv('db/Cinema/PASI90_cinema.csv'),
+                   'cinema_net_data1':     pd.read_csv('db/Cinema/cinema_report_PASI90.csv'),
+                   'cinema_net_data2':     pd.read_csv('db/Cinema/cinema_report_SAE.csv'),
                    'forest_data':          pd.read_csv('db/forest_data/forest_data.csv'),
                    'forest_data_pairwise': pd.read_csv('db/forest_data/forest_data_pairwise.csv'),
                    'forest_data_outcome2': pd.read_csv('db/forest_data/forest_data_outcome2.csv'),

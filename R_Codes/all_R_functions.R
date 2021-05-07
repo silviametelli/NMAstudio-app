@@ -74,12 +74,15 @@ league_rank <- function(dat){
     if(dat$type_outcome2[1]=="continuous"){sm2 <- "MD"}else{sm2 <- "RR"}
     nma_secondary <- netmeta(TE=dat2$TE2, seTE=dat2$seTE2,
                              treat1=dat2$treat1, treat2=dat2$treat2,
-                             studlab=dat2$studlab,
-                             sm = sm2,
+                             studlab=dat2$studlab, sm = sm2,
                              comb.random = TRUE, backtransf = TRUE,
                              reference.group = dat2$treat2[1])
     # - network estimates of first outcome in lower triangle, second outcome in upper triangle
-    netleague_table <- netleague(nma_primary, nma_secondary, digits = 2, bracket="(",
+    if(length(sort(nma_primary$trts))>length(sort(nma_secondary$trts))){
+      sortedseq <- sort(nma_primary$trts)}else{sortedseq <- sort(nma_secondary$trts)}
+    netleague_table <- netleague(nma_primary, nma_secondary, digits = 2,
+                                 seq = sortedseq,
+                                 bracket="(",
                                  backtransf = TRUE, ci = TRUE, separator=',')
     #p-scores
     outcomes <- c("Outcome1", "Outcome2")
@@ -92,7 +95,9 @@ league_rank <- function(dat){
     rank <- merge(r1, r2, by = "treatment", all.x = TRUE)
     colnames(rank)  <-  c("treatment", "pscore")
   }else{
-    netleague_table <- netleague(nma_primary, digits = 2, bracket="(",
+    netleague_table <- netleague(nma_primary, digits = 2,
+                                 seq = sort(nma_primary$trts),
+                                 bracket="(",
                                  backtransf = TRUE, ci = TRUE, separator=',')
     #p-scores
     outcomes <- c("Outcome1")

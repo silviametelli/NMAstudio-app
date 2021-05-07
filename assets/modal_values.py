@@ -79,11 +79,14 @@ modal_data_table = dbc.Modal([
                                   dash_table.DataTable(
                                       id='datatable-upload-container-expanded',
                                       editable=False,
+                                      #fixed_columns={'headers': True, 'data': 1},
+                                      fixed_rows={'headers': True, 'data': 0},
                                       style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
                                                   'color': 'white',
                                                   'border': '1px solid #5d6d95',
                                                   'font-family': 'sans-serif',
                                                   'fontSize': 11,
+                                                  'minWidth': '55px',
                                                   'textAlign': 'center',
                                                   'whiteSpace': 'pre-line',  # 'inherit', nowrap
                                                   'textOverflow': 'ellipsis'
@@ -102,6 +105,7 @@ modal_data_table = dbc.Modal([
                                                    'height': '90%',
                                                    'max-height': 'calc(70vh)',
                                                    'width': '99%',
+                                                   'minWidth': '100%',
                                                    'margin-top': '10px',
                                                    'padding': '5px 5px 5px 5px'},
                                       css=[{'selector': 'tr:hover',
@@ -122,21 +126,25 @@ modal_data_table = dbc.Modal([
 
 
 modal_league_table = dbc.Modal([
-                     dbc.ModalHeader([dbc.Row([html.Div("League Table", style={'display': 'inline-block'}),
-                                               html.Div([html.P("Risk of Bias", id='cinemaswitchlabel1_modal',
-                                                                  style={'display': 'inline-block', 'margin': 'auto',
-                                                                         'font-size': '12px', 'padding-left': '10px'}),
-                                                        daq.ToggleSwitch(id='rob_vs_cinema_modal',
-                                                                         color='', size=30,
-                                                                         labelPosition="bottom",
-                                                                         style={'display': 'inline-block',
-                                                                                'margin': 'auto',
-                                                                                'padding-left': '10px', 'padding-right': '10px'}),
-                                                        html.P('CINeMA rating', id='cinemaswitchlabel2_modal',
-                                                                style={'display': 'inline-block', 'margin': 'auto',
-                                                                       'font-size': '12px', 'padding-right': '0px'})],
-                                                        className='inrow_style_2') # Closes Div
-                                              ],style={'width': '100%', "max-width": "none"}) # Closes Row
+                     dbc.ModalHeader([html.Div("League Table", style={'display': 'inline-block'}),
+                                      html.Div([html.P("Risk of Bias", id='cinemaswitchlabel1_modal',
+                                                       style={'display': 'inline-block',
+                                                              'font-size': '12px',
+                                                              'padding-left': '10px'}),
+                                                daq.ToggleSwitch(id='rob_vs_cinema_modal',
+                                                                 color='', size=30,
+                                                                 labelPosition="bottom",
+                                                                 style={'display': 'inline-block',
+                                                                        'margin': 'auto',
+                                                                        'padding-left': '10px',
+                                                                        'padding-right': '10px'}),
+                                                html.P('CINeMA rating', id='cinemaswitchlabel2_modal',
+                                                       style={'display': 'inline-block', 'margin': 'auto',
+                                                              'font-size': '12px',
+                                                              'padding-right': '0px'})
+                                                ], style={'float': 'right', 'padding': '5px 5px 5px 5px',
+                                                          'display': 'inline-block', 'margin-top': '0px'}),
+                                      html.Br(),
                                       ], style={'width': '100%', "max-width": "none"}), # Closes Header
                      dbc.ModalBody([html.Div(id='league-expand-body'),
                                     html.Div(id='modal_league_table_legend',

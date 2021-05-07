@@ -43,7 +43,7 @@ tab_forests = dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persisten
                                                                'padding-right': '15px'})
                                              ], style={'flex-grow': '1', 'justify-content': 'flex-end',
                                                        'display': 'flex', 'margin-left': '80%',
-                                                       'font-size': '0.8em', 'margin-top': '-1.5%'},
+                                                       'font-size': '0.8em', 'margin-top': '-2.5%'},
                                              ),
                                      dcc.Loading(
                                              dcc.Graph(

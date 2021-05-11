@@ -340,7 +340,8 @@ def TapNodeData_fig(data, outcome_direction):
         treatment = data[0]['label']
         df = GLOBAL_DATA['forest_data'][GLOBAL_DATA['forest_data'].Reference == treatment].copy()
         effect_size = df.columns[1]
-        df['Treatment'] += ' ' * 15
+        tau2 = round(df['tau2'].iloc[1], 2)
+        df['Treatment'] += ' ' * 23
         df['CI_width'] = df.CI_upper - df.CI_lower
         df['lower_error'] = df[effect_size] - df.CI_lower
         df['CI_width_hf'] = df['CI_width'] / 2
@@ -364,6 +365,7 @@ def TapNodeData_fig(data, outcome_direction):
                      log_x=xlog,
                      size_max=10,
                      range_x=[min(low_rng, 0.1), max([up_rng, 10])] if xlog else None,
+                     range_y=[-1, len(df.Treatment)],
                      size=df.WEIGHT if data else None)
 
     fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
@@ -417,9 +419,13 @@ def TapNodeData_fig(data, outcome_direction):
                                             xref='x', yref='paper',
                                             text=f'Favours {treatment}'if outcome_direction else 'Favours treatment',
                                             showarrow=False),
-                                       dict(x=-0.37, y=1.013, align='center',
+                                       dict(x=-0.47, y=1.03, align='center',
                                             xref='paper', yref='paper',
                                             text='<b>Treatment</b>',
+                                            showarrow=False),
+                                       dict(x=-0.52, y=-0.033, align='center',
+                                            xref='paper', yref='paper',
+                                            text='<b>RE model:</b> ' u"\u03C4" '<sup>2</sup>=' f'{tau2}',
                                             showarrow=False),
                                  ]
                           )
@@ -433,7 +439,7 @@ def TapNodeData_fig(data, outcome_direction):
         fig.update_layout(
             autosize=True,
             yaxis2=dict(tickvals = [*range(df.shape[0])],
-                        ticktext=[' '*15 + '{:.2f}   {:<15}'.format(x,y)
+                        ticktext=[' '*8 + '{:.2f}   {:<17}'.format(x,y)
                                   for x, y in zip(df[effect_size].values, df['CI'].values)],
                         showgrid=False,  zeroline=False,
                         titlefont=dict(color='black'),
@@ -444,13 +450,13 @@ def TapNodeData_fig(data, outcome_direction):
                         side="right"),
         ),
 
-        fig.add_annotation(x=1.27, y=1.03, align='center',
+        fig.add_annotation(x=1.19, y=1.03, align='center',
              xref='paper', yref='y domain',
              text=f'<b>{effect_size}</b>',
              showarrow=False)
 
 
-        fig.add_annotation(x=1.5, y=1.03, align='center',
+        fig.add_annotation(x=1.44, y=1.03, align='center',
                            xref='paper', yref='y2 domain',
                            text='<b>95% CI</b>',
                            showarrow=False)
@@ -718,22 +724,24 @@ def get_new_data_cinema(contents, filename):
         data1 = GLOBAL_DATA['cinema_net_data1']
     else:
         data1 = parse_contents(contents, filename)
-        GLOBAL_DATA['cinema_net_data1'] = data1 = data1.loc[:,data1.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+        GLOBAL_DATA['cinema_net_data1'] = data1 #= data1.loc[:,data1.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+        print(GLOBAL_DATA['cinema_net_data1'])
     if filename is not None:
         return data1.to_json(orient='split'), 'loaded' #f'{filename}'
     else:
         return data1.to_json(orient='split'), ''
 
-### ----- upload CINeMA data files ------ ###
-@app.callback([Output('__storage_netdata_cinema2', 'children'), Output("file2-list-2", "children")],
-              [ Input('datatable-secondfile-upload-2', 'contents')],
+### ----- upload CINeMA data file 2 ------ ###
+@app.callback([Output('__storage_netdata_cinema2', 'children'),
+               Output("file2-list-2", "children")],
+              [Input('datatable-secondfile-upload-2', 'contents')],
               [State('datatable-secondfile-upload-2', 'filename')])
 def get_new_data_cinema(contents, filename):
     if contents is None:
         data2 = GLOBAL_DATA['cinema_net_data2']
     else:
         data2 = parse_contents(contents, filename)
-        GLOBAL_DATA['cinema_net_data2'] = data2 = data2.loc[:, data2.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+        GLOBAL_DATA['cinema_net_data2'] = data2 #= data2.loc[:, data2.columns.str.contains('^Unnamed')]  # Remove unnamed columns
     if filename is not None:
         return data2.to_json(orient='split'), 'loaded' #f'{filename}'
     else:
@@ -756,8 +764,9 @@ def get_new_data_cinema(contents, filename):
                Input('cytoscape', 'selectedEdgeData'),
                Input('rob_vs_cinema', 'value'),
                Input('rob_vs_cinema_modal', 'value'),
-               Input('slider-year', 'value')
-               ])
+               Input('slider-year', 'value'),
+               #Input('datatable-secondfile-upload-2', 'contents')
+                ])
 def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value):
     triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
     if 'rob_vs_cinema.value' in triggered:
@@ -767,15 +776,17 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
 
     data = pd.read_json(data, orient='split').round(3)
     leaguetable = GLOBAL_DATA['league_table_data'].copy(deep=True)
+    confidence_map = {k: n for n, k in enumerate(['low', 'medium', 'high'])}
     treatments = np.unique(data[['treat1', 'treat2']].dropna().values.flatten())
     robs = (data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
             .pivot_table(index='treat1', columns='treat2', values='rob')
             .reindex(index=treatments, columns=treatments, fill_value=np.nan))
+
     if toggle_cinema:
         confidence_map = {k: n for n, k in enumerate(['very low', 'low', 'moderate', 'high'])}
         comparisons = GLOBAL_DATA['cinema_net_data1'].Comparison.str.split(':', expand=True)
         confidence1 = GLOBAL_DATA['cinema_net_data1']['Confidence rating'].str.lower().map(confidence_map)
-        confidence2 = GLOBAL_DATA['cinema_net_data2']['Confidence rating'].str.lower().map(confidence_map)
+        confidence2 = GLOBAL_DATA['cinema_net_data2']['Confidence rating'].str.lower().map(confidence_map) #if content2 is not None else confidence1
         comprs_conf_ut = comparisons.copy()  # Upper triangle
         comparisons.columns = [1, 0]  # To get lower triangle
         comprs_conf_lt = comparisons[[0, 1]]  # Lower triangle
@@ -784,7 +795,6 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
         comprs_conf = pd.concat([comprs_conf_ut, comprs_conf_lt])
         comprs_conf = comprs_conf.pivot_table(index=0, columns=1, values='Confidence')
         robs = comprs_conf
-
     # Filter according to cytoscape selection
     if store_node:
         slctd_trmnts = [nd['id'] for nd in store_node]
@@ -817,7 +827,8 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
                             style={'paddingLeft': '2px', 'color': 'white'})])
                for n in range(N_BINS)]
 
-    df_max, df_min = leaguetable_colr.max().max(), leaguetable_colr.min().min()
+    #df_max, df_min = leaguetable_colr.max().max(), leaguetable_colr.min().min()
+    df_max, df_min = max(confidence_map.values()), min(confidence_map.values())
     ranges = (df_max - df_min) * bounds + df_min
     ranges[-1] *= 1.001
     league_table_styles = []
@@ -840,6 +851,15 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
     leaguetable_cols = [{"name": c, "id": c} for c in leaguetable.columns]
     leaguetable = leaguetable.to_dict('records')
 
+    tooltip_values = [{col['id']: {'value': f"**Average ROB:** {tip[col['id']]}",
+                                   'type': 'markdown'} if col['id'] != 'Treatment' else None
+                           for col in leaguetable_cols} for rn, (_, tip) in enumerate(tips.iterrows())]
+    if toggle_cinema:
+        tooltip_values = [{col['id']: {'value': f"**Average ROB:** {tip[col['id']]}\n\n**Reason for Downgrading:**",
+                                       'type': 'markdown'} if col['id'] != 'Treatment' else None
+                       for col in leaguetable_cols} for rn, (_, tip) in enumerate(tips.iterrows())]
+
+
     if store_edge or store_node:
         slctd_nods = {n['id'] for n in store_node} if store_node else set()
         slctd_edgs = [e['source'] + e['target'] for e in store_edge] if store_edge else []
@@ -852,13 +872,13 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
     # league_table_styles = {'output': {'overflow-y': 'scroll', 'overflow-wrap': 'break-word',
     #                                   'height': 'calc(100% - 25px)', 'border': 'thin lightgrey solid'},
     #                        'tab': {'height': 'calc(98vh - 115px)'}}
-    league_table = build_league_table(leaguetable, leaguetable_cols, league_table_styles, tips)
-    league_table_modal = build_league_table(leaguetable, leaguetable_cols, league_table_styles, tips, modal=True)
+    league_table = build_league_table(leaguetable, leaguetable_cols, league_table_styles, tooltip_values)
+    league_table_modal = build_league_table(leaguetable, leaguetable_cols, league_table_styles, tooltip_values, modal=True)
     return [data_output, data_cols] * 2 + [league_table, league_table_modal] + [legend] * 2 + [toggle_cinema,
                                                                                                toggle_cinema_modal]
 
+def build_league_table(data, columns, style_data_conditional, tooltip_values, modal=False):
 
-def build_league_table(data, columns, style_data_conditional, tips, modal=False):
     return dash_table.DataTable(style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
                                             'color': 'white',
                                             'border': '1px solid #5d6d95',
@@ -868,19 +888,12 @@ def build_league_table(data, columns, style_data_conditional, tips, modal=False)
                                             'textAlign': 'center',
                                             'whiteSpace': 'pre-line',  # 'inherit', nowrap
                                             'textOverflow': 'string'},  # 'ellipsis'
-                                fixed_columns={'headers': True, 'data': 1},
                                 fixed_rows={'headers': True, 'data': 0},
                                 data=data,
                                 columns=columns,
                                 # export_format="csv", #xlsx
                                 # state='active',
-                                tooltip_data=[
-                                    {col['id']: {
-                                        'value': f"**Average ROB:** {tip[col['id']]}\n\n**Reason for Downgrading:**",
-                                        'type': 'markdown'} if col['id'] != 'Treatment' else None
-                                     for col in columns
-                                     } for rn, (_, tip) in enumerate(tips.iterrows())
-                                ],
+                                tooltip_data= tooltip_values,
                                 tooltip_delay=200,
                                 tooltip_duration=None,
                                 style_data_conditional=style_data_conditional,
@@ -1011,7 +1024,7 @@ def update_boxplot(value, edges):
 @app.callback(Output('tapEdgeData-fig-pairwise', 'figure'),
               Input('cytoscape', 'selectedEdgeData'))
 def update_forest_pairwise(edge):
-    #### TODO : NEED DIAMOND FROM R PAIRWISE
+
     slctd_comps = []
     if edge:
         src, trgt = edge[0]['source'], edge[0]['target']
@@ -1019,11 +1032,19 @@ def update_forest_pairwise(edge):
         df = GLOBAL_DATA['forest_data_pairwise'].copy()
         df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
         df = df[df.Comparison.isin(slctd_comps)]
-        df['CI_width'] = df.CI_upper - df.CI_lower
-        df['CI_width_hf'] = df['CI_width'] / 2
+        df['studlab'] += ' ' * 10
         effect_size = df.columns[1]
+        tau2 = round(df['tau2'].iloc[0], 2)
+        I2 = round(df['I2'].iloc[0], 2)
+        df['CI_width'] = df.CI_upper - df.CI_lower
+        df['lower_error'] = df[effect_size] - df.CI_lower
+        df['CI_width_hf'] = df['CI_width'] / 2
         df['CI_width_diamond'] = df.CI_upper_diamond - df.CI_lower_diamond
+        df['WEIGHT'] = round(df['WEIGHT'], 3)
         df['CI_width_hf_diamond'] = df['CI_width_diamond'] / 2
+        CI_lower, CI_upper = df["CI_lower"].map('{:,.2f}'.format), df["CI_upper"].map('{:,.2f}'.format),
+        df['CI'] = '(' + CI_lower.astype(str) + ', ' + CI_upper.astype(str) + ')'
+        df = df.sort_values(by=effect_size, ascending=False)
         center = df['TE_diamond'].reset_index().TE_diamond[0]
         width = df['CI_width_diamond'].reset_index().CI_width_diamond[0]
 
@@ -1035,91 +1056,335 @@ def update_forest_pairwise(edge):
                                    "CI_upper", "CI_lower_diamond", "CI_upper_diamond", "WEIGHT"])
 
     xlog = effect_size in ('RR', 'OR')
+    up_rng, low_rng = df.CI_upper.max(), df.CI_lower.min()
+    up_rng = 10 ** np.floor(np.log10(up_rng)) if xlog else None
+    low_rng = 10 ** np.floor(np.log10(low_rng)) if xlog else None
 
-    # fig = px.scatter(df, x=effect_size, y="studlab",
-    #              error_x_minus='CI_lower' if xlog else None,
-    #              error_x='CI_width_hf' if edge else 'CI_width' if xlog else None,
-    #              log_x=xlog,
-    #              size=df.WEIGHT / 1.2 if edge else None)
-    # center = width = 0
+    # from plotly.subplots import make_subplots
+    # fig = make_subplots(
+    #     specs=[[{'seconday_y':True}]],
+    #     #rows=3, cols=1,
+    #     shared_xaxes=True,
+    #     vertical_spacing=0.0,
+    #     horizontal_spacing=0.0)
 
-    def romb(center, width, height=0.2):
-        return {'x': [center, center - width / 2, center, center + width / 2, center],
-                'y': [-height, 0, height, 0, -height]}
+    fig = px.scatter(df, x= df[effect_size], y= df.studlab,
+                       error_x_minus='lower_error' if xlog else None,
+                       error_x='CI_width_hf' if xlog else 'CI_width' if edge else None,
+                       log_x=xlog,
+                       size_max=10,
+                       range_x=[min(low_rng, 0.1), max([up_rng, 10])] if xlog else None,
+                       range_y=[-1,len(df.studlab)],
+                       size=df.WEIGHT if edge else None)
 
-    fig = go.Figure()
+    if xlog:
+        fig.add_shape(type='line', yref='paper', y0=0, y1=1, xref='x', x0=1, x1=1,
+                      line=dict(color="black", width=1), layer='below')
+
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
+                      plot_bgcolor='rgba(0,0,0,0)',
+                      modebar= dict(orientation = 'h', bgcolor = 'rgba(0,0,0,0)'),
+                      xaxis=dict(showgrid=False, tick0=0, title=''),
+                      yaxis=dict(showgrid=False, title=''),
+                      )
+
+    fig.update_yaxes(ticks="outside",
+                     type='category',
+                     showgrid=False,
+                     tickcolor='rgba(0,0,0,0)',
+                     linecolor='rgba(0,0,0,0)',
+                     linewidth=1,
+                     zeroline=True, zerolinecolor='black', zerolinewidth=1),
+
+    fig.update_xaxes(ticks="outside",
+                     showgrid=False,
+                     autorange=True, showline=True,
+                     tickcolor='rgba(0,0,0,0)',
+                     linecolor='rgba(0,0,0,0)'),
+
+    fig.update_traces(marker=dict(symbol='square',
+                                      opacity=0.8 if edge else 0,
+                                      line=dict(color='DarkSlateGrey'),
+                                      color='grey'),
+                          error_x=dict(thickness=2, color='#313539'))  # '#ef563b' nice orange trace
+    #
+
     if edge:
-        from plotly.subplots import make_subplots
-        fig = make_subplots(specs=[[{"secondary_y": True}]])
-        fig.add_trace(
-            go.Scatter(x=[center] + list(df[effect_size]), y=['Random effect model'] + list(df.studlab), mode='markers',
-                       # error_x_minus=dict(type='data',  # value of error bar given in data coordinates
-                       #                    array=df.CI_lower if xlog else None,
-                       #                    visible=True),
-                       error_x=dict(type='data', color='black',
-                                    array=[0] + list(df.CI_width_hf),
-                                    visible=True),
-                       marker=dict(size=[0] + list(df.WEIGHT / .2), symbol='square', opacity=0.8,
-                                   line=dict(color='black'), color='dimgray')
-                       ))
-        fig.update_yaxes(ticks="outside",
-                         showgrid=False,
-                         tickcolor='rgba(0,0,0,0)',
-                         linecolor='rgba(0,0,0,0)',
-                         linewidth=1,
-                         zeroline=True, zerolinecolor='black', zerolinewidth=1),
+        fig.update_layout(clickmode='event+select',
+                              font_color="black",
+                              modebar=dict(orientation='v', bgcolor='rgba(0,0,0,0)'),
+                              autosize=True,
+                              # width=500,
+                              margin=dict(l=5, r=10, t=12, b=80),
+                              xaxis=dict(showgrid=False, autorange=True,
+                                        showline=True, linewidth=1, linecolor='black',
+                                         zeroline=True, zerolinecolor='gray', zerolinewidth=1,
+                                         # tick0=0, # TODO: JUST EXPLAIN IT!!!
+                                         title=''),
+                              yaxis=dict(showgrid=False, title=''),
+                              annotations=[dict(x=0, ax=0, y=-0.12, ay=-0.1, xref='x', axref='x', yref='paper',
+                                                showarrow=False, text=effect_size),
+                                           dict(x=np.floor(np.log10(min(low_rng, 0.1))) if xlog else df.CI_lower.min(),
+                                                ax=0, y=-0.14, ay=-0.1,
+                                                xref='x', axref='x', yref='paper',
+                                                showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.8,
+                                                arrowcolor='black'),
+                                           dict(x=np.floor(np.log10(max([up_rng, 10]))) if xlog else df.CI_upper.max(),
+                                                ax=0, y=-0.14, ay=-0.1,
+                                                xref='x', axref='x', yref='paper',
+                                                showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.8,
+                                                arrowcolor='black'),  # '#751225'
+                                           dict(x=np.floor(
+                                               np.log10(min(low_rng, 0.1))) / 2 if xlog else df.CI_lower.min() / 2,
+                                                y=-0.22, xref='x', yref='paper',
+                                                text=f'Favours {df.treat1.iloc[0]}',
+                                                showarrow=False),
+                                           dict(x=np.floor(
+                                               np.log10(max([up_rng, 10]))) / 2 if xlog else df.CI_upper.max() / 2,
+                                                y=-0.22,
+                                                xref='x', yref='paper',
+                                                text=f'Favours {df.treat2.iloc[0]}',
+                                                showarrow=False),
+                                           dict(x=-0.63, y=1.013, align='center',
+                                                xref='paper', yref='paper',
+                                                text='<b>Study</b>',
+                                                showarrow=False),
+                                           dict(x=-0.85, y=-0.04, align='center',
+                                                xref='paper', yref='paper',
+                                                text='<b>RE model:</b> ' 'I' '<sup>2</sup>=' f'{I2}%, ' u"\u03C4" '<sup>2</sup>=' f'{tau2}' if ~np.isnan(df.tau2.iloc[0]) else "",
+                                                showarrow=False),
+                                           ]
+                              )
+        fig.add_vline(x=center, line_width=1, line_dash='dash', line_color='black')
 
-        fig.update_layout(modebar= dict(orientation = 'h', bgcolor = 'rgba(0,0,0,0)'),
-                          xaxis=dict(showgrid=False, tick0=0, title=''),
-                          yaxis=dict(showgrid=False, title=''),
-                          )
+        def romb(center, width, height=0.1):
+            return {'x': [center, center - width / 2, center, center + width / 2, center],
+                    'y': [-height, 0, height, 0, -height]}
 
         fig.add_trace(go.Scatter(x=romb(center, width)['x'], y=romb(center, width)['y'],
-                                 fill="toself", mode="lines", line=dict(color='black'), fillcolor='#1f77b4'),
-                      secondary_y=True)
+                                 fill="toself", mode="lines", line=dict(color='black'),
+                                 fillcolor='#1f77b4', yaxis="y2", showlegend=False))
+
+        # fig.update_layout(shapes=[dict(type='line', x0=df.Predict_lo, x1=df.Predict_up,
+        #                                y0=0, y1=0,
+        #                                xref='paper', yref='y',
+        #                                line_width=4, line_color='#8B0000'),
+        #                           ])
+        fig.add_trace(
+            go.Scatter(x=[df.Predict_lo, df.Predict_up],
+                       y=["Prediction Interval"],
+                       mode="lines",
+                       line=dict( color='#8B0000', width=4), showlegend=False, yaxis="y3",
+                     ))
 
         fig.update_yaxes(range=[-.3, 1 + df.studlab.shape[0]],
                          tickfont=dict(color='rgba(0,0,0,0)'),
                          tickcolor='rgba(0,0,0,0)',
                          linecolor='rgba(0,0,0,0)',
-                         secondary_y=True, linewidth=1,
+                         secondary_y=True,
                          row=1, col=1, zeroline=False)
-        fig.add_vline(
-            x=center, line_width=1, line_dash='dash', line_color='black' )
 
-        fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5,
-                         tickvals=[0.1, 0.5, 1, 5] if xlog else None,
-                         ticktext=[0.1, 0.5, 1, 5] if xlog else None,
-                         range=[0.1, 1] if xlog else None, zerolinewidth=1,
-                         autorange=True, showline=True, linewidth=1, linecolor='black',
-                         zeroline=True, zerolinecolor='black')
+        fig.add_trace(go.Scatter(x=[], y=[],
+                                 marker=dict(opacity=0),
+                                 showlegend=False, mode='markers',
+                                 yaxis="y4"))
+
+
+        fig.update_layout(
+            autosize=True,
+            yaxis2=dict(tickvals=[],
+                        ticktext=[],
+                        showgrid=False, zeroline=False,
+                        titlefont=dict(color='black'),
+                        tickfont=dict(color='black'),
+                        range=[-1,len(df.studlab)+2],
+                        anchor="x", overlaying="y"
+                        ),
+            yaxis3=dict(tickvals=[],
+                        ticktext=[],
+                        showgrid=False, zeroline=False,
+                        titlefont=dict(color='black'),
+                        tickfont=dict(color='black'),
+                        range=[-1, len(df.studlab) + 2],
+                        anchor="x",  overlaying="y"
+                        ),
+            yaxis4=dict(tickvals=[*range(df.shape[0])],
+                        ticktext=[' ' * 5 + '{:.2f}   {:<17}'.format(x, y)
+                                  for x, y in zip(df[effect_size].values, df['CI'].values)],
+                        showgrid=False, zeroline=False,
+                        titlefont=dict(color='black'),
+                        tickfont=dict(color='black'),
+                        type='category',
+                        range=[-1.4, df.shape[0]],
+                        anchor="x", overlaying="y",
+                        side="right"),
+        ),
+
+        fig.update_layout(yaxis_range=[-1.3, len(df.studlab)])
+
+        fig.add_annotation(x=1.18, y=1.03, align='center',
+                           xref='paper', yref='y domain',
+                           text=f'<b>{effect_size}</b>',
+                           showarrow=False)
+
+        fig.add_annotation(x=1.52, y=1.03, align='center',
+                           xref='paper', yref='y3 domain',
+                           text='<b>95% CI</b>',
+                           showarrow=False)
 
     else:
+        fig.update_layout(clickmode='event+select',
+                  font_color="black",
+                  margin=dict(l=5, r=10, t=12, b=80),
+                  xaxis=dict(showgrid=False, tick0=0, title=''),
+                  yaxis=dict(showgrid=False, title=''),
+                  title_text='  ', title_x=0.02, title_y=.98, title_font_size=14,
+                  annotations=[]
+                  )
+    if not edge:
         fig.update_shapes(dict(xref='x', yref='y'))
-        fig.update_layout(modebar= dict(orientation = 'h', bgcolor = 'rgba(0,0,0,0)'))
         fig.update_xaxes(zerolinecolor='black', zerolinewidth=1, title='', visible=False)
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
-        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80))
+        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80),
+                          modebar=dict(orientation='v', bgcolor='rgba(0,0,0,0)'))
         fig.update_traces(hoverinfo='skip', hovertemplate=None)
 
-    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
-                      plot_bgcolor='rgba(0,0,0,0)',
-                      clickmode='event+select',
-                      font_color="black", showlegend=False,
-                      # font=dict(size=11, text="bold"),
-                      # margin=dict(l=5, r=10, t=12, b=80),
-                      xaxis=dict(showgrid=False, tick0=0, title=''),
-                      yaxis=dict(showgrid=False, title=''),
-                      title_text='  ', title_x=0.02, title_y=.98, title_font_size=14,
-                      annotations=[
-                          # dict(x=min(df.CI_lower), ax=0, y=0.2, ay=-0.1, xref='x', axref='x', yref='paper',
-                          #      showarrow=False, text='Random effect model'),
-                          # dict(x=min(df.CI_lower), ax=-3, y=0.1, ay=-0.1, xref='x', axref='x', yref='paper',
-                          #      showarrow=False, text='Heterogeneity: '),
-                          dict(x=0, ax=0, y=-0.15, ay=-0.1, xref='x', axref='x', yref='paper',
-                               showarrow=False, text=effect_size)] if edge else None
-                      )
     return fig
+
+
+############ - ranking plots  - ###############
+@app.callback([Output('tab-rank1', 'figure'),
+               Output('tab-rank2', 'figure')],
+              [Input('toggle_rank_direction', 'value'),
+               Input('toggle_rank2_direction', 'value')])
+def rankng_plot(outcome_direction_1, outcome_direction_2):
+
+    df = GLOBAL_DATA['ranking_data']
+    df = df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+
+    outcomes = ["Outcome 1", "Outcome 2"]
+
+    ## TODO: this is not well-written, make it more efficient later
+    if len(df.columns) == 3:
+        df = df.sort_values(by=["pscore1", "pscore2"], ascending=[False, False])
+        pscores = [list(df.pscore1), list(df.pscore2)]
+        z_text = [[str(y) for y in x] for x in pscores]
+        revscale = True
+        if outcome_direction_1 and outcome_direction_2:
+            df = df.sort_values(by=["pscore1", "pscore2"], ascending=[True, True])
+            pscores = [list(df.pscore1), list(df.pscore2)]
+            z_text = [[str(round(int(1) - y, 2)) for y in x] for x in pscores]
+            revscale = False
+        # #
+        elif outcome_direction_1 and  outcome_direction_2 is None or False:
+            df = df.sort_values(by=["pscore1", "pscore2"], ascending=[False, True])
+            pscores = [list(df.pscore1), list(df.pscore2)]
+            str1, str2 = [str(round(x, 2)) for x in pscores[0]], [str(round(int(1) - x, 2)) for x in pscores[1]]
+            z_text = [str1, str2]
+            revscale = False
+        elif outcome_direction_2:
+            df = df.sort_values(by=["pscore1", "pscore2"], ascending=[False, True])
+            pscores = [list(df.pscore1), list(df.pscore2)]
+            str1, str2 = [str(round(x, 2)) for x in pscores[0]], [str(round(int(1) - x, 2)) for x in pscores[1]]
+            z_text = [str1, str2]
+            revscale = True
+        # else:
+        #     df = df.sort_values(by=["pscore1", "pscore2"], ascending=[False, True])
+        #     pscores = [list(df.pscore1), list(df.pscore2)]
+        #     str1, str2 = [str(1 - x) for x in pscores[0]], [str(x) for x in pscores[1]]
+        #     z_text = [str1, str2]
+        #     revscale = True
+
+    else:
+        if outcome_direction_1:
+            df = df.sort_values(by=["pscore"], ascending=[False])
+            pscores = list(df.pscore)
+            z_text = [str(x) for x in pscores]
+        else:
+            df = df.sort_values(by=["pscore"], ascending=[True])
+            pscores = list(df.pscore)
+            z_text = [str(1 - x)  for x in pscores]
+
+    import plotly.figure_factory as ff
+    fig = ff.create_annotated_heatmap(pscores, x=list(df.treatment), y=outcomes,
+                                      reversescale=revscale,
+                                      annotation_text=z_text, colorscale= 'Viridis',
+                                      hoverongaps=False
+                                      )
+
+    for i in range(len(fig.layout.annotations)):
+        fig.layout.annotations[i].font.size = 9
+
+    fig.update_layout(
+                      paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
+                      plot_bgcolor='rgba(0,0,0,0)',
+                      modebar= dict(orientation = 'h', bgcolor = 'rgba(0,0,0,0)'),
+                      xaxis=dict(showgrid=False, autorange=True, title='',
+                                 tickmode='linear',
+                                 type="category"),
+                      yaxis=dict(showgrid=False, autorange=True, title='', range=[0,len(outcomes)]),
+                      )
+
+    fig['layout']['xaxis']['side'] = 'bottom'
+    fig['data'][0]['showscale'] = True
+    fig['layout']['yaxis']['autorange'] = "reversed"
+    #fig['layout']['xaxis']['autorange'] = "reversed"
+    fig.layout.margin = dict(l=0, r=0, t=70, b=180)
+
+
+    from sklearn.neighbors import KNeighborsClassifier
+    from sklearn.cluster import KMeans
+    X = df[['pscore1', 'pscore2']]
+    kmeans = KMeans(n_clusters=int(round(len(df.treatment)/float(5.0),0)),
+                    init='k-means++', max_iter=300, n_init=10, random_state=0)
+    labels = kmeans.fit(X)
+    lab_ids = labels.labels_
+    df['Trt groups'] = lab_ids
+    df['Trt groups'] = df['Trt groups'].astype(str)
+
+    df_full = GLOBAL_DATA['net_data'].copy()
+    df_full = df_full.groupby(['treat1', 'treat2']).TE.count().reset_index()
+    node_weight={}
+    for treat in df.treatment:
+        n1 = df_full[df_full.treat1 == treat].TE.sum()
+        n2 = df_full[df_full.treat2 == treat].TE.sum()
+        node_weight[treat] = n1 + n2
+
+    df["weight"] = df["treatment"].map(node_weight)
+
+    fig2 = px.scatter(df, x="pscore1", y="pscore2",
+        color="Trt groups",
+        size='weight',
+        hover_data=["treatment"],
+        text='treatment'
+                      )
+
+    fig2.update_layout(coloraxis_showscale=True,
+                       showlegend=False,
+                       paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
+                       plot_bgcolor='rgba(0,0,0,0)',
+                       modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'),
+                       xaxis=dict(showgrid=False, autorange=True,dtick = 0.1,
+                                  showline=True, linewidth=1, linecolor='black',
+                                  zeroline=True, zerolinecolor='black', zerolinewidth=1,
+                                   range=[0,1]),
+                       yaxis=dict(showgrid=False, autorange=True,dtick = 0.1,
+                                  showline=True, linewidth=1, linecolor='black',
+                                  zeroline=True, zerolinecolor='black', zerolinewidth=1,
+                                  range=[0, 1]
+                                 ))
+
+
+    fig2.update_traces(textposition='top center',  textfont_size=10,
+                       marker=dict(
+                       line=dict(width=1,
+                       color='black'))
+                       )
+    fig2.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+
+    fig2.layout.margin = dict(l=30, r=30, t=30, b=30)
+
+    return fig, fig2
 
 
 ### -------------- toggle switch forest ---------------- ###
@@ -1133,15 +1398,56 @@ def color_forest_toggle(toggle_value):
               'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', }
     return style1, style2
 
+### -------------- toggle switch rank  ---------------- ###
+@app.callback([Output("rankswitchlabel1", "style"),
+               Output("rankswitchlabel2", "style")],
+              [Input("toggle_rank_direction", "value")])
+def color_rank1_toggle(toggle_value):
+    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
+    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
+    return style1, style2
+
+@app.callback([Output("rank2switchlabel1", "style"),
+               Output("rank2switchlabel2", "style")],
+              [Input("toggle_rank2_direction", "value")])
+def color_rank2_toggle(toggle_value):
+    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
+    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
+    return style1, style2
+
+@app.callback([Output("rankswitchlabel11", "style"),
+               Output("rankswitchlabel22", "style")],
+              [Input("toggle_rank2_direction1", "value")])
+def color_rank1_toggle(toggle_value):
+    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
+    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
+    return style1, style2
+
+@app.callback([Output("rank2switchlabel11", "style"),
+               Output("rank2switchlabel22", "style")],
+              [Input("toggle_rank2_direction2", "value")])
+def color_rank2_toggle(toggle_value):
+    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
+    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
+    return style1, style2
+
 
 ### -------------- toggle switch league table ---------------- ###
 @app.callback([Output("cinemaswitchlabel1", "style"),
                Output("cinemaswitchlabel2", "style")],
               [Input("rob_vs_cinema", "value")])
 def color_leaguetable_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8', 'font-size': '12px',
+    style1 = {'color': '#808484' if toggle_value else '#b6e1f8', 'font-size': '12px',
               'display': 'inline-block', 'margin': 'auto', 'padding-left': '10px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray', 'font-size': '12px',
+    style2 = {'color': '#b6e1f8' if toggle_value else '#808484', 'font-size': '12px',
               'display': 'inline-block', 'margin': 'auto', 'padding-right': '0px', }
     return style1, style2
 

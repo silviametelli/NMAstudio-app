@@ -46,7 +46,7 @@ tab_data = html.Div([
                          fixed_rows={'headers': True, 'data': 0 },
                          style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
                                     'color': 'white',
-                                     'minWidth': '35px',
+                                    'minWidth': '45px',
                                     'border': '1px solid #5d6d95',
                                     'overflow': 'hidden','whiteSpace': 'no-wrap',
                                     'textOverflow': 'ellipsis',

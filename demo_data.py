@@ -10,6 +10,7 @@ def get_demo_data():
                    'forest_data':          pd.read_csv('db/forest_data/forest_data.csv'),
                    'forest_data_pairwise': pd.read_csv('db/forest_data/forest_data_pairwise.csv'),
                    'forest_data_outcome2': pd.read_csv('db/forest_data/forest_data_outcome2.csv'),
+                   'ranking_data':         pd.read_csv('db/ranking/rank.csv'),
                    'league_table_data':    pd.read_csv('db/league_table_data/league_table.csv', index_col=0)}
 
     ##add columns TE,seTE from raw data

@@ -18,7 +18,8 @@ tab_forests = dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persisten
                                                            'flex-grow': '0', 'justify-content': 'flex-start'})),
                                  ]),
                                     html.Div([
-                                             dbc.Col([html.P(
+                                             dbc.Col([
+                                                 html.P(
                                                  "Beneficial",
                                                  id='forestswitchlabel1',
                                                  style={'display': 'inline-block',

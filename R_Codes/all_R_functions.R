@@ -39,11 +39,12 @@ run_NetMeta <- function(dat){
       TEweights <- 1/nma_temp$seTE.random[, treatment] # Precision
       TEweights <- TEweights[which(TE_names!=treatment)]
       tau2 <- nma_temp$tau^2
-      df <- data.frame(treatment_list, exp(TE),  exp(ci_lo),  exp(ci_up), TEweights, tau2)
+      if(sm=="MD"){df <- data.frame(treatment_list, TE,  ci_lo, ci_up, TEweights, tau2)
+      }else{df <- data.frame(treatment_list, exp(TE),  exp(ci_lo),  exp(ci_up), TEweights, tau2)}
       colnames(df) <- c("Treatment", sm, "CI_lower", "CI_upper", "WEIGHT", "tau2")
       df['Reference'] <- treatment
       ALL_DFs[[treatment]] <- df
-      rm(nma_temp, TE, TE_names, se, ci_lo, ci_up, TEweights, tau2)
+      #rm(nma_temp, TE, TE_names, se, ci_lo, ci_up, TEweights, tau2)
   }
   ALL_DFs <- do.call('rbind', ALL_DFs)
   return(ALL_DFs)
@@ -132,17 +133,18 @@ funnel_plot <- function(dat,ref_vec){
 #------------------------------------- pairwise forest plots -------------------------------------------#
 ## pairwise forest plots for all different comparisons in df
 ## sorted_dat: dat sorted by treatemnt comparison
+
 pairwise_forest <- function(dat){
-  if(dat$type_outcome1[1]=="continuous"){sm <- "MD"}
-  else{sm <- "OR"}
+  if(dat$type_outcome1[1]=="continuous"){sm <- "MD"}else{sm <- "RR"}
   DFs_pairwise <- list()
+  dat <- dat %>% filter_at(vars(TE, seTE), all_vars(!is.na(.))) %>% filter(seTE!=0)
   dat %>% arrange(dat, treat1, treat2)
   dat$ID <- dat %>% group_indices(treat1, treat2)
 
   for (id in dat$ID){
     dat_temp <- dat[which(dat$ID==id), ]
     model_temp = metagen(TE=TE,seTE=sqrt(seTE), studlab = studlab, data=dat_temp,
-                         comb.random = T, sm="MD")
+                         comb.random = T, sm=sm, prediction=TRUE)
 
     studlab <- dat_temp$studlab
     t1 <- dat_temp$treat1
@@ -150,16 +152,27 @@ pairwise_forest <- function(dat){
     TE <- model_temp$TE
     TE_diamond <- model_temp$TE.random
     se <- model_temp$seTE.random
-    ci_lo <- TE_diamond-1.96*se ## if MD
-    ci_up <- TE_diamond+1.96*se ## if MD
-    ci_lo_individual <- TE-1.96*dat_temp$seTE ## if MD
-    ci_up_individual <- TE+1.96*dat_temp$seTE ## if MD
+    ci_lo <- model_temp$lower.random
+    ci_up <- model_temp$upper.random
+    ci_lo_individual <- model_temp$lower
+    ci_up_individual <- model_temp$upper
+    predict_lo <- model_temp$lower.predict
+    predict_up <- model_temp$upper.predict
     TEweights <- model_temp$w.random
-
-    df <- data.frame(TE, TE_diamond, id, studlab, t1, t2, ci_lo_individual, ci_up_individual, ci_lo, ci_up, TEweights)
-    colnames(df) <- c( "MD", "TE_diamond", "id", "studlab", "treat1", "treat2", "CI_lower", "CI_upper","CI_lower_diamond", "CI_upper_diamond", "WEIGHT")
+    tau2 <- model_temp$tau^2
+    I2 <- model_temp$I2
+    if(sm=="MD"){df <- data.frame(TE, TE_diamond, id, studlab, t1, t2, ci_lo_individual,
+                                  ci_up_individual, ci_lo, ci_up, predict_lo, predict_up,
+                                  TEweights, tau2, I2)
+    }else{df <- data.frame(exp(TE), exp(TE_diamond), id, studlab, t1, t2, exp(ci_lo_individual),
+                           exp(ci_up_individual), exp(ci_lo), exp(ci_up), exp(predict_lo),
+                           exp(predict_up), TEweights, tau2, I2)}
+    colnames(df) <- c(sm , "TE_diamond", "id", "studlab", "treat1", "treat2", "CI_lower",
+                       "CI_upper","CI_lower_diamond", "CI_upper_diamond", "Predict_lo",
+                       "Predict_up", "WEIGHT", "tau2", "I2")
     DFs_pairwise[[id]] <- df
   }
   DFs_pairwise <- do.call('rbind', DFs_pairwise)
   return(DFs_pairwise)
 }
+

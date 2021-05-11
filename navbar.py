@@ -19,8 +19,12 @@ def Navbar():
                                                                        'padding-left': '2%','padding-right': '2%',
                                                                        'padding-bottom':'0.4%','padding-top':'0.4%'}),
                              className="child", sm=3, md=2),
-                     style={"border": "0.1px white solid",'padding-bottom':'0.2%','padding-left':'0.2%',
-                            'padding-right':'0.2%', 'padding-top':'0.2%'}),
+                     style={
+                            "border": "0.01px white solid",
+                            'padding-bottom':'0.2%','padding-left':'0.2%',
+                            'padding-right':'0.2%', 'padding-top':'0.2%',
+                            #'background-color':'#304569'
+                            }),
 
             html.Div([dbc.Col(dbc.Nav([home_button, doc_button], navbar=True, style={'margin-left':'-30%','text-align':'center',
                                                                                      'padding-right':'5%','padding-top':'2.5%'})),

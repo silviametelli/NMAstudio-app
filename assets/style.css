@@ -88,11 +88,11 @@ h6 {margin-top: 0;}
     letter-spacing: 0.3rem !important;
     padding: 2px 15px 2px 15px;
     margin-bottom: -1px;
-    font-size: 1em;
+    font-size: 12px;
 }
 
 .info__container {
-    background-color: #40515E; /*#5d6d95;*/
+    background-color: #40515E;
     border-radius: 0.55rem;
     display: inline-block;
     box-shadow: 0 1px 1px rgba(0,0,0,0.12), 0 1px 1px rgba(0,0,0,0.24);

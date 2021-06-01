@@ -8,6 +8,7 @@ from assets.Tabs.tabforests import tab_forests
 from assets.Tabs.tableaguetable import tab_league
 from assets.Tabs.tabfunnel import tab_funnel
 from assets.Tabs.tabranking import tab_ranking
+from assets.Tabs.tabconsistency import tab_consistency
 from assets.COLORS import *
 
 def home_layout(GLOBAL_DATA):
@@ -66,37 +67,56 @@ def home_layout(GLOBAL_DATA):
                 html.Div(
                     id='all-control-tabs',
                     children=[
-                        dcc.Tabs(id='all-tabs',  persistence=True, children=[
+                        dcc.Tabs(id='all-tabs', persistence=True, children=[
 
                             dcc.Tab(style={'color':'grey','display': 'flex', 'justify-content':'center', 'align-items':'center'},
-                                label='Data',
-                                children=html.Div(className='control-tab', children=[tab_data])
+                                    selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
+                                                    'align-items': 'center'},
+                                    label='Data',
+                                    children=html.Div(className='control-tab', children=[tab_data])
                                 ),
 
                             dcc.Tab(style={'color':'grey', 'display': 'flex', 'justify-content':'center', 'align-items':'center'},
-                                label='Transitivity boxplots',
-                                children=html.Div(className='control-tab', children=[tab_trstvty])
+                                    selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
+                                                    'align-items': 'center'},
+                                    label='Transitivity boxplots',
+                                    children=html.Div(className='control-tab', children=[tab_trstvty])
                                    ),
 
                             dcc.Tab(value='mainTabForest',
                                     style={'color':'grey', 'display': 'flex', 'justify-content':'center', 'align-items':'center'},
-                                label='Forest plots', children=html.Div(className='control-tab', children=[tab_forests])
+                                    selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
+                                                    'align-items': 'center'},
+                                    label='Forest plots', children=html.Div(className='control-tab', children=[tab_forests])
                             ),
                             dcc.Tab(style={'color':'grey', 'display': 'flex', 'justify-content':'center', 'align-items':'center'},
-                                label='League Table',
-                                children=html.Div(className='control-tab', children=[tab_league])
+                                    selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
+                                                    'align-items': 'center'},
+                                    label='League Table',
+                                    children=html.Div(className='control-tab', children=[tab_league])
                             ),
+                            dcc.Tab(style={'color': 'grey', 'display': 'flex', 'justify-content': 'center', 'align-items': 'center'},
+                                    selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
+                                                    'align-items': 'center'},
+                                    label='Consistency checks',
+                                    children=html.Div(className='control-tab', children=[tab_consistency(GLOBAL_DATA)])
+                                    ),
                             dcc.Tab(style={'color':'grey','display': 'flex', 'justify-content':'center', 'align-items':'center'},
-                                label='Funnel plot',
-                                children=html.Div(className='control-tab', children=[tab_funnel])
+                                    selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
+                                                    'align-items': 'center'},
+                                    label='Funnel plots',
+                                    children=html.Div(className='control-tab', children=[tab_funnel])
                             ),
                             dcc.Tab(style={'color':'grey', 'display': 'flex', 'justify-content':'center', 'align-items':'center'},
-                                label='Ranking plots',
-                                children=html.Div(className='control-tab', children=[tab_ranking])
+                                    selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
+                                                    'align-items': 'center'},
+                                    label='Ranking plots',
+                                    children=html.Div(className='control-tab', children=[tab_ranking])
                             ),
 
 
-                        ],  colors={ "border": 'grey', "primary": "grey", "background": CLR_BCKGRND})
+                        ],  colors={ "border": 'grey', "primary": "grey", "background": CLR_BCKGRND,
+                                   })
                                      #change border to CLR_BCKGRND to remove tabs borders
                     ]),
 

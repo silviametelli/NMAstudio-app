@@ -89,13 +89,30 @@ league_rank <- function(dat){
     outcomes <- c("Outcome1", "Outcome2")
     rank1 <- netrank(nma_primary, small.values = "good")
     rank2 <- netrank(nma_secondary, small.values = "good")
-    r1 <- data.frame(names(rank1$Pscore.random), as.numeric(rank1$Pscore.random))
+    r1 <- data.frame(names(rank1$Pscore.random), round(as.numeric(rank1$Pscore.random),2))
     colnames(r1)  <-  c("treatment", "pscore")
-    r2 <- data.frame(names(rank2$Pscore.random), as.numeric(rank2$Pscore.random))
+    r2 <- data.frame(names(rank2$Pscore.random), round(as.numeric(rank2$Pscore.random),2))
     colnames(r2)  <-  c("treatment", "pscore")
     rank <- merge(r1, r2, by = "treatment", all.x = TRUE)
-    colnames(rank)  <-  c("treatment", "pscore")
-  }else{
+    colnames(rank)  <-  c("treatment", "pscore1",  "pscore2")
+    #consistency design by treat
+    consistency <- data.frame(nma_primary$Q.inconsistency, nma_primary$df.Q.inconsistency, nma_primary$pval.Q.inconsistency,
+                              nma_secondary$Q.inconsistency, nma_secondary$df.Q.inconsistency, nma_secondary$pval.Q.inconsistency)
+    colnames(consistency)  <-  c("Q1", "df_Q1", "p_Q1", "Q2", "df_Q2", "p_Q2")
+    #consistency node-split
+    ne <- netsplit(nma_primary)
+    comparison <- ne$compare.random$comparison[!is.na(ne$compare.random$p)]
+    direct <- exp(ne$direct.random$TE[!is.na(ne$compare.random$p)])
+    indirect <- exp(ne$indirect.random$TE[!is.na(ne$compare.random$p)])
+    p <- ne$compare.random$p[!is.na(ne$compare.random$p)]
+    ne2 <- netsplit(nma_secondary)
+    comparison2 <- ne2$compare.random$comparison[!is.na(ne2$compare.random$p)]
+    direct2 <- as.numeric(exp(na.omit(ne2$direct.random$TE)))
+    indirect2 <- exp(ne2$indirect.random$TE[!is.na(ne2$compare.random$p)])
+    p2 <- ne2$compare.random$p
+    df_cons <- data.frame(comparison, direct, indirect, p)
+    colnames(df_cons) <- c("comparison", "direct", "indirect", "pvalue")
+    }else{
     netleague_table <- netleague(nma_primary, digits = 2,
                                  seq = sort(nma_primary$trts),
                                  bracket="(",
@@ -103,15 +120,25 @@ league_rank <- function(dat){
     #p-scores
     outcomes <- c("Outcome1")
     rank1 <- netrank(nma_primary, small.values = "good")
-    rank <- data.frame(names(rank1$Pscore.random), as.numeric(rank1$Pscore.random))
+    rank <- data.frame(names(rank1$Pscore.random), as.numeric(round(rank1$Pscore.random,2)))
     colnames(rank)  <-  c("treatment", "pscore")
+    #consistency
+    consistency <- data.frame(nma_primary$Q.inconsistency, nma_primary$df.Q.inconsistency, nma_primary$pval.Q.inconsistency)
+    colnames(consistency)  <-  c("Q1", "df_Q1", "p_Q1")
+    #consistency node-split
+    ne <- netsplit(nma_primary)
+    comparison <- ne$compare.random$comparison[!is.na(ne1$compare.random$p)]
+    direct <- exp(ne$direct.random$TE[!is.na(ne$compare.random$p)])
+    indirect <- exp(ne$indirect.random$TE[!is.na(ne$compare.random$p)])
+    p <- ne$compare.random$p[!is.na(ne2$compare.random$p)]
+    df_cons <- data.frame(comparison, direct, indirect, p)
+    colnames(df_cons) <- c("comparison", "direct", "indirect", "p-value")
   }
   lt <- netleague_table$random
-  colnames(lt)<- treatments
-  rownames(lt)<- treatments
-  return(list(leaguetable=lt, pscores=rank))
+  colnames(lt)<- sortedseq
+  rownames(lt)<- sortedseq
+  return(list(leaguetable=lt, pscores=rank, consist=consistency, netsplit=df_cons))
 }
-
 
 ## comparison adjusted funnel plots
 funnel_plot <- function(dat,ref_vec){

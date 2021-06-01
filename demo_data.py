@@ -10,13 +10,21 @@ def get_demo_data():
                    'forest_data':          pd.read_csv('db/forest_data/forest_data.csv'),
                    'forest_data_pairwise': pd.read_csv('db/forest_data/forest_data_pairwise.csv'),
                    'forest_data_outcome2': pd.read_csv('db/forest_data/forest_data_outcome2.csv'),
+                   'consistency_data':     pd.read_csv('db/consistency/consistency.csv'),
+                   'netsplit_data':        pd.read_csv('db/consistency/consistency_netsplit.csv'),
                    'ranking_data':         pd.read_csv('db/ranking/rank.csv'),
+                   'funnel_data':          pd.read_csv('db/funnel/funnel_data.csv'),
                    'league_table_data':    pd.read_csv('db/league_table_data/league_table.csv', index_col=0)}
 
     ##add columns TE,seTE from raw data
     #GLOBAL_DATA['net_data']['TE'] =  OR_effect_measure(GLOBAL_DATA['net_data'],'r1','r2','n1', 'n2')[0].astype('float64')
     #GLOBAL_DATA['net_data']['seTE'] = OR_effect_measure(GLOBAL_DATA['net_data'],'r1','r2','n1','n2')[1].astype('float64')
     GLOBAL_DATA['net_data']  = GLOBAL_DATA['net_data'].loc[:, ~GLOBAL_DATA['net_data'].columns.str.contains('^Unnamed')]
+    GLOBAL_DATA['funnel_data']  = GLOBAL_DATA['funnel_data'].loc[:, ~GLOBAL_DATA['funnel_data'].columns.str.contains('^Unnamed')]
+    GLOBAL_DATA['forest_data_outcome2']  = GLOBAL_DATA['forest_data_outcome2'].loc[:, ~GLOBAL_DATA['forest_data_outcome2'].columns.str.contains('^Unnamed')]
+    GLOBAL_DATA['consistency_data'] = GLOBAL_DATA['consistency_data'].loc[:, ~GLOBAL_DATA['consistency_data'].columns.str.contains('^Unnamed')]  # Remove unnamed columns
+    GLOBAL_DATA['netsplit_data'] = GLOBAL_DATA['netsplit_data'].loc[:, ~GLOBAL_DATA['netsplit_data'].columns.str.contains('^Unnamed')]  # Remove unnamed columns
+
     if 'rob' not in GLOBAL_DATA['net_data'].select_dtypes(include=['int16', 'int32', 'int64',
                                                                    'float16', 'float32', 'float64']).columns:
             if any(GLOBAL_DATA['net_data']['rob'].str.contains('l|m|h', na=False)):

@@ -47,6 +47,7 @@ tab_data = html.Div([
                          style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
                                     'color': 'white',
                                     'minWidth': '45px',
+                                    'textAlign': 'center',
                                     'border': '1px solid #5d6d95',
                                     'overflow': 'hidden','whiteSpace': 'no-wrap',
                                     'textOverflow': 'ellipsis',

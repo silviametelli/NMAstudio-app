@@ -51,7 +51,7 @@ tab_forests = dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persisten
                                                  style={'display': 'inline-block',
                                                         'margin': 'auto',
                                                         'font-size': '10px',
-                                                        'padding-left': '0px'}),
+                                                        'padding-left': '-1px'}),
                                                  daq.ToggleSwitch(
                                                      id='toggle_forest_direction',
                                                      color='', size=30, vertical=False,
@@ -118,6 +118,33 @@ tab_forests = dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persisten
                                          children=[html.Div([html.P(
                                              id='tapEdgeData-info', style={'font-size':'12px', 'margin-top':'0.8%'},
                                              className="box__title"),
+                                             dbc.Col([html.P(
+                                                 "Outcome 1",
+                                                 id='forest_pair_switchlabel_outcome1',
+                                                 style={'display': 'inline-block',
+                                                        'margin': 'auto',
+                                                        'font-size': '10px',
+                                                        'padding-left': '0px'}),
+                                                 daq.ToggleSwitch(
+                                                     id='toggle_forest_pair_outcome',
+                                                     color='', size=30, vertical=False,
+                                                     label={'label': "",
+                                                            'style': dict(color='white', font='0.5em')},
+                                                     labelPosition="top",
+                                                     style={'display': 'inline-block',
+                                                            'margin': 'auto', 'font-size': '10px',
+                                                            'padding-left': '2px',
+                                                            'padding-right': '2px'}),
+                                                 html.P('Outcome 2',
+                                                        id='forest_pair_switchlabel_outcome2',
+                                                        style={'display': 'inline-block',
+                                                               'margin': 'auto',
+                                                               'font-size': '10px',
+                                                               'padding-right': '0px'})
+                                             ], style={'flex-grow': '1', 'justify-content': 'flex-end',
+                                                       'display': 'flex', 'margin-left': '70%',
+                                                       'font-size': '0.8em', 'margin-top': '-1.5%'},
+                                             ),
                                              html.Br()]),
                                              dcc.Loading(
                                                  html.Div([

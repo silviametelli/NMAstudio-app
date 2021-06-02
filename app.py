@@ -5,6 +5,7 @@
 
 # --------------------------------------------------------------------------------------------------------------------#
 import warnings
+from collections import Counter
 
 warnings.filterwarnings("ignore")
 # ---------R2Py Resources --------------------------------------------------------------------------------------------#
@@ -22,6 +23,8 @@ import os, io, base64, shutil, time, pandas as pd, numpy as np
 import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State, MATCH, ALL
 import plotly.express as px, plotly.graph_objects as go
+import plotly.figure_factory as ff
+from sklearn.cluster import KMeans
 from assets.effect_sizes import get_OR, get_RR, get_MD
 from demo_data import get_demo_data
 from layouts import *
@@ -803,6 +806,13 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
     elif 'rob_vs_cinema_modal.value' in triggered:
         toggle_cinema = toggle_cinema_modal
 
+    if 'slider-year.value' in triggered:
+        _data = GLOBAL_DATA["data_and_league_table_callback_FULL_DATA"]
+        data_output = _data[_data.year <= slider_value].to_dict('records')
+        _OUTPUT0 = GLOBAL_DATA["data_and_league_table_callback_OUTPUT"]
+        _output = [data_output]+[_OUTPUT0[1]]+[data_output] + _OUTPUT0[3:]
+        return _output
+
     data = pd.read_json(data, orient='split').round(3)
     leaguetable = GLOBAL_DATA['league_table_data'].copy(deep=True)
     confidence_map = {k: n for n, k in enumerate(['low', 'medium', 'high'])}
@@ -903,8 +913,10 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
     #                        'tab': {'height': 'calc(98vh - 115px)'}}
     league_table = build_league_table(leaguetable, leaguetable_cols, league_table_styles, tooltip_values)
     league_table_modal = build_league_table(leaguetable, leaguetable_cols, league_table_styles, tooltip_values, modal=True)
-    return [data_output, data_cols] * 2 + [league_table, league_table_modal] + [legend] * 2 + [toggle_cinema,
-                                                                                               toggle_cinema_modal]
+    GLOBAL_DATA["data_and_league_table_callback_FULL_DATA"] = data
+    _output = [data_output, data_cols] * 2 + [league_table, league_table_modal] + [legend] * 2 + [toggle_cinema, toggle_cinema_modal]
+    GLOBAL_DATA["data_and_league_table_callback_OUTPUT"] =   _output
+    return _output
 
 def build_league_table(data, columns, style_data_conditional, tooltip_values, modal=False):
 
@@ -1054,7 +1066,7 @@ def update_boxplot(value, edges):
 @app.callback(Output('tapEdgeData-fig-pairwise', 'figure'),
               Input('cytoscape', 'selectedEdgeData'))
 def update_forest_pairwise(edge):
-
+    _HEIGHT_ROMB = 0.3
     slctd_comps = []
     if edge:
         src, trgt = edge[0]['source'], edge[0]['target']
@@ -1064,7 +1076,7 @@ def update_forest_pairwise(edge):
         df = df[df.Comparison.isin(slctd_comps)]
         df['studlab'] += ' ' * 10
         effect_size = df.columns[1]
-        tau2 = round(df['tau2'].iloc[0], 2)
+        tau2 = round(df['tau2'].iloc[0], 2) if df['tau2'].iloc[0] is not np.nan else "NA"
         I2 = round(df['I2'].iloc[0], 2)
         df['CI_width'] = df.CI_upper - df.CI_lower
         df['lower_error'] = df[effect_size] - df.CI_lower
@@ -1081,8 +1093,6 @@ def update_forest_pairwise(edge):
         pred_up  = df['Predict_up'].reset_index().Predict_up[0]
         center = df['TE_diamond'].reset_index().TE_diamond[0]
         width = df['CI_width_diamond'].reset_index().CI_width_diamond[0]
-        Cis = list(df['CI'].values)
-        ci_d = CI_d.iloc[0]
 
     else:
         center = width = 0
@@ -1095,30 +1105,6 @@ def update_forest_pairwise(edge):
     up_rng, low_rng = df.CI_upper.max(), df.CI_lower.min()
     up_rng = 10 ** np.floor(np.log10(up_rng)) if xlog else None
     low_rng = 10 ** np.floor(np.log10(low_rng)) if xlog else None
-    width_ = 10 ** np.floor(np.log10(width)) if xlog else width
-
-    # from plotly.subplots import make_subplots
-    # fig = make_subplots(
-    #     specs=[[{'seconday_y':True}]],
-    #     #rows=3, cols=1,
-    #     shared_xaxes=True,
-    #     vertical_spacing=0.0,
-    #     horizontal_spacing=0.0)
-
-#    fig = go.Figure()
-
-    #if edge:
-        # from plotly.subplots import make_subplots
-        # fig = make_subplots(specs=[[{"secondary_y": True}]])
-        # fig.add_trace(go.Scatter(x=[center]+list(df[effect_size]), y=['Summary effect']+list(df.studlab),
-        #                          mode='markers',
-        #                          error_x=dict(type='data', symmetric=False if xlog else True,
-        #                                       array=[0]+list(abs(df[effect_size] - df.CI_lower)) if xlog else None,
-        #                                       arrayminus=[0]+list(abs(df.CI_upper - df[effect_size]))
-        #                                       ),
-        #                          marker=dict(size=[0]+list(df.WEIGHT / .2), symbol='square', opacity=0.8,
-        #                                     line=dict(color='black'), color='dimgray')
-        #              ))
 
     fig = px.scatter(df, x= df[effect_size], y= df.studlab,
                        error_x_minus='lower_error' if xlog else None,
@@ -1198,7 +1184,7 @@ def update_forest_pairwise(edge):
                                                 xref='x', yref='paper',
                                                 text=f'Favours {df.treat2.iloc[0]}',
                                                 showarrow=False),
-                                           dict(x=-0.63, y=1.013, align='center',
+                                           dict(x=-0.63, y=1, align='center',
                                                 xref='paper', yref='paper',
                                                 text='<b>Study</b>',
                                                 showarrow=False),
@@ -1210,11 +1196,15 @@ def update_forest_pairwise(edge):
                               )
         fig.add_vline(x=center, line_width=1, line_dash='dash', line_color='black')
 
-        def romb(center, width, height=0.20):
-            return {'x': [center, center - width / 2, center, center + width / 2, center],
-                    'y': [-height, 0, height, 0, -height]}
-
-        fig.add_trace(go.Scatter(x=romb(center, width)['x'], y=romb(center, width)['y'],
+        def romb(center, low=None, up=None, width=None, height=_HEIGHT_ROMB):
+            if width:
+                low, up =  center - width/2, center + width/2
+            return {'x': [center, low, center, up, center],
+                    'y': [-height/2, 0, height/2, 0, -height/2]}
+        fig.add_trace(go.Scatter(x=romb(center, low=CI_lower_diamond.iloc[0],
+                                        up=CI_upper_diamond.iloc[0])['x'],
+                                 y=romb(center, low=CI_lower_diamond.iloc[0],
+                                        up=CI_upper_diamond.iloc[0])['y'],
                                  fill="toself", mode="lines", line=dict(color='black'),
                                  fillcolor='#1f77b4', yaxis="y2", showlegend=False))
 
@@ -1225,14 +1215,15 @@ def update_forest_pairwise(edge):
         #                           ])
         fig.add_trace(
             go.Scatter(x=[pred_lo, pred_up],
-                       y=["Prediction Interval"],
+                       y=[-_HEIGHT_ROMB] * 2, #["Prediction Interval"],
                        mode="lines",
                        line=dict( color='#8B0000', width=4), showlegend=False, yaxis="y3",
                      ))
 
         fig.update_yaxes(range=[-.3, 1 + df.studlab.shape[0]],
+                         autorange=True,ticks="outside", tickwidth=2, tickcolor='black',
+                        ticklen=5,
                          tickfont=dict(color='rgba(0,0,0,0)'),
-                         tickcolor='rgba(0,0,0,0)',
                          linecolor='rgba(0,0,0,0)',
                          secondary_y=True,
                          zeroline=False)
@@ -1246,45 +1237,46 @@ def update_forest_pairwise(edge):
         
         fig.update_layout(
             autosize=True,
-            yaxis2=dict(tickvals=[],
-                        ticktext=[],
+            yaxis2=dict(tickvals=[], ticktext=[],
                         showgrid=False, zeroline=False,
                         titlefont=dict(color='black'),
                         tickfont=dict(color='black'),
-                        range=[-1,len(df.studlab)+2],
+                        range=[-1,len(df.studlab)+1],
+                        #type="log",
                         anchor="free", overlaying="y"
                         ),
-            yaxis3=dict(tickvals=[],
-                        ticktext=[],
+            yaxis3=dict(tickvals=[], ticktext=[],
+                       # type="log",
                         showgrid=False, zeroline=False,
                         titlefont=dict(color='black'),
                         tickfont=dict(color='black'),
-                        range=[-1, len(df.studlab) + 2],
+                        range=[-1, len(df.studlab) + 1],
                         scaleanchor = 'y',
                         anchor="x",  overlaying="y2"
                         ),
             yaxis4=dict(tickvals=[*range(df.shape[0])],
                         ticktext=[' ' * 5 + '{:.2f}   {:<17}'.format(x, y)
                                  # for x, y in zip(df[effect_size].values + [center], Cis.append(ci_d))],
-                                  for x, y in zip(df[effect_size].values, df['CI'].values)],
+                                  for x, y in zip(df[effect_size].values, df['CI'].values)]
+                        +['A', 'B'],
 
                         showgrid=False, zeroline=False,
                         titlefont=dict(color='black'),
                         tickfont=dict(color='black'),
                         type='category',
-                        range=[-1.4, df.shape[0]],
+                        range=[-2.4, df.shape[0]+1],
                         anchor="x", overlaying="y",
                         side="right"),
         ),
 
-        fig.update_layout(yaxis_range=[-1.3, len(df.studlab)])
+        fig.update_layout(yaxis_range=[-2.4, len(df.studlab)+1])
 
-        fig.add_annotation(x=1.18, y=1.03, align='center',
+        fig.add_annotation(x=1.18, y=1, align='center',
                            xref='paper', yref='y domain',
                            text=f'<b>{effect_size}</b>',
                            showarrow=False)
 
-        fig.add_annotation(x=1.52, y=1.03, align='center',
+        fig.add_annotation(x=1.52, y=1, align='center',
                            xref='paper', yref='y3 domain',
                            text='<b>95% CI</b>',
                            showarrow=False)
@@ -1324,66 +1316,39 @@ def ranking_plot(outcome_direction_1, outcome_direction_2, outcome_direction_11,
     outcomes = ["Outcome 1", "Outcome 2"]
 
     # True=harmful
-    ## TODO: this is not well-written, improve efficiency later on
-    if len(df.columns) == 3:
-        df = df.sort_values(by=["pscore1", "pscore2"], ascending=[False, False])
-        pscores = [list(df.pscore1), list(df.pscore2)]
-        z_text = [[str(y) for y in x] for x in pscores]
-        if outcome_direction_1 and outcome_direction_2:
-            pscores = [list(df.pscore1), list(df.pscore2)]
-            pscores = [[1-y for y in x] for x in pscores]
-            z_text = [[str(round(y, 2)) for y in x] for x in pscores]
-            df.pscore1, df.pscore2  = pscores[0], pscores[1]
-            df = df.sort_values(by=["pscore1", "pscore2"], ascending=[False, False])
-        elif outcome_direction_1 and outcome_direction_2 is None or False:
-            df = df.sort_values(by=["pscore1", "pscore2"], ascending=[True, False])
-            pscores = [list(df.pscore1), list(df.pscore2)]
-            pscores1 = [(1-x) for x in pscores[0]]
-            pscores2 = [x for x in pscores[1]]
-            pscores = [pscores1, pscores2]
-            str1, str2 = [str(round(x, 2)) for x in pscores[0]], [str(round(x, 2)) for x in pscores[1]]
-            z_text = [str1, str2]
-            df.pscore1, df.pscore2  = pscores1, pscores2
-            df = df.sort_values(by=["pscore1", "pscore2"], ascending=[False, False])
-        elif outcome_direction_1==False and outcome_direction_2:
-            df = df.sort_values(by=["pscore1", "pscore2"], ascending=[False, True])
-            pscores = [list(df.pscore1), list(df.pscore2)]
-            pscores1 = [x for x in pscores[0]]
-            pscores2 = [(1-x) for x in pscores[1]]
-            pscores = [pscores1, pscores2]
-            str1, str2 = [str(round(x, 2)) for x in pscores[0]], [str(round(x, 2)) for x in pscores[1]]
-            z_text = [str1, str2]
-            df.pscore1, df.pscore2  = pscores1, pscores2
-            df = df.sort_values(by=["pscore1", "pscore2"], ascending=[False, False])
-    else:
+    df1 = df.copy(deep=True)
+    if "pscore2" in df1.columns:
         if outcome_direction_1:
-            df = df.sort_values(by=["pscore"], ascending=[False])
-            pscores = list(df.pscore)
-            z_text = [str(x) for x in pscores]
-        else:
-            pscores = list(df.pscore)
-            z_text = [str(1 - x)  for x in pscores]
-            df.pscore = pscores
-            df = df.sort_values(by=["pscore"], ascending=[True])
+            df1.pscore1 = 1 - df1.pscore1.values
+        if outcome_direction_2:
+            df1.pscore2 = 1 - df1.pscore2.values
+        df1.sort_values(by=["pscore1", "pscore2"],
+                       ascending=[False, False], inplace=True)
+        z_text = [df1.pscore1.round(2).astype(str).values,
+                  df1.pscore2.round(2).astype(str).values]
+        pscores = [list(df1.pscore1), list(df1.pscore2)]
+    else:
+        outcomes = "Outcome"
+        if outcome_direction_1:
+            pscore = 1 - df1.pscore
+        pscore.sort_values(ascending=False, inplace=True) # TODO: check if it works
+        z_text = pscore.round(2).astype(str).values
+        pscores = list(pscore)
 
     #################### heatmap ####################
-    import plotly.figure_factory as ff
-    fig = ff.create_annotated_heatmap(pscores, x=list(df.treatment), y=outcomes,
+    fig = ff.create_annotated_heatmap(pscores, x=list(df1.treatment), y=outcomes,
                                       reversescale=True,
                                       annotation_text=z_text, colorscale= 'Viridis',
-                                      hoverongaps=False
-                                      )
+                                      hoverongaps=False)
 
-    for i in range(len(fig.layout.annotations)):
-        fig.layout.annotations[i].font.size = 9
+    for annotation in fig.layout.annotations:
+        annotation.font.size = 9
 
-    fig.update_layout(
-                      paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
                       plot_bgcolor='rgba(0,0,0,0)',
                       modebar= dict(orientation = 'h', bgcolor = 'rgba(0,0,0,0)'),
                       xaxis=dict(showgrid=False, autorange=True, title='',
-                                 tickmode='linear',
-                                 type="category"),
+                                 tickmode='linear', type="category"),
                       yaxis=dict(showgrid=False, autorange=True, title='', range=[0,len(outcomes)]),
                       )
 
@@ -1394,50 +1359,30 @@ def ranking_plot(outcome_direction_1, outcome_direction_2, outcome_direction_11,
     fig.layout.margin = dict(l=0, r=0, t=70, b=180)
 
     ######################### scatter plot #########################
-    from sklearn.cluster import KMeans
-    if len(df.columns) == 3:
-        df = GLOBAL_DATA['ranking_data']
-        df = df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
-        if outcome_direction_11 and outcome_direction_22:
-            pscores = [list(df.pscore1), list(df.pscore2)]
-            pscores = [[1 - y for y in x] for x in pscores]
-            df.pscore1, df.pscore2  = pscores[0], pscores[1]
-        elif outcome_direction_11 and outcome_direction_22 is None or False:
-            pscores = [list(df.pscore1), list(df.pscore2)]
-            pscores1 = [(1 - x) for x in pscores[0]]
-            pscores2 = [x for x in pscores[1]]
-            df.pscore1, df.pscore2  = pscores1, pscores2
-        elif outcome_direction_11 == False and outcome_direction_22:
-            pscores = [list(df.pscore1), list(df.pscore2)]
-            pscores1 = [x for x in pscores[0]]
-            pscores2 = [(1 - x) for x in pscores[1]]
-            df.pscore1, df.pscore2  = pscores1, pscores2
+    if 'pscore2' in df.columns:
+        if outcome_direction_11:
+            df.pscore1 = 1 - df.pscore1
+        if outcome_direction_22:
+            df.pscore2 = 1 - df.pscore2
 
-        X = df[['pscore1', 'pscore2']]
         kmeans = KMeans(n_clusters=int(round(len(df.treatment)/float(5.0),0)),
                          init='k-means++', max_iter=300, n_init=10, random_state=0)
-        labels = kmeans.fit(X)
-        lab_ids = labels.labels_
-        df['Trt groups'] = lab_ids
-        df['Trt groups'] = df['Trt groups'].astype(str)
-        df_full = GLOBAL_DATA['net_data'].copy()
-        df_full = df_full.groupby(['treat1', 'treat2']).TE.count().reset_index()
-        df_full_2 = GLOBAL_DATA['forest_data_outcome2'].copy()
-        df_full_2 = df_full.groupby(['treat1', 'treat2']).TE.count().reset_index()
-        node_weight={}
+        labels = kmeans.fit(df[['pscore1', 'pscore2']])
+        df['Trt groups'] = labels.labels_.astype(str)
+        df_full = GLOBAL_DATA['net_data'].groupby(['treat1', 'treat2']).TE.count().reset_index()
+        df_full_2 = GLOBAL_DATA['net_data'].groupby(['treat1', 'treat2']).TE2.count().reset_index()
+        node_weight, node_weight_2 = {}, {}
         for treat in df.treatment:
              n1 = df_full[df_full.treat1 == treat].TE.sum()
              n2 = df_full[df_full.treat2 == treat].TE.sum()
              node_weight[treat] = (n1 + n2)/float(np.shape(df)[0])
-        node_weight_2={}
-        for treat in df.treatment:
-             n1 = df_full_2[df_full_2.treat1 == treat].TE.sum()
-             n2 = df_full_2[df_full_2.treat2 == treat].TE.sum()
+
+             n1 = df_full_2[df_full_2.treat1 == treat].TE2.sum()
+             n2 = df_full_2[df_full_2.treat2 == treat].TE2.sum()
              node_weight_2[treat] = (n1 + n2)/float(np.shape(df)[0])
 
-        from collections import Counter
         sum_weight = dict((Counter(node_weight)+Counter(node_weight_2)))
-        mean_weight = {k: v / float(2) for k, v in sum_weight.items()} ## node size prop to mean count of node size in outcome 1 and outcome 2
+        mean_weight = {k: v / 2.0 for k, v in sum_weight.items()}  # Node size prop to mean count of node size in outcome 1 and outcome 2
         df["node weight"] = df["treatment"].map(mean_weight)
 
         fig2 = px.scatter(df, x="pscore1", y="pscore2",
@@ -1459,15 +1404,12 @@ def ranking_plot(outcome_direction_1, outcome_direction_2, outcome_direction_11,
                             yaxis=dict(showgrid=False, autorange=True, dtick = 0.1,
                                        showline=True, linewidth=1, linecolor='black',
                                        tickcolor='black',ticks="outside", tickwidth=1,
-                                       zeroline=True, zerolinecolor='black', zerolinewidth=1,
+                                       zeroline=False, zerolinecolor='black', zerolinewidth=1,
                                        range=[0, 1]
                                       ))
 
-
         fig2.update_traces(textposition='top center',  textfont_size=10,
-                            marker=dict(
-                            line=dict(width=1,
-                            color='black'))
+                            marker=dict(line=dict(width=1, color='black'))
                             )
         fig2.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
         fig2.layout.margin = dict(l=30, r=30, t=10, b=80)
@@ -1481,9 +1423,8 @@ def ranking_plot(outcome_direction_1, outcome_direction_2, outcome_direction_11,
         fig2.update_layout(margin=dict(l=100, r=100, t=12, b=80), xaxis=dict(showgrid=False, tick0=0, title=''),
                           modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'),
                           yaxis=dict(showgrid=False, tick0=0, title=''),
-                          annotations=[{
-                              "text": "Please provide a second outcome",
-                              "font": {"size": 15, "color": "white", 'family': 'sans-serif'}}]
+                          annotations=[{"text": "Please provide a second outcome",
+                                        "font": {"size": 15, "color": "white", 'family': 'sans-serif'}}]
                           ),
         fig2.update_annotations(align="center")
         fig2.update_traces(quartilemethod="exclusive", hoverinfo='skip', hovertemplate=None)
@@ -1594,6 +1535,17 @@ def color_forest_toggle(toggle_value):
 @app.callback([Output("forestswitchlabel_outcome1", "style"),
                Output("forestswitchlabel_outcome2", "style")],
               [Input("toggle_forest_outcome", "value")])
+def color_funnel_toggle(toggle_value):
+    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
+    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
+    return style1, style2
+
+### -------------- toggle switch forest pairwise outcome1/outcome2 ---------------- ###
+@app.callback([Output("forest_pair_switchlabel_outcome1", "style"),
+               Output("forest_pair_switchlabel_outcome2", "style")],
+              [Input("toggle_forest_pair_outcome", "value")])
 def color_funnel_toggle(toggle_value):
     style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
               'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}

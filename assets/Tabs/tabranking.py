@@ -12,10 +12,11 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                                  'align-items': 'center',
                                                  'font-size': '12px', 'padding': '0'},
                                  children=[html.Div([
+                                     html.Div([
                                      dbc.Row([
-                                         dbc.Col([html.P("Small values outcome 1", style={'display':'inline-block',
+                                         dbc.Col([html.P("Outcome 1", style={'display':'inline-block',
                                                                                           'color':'white', 'font-size':'13px',
-                                                                                          'padding-left':'31px'}),
+                                                                                          'padding-left':'20px'}),
                                              html.P(
                                                  "Beneficial",
                                                  id='rankswitchlabel1',
@@ -38,10 +39,13 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                                         style={'display': 'inline-block',
                                                                'margin': 'auto',
                                                                'font-size': '10px',
-                                                               'padding-right': '5px'})]),
-                                         dbc.Col([html.P("Small values outcome 2", style={'display':'inline-block',
+                                                               'padding-right': '5px'})])
+                                     ])]),
+                                     html.Div([
+                                     dbc.Row([
+                                         dbc.Col([html.P("Outcome 2", style={'display':'inline-block',
                                                                                           'color':'white', 'font-size':'13px',
-                                                                                          'padding-left':'32px'}),
+                                                                                          'padding-left':'20px'}),
                                              html.P(
                                                  "Beneficial",
                                                  id='rank2switchlabel1',
@@ -64,8 +68,8 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                                         style={'display': 'inline-block',
                                                                'margin': 'auto',
                                                                'font-size': '10px',
-                                                               'padding-right': '30px'})]),
-                                              ])
+                                                               'padding-right': '0px'})]),
+                                              ])], style={'margin-top':'-3px'})
 
                                  ]),
                                      dcc.Loading(
@@ -114,15 +118,15 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                  selected_style={'height': '30%', 'display': 'flex', 'justify-content': 'center',
                                                  'align-items': 'center',
                                                  'font-size': '12px', 'padding': '0'},
-                                 children=[
+                                 children=[html.Div([
                                      html.Div([
                                      dbc.Row([
-                                         dbc.Col([html.P("Small values outcome 1", style={'display':'inline-block',
+                                         dbc.Col([html.P("Outcome 1", style={'display':'inline-block',
                                                                                           'color':'white', 'font-size':'13px',
-                                                                                          'padding-left':'32px'}),
+                                                                                          'padding-left':'20px'}),
                                              html.P(
                                                  "Beneficial",
-                                                 id='rankswitchlabel11',
+                                                 id='rank2switchlabel11',
                                                  style={'display': 'inline-block',
                                                         'margin': 'auto',
                                                         'font-size': '10px',
@@ -138,18 +142,20 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                                             'padding-left': '5px',
                                                             'padding-right': '5px'}),
                                                  html.P('Harmful',
-                                                        id='rankswitchlabel22',
+                                                        id='rank2switchlabel22',
                                                         style={'display': 'inline-block',
                                                                'margin': 'auto',
                                                                'font-size': '10px',
-                                                               'padding-right': '5px'})]),
-                                         dbc.Col([
-                                             html.Div([html.P("Small values outcome 2", style={'display':'inline-block',
+                                                               'padding-right': '5px'})])
+                                     ])]),
+                                     html.Div([
+                                     dbc.Row([
+                                         dbc.Col([html.P("Outcome 2", style={'display':'inline-block',
                                                                                           'color':'white', 'font-size':'13px',
-                                                                                          'padding-left':'32px'}),
+                                                                                          'padding-left':'20px'}),
                                              html.P(
                                                  "Beneficial",
-                                                 id='rank2switchlabel11',
+                                                 id='rankswitchlabel11',
                                                  style={'display': 'inline-block',
                                                         'margin': 'auto',
                                                         'font-size': '10px',
@@ -165,14 +171,15 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                                             'padding-left': '5px',
                                                             'padding-right': '5px'}),
                                                  html.P('Harmful',
-                                                        id='rank2switchlabel22',
+                                                        id='rankswitchlabel22',
                                                         style={'display': 'inline-block',
                                                                'margin': 'auto',
                                                                'font-size': '10px',
-                                                               'padding-right': '30px'})]),
-                                              ])], style={'padding-left':'7px'})
+                                                               'padding-right': '0px'})]),
+                                              ])], style={'margin-top':'-3px'})
 
                                  ]),
+
                                      dcc.Loading(
                                          dcc.Graph(
                                              id='tab-rank2',

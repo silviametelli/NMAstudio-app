@@ -357,19 +357,23 @@ img:hover {
     [...]
 }
 
+
 #consistency-table .export{
     position: absolute;
-    top: 0px;
-    margin-top: -5%;
+    white-space-collapsing: discard;
+    margin-top: -5.7%;
     margin-left: 48%;
-    margin-bottom: 5px;
-    line-height: 1.3;
-    padding: 2px 2px 2px 2px;
-    vertical-align: middle;
-    font-size: 11px;
+    line-height: inherit;
+    padding:  10px 4px 0px 4px;
+    /*text-align: center;*/
+    /*vertical-align: middle;*/
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    font-size: 10px;
     font-type: sans-serif;
     font-weight: 900;
-    flex-grow: 1;
     justify-content: flex-end;
     display: flex;
     [...]
@@ -377,16 +381,20 @@ img:hover {
 
 #netsplit_table-container .export{
     position: absolute;
-    margin-top: -5%;
-    margin-left: 85%;
-    margin-bottom: 5px;
-    line-height: 1.3;
-    padding: 2px 2px 2px 2px;
-    vertical-align: middle;
-    font-size: 11px;
+    margin-top: -5.7%;
+    margin-left: 68%;
+    /*margin-bottom: 5px;*/
+    line-height: inherit;
+    padding:  10px 4px 0px 4px;
+    /*text-align: center;*/
+    /*vertical-align: middle;*/
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    font-size: 10px;
     font-type: sans-serif;
     font-weight: 900;
-    flex-grow: 1;
     justify-content: flex-end;
     display: flex;
     [...]
@@ -405,6 +413,12 @@ img:hover {
     font-type: sans-serif;
     font-weight: 800;
     [...]
+}
+
+@media screen and (min-width: 0px) {
+  html {
+    --gap: calc(10px + (40 - 10) * (100vw - 0px) / (1200 - 0));
+  }
 }
 
 #dd_nclr_input .dropdown-menu {

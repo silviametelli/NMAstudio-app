@@ -2,10 +2,6 @@
 from assets.modal_values import *
 
 
-options_outcomes_direction = [{'label':'beneficial',  'value':'beneficial'},
-                             {'label':'harmful',     'value':'harmful'}]
-
-
 Dropdown_nodesize = dbc.DropdownMenu(
     label="Node size", direction="right",bs_size="sm",
     children=[dbc.DropdownMenuItem("Default", id='dd_nds_default'),

@@ -14,6 +14,9 @@ def Navbar():
     doc_button = dbc.NavItem(dbc.NavLink('DOCUMENTATION', href="/doc", external_link=True,
                                          style = {'color':'white','font-family': "sans-serif ",
                                                   'font-size': '13px' }))
+    news_button = dbc.NavItem(dbc.NavLink('NEWS', href="/news", external_link=True,
+                                         style = {'color':'white','font-family': "sans-serif ",
+                                                  'font-size': '13px' }))
     navbar = dbc.Navbar([
             html.Div(dbc.Col(html.Img(src=NMASTUDIO_LOGO, height="53px", style={'filter': 'invert()',
                                                                        'padding-left': '2%','padding-right': '2%',
@@ -26,7 +29,7 @@ def Navbar():
                             #'background-color':'#304569'
                             }),
 
-            html.Div([dbc.Col(dbc.Nav([home_button, doc_button], navbar=True, style={'margin-left':'-30%','text-align':'center',
+            html.Div([dbc.Col(dbc.Nav([home_button, doc_button, news_button], navbar=True, style={'margin-left':'-30%','text-align':'center',
                                                                                      'padding-right':'5%','padding-top':'2.5%'})),
 
             dbc.Col(html.Img(src=CRESS_LOGO, height="57px"), style={'padding-right':'1%','padding-top':'0.3%','padding-bottom':'0.3%'},

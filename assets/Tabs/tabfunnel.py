@@ -67,7 +67,7 @@ tab_funnel = html.Div([dbc.Row([dbc.Col(html.P("Click treatment sequentially to 
                                        'toImageButtonOptions': {
                                            'format': 'png',  # one of png, svg,
                                            'filename': 'custom_image',
-                                           'scale': 10
+                                           'scale': 5
                                        },
                                        'displaylogo': False}))
                        ])

@@ -103,7 +103,7 @@ tab_forests = dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persisten
                                                          'format': 'png',
                                                          # one of png, svg,
                                                          'filename': 'custom_image',
-                                                         'scale': 10
+                                                         'scale': 2.5
                                                          # Multiply title/legend/axis/canvas sizes by this factor
                                                      },
                                                      'displaylogo': False}))])
@@ -177,7 +177,7 @@ tab_forests = dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persisten
                                                                  'format': 'png',
                                                                  # one of png, svg,
                                                                  'filename': 'custom_image',
-                                                                 'scale': 10
+                                                                 'scale': 2.5
                                                                  # Multiply title/legend/axis/canvas sizes by this factor
                                                              },
                                                              'displaylogo': False})])
@@ -185,7 +185,7 @@ tab_forests = dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persisten
                                              ),
                                          ]),
 
-                                 dcc.Tab(label='Two-dimensional', id='tab3', value='Tab3',  className='control-tab',
+                                 dcc.Tab(label='Bi-dimensional NMA', id='tab3', value='Tab3',  className='control-tab',
                                          style={'height':'30%', 'display': 'flex', 'justify-content':'center', 'align-items':'center',
                                                 'font-size':'12px', 'color':'grey','padding': '0'},
                                          selected_style={'height':'30%', 'display': 'flex', 'justify-content':'center', 'align-items':'center',
@@ -225,7 +225,7 @@ tab_forests = dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persisten
                                                                      'format': 'png',
                                                                      # one of png, svg,
                                                                      'filename': 'custom_image',
-                                                                     'scale': 10
+                                                                     'scale': 2.5
                                                                      # Multiply title/legend/axis/canvas sizes by this factor
                                                                  },
                                                                  'displaylogo': False})])

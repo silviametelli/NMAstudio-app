@@ -19,7 +19,7 @@ def get_OR(df):
 
     return round(TE,3), round(seTE,3)
 
-## RR #TODO: change as OR
+## RR #TODO: change
 def get_RR(df): #TODO: check formula
     for c in ['r1', 'r2', 'n1', 'n2']:
         # df[c] = df[c].astype(np.float64)  # TODO:  check if this works instead!!
@@ -37,8 +37,22 @@ def get_RR(df): #TODO: check formula
 
     return round(TE, 3), round(seTE, 3)
 
-## MD #TODO: change as OR
+## MD #TODO: change
 def get_MD(df):
+    for c in ['y1', 'sd1', 'y2', 'sd2', 'n1', 'n2']:
+        df[c] = pd.to_numeric(df[c], errors='coerce')
+    #N =  df.n1 + df.n2
+    #sigma2_pooled = ((df.n1 - 1) * pow(df.sd1,2) + (df.n2 - 1) * pow(df.sd2,2)) / (N - 2)
+    #seTE =  sqrt(sigma2_pooled.pooled * (1 / df.n1 + 1 / df.n2)))
+    TE =  df.y1 - df.y2
+    seTE =  np.sqrt( df.sd1**2 / df.n1 + df.sd2**2 / df.n2)
+    seTE[np.isnan(TE)] = np.nan
+
+    return round(TE,3), round(seTE,3)
+
+
+## SMD #TODO: change
+def get_SMD(df):
     for c in ['y1', 'sd1', 'y2', 'sd2', 'n1', 'n2']:
         df[c] = pd.to_numeric(df[c], errors='coerce')
     #N =  df.n1 + df.n2

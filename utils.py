@@ -17,9 +17,9 @@ def read_edge_frompickle():
 
 
 #  NETWORK FUNCTION
-
 def get_network(df):
     df = df.dropna(subset=['TE', 'seTE'])
+    df[['treat1', 'treat2']] = np.sort(df[['treat1', 'treat2']], axis=1)  ## removes edge directionality
     edges = df.groupby(['treat1', 'treat2']).TE.count().reset_index()
     df_n1g = df.rename(columns={'treat1': 'treat', 'n1':'n'}).groupby(['treat'])
     df_n2g = df.rename(columns={'treat2': 'treat', 'n2':'n'}).groupby(['treat'])
@@ -37,7 +37,7 @@ def get_network(df):
                           "label": target,
                           'classes':'genesis',
                           'size': np.sqrt(size)/max_trsfrmd_size,
-                          'pie1':r1/(r1+r2+r3), 'pie2':r2/(r1+r2+r3), 'pie3': r3/(r1+r2+r3)}}
+                          'pie1': r1/(r1+r2+r3), 'pie2':r2/(r1+r2+r3), 'pie3': r3/(r1+r2+r3)}}
                 for target, size, r1, r2, r3 in all_nodes_sized.values]
     return cy_edges + cy_nodes
 

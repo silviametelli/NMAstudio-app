@@ -103,7 +103,7 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                                          'format': 'png',
                                                          # one of png, svg,
                                                          'filename': 'custom_image',
-                                                         'scale': 10
+                                                         'scale': 3
                                                          # Multiply title/legend/axis/canvas sizes by this factor
                                                      },
                                                      'displaylogo': False}))
@@ -132,7 +132,7 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                                         'font-size': '10px',
                                                         'padding-left': '5px'}),
                                                  daq.ToggleSwitch(
-                                                     id='toggle_rank2_direction1',
+                                                     id='toggle_rank2_direction_outcome1',
                                                      color='', size=30, vertical=False,
                                                      label={'label': "",
                                                             'style': dict(color='white', font='0.5em')},
@@ -161,7 +161,7 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                                         'font-size': '10px',
                                                         'padding-left': '5px'}),
                                                  daq.ToggleSwitch(
-                                                     id='toggle_rank2_direction2',
+                                                     id='toggle_rank2_direction_outcome2',
                                                      color='', size=30, vertical=False,
                                                      label={'label': "",
                                                             'style': dict(color='white', font='0.5em')},
@@ -211,7 +211,7 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                                          'format': 'png',
                                                          # one of png, svg,
                                                          'filename': 'custom_image',
-                                                         'scale': 10
+                                                         'scale': 3
                                                          # Multiply title/legend/axis/canvas sizes by this factor
                                                      },
                                                      'displaylogo': False}))

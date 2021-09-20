@@ -83,14 +83,13 @@ modal_data_table = dbc.Modal([
                                       fixed_rows={'headers': True, 'data': 0},
                                       style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
                                                   'color': 'white',
-                                                  'border': '1px solid #5d6d95',
-                                                  'font-family': 'sans-serif',
-                                                  'fontSize': 11,
-                                                  'minWidth': '55px',
+                                                  'minWidth': '30px',
                                                   'textAlign': 'center',
-                                                  'whiteSpace': 'pre-line',  # 'inherit', nowrap
-                                                  'textOverflow': 'ellipsis'
-                                                  },
+                                                  'border': '1px solid #5d6d95',
+                                                  'overflow': 'hidden', 'whiteSpace': 'no-wrap',
+                                                  'textOverflow': 'ellipsis',
+                                                  'font-family': 'sans-serif',
+                                                  'fontSize': 11},
                                       style_data_conditional=[
                                           {'if': {'row_index': 'odd'},
                                            'backgroundColor': 'rgba(0,0,0,0.2)'},
@@ -102,8 +101,8 @@ modal_data_table = dbc.Modal([
                                                     'border': '1px solid #5d6d95'},
                                       style_table={'overflowX': 'scroll',
                                                    'overflowY': 'scroll',
-                                                   'height': '90%',
-                                                   'max-height': 'calc(70vh)',
+                                                   'height': '99%',
+                                                   'max-height': 'calc(90vh)',
                                                    'width': '99%',
                                                    'minWidth': '100%',
                                                    'margin-top': '10px',
@@ -114,11 +113,13 @@ modal_data_table = dbc.Modal([
                                             'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}])
                                   ]),
                    dbc.ModalFooter([
-                       html.Button('Export', 'data-export', n_clicks=0,className="btn-export",
+                       html.Div([html.Button('Export', 'data-export', n_clicks=0,className="btn-export",
                                    style={'margin-left': '5px', 'padding': '4px 4px 4px 4px',
                                           'color': 'white', 'fontSize': 11, 'text-align':'left',
                                           'font-weight': '900', 'font-family': 'sans-serif',
                                           'display': 'inline-block', 'vertical-align': 'top'}),
+                                 html.P(id='export-button-hidden', style={'display': 'none'}),
+                                ]),
                             dbc.Button("Close", id="close-data-expanded", className="ml-auto")])
                              ],
                              id="modal_data_table", centered=False, style={'background-color':'#40515e',
@@ -154,11 +155,12 @@ modal_league_table = dbc.Modal([
                                     html.Div(id='modal_league_table_data')
                                   ]),
                      dbc.ModalFooter([
-                         html.Button('Export', 'league-export', n_clicks=0, className="btn-export",
+                         html.Div([html.Button('Export', 'league-export', n_clicks=0, className="btn-export",
                                      style={'margin-left': '5px', 'padding': '4px 4px 4px 4px',
                                             'color': 'white', 'fontSize': 11, 'text-align': 'left',
                                             'font-weight': '900', 'font-family': 'sans-serif',
                                             'display': 'inline-block', 'vertical-align': 'top'}),
+                                  ]),
                          dbc.Button("Close", id="close-league-expanded", className="ml-auto")])
                      ],
                      id="modal_league_table", centered=False, style={'background-color': '#40515e',

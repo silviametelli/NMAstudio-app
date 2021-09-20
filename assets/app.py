@@ -18,7 +18,7 @@ pairwise_forest_r = ro.globalenv['pairwise_forest'] # Get pairwise_forest from R
 #--------------------------------------------------------------------------------------------------------------------#
 import os, io, base64, pickle, shutil, time, copy
 import pandas as pd, numpy as np
-import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
+import dash, dash_html_components as html, dash_bootstrap_components as dbc
 import dash_daq as daq, dash_table
 #from dash_extensions import Download
 import dash_cytoscape as cyto

@@ -20,8 +20,9 @@ league_table_r = ro.globalenv['league_rank']  # Get league_table from R
 pairwise_forest_r = ro.globalenv['pairwise_forest']  # Get pairwise_forest from R
 # --------------------------------------------------------------------------------------------------------------------#
 import os, io, base64, shutil, time, pandas as pd, numpy as np
-import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
+import dash, dash_html_components as html, dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State, MATCH, ALL
+from dash.exceptions import PreventUpdate
 import plotly.express as px, plotly.graph_objects as go
 import plotly.figure_factory as ff
 from sklearn.cluster import KMeans
@@ -48,10 +49,10 @@ GRAPH_INTERVAL = os.environ.get("GRAPH_INTERVAL", 5000)
 
 app = dash.Dash(__name__, meta_tags=[{"name": "viewport",
                                       "content": "width=device-width, initial-scale=1"}],
-                # external_stylesheets=[dbc.themes.BOOTSTRAP],
+                #external_stylesheets=[dbc.themes.BOOTSTRAP],
                 suppress_callback_exceptions=True)
 
-app.config.suppress_callback_exceptions = True
+#app.config.suppress_callback_exceptions = True
 
 server = app.server
 
@@ -66,11 +67,11 @@ GLOBAL_DATA['default_elements'] = GLOBAL_DATA['user_elements'] = get_network(df=
 
 OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col} for col in GLOBAL_DATA['net_data'].columns]
 
+options_effect_size_cont = [{'label':'MD',  'value':'MD'},
+                             {'label':'SMD',     'value':'SMD'}]
 
-# edges = GLOBAL_DATA['net_data'].groupby(['treat1', 'treat2']).TE.count().reset_index()
-# all_nodes = np.unique(edges[['treat1', 'treat2']].values.flatten())
-# options_trt = [{'label':'{}'.format(trt, trt), 'value':trt}
-#                for trt in all_nodes]
+options_effect_size_bin = [{'label':'OR',  'value':'OR'},
+                             {'label':'RR',     'value':'RR'}]
 
 
 # ------------------------------ app interactivity ----------------------------------#
@@ -86,6 +87,8 @@ def display_page(pathname):
         return Homepage(GLOBAL_DATA)
     elif pathname == '/doc':
         return doc_layout
+    elif pathname == '/news':
+        return news_layout
     else:
         return Homepage(GLOBAL_DATA)
 
@@ -163,9 +166,12 @@ def update_options(contents, search_value_format, search_value_outcome1, search_
     vars_names = [[f'{search_value_format}.{c}' for c in col_vars[0]],
                   [f'{search_value_outcome1}.{c}' for c in col_vars[1]],
                   [f'{search_value_outcome2}.{c}' for c in col_vars[2]]]
-    selectors_row = html.Div(
-        [dbc.Row([html.P("Select your variables", style={'color': 'white'})])] + [
-            dbc.Row([dbc.Col(dbc.Row(
+    selectors_row = html.Div([html.Div(
+        [dbc.Row([html.P("Select effect size", style={'color': 'white', 'vertical-align': 'middle'})])]
+        ),
+        html.Div(
+        [dbc.Row([html.P("Select your variables", style={'color': 'white', 'vertical-align': 'middle'})])] +
+        [dbc.Row([dbc.Col(dbc.Row(
                 [html.P(f"{name}:", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
                                                                   'margin-left': '0px', 'font-size': '12px'}),
                  dcc.Dropdown(id={'type': 'dataselectors', 'index': f'dropdown-{var_name}'},
@@ -180,8 +186,10 @@ def update_options(contents, search_value_format, search_value_outcome1, search_
                 style={'margin-bottom': '0px'})
                 for var_name, name in zip(var_names, col_var)],
                 style={'display': 'inline-block'})
-            for var_names, col_var in zip(vars_names, col_vars)]
+            for var_names, col_var in zip(vars_names, col_vars)],
+
     )
+        ])
     return selectors_row
 
 
@@ -207,9 +215,9 @@ def get_image(button):
     if ctx.triggered:
         input_id = ctx.triggered[0]["prop_id"].split(".")[0]
         if input_id != "tabs": action = "download"
-    return {'type': 'png', 'action': action,
+    return {'type': 'jpeg', 'action': action,
             'options': {  # 'bg':'#40515e',
-                'scale': 5}}
+                'scale': 3}}
 
 
 ### ----- update graph layout on node click ------ ###
@@ -533,6 +541,7 @@ def TapNodeData_fig_bidim(data):
                      log_x=xlog,
                      log_y=xlog,
                      size_max = 10,
+                     color_discrete_sequence = px.colors.qualitative.Light24,
                      range_x = [min(low_rng, 0.1), max([up_rng, 10])] if xlog else None
                      )
 
@@ -636,18 +645,22 @@ def parse_contents(contents, filename):
               [State('datatable-upload', 'filename')]
               )
 def get_new_data(contents, dataselectors, search_value_format, search_value_outcome1, search_value_outcome2, slider_year, filename):
+
     def apply_r_func(func, df):
         with localconverter(ro.default_converter + pandas2ri.converter):
             df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
         func_r_res = func(dat=df_r)  # Invoke R function and get the result
         df_result = pandas2ri.rpy2py(func_r_res).reset_index(drop=True)  # Convert back to a pandas.DataFrame.
         return df_result
-    if contents is None or not all(dataselectors):
+
+    print(dataselectors)
+    if contents is None or not all(dataselectors) or not dataselectors:
         data = GLOBAL_DATA['net_data']
         GLOBAL_DATA['user_elements'] = get_network(df=data)
         elements = get_network(df=data[data.year <= slider_year])
     else:
         data = parse_contents(contents, filename)
+        print(dataselectors)
         var_dict = dict()
         if search_value_format == 'long':
             if search_value_outcome1 == 'continuous':
@@ -665,7 +678,15 @@ def get_new_data(contents, dataselectors, search_value_format, search_value_outc
                 studlab, treat1, treat2, n1, n2, rob, r1, r2 = dataselectors
                 var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', n1: 'n1', n2: 'n2',
                             rob: 'rob', r1: 'r1', r2: 'r2'}
+
         data.rename(columns=var_dict, inplace=True)
+        #GLOBAL_DATA['net_data']['TE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[0]
+        #GLOBAL_DATA['net_data']['seTE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[1]
+        #OPTIONS_VAR = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
+
+        GLOBAL_DATA['net_data'] = data = data.loc[:, ~data.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+        data['type_outcome1'] = search_value_outcome1
+        #data['search_value_outcome2'] = search_value_outcome2 if search_value_outcome2
 
         if 'rob' not in GLOBAL_DATA['net_data'].select_dtypes(
                 include=['int16', 'int32', 'int64', 'float16', 'float32', 'float64']).columns:
@@ -675,14 +696,8 @@ def get_new_data(contents, dataselectors, search_value_format, search_value_outc
                 GLOBAL_DATA['net_data']['rob'].replace({'L': 1, 'M': 2, 'H': 3}, inplace=True)
         else:
             pass
-        #GLOBAL_DATA['net_data']['TE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[0]
-        #GLOBAL_DATA['net_data']['seTE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[1]
-        OPTIONS_VAR = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
-        GLOBAL_DATA['net_data'] = data = data.loc[:, ~data.columns.str.contains('^Unnamed')]  # Remove unnamed columns
-        data['type_outcome1'] = search_value_outcome1
-        #data['search_value_outcome2'] = search_value_outcome2 if search_value_outcome2
-        elements = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
 
+        elements = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
         GLOBAL_DATA['forest_data'] = apply_r_func(func=run_NetMeta_r, df=data)
         GLOBAL_DATA['forest_data_pairwise'] = apply_r_func(func=pairwise_forest_r, df=data)
         leaguetable_r  = apply_r_func(func=league_table_r, df=data)
@@ -692,10 +707,12 @@ def get_new_data(contents, dataselectors, search_value_format, search_value_outc
         leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
         leaguetable = leaguetable.reset_index().rename(columns={'index':'Treatments'})
         GLOBAL_DATA['league_table_data'] = leaguetable
+
     if filename is not None:
         return data.to_json(orient='split'), elements, f'{filename}'
     else:
         return data.to_json(orient='split'), elements, 'No file added'
+
 
 # @app.callback([Output('__storage_netdata', 'children'),
 #                Output('cytoscape', 'elements'),
@@ -779,6 +796,7 @@ def get_new_data_cinema(contents, filename):
     else:
         return data2.to_json(orient='split'), ''
 
+
 ### ----- display Data Table and League Table ------ ###
 @app.callback([Output('datatable-upload-container', 'data'),
                Output('datatable-upload-container', 'columns'),
@@ -789,7 +807,7 @@ def get_new_data_cinema(contents, filename):
                Output('league_table_legend', 'children'),
                Output('modal_league_table_legend', 'children'),
                Output('rob_vs_cinema', 'value'),
-               Output('rob_vs_cinema_modal', 'value')
+               Output('rob_vs_cinema_modal', 'value'),
                ],
               [Input('cytoscape', 'selectedNodeData'),
                Input('__storage_netdata', 'children'),
@@ -908,9 +926,6 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
     data_cols = [{"name": c, "id": c} for c in data.columns]
     data.year = data.year
     data_output = data[data.year <= slider_value].to_dict('records')
-    # league_table_styles = {'output': {'overflow-y': 'scroll', 'overflow-wrap': 'break-word',
-    #                                   'height': 'calc(100% - 25px)', 'border': 'thin lightgrey solid'},
-    #                        'tab': {'height': 'calc(98vh - 115px)'}}
     league_table = build_league_table(leaguetable, leaguetable_cols, league_table_styles, tooltip_values)
     league_table_modal = build_league_table(leaguetable, leaguetable_cols, league_table_styles, tooltip_values, modal=True)
     GLOBAL_DATA["data_and_league_table_callback_FULL_DATA"] = data
@@ -946,13 +961,13 @@ def build_league_table(data, columns, style_data_conditional, tooltip_values, mo
                                                                   'header_index': 0},
                                                            'fontWeight': 'bold'}],
                                 style_table={'overflow': 'auto', 'width': '100%',
-                                             'max-height': '400px',
+                                             'max-height': 'calc(50vh)',
                                              'max-width': 'calc(52vw)'} if not modal else {
                                     'overflowX': 'scroll',
                                     'overflowY': 'scroll',
-                                    'height': '90%',
+                                    'height': '99%',
                                     'minWidth': '100%',
-                                    'max-height': 'calc(70vh)',
+                                    'max-height': 'calc(85vh)',
                                     'width': '99%',
                                     'margin-top': '10px',
                                     'padding': '5px 5px 5px 5px'
@@ -963,6 +978,7 @@ def build_league_table(data, columns, style_data_conditional, tooltip_values, mo
                                       'rule': 'background-color: rgba(0, 0, 0, 0);'},
                                      {'selector': 'td:hover',
                                       'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}])
+
 
 
 ### - figures on edge click: transitivity boxplots  - ###
@@ -1215,7 +1231,7 @@ def update_forest_pairwise(edge):
         #                           ])
         fig.add_trace(
             go.Scatter(x=[pred_lo, pred_up],
-                       y=[-_HEIGHT_ROMB] * 2, #["Prediction Interval"],
+                       y=[-_HEIGHT_ROMB*2] * 2, #["Prediction Interval"],
                        mode="lines",
                        line=dict( color='#8B0000', width=4), showlegend=False, yaxis="y3",
                      ))
@@ -1242,11 +1258,9 @@ def update_forest_pairwise(edge):
                         titlefont=dict(color='black'),
                         tickfont=dict(color='black'),
                         range=[-1,len(df.studlab)+1],
-                        #type="log",
                         anchor="free", overlaying="y"
                         ),
             yaxis3=dict(tickvals=[], ticktext=[],
-                       # type="log",
                         showgrid=False, zeroline=False,
                         titlefont=dict(color='black'),
                         tickfont=dict(color='black'),
@@ -1256,10 +1270,9 @@ def update_forest_pairwise(edge):
                         ),
             yaxis4=dict(tickvals=[*range(df.shape[0])],
                         ticktext=[' ' * 5 + '{:.2f}   {:<17}'.format(x, y)
-                                 # for x, y in zip(df[effect_size].values + [center], Cis.append(ci_d))],
-                                  for x, y in zip(df[effect_size].values, df['CI'].values)]
-                        +['A', 'B'],
-
+                                  # for x, y in zip(df[effect_size].values, df['CI'].values)],
+                                  for x, y in zip(np.append(df[effect_size].values, center),
+                                                  np.append(df['CI'].values, CI_d.iloc[0]))],
                         showgrid=False, zeroline=False,
                         titlefont=dict(color='black'),
                         tickfont=dict(color='black'),
@@ -1307,8 +1320,8 @@ def update_forest_pairwise(edge):
                Output('tab-rank2', 'figure')],
               [Input('toggle_rank_direction', 'value'),
                Input('toggle_rank2_direction', 'value'),
-               Input('toggle_rank2_direction1', 'value'),
-               Input('toggle_rank2_direction2', 'value')])
+               Input('toggle_rank2_direction_outcome1', 'value'),
+               Input('toggle_rank2_direction_outcome2', 'value')])
 def ranking_plot(outcome_direction_1, outcome_direction_2, outcome_direction_11, outcome_direction_22):
 
     df = GLOBAL_DATA['ranking_data']
@@ -1458,7 +1471,7 @@ def Tap_funnelplot(node, outcome2):
                      range_y=[0.01, max_y],
                      symbol="Comparison",
                      color="Comparison",
-                     color_discrete_sequence = px.colors.qualitative.D3)
+                     color_discrete_sequence = px.colors.qualitative.Light24)
 
     fig.update_traces(marker=dict(size=6, # #symbol='circle',
                       line=dict(width=1, color='black')),
@@ -1554,6 +1567,7 @@ def color_funnel_toggle(toggle_value):
     return style1, style2
 
 ### -------------- toggle switch rank  ---------------- ###
+### heatmap
 @app.callback([Output("rankswitchlabel1", "style"),
                Output("rankswitchlabel2", "style")],
               [Input("toggle_rank_direction", "value")])
@@ -1574,9 +1588,10 @@ def color_rank2_toggle(toggle_value):
               'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
     return style1, style2
 
-@app.callback([Output("rankswitchlabel11", "style"),
-               Output("rankswitchlabel22", "style")],
-              [Input("toggle_rank2_direction1", "value")])
+#### scatter plot
+@app.callback([Output("rank2switchlabel11", "style"),
+               Output("rank2switchlabel22", "style")],
+              [Input("toggle_rank2_direction_outcome1", "value")])
 def color_rank1_toggle(toggle_value):
     style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
               'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
@@ -1584,9 +1599,9 @@ def color_rank1_toggle(toggle_value):
               'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
     return style1, style2
 
-@app.callback([Output("rank2switchlabel11", "style"),
-               Output("rank2switchlabel22", "style")],
-              [Input("toggle_rank2_direction2", "value")])
+@app.callback([Output("rankswitchlabel11", "style"),
+               Output("rankswitchlabel22", "style")],
+              [Input("toggle_rank2_direction_outcome2", "value")])
 def color_rank2_toggle(toggle_value):
     style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
               'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
@@ -1717,6 +1732,7 @@ def data_modal(open, submit, is_open, dataselectors, data):
     if open:  # TODO: doesn't make sense given new inputs - but worrks anyways. Consider fixing when have time
         if submit:
             new_df = GLOBAL_DATA['new_data_upload']
+            print(new_df)
             # do your stuff  -> TODO: rename column variables and reshape if needed (contrast/long)
             # data.to_json(orient='split').round(3)
             # data = pd.read_json(data, orient='split')
@@ -1759,6 +1775,7 @@ def toggle_modal(open, close, is_open):
 ##################################################################
 ########################### MAIN #################################
 ##################################################################
+
 
 if __name__ == '__main__':
     app.run_server(debug=True, port=8888)

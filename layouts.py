@@ -79,7 +79,7 @@ def home_layout(GLOBAL_DATA):
                             dcc.Tab(style={'color':'grey', 'display': 'flex', 'justify-content':'center', 'align-items':'center'},
                                     selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
                                                     'align-items': 'center'},
-                                    label='Transitivity boxplots',
+                                    label='Transitivity checks',
                                     children=html.Div(className='control-tab', children=[tab_trstvty])
                                    ),
 
@@ -127,16 +127,21 @@ def home_layout(GLOBAL_DATA):
 
 def Homepage(GLOBAL_DATA):
     return html.Div([Navbar(), home_layout(GLOBAL_DATA)])
+
 ############################################  DOCUMENTATION PAGE  #######################################################
 
-doc_layout = html.Div([Navbar(), html.Br(),  html.Br(), html.Br(),
 
-html.H1("NMAstudio (version 1.1)", style={'font-size':'20px', 'color':'white', 'padding-left':'3%',
+doc_layout = html.Div([Navbar(), html.Hr(), html.Br(),
+
+                       html.H2("NMAstudio (version 0.1)", style={'color':'white', 'padding-left':'3%',
                                           'padding-right':'3%', 'font-family':'sans-serif'}),  html.Br(),
 
 dcc.Markdown('NMAstudio is a web application to produce and visualise interactive outputs from network meta-analyses',
              className="markdown_style"),
     html.Br(),
+    # html.P("""NMAstudio is a Plotly Dash app written in Python, and linked to the  R-package netmeta for performing analysis of the data
+    # G. Rücker, G. Schwarzer, U. Krahn, and J. König. netmeta: Network Meta-Analysis using Frequentist Methods, 2017
+    # R package version 6.6.6. https://CRAN.R-project.org/package=netmeta"""),
     dcc.Markdown('NMAstudio is a Plotly Dash app written in Python, and linked to the  R-package netmeta for performing analysis of the data',
                  className="markdown_style"),
 dcc.Markdown('G. Rücker, G. Schwarzer, U. Krahn, and J. König. netmeta: Network Meta-Analysis using Frequentist Methods, 2017'
@@ -146,11 +151,16 @@ dcc.Markdown('G. Rücker, G. Schwarzer, U. Krahn, and J. König. netmeta: Networ
 
 # dcc.Markdown('The methods are described in',className="markdown_style"),
 #                        html.Br(), html.Br(),
+                       #html.Hr(style={ 'borderWidth': "0.2vh", "width": "65%", "color": "#FEC700"}),
 
-                       html.Div([dcc.Markdown("Please click the button beside to download a pdf copy of the NMAstudio User Guide:", className="markdown_style",
-                               style={'margin-right':'5px', 'display':'inline-block'}),
-                       html.Button('Download documentation', id='full-docu-pdf', style={'color':'white', 'display':'inline-block','padding':'4px'})
-                    ]),
+
+                       html.Div([html.P("Please click the button beside to download a pdf copy of the NMAstudio User Guide:",
+                                              className="markdown_style",
+                               style={"justify":"center", "align":"center", 'margin-right':'5px', 'display':'inline-block'}),
+                       html.Button('Download User Guide', id='full-docu-pdf', style={'color':'white', 'display':'inline-block','padding':'4px'}),
+                       #html.Hr(style={'borderWidth': "0.2vh", "width": "65%", "color": "#FEC700"}),
+
+                                 ]),
 
     html.Br(), html.Br(), html.Br(), html.Br(),
     dcc.Markdown(
@@ -158,6 +168,42 @@ dcc.Markdown('G. Rücker, G. Schwarzer, U. Krahn, and J. König. netmeta: Networ
         , className="markdown_style"),
 
 
-
                        ]),
+
+
+############################################  NEWS PAGE  #######################################################
+
+news_layout = html.Div([Navbar(), html.Hr(),
+                        html.H5("New features in version 0.2 (forthcoming)", style={'color':'white', 'padding-left':'3%',
+                                                                                    'padding-right':'3%', 'font-family':'sans-serif',
+                                                                                    'font-style':'italic'}),
+                        html.Br(),
+                        html.P("1. Colored league table will be downloadable", style={'color':'white', 'padding-left':'3%',
+                                                                            'padding-right':'3%', 'font-family':'sans-serif'}),
+                        html.P("2. (.svg, .png) extensions will be available for the network plot", style={'color':'white', 'padding-left':'3%',
+                                              'padding-right':'3%', 'font-family':'sans-serif'}),
+                        html.Br(),
+                        html.Hr(style={'borderWidth': "0.2vh", "width": "95%", "color": "#FEC700"}),
+
+                        html.H5("Other features for later versions",
+                                style={'color': 'white', 'padding-left': '3%',
+                                       'padding-right': '3%', 'font-family': 'sans-serif',
+                                       'font-style': 'italic'}),
+                        html.Br(),
+                        html.P("1. An option for Bayesian estimation will be given", style={'color': 'white', 'padding-left': '3%',
+                                                                              'padding-right': '3%',
+                                                                              'font-family': 'sans-serif'}),
+                        html.P("2. An option for sensitivity analyses (based on some effect modifiers) will be available", 
+                               style={'color': 'white', 'padding-left': '3%',
+                                      'padding-right': '3%', 'font-family': 'sans-serif'}),
+                        html.Br(),
+                        html.Br(),
+                        html.Br(),
+                        html.H5("Which new feature would you like to see in a later version of NMAstudio?", 
+                                style={'color': 'white', 'padding-left': '3%',
+                                       'padding-right': '3%', 'font-family': 'sans-serif'}),
+                        html.P("get in touch with us at...",
+                                style={'color': 'white', 'padding-left': '3%',
+                                'padding-right': '3%', 'font-family': 'sans-serif'}),
+                        ])
 

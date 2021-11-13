@@ -9,14 +9,15 @@ suppressMessages(library(meta))
 suppressMessages(library(metafor))
 suppressMessages(library(tidyverse))
 
+iswhole <- function(x, tol = .Machine$double.eps^0.5) abs(x - round(x)) < tol
+
 #--------------------------------------- NMA forest plots -------------------------------------------------#
 
 run_NetMeta <- function(dat){
-  treatments <- unique(c(dat$treat1, dat$treat2))
   ALL_DFs <- list()
   if(dat$type_outcome1[1]=="continuous"){sm <- "MD"}else{sm <- "RR"}
   dat <- dat %>% filter_at(vars(TE,seTE),all_vars(!is.na(.))) %>% filter(seTE!=0)
-  iswhole <- function(x, tol = .Machine$double.eps^0.5) abs(x - round(x)) < tol
+  treatments <- unique(c(dat$treat1, dat$treat2))
   # if incorrect number of arms, then delete entire study
   tabnarms <- table(dat$studlab)
   sel.narms <- !iswhole((1 + sqrt(8 * tabnarms + 1)) / 2)
@@ -53,10 +54,9 @@ run_NetMeta <- function(dat){
 #--------------------------------------- NMA league table & ranking -------------------------------------------------#
 ## league tables for either one or two outcomes
 league_rank <- function(dat){
-  ALL_DFs <- list()
+  # ALL_DFs <- list()
   dat1 <- dat[, c("studlab", "treat1", "treat2", "TE", "seTE")]
   dat1 <- dat1 %>% filter_at(vars(TE,seTE),all_vars(!is.na(.))) %>% filter(seTE!=0)
-  iswhole <- function(x, tol = .Machine$double.eps^0.5) abs(x - round(x)) < tol
   tabnarms <- table(dat1$studlab)
   sel.narms <- !iswhole((1 + sqrt(8 * tabnarms + 1)) / 2)
   if (sum(sel.narms) >= 1){dat1 <- dat1 %>% filter(!studlab %in% names(tabnarms)[sel.narms])}
@@ -87,7 +87,7 @@ league_rank <- function(dat){
                                  bracket="(",
                                  backtransf = TRUE, ci = TRUE, separator=',')
     #p-scores
-    outcomes <- c("Outcome1", "Outcome2")
+    # outcomes <- c("Outcome1", "Outcome2")
     rank1 <- netrank(nma_primary, small.values = "good")
     rank2 <- netrank(nma_secondary, small.values = "good")
     r1 <- data.frame(names(rank1$Pscore.random), round(as.numeric(rank1$Pscore.random),2))
@@ -107,10 +107,10 @@ league_rank <- function(dat){
     indirect <- exp(ne$indirect.random$TE[!is.na(ne$compare.random$p)])
     p <- ne$compare.random$p[!is.na(ne$compare.random$p)]
     ne2 <- netsplit(nma_secondary)
-    comparison2 <- ne2$compare.random$comparison[!is.na(ne2$compare.random$p)]
-    direct2 <- as.numeric(exp(na.omit(ne2$direct.random$TE)))
-    indirect2 <- exp(ne2$indirect.random$TE[!is.na(ne2$compare.random$p)])
-    p2 <- ne2$compare.random$p
+    # comparison2 <- ne2$compare.random$comparison[!is.na(ne2$compare.random$p)]
+    # direct2 <- as.numeric(exp(na.omit(ne2$direct.random$TE)))
+    # indirect2 <- exp(ne2$indirect.random$TE[!is.na(ne2$compare.random$p)])
+    # p2 <- ne2$compare.random$p
     df_cons <- data.frame(comparison, direct, indirect, p)
     colnames(df_cons) <- c("comparison", "direct", "indirect", "pvalue")
     }else{
@@ -120,7 +120,7 @@ league_rank <- function(dat){
                                  bracket="(",
                                  backtransf = TRUE, ci = TRUE, separator=',')
     #p-scores
-    outcomes <- c("Outcome1")
+    # outcomes <- c("Outcome1")
     rank1 <- netrank(nma_primary, small.values = "good")
     rank <- data.frame(names(rank1$Pscore.random), as.numeric(round(rank1$Pscore.random,2)))
     colnames(rank)  <-  c("treatment", "pscore")
@@ -139,11 +139,11 @@ league_rank <- function(dat){
   lt <- netleague_table$random
   colnames(lt)<- sortedseq
   rownames(lt)<- sortedseq
-  ALL_DFs[[1]] <- lt
-  ALL_DFs[[2]] <- rank
-  ALL_DFs[[3]] <- consistency
-  ALL_DFs[[4]] <- df_cons
-  ALL_DFs <- do.call('rbind', ALL_DFs)
+  # ALL_DFs[[1]] <- lt
+  # ALL_DFs[[2]] <- rank
+  # ALL_DFs[[3]] <- consistency
+  # ALL_DFs[[4]] <- df_cons
+  # ALL_DFs <- do.call('rbind', ALL_DFs)
   return(list(leaguetable=lt, pscores=rank, consist=consistency, netsplit=df_cons))
   # Generate datestring "20211012"
   # Generate random string e.g. randomstring = AOFBAOUFEHO

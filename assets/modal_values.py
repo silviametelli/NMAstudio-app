@@ -4,6 +4,12 @@ import dash_core_components as dcc
 import dash_bootstrap_components as dbc, dash_html_components as html
 import dash_table, dash_daq as daq
 from assets.COLORS import *
+import dash_cytoscape as cyto
+from assets.cytoscape_styleesheeet import get_stylesheet
+from demo_data import get_demo_data
+GLOBAL_DATA = get_demo_data()
+from utils import write_node_topickle, read_node_frompickle, write_edge_topickle, read_edge_frompickle, get_network
+GLOBAL_DATA['default_elements'] = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
 
 
 options_format = [{'label':'long',      'value':'long'},
@@ -20,6 +26,12 @@ Input_color = dcc.Input(id="node_color_input",
                        'color':'white'},
                 placeholder="Type color name / Hex")
 
+Input_color_edge = dcc.Input(id="edge_color_input",
+                type="text",
+                style={'background-color':'#40515e','margin-left':'-px', 'font-size':'10.5px', 'padding-left':'-2px',
+                       'color':'white'},
+                placeholder="Type color name / Hex")
+
 
 modal = dbc.Modal([dbc.ModalHeader("Node color selection"),
                    dbc.ModalBody(Input_color),
@@ -27,12 +39,19 @@ modal = dbc.Modal([dbc.ModalHeader("Node color selection"),
                   ],
             id="modal",style={'background-color':'#40515e','margin-left':'-px', 'font-size':'10.5px', 'padding-left':'-2px'})
 
+modal_edges = dbc.Modal([dbc.ModalHeader("Edge color selection"),
+                   dbc.ModalBody(Input_color_edge),
+                   dbc.ModalFooter(dbc.Button("Close", id="close_modal_dd_eclr_input", className="ml-auto"))
+                  ],
+            id="modal_edge",style={'background-color':'#40515e','margin-left':'-px', 'font-size':'10.5px', 'padding-left':'-2px'})
+
+
 modal_data = dbc.Modal([
                    dbc.ModalHeader("Data selection"),
                    dbc.ModalBody([dbc.Row([dbc.Col([html.Br(),
                                                      dcc.Upload(html.A('Upload main data file*',
                                                                             style={'margin-left': '5px'}),
-                                                                     id='datatable-upload', multiple=False,
+                                                                     id='datatable-upload', multiple=False, className='control-upload',
                                                                      style={'display': 'inline-block'})
                                                  ],style={'display': 'inline-block'}),
                                            dbc.Col([html.Br(),html.Ul(id="file-list", style={'margin-left': '15px', 'color':'white','opacity':'60%'})],
@@ -126,6 +145,7 @@ modal_data_table = dbc.Modal([
                                                                            "max-width": "none", "width": "90%"})
 
 
+
 modal_league_table = dbc.Modal([
                      dbc.ModalHeader([html.Div("League Table", style={'display': 'inline-block'}),
                                       html.Div([html.P("Risk of Bias", id='cinemaswitchlabel1_modal',
@@ -165,3 +185,24 @@ modal_league_table = dbc.Modal([
                      ],
                      id="modal_league_table", centered=False, style={'background-color': '#40515e',
                      "max-width": "none", "width": "90%"})
+
+
+
+modal_network = dbc.Modal([
+                     dbc.ModalBody([html.Div(id='network-expand-body'),
+                                    html.Br(),
+                                    html.Div(cyto.Cytoscape(id='modal-cytoscape',  responsive=True,
+                                elements=GLOBAL_DATA['user_elements'],
+                                style={ 'height': '95vh', 'width': '100%',  'margin-top':'-30px', 'margin-bottom': '-30px',
+                                        'padding-left':'-30px', 'margin-left': '-30px','margin-right': '-30px',  'z-index': '999',
+                                        'z-compound-depth': 'orphan'
+                                       },
+                                stylesheet=get_stylesheet()),)
+                                  ]),
+                     dbc.ModalFooter([html.A(html.Img(src="/assets/icons/NETD.png",
+                                                    style={'width': '50px', 'filter': 'invert()'}),
+                                           id="btn-get-png-modal", style={'display': 'inline-block'}),
+                         dbc.Button("Close", id="close-network-expanded", className="ml-auto")])
+                     ],
+                     id="modal_network", centered=False, style={'background-color': '#40515e',
+                     "max-width": "none", "width": "70%",  "max-height":"100%", "height":"99%"})

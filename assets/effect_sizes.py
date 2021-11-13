@@ -1,6 +1,6 @@
 import numpy as np, pandas as pd
 
-## OR
+#### OR
 def get_OR(df):
     for c in ['r1', 'r2', 'n1', 'n2']:
         df[c] = pd.to_numeric(df[c], errors='coerce')
@@ -19,10 +19,10 @@ def get_OR(df):
 
     return round(TE,3), round(seTE,3)
 
-## RR #TODO: change
+#### RR #TODO: change
 def get_RR(df): #TODO: check formula
     for c in ['r1', 'r2', 'n1', 'n2']:
-        # df[c] = df[c].astype(np.float64)  # TODO:  check if this works instead!!
+        # df[c] = df[c].astype(np.float64)
         df[c] = pd.to_numeric(df[c], errors='coerce')
     incr1 = np.where(((df.r1 == 0) | (df.r1 == df.n1)), 0.5, 0)
     incr2 = np.where(((df.r2 == 0) | (df.r2 == df.n2)), 0.5, 0)
@@ -37,7 +37,7 @@ def get_RR(df): #TODO: check formula
 
     return round(TE, 3), round(seTE, 3)
 
-## MD #TODO: change
+#### MD #TODO: change
 def get_MD(df):
     for c in ['y1', 'sd1', 'y2', 'sd2', 'n1', 'n2']:
         df[c] = pd.to_numeric(df[c], errors='coerce')
@@ -51,7 +51,7 @@ def get_MD(df):
     return round(TE,3), round(seTE,3)
 
 
-## SMD #TODO: change
+#### SMD #TODO: change
 def get_SMD(df):
     for c in ['y1', 'sd1', 'y2', 'sd2', 'n1', 'n2']:
         df[c] = pd.to_numeric(df[c], errors='coerce')

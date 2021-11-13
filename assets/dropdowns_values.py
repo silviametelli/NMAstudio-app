@@ -15,8 +15,19 @@ Dropdown_nodecolor = dbc.DropdownMenu(
     label="Node color", direction="right",bs_size="sm",
     children=[dbc.DropdownMenuItem("Default", id='dd_nclr_default'),
               dbc.DropdownMenuItem("Risk of Bias", id='dd_nclr_rob'),
+              dbc.DropdownMenuItem("By class", id='dd_nclr_class'),
               dbc.DropdownMenuItem("Custom selection", id='open_modal_dd_nclr_input'), # Calls up Modal
               html.Div(id='dd_nclr', style={'display': 'none'}),
+              ], style={'display': 'inline-block',}
+)
+
+
+Dropdown_edgecolor = dbc.DropdownMenu(
+    label="Edge color", direction="right", bs_size="sm",
+    children=[dbc.DropdownMenuItem("Default", id='dd_edge_default'),
+              dbc.DropdownMenuItem("Custom selection", id='open_modal_dd_eclr_input'), # Calls up Modal
+              dbc.DropdownMenuItem("Add label", id='dd_edge_label'),
+              html.Div(id='dd_eclr', style={'display': 'none'}),
               ], style={'display': 'inline-block',}
 )
 
@@ -41,9 +52,18 @@ Dropdown_edgesize = dbc.DropdownMenu(
     ],
 )
 
+Dropdown_export = dbc.DropdownMenu(
+    label="Export options", direction="right",bs_size="sm",
+    children=[
+        dbc.DropdownMenuItem("as svg", id='svg-option'),
+        dbc.DropdownMenuItem("as png", id='png-option'),
+        dbc.DropdownMenuItem("as jpeg", id='jpeg-option'),  ##default option
 
+        html.Div(id='exp-options', style={'display': 'none'}),
+    ],
+)
 Dropdown_graphlayout = dbc.DropdownMenu(
     label="Graph Settings",
-    children=[Dropdown_graphlayout_inner, Dropdown_edgesize, Dropdown_nodesize, Dropdown_nodecolor],
+    children=[Dropdown_graphlayout_inner, Dropdown_export, Dropdown_edgesize, Dropdown_nodesize, Dropdown_nodecolor, Dropdown_edgecolor],
     style={'display': 'inline-block'},
 )

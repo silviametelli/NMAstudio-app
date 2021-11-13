@@ -53,6 +53,7 @@ run_NetMeta <- function(dat){
 #--------------------------------------- NMA league table & ranking -------------------------------------------------#
 ## league tables for either one or two outcomes
 league_rank <- function(dat){
+  ALL_DFs <- list()
   dat1 <- dat[, c("studlab", "treat1", "treat2", "TE", "seTE")]
   dat1 <- dat1 %>% filter_at(vars(TE,seTE),all_vars(!is.na(.))) %>% filter(seTE!=0)
   iswhole <- function(x, tol = .Machine$double.eps^0.5) abs(x - round(x)) < tol
@@ -113,8 +114,9 @@ league_rank <- function(dat){
     df_cons <- data.frame(comparison, direct, indirect, p)
     colnames(df_cons) <- c("comparison", "direct", "indirect", "pvalue")
     }else{
+    sortedseq <- sort(nma_primary$trts)
     netleague_table <- netleague(nma_primary, digits = 2,
-                                 seq = sort(nma_primary$trts),
+                                 seq = sortedseq,
                                  bracket="(",
                                  backtransf = TRUE, ci = TRUE, separator=',')
     #p-scores
@@ -127,17 +129,29 @@ league_rank <- function(dat){
     colnames(consistency)  <-  c("Q1", "df_Q1", "p_Q1")
     #consistency node-split
     ne <- netsplit(nma_primary)
-    comparison <- ne$compare.random$comparison[!is.na(ne1$compare.random$p)]
+    comparison <- ne$compare.random$comparison[!is.na(ne$compare.random$p)]
     direct <- exp(ne$direct.random$TE[!is.na(ne$compare.random$p)])
     indirect <- exp(ne$indirect.random$TE[!is.na(ne$compare.random$p)])
-    p <- ne$compare.random$p[!is.na(ne2$compare.random$p)]
+    p <- ne$compare.random$p[!is.na(ne$compare.random$p)]
     df_cons <- data.frame(comparison, direct, indirect, p)
     colnames(df_cons) <- c("comparison", "direct", "indirect", "p-value")
   }
   lt <- netleague_table$random
   colnames(lt)<- sortedseq
   rownames(lt)<- sortedseq
+  ALL_DFs[[1]] <- lt
+  ALL_DFs[[2]] <- rank
+  ALL_DFs[[3]] <- consistency
+  ALL_DFs[[4]] <- df_cons
+  ALL_DFs <- do.call('rbind', ALL_DFs)
   return(list(leaguetable=lt, pscores=rank, consist=consistency, netsplit=df_cons))
+  # Generate datestring "20211012"
+  # Generate random string e.g. randomstring = AOFBAOUFEHO
+  # Create folder AOFBAOUFEHO and store stuff inside
+  # AOFBAOUFEHO/lt.parq, AOFBAOUFEHO/rank.parq
+  #return(randomstring)
+  #return(ALL_DFs)
+
 }
 
 ## comparison adjusted funnel plots

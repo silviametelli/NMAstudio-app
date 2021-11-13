@@ -94,7 +94,7 @@ def tab_consistency(data):
               html.Div(dash_table.DataTable(
             id='netsplit_table-container',
             fixed_rows={'headers': True, 'data': 0},
-            export_format="csv",
+            export_format="csv", #xlsx
             #columns=[{"name": i, "id": i} for i in df.columns],
             #data=df.to_dict('records'),
             style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',

@@ -14,7 +14,8 @@ def get_demo_data():
                    'netsplit_data':        pd.read_csv('db/consistency/consistency_netsplit.csv'),
                    'ranking_data':         pd.read_csv('db/ranking/rank.csv'),
                    'funnel_data':          pd.read_csv('db/funnel/funnel_data.csv'),
-                   'league_table_data':    pd.read_csv('db/league_table_data/league_table.csv', index_col=0)}
+                   'league_table_data':    pd.read_csv('db/league_table_data/league_table.csv', index_col=0)
+                   }
 
     ##add columns TE,seTE from raw data
     #GLOBAL_DATA['net_data']['TE'] =  OR_effect_measure(GLOBAL_DATA['net_data'],'r1','r2','n1', 'n2')[0].astype('float64')
@@ -25,8 +26,7 @@ def get_demo_data():
     GLOBAL_DATA['consistency_data'] = GLOBAL_DATA['consistency_data'].loc[:, ~GLOBAL_DATA['consistency_data'].columns.str.contains('^Unnamed')]  # Remove unnamed columns
     GLOBAL_DATA['netsplit_data'] = GLOBAL_DATA['netsplit_data'].loc[:, ~GLOBAL_DATA['netsplit_data'].columns.str.contains('^Unnamed')]  # Remove unnamed columns
 
-    if 'rob' not in GLOBAL_DATA['net_data'].select_dtypes(include=['int16', 'int32', 'int64',
-                                                                   'float16', 'float32', 'float64']).columns:
+    if 'rob' not in GLOBAL_DATA['net_data'].select_dtypes(include=['int16', 'int32', 'int64', 'float16', 'float32', 'float64']).columns:
             if any(GLOBAL_DATA['net_data']['rob'].str.contains('l|m|h', na=False)):
                GLOBAL_DATA['net_data']['rob'].replace({'l':1,'m':2,'h':3}, inplace=True)
             elif any(GLOBAL_DATA['net_data']['rob'].str.contains('L|M|H', na=False)):
@@ -37,7 +37,7 @@ def get_demo_data():
     replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
     leaguetable = GLOBAL_DATA['league_table_data'].copy(deep=True)
     GLOBAL_DATA['league_table_data'] = pd.DataFrame([[replace_and_strip(col) for col in list(row)]
-                                                     for idx, row in leaguetable.iterrows()], columns=leaguetable.columns, index=leaguetable.index)
+                                                    for idx, row in leaguetable.iterrows()], columns=leaguetable.columns, index=leaguetable.index)
 
     #for year slider
     if 'year' not in GLOBAL_DATA['net_data'].columns:

@@ -6,12 +6,12 @@
 # --------------------------------------------------------------------------------------------------------------------#
 import warnings
 from collections import Counter
-
 warnings.filterwarnings("ignore")
 # ---------R2Py Resources --------------------------------------------------------------------------------------------#
 import rpy2.robjects as ro
 from rpy2.robjects import pandas2ri  # Define the R script and loads the instance in Python
 from rpy2.robjects.conversion import localconverter
+from  collections  import OrderedDict
 
 r = ro.r
 r['source']('R_Codes/all_R_functions.R')  # Loading the function we have defined in R.
@@ -28,9 +28,12 @@ import plotly.figure_factory as ff
 from sklearn.cluster import KMeans
 from assets.effect_sizes import get_OR, get_RR, get_MD
 from demo_data import get_demo_data
+import matplotlib
+from matplotlib import cm
+from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from layouts import *
 # --------------------------------------------------------------------------------------------------------------------#
-from utils import write_node_topickle, read_node_frompickle, write_edge_topickle, read_edge_frompickle, get_network
+from utils import write_node_topickle, read_node_frompickle, write_edge_topickle, read_edge_frompickle, get_network, data_reshape
 from PATHS import TEMP_PATH
 
 UPLOAD_DIRECTORY = f"{TEMP_PATH}/UPLOAD_DIRECTORY"
@@ -47,15 +50,13 @@ write_edge_topickle(EMPTY_SELECTION_EDGES)
 
 GRAPH_INTERVAL = os.environ.get("GRAPH_INTERVAL", 5000)
 
-app = dash.Dash(__name__, meta_tags=[{"name": "viewport",
-                                      "content": "width=device-width, initial-scale=1"}],
+app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}],
                 #external_stylesheets=[dbc.themes.BOOTSTRAP],
                 suppress_callback_exceptions=True)
 
 #app.config.suppress_callback_exceptions = True
 
 server = app.server
-
 app.layout = html.Div([dcc.Location(id='url', refresh=False),
                        html.Div(id='page-content')])
 
@@ -63,13 +64,13 @@ app.layout = html.Div([dcc.Location(id='url', refresh=False),
 cyto.load_extra_layouts()
 
 GLOBAL_DATA = get_demo_data()
+
 GLOBAL_DATA['default_elements'] = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
 
-OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col} for col in GLOBAL_DATA['net_data'].columns]
 
+OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col} for col in GLOBAL_DATA['net_data'].columns]
 options_effect_size_cont = [{'label':'MD',  'value':'MD'},
                              {'label':'SMD',     'value':'SMD'}]
-
 options_effect_size_bin = [{'label':'OR',  'value':'OR'},
                              {'label':'RR',     'value':'RR'}]
 
@@ -83,22 +84,15 @@ options_effect_size_bin = [{'label':'OR',  'value':'OR'},
 # Update the index
 @app.callback(Output('page-content', 'children'), [Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname == '/home':
-        return Homepage(GLOBAL_DATA)
-    elif pathname == '/doc':
-        return doc_layout
-    elif pathname == '/news':
-        return news_layout
-    else:
-        return Homepage(GLOBAL_DATA)
-
+    if pathname == '/home':  return Homepage(GLOBAL_DATA)
+    elif pathname == '/doc': return doc_layout
+    else:                    return Homepage(GLOBAL_DATA)
 
 # Update which link is active in the navbar
 @app.callback(Output('homepage-link', 'active'),
               [Input('url', 'pathname')])
 def set_homepage_active(pathname):
     return pathname == '/home'
-
 
 @app.callback(Output('docpage-link', 'active'), [Input('url', 'pathname')])
 def set_docpage_active(pathname):
@@ -120,127 +114,84 @@ def set_docpage_active(pathname):
                Input("dropdown-outcome2", "value")],
               [State('datatable-upload', 'filename')])
 def update_options(contents, search_value_format, search_value_outcome1, search_value_outcome2, filename):
-    if contents is None:
-        data = GLOBAL_DATA['net_data']
-    else:
-        data = parse_contents(contents, filename)
-    options_var = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
+    if contents is None: data = GLOBAL_DATA['net_data']
+    else:                data = parse_contents(contents, filename)
+    #options_var = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
 
     if search_value_format is None: return None
-    col_vars = [[]] * 3
-    if search_value_format == 'long':
-        col_vars[0] = ['study id', 'treat', 'rob']
-        if search_value_outcome1 == 'continuous':
-            col_vars[1] = ['y', 'sd', 'n']
-            if search_value_outcome2 == 'continuous':
-                col_vars[2] = ['y2', 'sd2', 'n2']
-            elif search_value_outcome2 == 'binary':
-                col_vars[2] = ['z1', 'n.z']
-        elif search_value_outcome1 == 'binary':
-            col_vars[1] = ['r', 'n']
-            if search_value_outcome2 == 'continuous':
-                col_vars[2] = ['y2', 'sd2', 'n2']
-            elif search_value_outcome2 == 'binary':
-                col_vars[2] = ['z1', 'n.z']
+    if search_value_outcome1 is None: return None
 
-        else:
-            return None
-    elif search_value_format == 'contrast':
-        col_vars[0] = ['studlab', 'treat 1', 'treat 2', 'rob']
-        if search_value_outcome1 == 'continuous':
-            col_vars[0] += ['n1', 'n2']
-            col_vars[1] = ['y1', 'sd1', 'y2', 'sd2']
-            if search_value_outcome2 == 'continuous':
-                col_vars[2] = ['y2.1', 'sd1.2', 'y2.2', 'sd2.2']
-            elif search_value_outcome2 == 'binary':
-                col_vars[2] = ['z1', 'n1.z', 'z2.z', 'n2.z']
-        elif search_value_outcome1 == 'binary':
-            col_vars[1] = ['r1', 'n1', 'r2', 'n2']
-            if search_value_outcome2 == 'binary':
-                col_vars[2] = ['z1', 'n1.z', 'z2', 'n2.z']
-            elif search_value_outcome2 == 'continuous':
-                col_vars[2] = ['y2.1', 'sd1.2', 'y2.2', 'sd2.2']
+    name_outcomes = ['1st outcome*', '2nd outcome'] if search_value_outcome2 is not None else ['1st outcome']
+    search_values = [search_value_outcome1, search_value_outcome2] if search_value_outcome2 is not None else [search_value_outcome1]
+    selectors_ef = html.Div([html.Div(
+        [dbc.Row([html.P("Select effect size", style={'color': 'white', 'vertical-align': 'middle'})])] +
+         [dbc.Row([dbc.Col(dbc.Row(
+                  [html.P(f"{name}", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
+                                                                   'margin-left': '0px', 'font-size': '12px'}),
+                  dcc.Dropdown(id={'type': 'dataselectors', 'index': f'dropdown-{name_outcomes}'},
+                               options=options_effect_size_cont if val=='continuous' else options_effect_size_bin,
+                               searchable=True, placeholder="...",
+                               clearable=False, style={'width': '60px', "height":'20px',
+                                                       'vertical-align': 'middle',
+                                                       "font-size": "1em",
+                                                       "font-family": "sans-serif",
+                                                       'margin-bottom': '10px',
+                                                       'display': 'inline-block',
+                                                       'color': CLR_BCKGRND_old, 'font-size': '10px',
+                                                       'background-color': CLR_BCKGRND_old} )]
+          ),  style={'margin-left': '55px', 'margin-right': '5px'}) for name, val in zip(name_outcomes, search_values)]
+        )],
+     )])
+    return selectors_ef
 
-        else:
-            return None
-    vars_names = [[f'{search_value_format}.{c}' for c in col_vars[0]],
-                  [f'{search_value_outcome1}.{c}' for c in col_vars[1]],
-                  [f'{search_value_outcome2}.{c}' for c in col_vars[2]]]
-    selectors_row = html.Div([html.Div(
-        [dbc.Row([html.P("Select effect size", style={'color': 'white', 'vertical-align': 'middle'})])]
-        ),
-        html.Div(
-        [dbc.Row([html.P("Select your variables", style={'color': 'white', 'vertical-align': 'middle'})])] +
-        [dbc.Row([dbc.Col(dbc.Row(
-                [html.P(f"{name}:", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
-                                                                  'margin-left': '0px', 'font-size': '12px'}),
-                 dcc.Dropdown(id={'type': 'dataselectors', 'index': f'dropdown-{var_name}'},
-                              options=options_var, searchable=True, placeholder="...", className="box",
-                              clearable=False, style={'width': '80px',  # 'height': '30px',
-                                                      'vertical-align': 'middle',
-                                                      'margin-bottom': '10px',
-                                                      # 'padding-bottom':'10px',
-                                                      'display': 'inline-block',
-                                                      'color': CLR_BCKGRND_old, 'font-size': '10px',
-                                                      'background-color': CLR_BCKGRND_old})]),
-                style={'margin-bottom': '0px'})
-                for var_name, name in zip(var_names, col_var)],
-                style={'display': 'inline-block'})
-            for var_names, col_var in zip(vars_names, col_vars)],
-
-    )
-        ])
-    return selectors_row
 
 
 ### --- update graph layout with dropdown: graph layout --- ###
-@app.callback(Output('cytoscape', 'layout'),
+@app.callback([Output('cytoscape', 'layout'),
+               Output('modal-cytoscape', 'layout')],
               [Input('graph-layout-dropdown', 'children')],
               prevent_initial_call=False)
 def update_cytoscape_layout(layout):
-    return {'name': layout.lower() if layout else 'circle',
-            'animate': True}
-
-
-### ----- save network plot as png ------ ###
-@app.callback(Output("cytoscape", "generateImage"),
-              Input("btn-get-png", "n_clicks"),
-              prevent_initial_call=True)
-def get_image(button):
-    GLOBAL_DATA['WAIT'] = True
-    while GLOBAL_DATA['WAIT']:
-        time.sleep(0.05)
-    action = 'store'
     ctx = dash.callback_context
-    if ctx.triggered:
-        input_id = ctx.triggered[0]["prop_id"].split(".")[0]
-        if input_id != "tabs": action = "download"
-    return {'type': 'jpeg', 'action': action,
-            'options': {  # 'bg':'#40515e',
-                'scale': 3}}
+    return {'name': layout.lower() if layout else 'circle',
+            'animate': True}, {'name': layout.lower() if layout else 'circle',
+                               'fit': True,
+                               'animate': True}
 
 
 ### ----- update graph layout on node click ------ ###
-@app.callback(Output('cytoscape', 'stylesheet'),
+@app.callback([Output('cytoscape', 'stylesheet'),
+               Output('modal-cytoscape', 'stylesheet')],
               [Input('cytoscape', 'tapNode'),
                Input('cytoscape', 'selectedNodeData'),
                Input('cytoscape', 'elements'),
                Input('cytoscape', 'selectedEdgeData'),
-               Input('dd_nclr', 'children'), Input('node_color_input', 'value'),
+               Input('dd_nclr', 'children'),
+               Input('dd_eclr', 'children'),
+               Input('node_color_input', 'value'),
+               Input('edge_color_input', 'value'),
                Input('dd_nds', 'children'),
                Input('dd_egs', 'children'),
-               Input("btn-get-png", "n_clicks")]
+               Input("btn-get-png", "n_clicks"),
+               Input("btn-get-png-modal", "n_clicks"),
+               ]
               )
 def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
-                        dd_nclr, custom_nd_clr, dd_nds, dd_egs, dwld_button):
+                        dd_nclr, dd_eclr, custom_nd_clr, custom_edg_clr, dd_nds, dd_egs,
+                        dwld_button, dwld_button_modal):
+
     nodes_color = (custom_nd_clr or DFLT_ND_CLR) if dd_nclr != 'Default' else DFLT_ND_CLR
+    edges_color = (custom_edg_clr or None) if dd_eclr != 'Default' else None
+
     node_size = dd_nds or 'Default'
     node_size = node_size == 'Tot randomized'
     edge_size = dd_egs or 'Number of studies'
     edge_size = edge_size == 'No size'
     pie = dd_nclr == 'Risk of Bias'
+    cls = dd_nclr == 'By class'
+    edg_lbl = dd_eclr == 'Add label'
     FOLLOWER_COLOR, FOLLOWING_COLOR = DFLT_ND_CLR, DFLT_ND_CLR
-    stylesheet = get_stylesheet(pie=pie, nd_col=nodes_color, node_size=node_size, edge_size=edge_size)
+    stylesheet = get_stylesheet(pie=pie, classes=cls, edg_lbl=edg_lbl, edg_col=edges_color, nd_col=nodes_color, node_size=node_size, edge_size=edge_size)
     edgedata = [el['data'] for el in elements if 'target' in el['data'].keys()]
     all_nodes_id = [el['data']['id'] for el in elements if 'target' not in el['data'].keys()]
 
@@ -251,7 +202,7 @@ def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                                  | {e['target'] for e in edgedata if e['source'] in selected_nodes_id
                                     or e['target'] in selected_nodes_id})
 
-        stylesheet = get_stylesheet(pie=pie, nd_col=nodes_color, node_size=node_size,
+        stylesheet = get_stylesheet(pie=pie,  classes=cls, edg_lbl=edg_lbl, edg_col=edges_color, nd_col=nodes_color, node_size=node_size,
                                     nodes_opacity=0.2, edges_opacity=0.1) + [
                          {"selector": 'node[id = "{}"]'.format(id),
                           "style": {"border-color": "#751225", "border-width": 5, "border-opacity": 1,
@@ -265,7 +216,7 @@ def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                          {"selector": 'node[id = "{}"]'.format(id),
                           "style": {"opacity": 1}}
                          for id in all_nodes_id if id not in slct_nodesdata and id in all_slct_src_trgt]
-    if slct_edgedata and False:  # Not doing anything at the moment
+    if slct_edgedata and False:  #TODO: Not doing anything at the moment
         for edge in edgedata:
             if edge['source'] in selected_nodes_id:
                 stylesheet.append({
@@ -294,9 +245,38 @@ def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
         stylesheet[0]['style']['color'] = 'black'
         time.sleep(0.05)
 
-    GLOBAL_DATA['WAIT'] = False
-    return stylesheet
+    if dwld_button_modal and dwld_button_modal > GLOBAL_DATA['dwnld_bttn_calls']:
+        GLOBAL_DATA['dwnld_bttn_calls'] += 1
+        stylesheet[0]['style']['color'] = 'black'
+        time.sleep(0.05)
 
+    GLOBAL_DATA['WAIT'] = False
+    stylesheet_modal  = stylesheet
+    return stylesheet, stylesheet_modal
+
+
+
+### ----- save network plot as png ------ ###
+@app.callback(Output("cytoscape", "generateImage"),
+              [Input("btn-get-png", "n_clicks"),
+               Input("btn-get-png-modal", "n_clicks"), Input('exp-options', 'children'),
+],
+              prevent_initial_call=True)
+def get_image(button, button_modal, export):
+    GLOBAL_DATA['WAIT'] = True
+    while GLOBAL_DATA['WAIT']:
+        time.sleep(0.05)
+    action = 'store'
+    ctx = dash.callback_context
+    if ctx.triggered:
+        input_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        if input_id != "tabs": action = "download"
+    # return {'type': 'jpeg' if export=='as jpeg' else ('png' if export=='as png' else 'svg'), 'action': action,
+    #         'options': {  # 'bg':'#40515e',
+    #             'scale': 3}}
+    return {'type': 'jpeg' , 'action': action,
+            'options': {  # 'bg':'#40515e',
+                'scale': 3}}
 
 ### ----- update node info on NMA forest plot  ------ ###
 @app.callback(Output('tapNodeData-info', 'children'),
@@ -374,7 +354,7 @@ def TapNodeData_fig(data, outcome_direction):
                      error_x_minus='lower_error' if xlog else None,
                      error_x='CI_width_hf' if xlog else 'CI_width' if data else None,
                      log_x=xlog,
-                     size_max=10,
+                     size_max=5,
                      range_x=[min(low_rng, 0.1), max([up_rng, 10])] if xlog else None,
                      range_y=[-1, len(df.Treatment)],
                      size=df.WEIGHT if data else None)
@@ -649,44 +629,35 @@ def get_new_data(contents, dataselectors, search_value_format, search_value_outc
     def apply_r_func(func, df):
         with localconverter(ro.default_converter + pandas2ri.converter):
             df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
-        func_r_res = func(dat=df_r)  # Invoke R function and get the result
+        func_r_res = func(dat=df_r)  # Invoke R function and get the result, TODO: see how to read-in multiple outputs from R function
         df_result = pandas2ri.rpy2py(func_r_res).reset_index(drop=True)  # Convert back to a pandas.DataFrame.
         return df_result
 
-    print(dataselectors)
-    if contents is None or not all(dataselectors) or not dataselectors:
+    if contents is None or not all(dataselectors):
         data = GLOBAL_DATA['net_data']
         GLOBAL_DATA['user_elements'] = get_network(df=data)
         elements = get_network(df=data[data.year <= slider_year])
     else:
         data = parse_contents(contents, filename)
-        print(dataselectors)
-        var_dict = dict()
-        if search_value_format == 'long':
-            if search_value_outcome1 == 'continuous':
-                studlab, treat, rob, TE, seTE, n = dataselectors
-                var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', TE: 'TE', seTE: 'seTE', n: 'n'}
-            elif search_value_outcome1 == 'binary':
-                studlab, treat, rob, r, n = dataselectors
-                var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', r: 'r', n: 'n'}
-        elif search_value_format == 'contrast':
-            if search_value_outcome1 == 'continuous':
-                studlab, treat1, treat2, n1, n2, rob, TE1, seTE1, TE2, seTE2 = dataselectors
-                var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', n1: 'n1', n2: 'n2',
-                            rob: 'rob', TE1: 'TE1', seTE1: 'seTE1', TE2: 'TE2', seTE2: 'seTE2'}
-            elif search_value_outcome1 == 'binary':
-                studlab, treat1, treat2, n1, n2, rob, r1, r2 = dataselectors
-                var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', n1: 'n1', n2: 'n2',
-                            rob: 'rob', r1: 'r1', r2: 'r2'}
 
-        data.rename(columns=var_dict, inplace=True)
-        #GLOBAL_DATA['net_data']['TE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[0]
-        #GLOBAL_DATA['net_data']['seTE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[1]
-        #OPTIONS_VAR = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
-
-        GLOBAL_DATA['net_data'] = data = data.loc[:, ~data.columns.str.contains('^Unnamed')]  # Remove unnamed columns
-        data['type_outcome1'] = search_value_outcome1
-        #data['search_value_outcome2'] = search_value_outcome2 if search_value_outcome2
+        # var_dict = dict()
+        # if search_value_format == 'long':
+        #     if search_value_outcome1 == 'continuous':
+        #         studlab, treat, rob, TE, seTE, n = dataselectors
+        #         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', TE: 'TE', seTE: 'seTE', n: 'n'}
+        #     elif search_value_outcome1 == 'binary':
+        #         studlab, treat, rob, r, n = dataselectors
+        #         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', r: 'r', n: 'n'}
+        # elif search_value_format == 'contrast':
+        #     if search_value_outcome1 == 'continuous':
+        #         studlab, treat1, treat2, n1, n2, rob, TE1, seTE1, TE2, seTE2 = dataselectors
+        #         var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', n1: 'n1', n2: 'n2',
+        #                     rob: 'rob', TE1: 'TE1', seTE1: 'seTE1', TE2: 'TE2', seTE2: 'seTE2'}
+        #     elif search_value_outcome1 == 'binary':
+        #         studlab, treat1, treat2, n1, n2, rob, r1, r2 = dataselectors
+        #         var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', n1: 'n1', n2: 'n2',
+        #                     rob: 'rob', r1: 'r1', r2: 'r2'}
+        # data.rename(columns=var_dict, inplace=True)
 
         if 'rob' not in GLOBAL_DATA['net_data'].select_dtypes(
                 include=['int16', 'int32', 'int64', 'float16', 'float32', 'float64']).columns:
@@ -696,8 +667,30 @@ def get_new_data(contents, dataselectors, search_value_format, search_value_outc
                 GLOBAL_DATA['net_data']['rob'].replace({'L': 1, 'M': 2, 'H': 3}, inplace=True)
         else:
             pass
+        if "treat1_class" and "treat2_class" in GLOBAL_DATA['net_data'].columns:
+            cmaps = OrderedDict()
+            blues = cm.get_cmap('Blues', 128)
+            viridis = cm.get_cmap('viridis', 128)
+            GLOBAL_DATA['n_class'] = get_network(GLOBAL_DATA['net_data'])[-1]["data"]['n_class']
+            cmaps['Sequential'] = [matplotlib.colors.rgb2hex(viridis(i)) for i in range(0, viridis.N, 1)]
+            cmaps['Sequential'] = ['purple', 'green', 'blue', 'red', 'black', 'yellow', 'black', 'orange', 'pink']
+            cmaps_class = cmaps['Sequential'][:GLOBAL_DATA['n_class']]
+        #GLOBAL_DATA['net_data']['TE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[0]
+        #GLOBAL_DATA['net_data']['seTE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[1]
+        OPTIONS_VAR = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
+        GLOBAL_DATA['net_data'] = data = data.loc[:, ~data.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+        #
+        # if search_value_outcome1 is not None:
+        #     data['type_outcome1'] = "continuous" if search_value_outcome1=='continuous' else 'binary'
+        # if search_value_outcome2 is not None:
+        #     data['type_outcome2'] = "continuous" if search_value_outcome2=='continuous' else 'binary'
 
-        elements = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
+        data['type_outcome1'] = search_value_outcome1
+        if search_value_outcome2 is not None:
+           data['type_outcome2'] = search_value_outcome2
+
+        GLOBAL_DATA['net_data'] = data
+        elements = GLOBAL_DATA['user_elements'] = get_network(df=data)
         GLOBAL_DATA['forest_data'] = apply_r_func(func=run_NetMeta_r, df=data)
         GLOBAL_DATA['forest_data_pairwise'] = apply_r_func(func=pairwise_forest_r, df=data)
         leaguetable_r  = apply_r_func(func=league_table_r, df=data)
@@ -707,33 +700,12 @@ def get_new_data(contents, dataselectors, search_value_format, search_value_outc
         leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
         leaguetable = leaguetable.reset_index().rename(columns={'index':'Treatments'})
         GLOBAL_DATA['league_table_data'] = leaguetable
-
     if filename is not None:
+        print(data)
         return data.to_json(orient='split'), elements, f'{filename}'
     else:
         return data.to_json(orient='split'), elements, 'No file added'
 
-
-# @app.callback([Output('__storage_netdata', 'children'),
-#                Output('cytoscape', 'elements'),
-#                Output("file-list", "children")],
-#               [Input('datatable-upload', 'contents'),
-#                Input('slider-year', 'value'),
-#                ],
-#               [State('datatable-upload', 'filename')]
-#               )
-# def get_new_data(contents, slider_year, filename):
-#     if contents:
-#         GLOBAL_DATA['new_data_upload'] = parse_contents(contents, filename)
-#
-#     data = GLOBAL_DATA['net_data']
-#     GLOBAL_DATA['user_elements'] = get_network(df=data)
-#     elements = get_network(df=data[data.year <= slider_year])
-#
-#     if filename is not None:
-#         return data.to_json(orient='split'), elements, f'{filename}'  # TODO: remove filename frorm here
-#     else:
-#         return data.to_json(orient='split'), elements, 'No file added'
 
 #### ---------------------- netsplit table ------------------------ ####
 @app.callback([Output('netsplit_table-container', 'data'),
@@ -1314,6 +1286,91 @@ def update_forest_pairwise(edge):
     return fig
 
 
+############ - Funnel plot  - ###############
+@app.callback(Output('funnel-fig', 'figure'),
+              [Input('cytoscape', 'selectedNodeData'),
+               Input("toggle_funnel_direction", "value")])
+def Tap_funnelplot(node, outcome2):
+    if node:
+        treatment = node[0]['label']
+        df = GLOBAL_DATA['funnel_data'][GLOBAL_DATA['funnel_data'].treat2 == treatment].copy() if outcome2 else GLOBAL_DATA['funnel_data'][GLOBAL_DATA['funnel_data'].treat2 == treatment].copy()
+        df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
+        df['Comparison'] = df['Comparison'].astype(str)
+        effect_size = df.columns[3]
+        df = df.sort_values(by='seTE', ascending=False)
+    else:
+        effect_size = ''
+        df = pd.DataFrame([[0] * 8], columns=['studlab', 'treat1', 'treat2', effect_size,
+                                              'TE_direct', 'TE_adj',
+                                              'seTE', 'Comparison'])
+
+    max_y = df.seTE.max()+0.2
+
+    fig = px.scatter(df, x="TE_adj", y="seTE",
+                     #log_x=xlog,
+                     range_x=[min(df.TE_adj)-3, max(df.TE_adj)+3],
+                     range_y=[0.01, max_y],
+                     symbol="Comparison",
+                     color="Comparison",
+                     color_discrete_sequence = px.colors.qualitative.Light24)
+
+    fig.update_traces(marker=dict(size=6, # #symbol='circle',
+                      line=dict(width=1, color='black')),
+                       )
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
+                      plot_bgcolor='rgba(0,0,0,0)')
+
+    if node:
+        fig.update_layout(clickmode='event+select',
+                          font_color="black",
+                          coloraxis_showscale=False,
+                          showlegend=True,
+                          modebar= dict(orientation = 'h', bgcolor = 'rgba(0,0,0,0)'),
+                          autosize=True,
+                          margin=dict(l=10, r=5, t=20, b=60),
+                          xaxis=dict(showgrid=False, autorange=False, zeroline=False,
+                                     title='',showline=True, linewidth=1, linecolor='black'),
+                          yaxis=dict(showgrid=False, autorange=False, title='Standard Error',
+                                     showline=True, linewidth=1, linecolor='black',
+                                     zeroline=False,
+                                     ),
+                          annotations=[dict(x=0, ax=0, y=-0.12, ay=-0.1, xref='x', axref='x', yref='paper',
+                                        showarrow=False, text= 'Log' f'{effect_size} ' 'centered at comparison-specific pooled effect')],
+
+                          )
+        fig.add_shape(type='line', yref='paper', y0=0, y1=1, xref='x', x0=0, x1=0,
+                      line=dict(color="black", width=1), layer='below')
+
+        fig.add_shape(type='line', y0=max_y, x0= -1.96 * max_y, y1=0, x1=0,
+                      line=dict(color="black", dash='dashdot', width=1.5))
+        fig.add_shape(type='line', y0=max_y, x0= 1.96 * max_y, y1=0, x1=0,
+                      line=dict(color="black", dash='dashdot', width=1.5))
+        fig.add_shape(type='line', y0=max_y, x0= -2.58 * max_y, y1=0, x1=0,
+                      line=dict(color="black", dash='dot', width=1.5))
+        fig.add_shape(type='line', y0=max_y, x0= 2.58 * max_y, y1=0, x1=0,
+                      line=dict(color="black", dash='dot', width=1.5))
+
+        # fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black',
+        #                  ticklen=5,
+        #                  autorange=True,
+        #                  showline=True, linewidth=1, linecolor='black',
+        #                  zeroline=True, zerolinecolor='black')
+
+        fig.update_yaxes(autorange="reversed", range=[max_y,0])
+
+
+    if not node:
+        fig.update_shapes(dict(xref='x', yref='y'))
+        fig.update_xaxes(zeroline=False, title='', visible=False)
+        fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
+        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80),
+                          coloraxis_showscale=False,
+                          showlegend=False,
+                          modebar = dict(orientation='h', bgcolor='rgba(0,0,0,0)'))
+        fig.update_traces(hoverinfo='skip', hovertemplate=None)
+
+    return fig
+
 
 ############ - ranking plots  - ###############
 @app.callback([Output('tab-rank1', 'figure'),
@@ -1444,94 +1501,9 @@ def ranking_plot(outcome_direction_1, outcome_direction_2, outcome_direction_11,
 
     return fig, fig2
 
-
-############ - Funnel plot  - ###############
-@app.callback(Output('funnel-fig', 'figure'),
-              [Input('cytoscape', 'selectedNodeData'),
-               Input("toggle_funnel_direction", "value")])
-def Tap_funnelplot(node, outcome2):
-    if node:
-        treatment = node[0]['label']
-        df = GLOBAL_DATA['funnel_data'][GLOBAL_DATA['funnel_data'].treat2 == treatment].copy() if outcome2 else GLOBAL_DATA['funnel_data'][GLOBAL_DATA['funnel_data'].treat2 == treatment].copy()
-        df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
-        df['Comparison'] = df['Comparison'].astype(str)
-        effect_size = df.columns[3]
-        df = df.sort_values(by='seTE', ascending=False)
-    else:
-        effect_size = ''
-        df = pd.DataFrame([[0] * 8], columns=['studlab', 'treat1', 'treat2', effect_size,
-                                              'TE_direct', 'TE_adj',
-                                              'seTE', 'Comparison'])
-
-    max_y = df.seTE.max()+0.2
-
-    fig = px.scatter(df, x="TE_adj", y="seTE",
-                     #log_x=xlog,
-                     range_x=[min(df.TE_adj)-3, max(df.TE_adj)+3],
-                     range_y=[0.01, max_y],
-                     symbol="Comparison",
-                     color="Comparison",
-                     color_discrete_sequence = px.colors.qualitative.Light24)
-
-    fig.update_traces(marker=dict(size=6, # #symbol='circle',
-                      line=dict(width=1, color='black')),
-                       )
-    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
-                      plot_bgcolor='rgba(0,0,0,0)')
-
-    if node:
-        fig.update_layout(clickmode='event+select',
-                          font_color="black",
-                          coloraxis_showscale=False,
-                          showlegend=True,
-                          modebar= dict(orientation = 'h', bgcolor = 'rgba(0,0,0,0)'),
-                          autosize=True,
-                          margin=dict(l=10, r=5, t=20, b=60),
-                          xaxis=dict(showgrid=False, autorange=False, zeroline=False,
-                                     title='',showline=True, linewidth=1, linecolor='black'),
-                          yaxis=dict(showgrid=False, autorange=False, title='Standard Error',
-                                     showline=True, linewidth=1, linecolor='black',
-                                     zeroline=False,
-                                     ),
-                          annotations=[dict(x=0, ax=0, y=-0.12, ay=-0.1, xref='x', axref='x', yref='paper',
-                                        showarrow=False, text= 'Log' f'{effect_size} ' 'centered at comparison-specific pooled effect')],
-
-                          )
-        fig.add_shape(type='line', yref='paper', y0=0, y1=1, xref='x', x0=0, x1=0,
-                      line=dict(color="black", width=1), layer='below')
-
-        fig.add_shape(type='line', y0=max_y, x0= -1.96 * max_y, y1=0, x1=0,
-                      line=dict(color="black", dash='dashdot', width=1.5))
-        fig.add_shape(type='line', y0=max_y, x0= 1.96 * max_y, y1=0, x1=0,
-                      line=dict(color="black", dash='dashdot', width=1.5))
-        fig.add_shape(type='line', y0=max_y, x0= -2.58 * max_y, y1=0, x1=0,
-                      line=dict(color="black", dash='dot', width=1.5))
-        fig.add_shape(type='line', y0=max_y, x0= 2.58 * max_y, y1=0, x1=0,
-                      line=dict(color="black", dash='dot', width=1.5))
-
-        # fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black',
-        #                  ticklen=5,
-        #                  autorange=True,
-        #                  showline=True, linewidth=1, linecolor='black',
-        #                  zeroline=True, zerolinecolor='black')
-
-        fig.update_yaxes(autorange="reversed", range=[max_y,0])
-
-
-    if not node:
-        fig.update_shapes(dict(xref='x', yref='y'))
-        fig.update_xaxes(zeroline=False, title='', visible=False)
-        fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
-        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80),
-                          coloraxis_showscale=False,
-                          showlegend=False,
-                          modebar = dict(orientation='h', bgcolor='rgba(0,0,0,0)'))
-        fig.update_traces(hoverinfo='skip', hovertemplate=None)
-
-    return fig
-
-
-
+#############################################################################
+############################# TOGGLE SECTION ################################
+#############################################################################
 
 ### -------------- toggle switch forest beneficial/harm ---------------- ###
 @app.callback([Output("forestswitchlabel1", "style"),
@@ -1656,6 +1628,16 @@ def which_dd_nds(default_t, default_v, tot_rnd_t, tot_rnd_v):
     which = dd_nds.index(max(dd_nds))
     return [values[which]]
 
+@app.callback([Output('exp-options', 'children')],
+              [Input('jpeg-option', 'n_clicks_timestamp'), Input('jpeg-option', 'children'),
+               Input('png-option', 'n_clicks_timestamp'), Input('png-option', 'children'),
+               Input('svg-option', 'n_clicks_timestamp'), Input('svg-option', 'children'),],
+              prevent_initial_call=True)
+def which_dd_export(default_t, default_v, png_t, png_v, svg_t, svg_v): #TODO: for some reason, default is svg
+    values = [default_v, png_v, svg_v]
+    dd_nds = [default_t or 0, png_t or 0, svg_t or 0]
+    which = dd_nds.index(max(dd_nds))
+    return [values[which]]
 
 @app.callback([Output('dd_egs', 'children')],
               [Input('dd_egs_default', 'n_clicks_timestamp'), Input('dd_egs_default', 'children'),
@@ -1672,17 +1654,33 @@ def which_dd_egs(default_t, default_v, nstud_t, nstud_v):
                Output("open_modal_dd_nclr_input", "n_clicks")],
               [Input('dd_nclr_default', 'n_clicks_timestamp'), Input('dd_nclr_default', 'children'),
                Input('dd_nclr_rob', 'n_clicks_timestamp'), Input('dd_nclr_rob', 'children'),
+               Input('dd_nclr_class', 'n_clicks_timestamp'), Input('dd_nclr_class', 'children'),
                Input('close_modal_dd_nclr_input', 'n_clicks'),
                ],
               prevent_initial_call=True)
-def which_dd_nds(default_t, default_v, rob_t, rob_v, closing_modal):
-    values = [default_v, rob_v]
-    dd_nclr = [default_t or 0, rob_t or 0]
+def which_dd_nds(default_t, default_v, rob_t, rob_v, class_t, class_v, closing_modal):
+    values = [default_v, rob_v, class_v]
+    dd_nclr = [default_t or 0, rob_t or 0, class_t or 0]
     which = dd_nclr.index(max(dd_nclr))
     return values[which] if not closing_modal else None, None, None
 
 
+
+@app.callback([Output('dd_eclr', 'children'), Output('close_modal_dd_eclr_input', 'n_clicks'),
+               Output("open_modal_dd_eclr_input", "n_clicks")],
+              [Input('dd_edge_default', 'n_clicks_timestamp'), Input('dd_edge_default', 'children'),
+               Input('dd_edge_label', 'n_clicks_timestamp'), Input('dd_edge_label', 'children'),
+               Input('close_modal_dd_eclr_input', 'n_clicks'),
+               ],
+              prevent_initial_call=True)
+def which_dd_edges(default_t, default_v, eclr_t, eclr_v, closing_modal):
+    values = [default_v, eclr_v]
+    dd_eclr = [default_t or 0, eclr_t or 0]
+    which = dd_eclr.index(max(dd_eclr))
+    return values[which] if not closing_modal else None, None, None
+
 flatten = lambda t: [item for sublist in t for item in sublist]
+
 
 
 @app.callback([Output('graph-layout-dropdown', 'children')],
@@ -1719,6 +1717,16 @@ def toggle_modal(open_t, close):
     if close: return False
     return False
 
+# ----- edge color modal -----#
+@app.callback(Output("modal_edge", "is_open"),
+              [Input("open_modal_dd_eclr_input", "n_clicks"),
+               Input("close_modal_dd_eclr_input", "n_clicks")],
+              )
+def toggle_modal_edge(open_t, close):
+    if open_t: return True
+    if close: return False
+    return False
+
 
 # ----- data selector modal -------#
 @app.callback(Output("modal_data", "is_open"),
@@ -1729,14 +1737,12 @@ def toggle_modal(open_t, close):
                State('datatable-upload', 'contents')],
               )
 def data_modal(open, submit, is_open, dataselectors, data):
-    if open:  # TODO: doesn't make sense given new inputs - but worrks anyways. Consider fixing when have time
+    if open:  # TODO: doesn't make sense given new inputs - but works. Consider fixing.
         if submit:
-            new_df = GLOBAL_DATA['new_data_upload']
-            print(new_df)
-            # do your stuff  -> TODO: rename column variables and reshape if needed (contrast/long)
-            # data.to_json(orient='split').round(3)
-            # data = pd.read_json(data, orient='split')
-            # print(data)
+            # do stuff  -> TODO: rename column variables and reshape (e.g. contrast/long)
+            #data.to_json(orient='split').round(3)
+            #data = pd.read_json(data, orient='split')
+            print(dataselectors)
         return not is_open
 
 
@@ -1765,6 +1771,18 @@ def toggle_modal(open, close, is_open):
     [Input("league-expand", "n_clicks"),
      Input("close-league-expanded", "n_clicks")],
     [State("modal_league_table", "is_open")],
+)
+def toggle_modal(open, close, is_open):
+    if open or close:
+        return not is_open
+    return is_open
+
+# ----- network expand modal -----#
+@app.callback(
+    Output("modal_network", "is_open"),
+    [Input("network-expand", "n_clicks"),
+     Input("close-network-expanded", "n_clicks")],
+    [State("modal_network", "is_open")],
 )
 def toggle_modal(open, close, is_open):
     if open or close:

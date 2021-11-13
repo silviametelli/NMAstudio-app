@@ -1,12 +1,31 @@
 from assets.COLORS import *
+from demo_data import get_demo_data
+from utils import get_network
+from  collections  import OrderedDict
 
-def get_stylesheet(node_size=False, nd_col=DFLT_ND_CLR, edge_size=False, pie=False, nodes_opacity=1, edges_opacity=0.75):
+
+GLOBAL_DATA = get_demo_data()
+if "treat1_class" and "treat2_class" in GLOBAL_DATA['net_data'].columns:
+    import matplotlib
+    from matplotlib import cm
+    cmaps = OrderedDict()
+    blues = cm.get_cmap('Blues', 128)
+    viridis = cm.get_cmap('viridis', 128)
+    GLOBAL_DATA['n_class'] = get_network(GLOBAL_DATA['net_data'])[-1]["data"]['n_class']
+    cmaps['Sequential'] = [matplotlib.colors.rgb2hex(viridis(i)) for i in range(0, viridis.N, 1)]
+    cmaps['Sequential'] = ['purple','green','blue','red','black','yellow','black','orange','pink']
+    cmaps_class = cmaps['Sequential'][ :GLOBAL_DATA['n_class'] ]
+else:
+    cmaps = OrderedDict()
+    cmaps_class = None
+
+
+def get_stylesheet(node_size=False, classes = False, edg_col= False, nd_col=DFLT_ND_CLR, edge_size=False,
+                   pie=False, edg_lbl=False, nodes_opacity=1, edges_opacity=0.75):
     default_stylesheet = [
         {"selector": 'node',
          'style': {"opacity": nodes_opacity,
                    'background-color': nd_col,
-                  # 'text-valign': 'center', ## to place label at node center
-                  # 'text-halign': 'center',
                    'node-text-rotation': 'autorotate',
                    'line-color':'black',
                    'label': "data(label)",
@@ -17,11 +36,21 @@ def get_stylesheet(node_size=False, nd_col=DFLT_ND_CLR, edge_size=False, pie=Fal
         {"selector": 'edge',
          'style': {"curve-style": "bezier",
                    'width': 'data(weight)',
-                   "opacity": edges_opacity}}]
+                   #'line-color':edg_col,
+                    "opacity": edges_opacity}}]
     if node_size:
         default_stylesheet[0]['style'].update({"width": "data(size)", "height": "data(size)"})
+    if classes:
+       # default_stylesheet[0]['style'].update({"shape": "triangle"})
+       list_classes = [{'selector': '.' + f'{x}',
+                        'style': {'background-color': f'{x}',
+                                  }} for x in cmaps_class]
+       for x in list_classes:
+           default_stylesheet.append(x)
     if edge_size:
         default_stylesheet[1]['style'].update({"width": None})
+    if edg_lbl:
+        default_stylesheet[1]['style'].update({'label': 'data(weight)'})
     if pie:
         default_stylesheet[0]['style'].update({
                                                'pie-1-background-color': '#E8747C',
@@ -48,8 +77,8 @@ download_stylesheet = [
                             "color": "#1b242b",
                             "text-opacity": 1,
                             'shape': 'ellipse',
-                             "font-size": 12,
-                            'z-index': 9999}}]
+                             "font-size": 14,
+                            'z-index': 999}}]
 
 stylesheet = [{'selector': 'node',
                'style': {'content': 'data(name)',

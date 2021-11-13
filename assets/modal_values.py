@@ -57,7 +57,7 @@ modal_data = dbc.Modal([
                                            dbc.Col([html.Br(),html.Ul(id="file-list", style={'margin-left': '15px', 'color':'white','opacity':'60%'})],
                                                    style={'display': 'inline-block'})
                                                  ]),
-                                                 dbc.Row([html.Br(),
+                                  dbc.Row([html.Br(),
                                                      dbc.Col([html.P("Format*:", className="graph__title2",
                                                               style={'display': 'inline-block', 'margin-left': '5px',
                                                                      'paddingLeft': '5px','font-size': '11px','vertical-alignment':'middle'}),
@@ -86,10 +86,47 @@ modal_data = dbc.Modal([
                                                               style={'display': 'inline-block',
                                                                      'margin-bottom': '0px'
                                                                      })],width="auto", style={'display': 'inline-block'})
-                                                 ]),html.Div(id='second-selection')
-                                           ]),
-                    dbc.ModalFooter([dbc.Button("Submit", id="submit_modal_data", className="ml-auto", disabled=True)])
+                                                 ]),
+                                  html.Div(id='second-selection'),
+                                  ]),
+
+    dbc.ModalFooter([dbc.Button("Upload", id="upload_modal_data", className="ml-auto", disabled=True)])
                   ], id="modal_data", centered=False, style={'background-color':'#40515e',"max-width": "none", "width": "50%"})
+
+
+modal_checks = dbc.Modal([
+                   dbc.ModalHeader("Running data analysis"),
+                   dbc.ModalBody([html.Div(id='data_checks_div', style={"color":"white"}),
+                                  html.Br(),
+                                  html.P("Data check:",style={"color":"white"}),
+                                  dcc.Loading(id="loading-data-checks",
+                                              children=[html.Div(children=[html.P(" ...",style={"color":"white"})],
+                                                                 id='para-check-data')],
+                                              type="default"),
+                                  html.Br(),
+                                  html.P("Network meta-analysis:", style={"color": "white"}),
+                                  dcc.Loading(id="loading-data-analysis",
+                                              children=[html.Div(children=[html.P(" ...",style={"color":"white"})],
+                                                                 id='para-anls-data')],
+                                              type="default"),
+                                  html.Br(),
+                                  html.P("League table generation:", style={"color": "white"}),
+                                  dcc.Loading(id="loading-data-analysis2",
+                                              children=[html.Div(children=[html.P(" ...",style={"color":"white"})],
+                                                                 id='para-LT-data')],
+                                              type="default"),
+                                  html.Br(),
+                                  html.P("Funnel analysis:", style={"color": "white"}),
+                                  dcc.Loading(id="loading-data-analysis3",
+                                              children=[html.Div(children=[html.P(" ...",style={"color":"white"})],
+                                                                 id='para-FA-data')],
+                                              type="default"),
+
+
+                                  html.Br()]),
+
+    dbc.ModalFooter([dbc.Button("Submit", id="submit_modal_data", className="ml-auto", disabled=True)])
+                  ], id="modal_data_checks", centered=False, style={'background-color':'#40515e',"max-width": "none", "width": "50%"})
 
 
 modal_data_table = dbc.Modal([

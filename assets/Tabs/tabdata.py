@@ -3,7 +3,7 @@ from app import  GLOBAL_DATA
 from assets.dropdowns_values import *
 
 tab_data = html.Div([
-                    html.Button('Upload your data', 'data-upload', n_clicks=0,
+                    html.Button('Upload your data', 'upload_your_data', n_clicks=0,
                         style={'margin-left': '5px', 'padding': '4px 4px 4px 4px',
                                'margin-top': '15px', 'color': 'white', 'fontSize': 11,
                                'font-weight': '900', 'font-family': 'sans-serif',

@@ -1,10 +1,6 @@
 import pickle, numpy as np, pandas as pd
 from PATHS import TEMP_PATH
 from  collections  import OrderedDict
-import matplotlib
-from matplotlib import cm
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-
 
 ## -------------------------------------------------------------------------------- ##
 def write_node_topickle(store_node):
@@ -27,8 +23,6 @@ def read_edge_frompickle():
 def get_network(df):
     global num_classes
     cmaps = OrderedDict()
-    viridis = cm.get_cmap('viridis', 256)
-    cmaps['Sequential'] = [matplotlib.colors.rgb2hex(viridis(i)) for i in range(0, viridis.N, 1)]
     cmaps['Sequential'] = ['purple', 'green', 'blue', 'red', 'black', 'yellow', 'black', 'orange', 'pink']
     df = df.dropna(subset=['TE', 'seTE'])
     if "treat1_class" and "treat2_class" in df.columns:
@@ -63,6 +57,8 @@ def get_network(df):
                           'pie1': r1/(r1+r2+r3), 'pie2':r2/(r1+r2+r3), 'pie3': r3/(r1+r2+r3),
                           }, 'classes': f'{cmaps["Sequential"][cls]}'} for target, size, r1, r2, r3, cls in all_nodes_sized.values]
     else:
+        print(all_nodes_robs, all_nodes_sized.values)
+
         cy_nodes = [{"data": {"id": target,
                           "label": target,
                           'classes':'genesis',

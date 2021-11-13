@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import rpy2.robjects as ro
 from rpy2.robjects import pandas2ri  # Define the R script and loads the instance in Python
@@ -10,7 +11,15 @@ league_table_r = ro.globalenv['league_rank']  # Get league_table from R
 pairwise_forest_r = ro.globalenv['pairwise_forest']  # Get pairwise_forest from R
 
 GLOBAL_DATA = {'net_data': pd.read_csv('db/psoriasis_wide_small.csv')}
+
+if GLOBAL_DATA['net_data']['rob'].dtype == np.object:
+    GLOBAL_DATA['net_data']['rob'] = (GLOBAL_DATA['net_data']['rob'].str.lower()
+                                      .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
+                                      .replace({'l': 1, 'm': 2, 'h': 3}))
+
+
 data = GLOBAL_DATA['net_data']
+
 
 def apply_r_func(func, df):
     with localconverter(ro.default_converter + pandas2ri.converter):

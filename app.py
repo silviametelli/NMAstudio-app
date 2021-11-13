@@ -114,34 +114,37 @@ def set_docpage_active(pathname):
                Input("dropdown-outcome2", "value")],
               [State('datatable-upload', 'filename')])
 def update_options(contents, search_value_format, search_value_outcome1, search_value_outcome2, filename):
-    if contents is None: data = GLOBAL_DATA['net_data']
-    else:                data = parse_contents(contents, filename)
-    #options_var = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
+    if contents is None:
+        data = GLOBAL_DATA['net_data']
+        selectors_ef = None
+    else:
+        data = parse_contents(contents, filename)
+        #options_var = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
 
-    if search_value_format is None: return None
-    if search_value_outcome1 is None: return None
+        if search_value_format is None: return None
+        if search_value_outcome1 is None: return None
 
-    name_outcomes = ['1st outcome*', '2nd outcome'] if search_value_outcome2 is not None else ['1st outcome']
-    search_values = [search_value_outcome1, search_value_outcome2] if search_value_outcome2 is not None else [search_value_outcome1]
-    selectors_ef = html.Div([html.Div(
-        [dbc.Row([html.P("Select effect size", style={'color': 'white', 'vertical-align': 'middle'})])] +
-         [dbc.Row([dbc.Col(dbc.Row(
-                  [html.P(f"{name}", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
-                                                                   'margin-left': '0px', 'font-size': '12px'}),
-                  dcc.Dropdown(id={'type': 'dataselectors', 'index': f'dropdown-{name_outcomes}'},
-                               options=options_effect_size_cont if val=='continuous' else options_effect_size_bin,
-                               searchable=True, placeholder="...",
-                               clearable=False, style={'width': '60px', "height":'20px',
-                                                       'vertical-align': 'middle',
-                                                       "font-size": "1em",
-                                                       "font-family": "sans-serif",
-                                                       'margin-bottom': '10px',
-                                                       'display': 'inline-block',
-                                                       'color': CLR_BCKGRND_old, 'font-size': '10px',
-                                                       'background-color': CLR_BCKGRND_old} )]
-          ),  style={'margin-left': '55px', 'margin-right': '5px'}) for name, val in zip(name_outcomes, search_values)]
-        )],
-     )])
+        name_outcomes = ['1st outcome*', '2nd outcome'] if search_value_outcome2 is not None else ['1st outcome']
+        search_values = [search_value_outcome1, search_value_outcome2] if search_value_outcome2 is not None else [search_value_outcome1]
+        selectors_ef = html.Div([html.Div(
+            [dbc.Row([html.P("Select effect size", style={'color': 'white', 'vertical-align': 'middle'})])] +
+             [dbc.Row([dbc.Col(dbc.Row(
+                      [html.P(f"{name}", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
+                                                                       'margin-left': '0px', 'font-size': '12px'}),
+                      dcc.Dropdown(id={'type': 'dataselectors', 'index': f'dropdown-{name_outcomes}'},
+                                   options=options_effect_size_cont if val=='continuous' else options_effect_size_bin,
+                                   searchable=True, placeholder="...",
+                                   clearable=False, style={'width': '60px', "height":'20px',
+                                                           'vertical-align': 'middle',
+                                                           "font-size": "1em",
+                                                           "font-family": "sans-serif",
+                                                           'margin-bottom': '10px',
+                                                           'display': 'inline-block',
+                                                           'color': CLR_BCKGRND_old, 'font-size': '10px',
+                                                           'background-color': CLR_BCKGRND_old} )]
+              ),  style={'margin-left': '55px', 'margin-right': '5px'}) for name, val in zip(name_outcomes, search_values)]
+            )],
+         )])
     return selectors_ef
 
 
@@ -629,9 +632,14 @@ def get_new_data(contents, dataselectors, search_value_format, search_value_outc
     def apply_r_func(func, df):
         with localconverter(ro.default_converter + pandas2ri.converter):
             df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
-        func_r_res = func(dat=df_r)  # Invoke R function and get the result, TODO: see how to read-in multiple outputs from R function
-        df_result = pandas2ri.rpy2py(func_r_res).reset_index(drop=True)  # Convert back to a pandas.DataFrame.
-        return df_result
+        func_r_res = func(dat=df_r)
+        r_result = pandas2ri.rpy2py(func_r_res)
+        if isinstance(r_result, ro.vectors.ListVector):
+            leaguetable, pscores, consist, netsplit = (pd.DataFrame(rf) for rf in r_result)
+            return leaguetable, pscores, consist, netsplit
+        else:
+            df_result = r_result.reset_index(drop=True)  # Convert back to a pandas.DataFrame.
+            return df_result
 
     if contents is None or not all(dataselectors):
         data = GLOBAL_DATA['net_data']
@@ -659,26 +667,22 @@ def get_new_data(contents, dataselectors, search_value_format, search_value_outc
         #                     rob: 'rob', r1: 'r1', r2: 'r2'}
         # data.rename(columns=var_dict, inplace=True)
 
-        if 'rob' not in GLOBAL_DATA['net_data'].select_dtypes(
-                include=['int16', 'int32', 'int64', 'float16', 'float32', 'float64']).columns:
-            if any(GLOBAL_DATA['net_data']['rob'].str.contains('l|m|h')):
-                GLOBAL_DATA['net_data']['rob'].replace({'l': 1, 'm': 2, 'h': 3}, inplace=True)
-            elif any(GLOBAL_DATA['net_data']['rob'].str.contains('L|M|H')):
-                GLOBAL_DATA['net_data']['rob'].replace({'L': 1, 'M': 2, 'H': 3}, inplace=True)
-        else:
-            pass
+        if GLOBAL_DATA['net_data']['rob'].dtype == np.object:
+            GLOBAL_DATA['net_data']['rob'] = (GLOBAL_DATA['net_data']['rob'].str.lower()
+                                              .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
+                                              .replace({'l': 1, 'm': 2, 'h': 3}))
+        print(GLOBAL_DATA['net_data']['rob'])
+
         if "treat1_class" and "treat2_class" in GLOBAL_DATA['net_data'].columns:
             cmaps = OrderedDict()
-            blues = cm.get_cmap('Blues', 128)
-            viridis = cm.get_cmap('viridis', 128)
-            GLOBAL_DATA['n_class'] = get_network(GLOBAL_DATA['net_data'])[-1]["data"]['n_class']
-            cmaps['Sequential'] = [matplotlib.colors.rgb2hex(viridis(i)) for i in range(0, viridis.N, 1)]
             cmaps['Sequential'] = ['purple', 'green', 'blue', 'red', 'black', 'yellow', 'black', 'orange', 'pink']
             cmaps_class = cmaps['Sequential'][:GLOBAL_DATA['n_class']]
+
         #GLOBAL_DATA['net_data']['TE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[0]
         #GLOBAL_DATA['net_data']['seTE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[1]
         OPTIONS_VAR = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
-        GLOBAL_DATA['net_data'] = data = data.loc[:, ~data.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+        data = GLOBAL_DATA['net_data']
+        data = data.loc[:, ~data.columns.str.contains('^Unnamed')]  # Remove unnamed columns
         #
         # if search_value_outcome1 is not None:
         #     data['type_outcome1'] = "continuous" if search_value_outcome1=='continuous' else 'binary'
@@ -693,10 +697,10 @@ def get_new_data(contents, dataselectors, search_value_format, search_value_outc
         elements = GLOBAL_DATA['user_elements'] = get_network(df=data)
         GLOBAL_DATA['forest_data'] = apply_r_func(func=run_NetMeta_r, df=data)
         GLOBAL_DATA['forest_data_pairwise'] = apply_r_func(func=pairwise_forest_r, df=data)
-        leaguetable_r  = apply_r_func(func=league_table_r, df=data)
+        leaguetable, pscores, consist, netsplit = apply_r_func(func=league_table_r, df=data)
         replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
         leaguetable = pd.DataFrame([[replace_and_strip(col) for col in list(row)]
-                                     for idx, row in leaguetable_r.iterrows()], columns=leaguetable_r.columns, index=leaguetable_r.index)
+                                     for idx, row in leaguetable_r.iterrows()], columns=leaguetable.columns, index=leaguetable.index)
         leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
         leaguetable = leaguetable.reset_index().rename(columns={'index':'Treatments'})
         GLOBAL_DATA['league_table_data'] = leaguetable
@@ -1729,10 +1733,37 @@ def toggle_modal_edge(open_t, close):
 
 
 # ----- data selector modal -------#
-@app.callback(Output("modal_data", "is_open"),
-              [Input("data-upload", "n_clicks"),
+@app.callback([Output("modal_data", "is_open"),
+               Output("modal_data_checks", "is_open")],
+              [Input("upload_your_data", "n_clicks"),
+               Input("upload_modal_data", "n_clicks"),
                Input("submit_modal_data", "n_clicks")],
               [State("modal_data", "is_open"),
+               State("modal_data_checks", "is_open")],
+              )
+def data_modal(open_modal_data, upload, submit, modal_data_is_open, modal_data_checks_is_open):
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        button_id = 'No clicks yet'
+    else:
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+
+    if submit and button_id=='submit_modal_data':
+        return False, not modal_data_checks_is_open and (not modal_data_is_open)
+    if open_modal_data:
+        if upload and button_id=='upload_modal_data':
+            return not modal_data_is_open, not modal_data_checks_is_open and (modal_data_is_open)
+        return not modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open)
+    else:
+        return modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open)
+
+
+
+# ----- data check modal -------#
+@app.callback(Output("modal_checks", "is_open"),
+              [Input("upload_your_data", "n_clicks"),
+               Input("submit_modal_data", "n_clicks")],
+              [State("modal_data_checks", "is_open"),
                State({'type': 'dataselectors', 'index': ALL}, 'value'),
                State('datatable-upload', 'contents')],
               )
@@ -1746,10 +1777,65 @@ def data_modal(open, submit, is_open, dataselectors, data):
         return not is_open
 
 
-@app.callback(Output("submit_modal_data", "disabled"),
-              Input({'type': 'dataselectors', 'index': ALL}, 'value'))
+@app.callback(Output("upload_modal_data", "disabled"),
+              Input({'type': 'dataselectors', 'index': ALL}, 'value'),
+              )
 def modal_submit_button(dataselectors):
-    return not all(dataselectors) if len(dataselectors) else True
+    dis = not all(dataselectors) if len(dataselectors) else True
+    return dis
+
+
+import time
+@app.callback([Output("para-check-data", "children"),
+               Output('para-check-data', 'data')],
+              Input("modal_data_checks", "is_open")
+              )
+def modal_submit_checks(modal_data_checks_is_open):
+    if modal_data_checks_is_open:
+        time.sleep(5)
+        return html.P(u"\u2713" + " SCEMUNITO del cazzo", style={"color":"green"}), '__Para_Done__'
+    else:
+        return None, ''
+
+@app.callback([Output("para-anls-data", "children"),
+               Output('para-anls-data', 'data')],
+              Input("modal_data_checks", "is_open")
+              )
+def modal_submit_checks(modal_data_checks_is_open):
+    if modal_data_checks_is_open:
+        time.sleep(10)
+        return html.P(u"\u2713" + " SCEMUNITO di merda", style={"color":"green"}), '__Para_Done__'
+    else:
+        return None, ''
+
+@app.callback([Output("para-LT-data", "children"),
+               Output('para-LT-data', 'data')],
+              Input("modal_data_checks", "is_open")
+              )
+def modal_submit_checks(modal_data_checks_is_open):
+    if modal_data_checks_is_open:
+        time.sleep(15)
+        return html.P(u"\u2713" + " SCEMUNITO di gesu", style={"color":"green"}), '__Para_Done__'
+    else:
+        return None, ''
+
+@app.callback([Output("para-FA-data", "children"),
+               Output('para-FA-data', 'data')],
+              Input("modal_data_checks", "is_open")
+              )
+def modal_submit_checks(modal_data_checks_is_open):
+    if modal_data_checks_is_open:
+        time.sleep(8)
+        return html.P(u"\u2713" + " SCEMUNITO del demonio", style={"color":"green"}), '__Para_Done__'
+    else:
+        return None, ''
+
+@app.callback(Output("submit_modal_data", "disabled"),
+              [Input(id, 'data') for id in ['para-check-data','para-anls-data',
+                                            'para-LT-data', 'para-FA-data']])
+def modal_submit_button(para_check_data_DATA, para_anls_data_DATA, para_LT_data_DATA, para_FA_data_DATA):
+    return not (para_check_data_DATA==para_check_data_DATA==para_LT_data_DATA==para_FA_data_DATA=='__Para_Done__')
+
 
 
 # ----- data expand modal -----#

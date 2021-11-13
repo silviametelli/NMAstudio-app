@@ -29,6 +29,7 @@ def home_layout(GLOBAL_DATA):
                                                     html.Div(modal, style={'display': 'inline-block', 'font-size': '11px'}),
                                                     html.Div(modal_edges, style={'display': 'inline-block', 'font-size': '11px'}),
                                                     html.Div(modal_data, style={'display': 'inline-block', 'font-size': '11px'}),
+                                                    html.Div(modal_checks,style={'display': 'inline-block', 'font-size': '11px'}),
                                                     html.Div(modal_data_table, style={'display': 'inline-block', 'font-size': '11px'}),
                                                     html.Div(modal_league_table, style={'display': 'inline-block', 'font-size': '11px'}),
                                                     html.Div(modal_network, style={'display': 'inline-block', 'font-size': '11px'}),

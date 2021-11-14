@@ -2,7 +2,7 @@ import dash_table, dash_daq as daq
 import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
 
 
-def tab_consistency(data):
+def tab_consistency(consistency_data):
     return html.Div([
         html.Div([dbc.Col([
                              html.P(
@@ -37,8 +37,8 @@ def tab_consistency(data):
         dash_table.DataTable(
         id='consistency-table',
         export_format="csv",
-        columns=[{"name": i, "id": i} for i in data['consistency_data'].columns],
-        data=data['consistency_data'].round(decimals=4).to_dict('records'),
+        columns=[{"name": i, "id": i} for i in consistency_data.columns],
+        data=consistency_data.round(decimals=4).to_dict('records'),
         style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
                 'color': 'white',
                 'textAlign': 'center',

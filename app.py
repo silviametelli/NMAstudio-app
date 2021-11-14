@@ -109,15 +109,10 @@ def set_docpage_active(pathname):
 
 ### ---------------- PROJECT SETUP --------------- ###
 @app.callback(Output("second-selection", "children"),
-              [Input('datatable-upload', 'contents'),
-               Input("dropdown-format", "value"),
+              [Input("dropdown-format", "value"),
                Input("dropdown-outcome1", "value"),
-               Input("dropdown-outcome2", "value")],
-              [State('datatable-upload', 'filename')])
-def update_options(contents, search_value_format, search_value_outcome1, search_value_outcome2, filename):
-    if contents is None: data = GLOBAL_DATA['net_data']
-    else:                data = parse_contents(contents, filename)
-    #options_var = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
+               Input("dropdown-outcome2", "value")])
+def update_options(search_value_format, search_value_outcome1, search_value_outcome2):
 
     if search_value_format is None: return None
     if search_value_outcome1 is None: return None
@@ -339,11 +334,13 @@ def TapNodeData_info(data):
 ### ----- display forest plot on node click ------ ###
 @app.callback(Output('tapNodeData-fig', 'figure'),
               [Input('cytoscape', 'selectedNodeData'),
-               Input("toggle_forest_direction", "value")])
-def TapNodeData_fig(data, outcome_direction):
+               Input("toggle_forest_direction", "value"),
+               Input("forest_data_STORAGE", "data")])
+def TapNodeData_fig(data, outcome_direction, forest_data):
     if data:
         treatment = data[0]['label']
-        df = GLOBAL_DATA['forest_data'][GLOBAL_DATA['forest_data'].Reference == treatment].copy()
+        forest_data = pd.read_json(forest_data, orient='split')  # GLOBAL_DATA['forest_data']
+        df = forest_data[forest_data.Reference == treatment]
         effect_size = df.columns[1]
         tau2 = round(df['tau2'].iloc[1], 2)
         df['Treatment'] += ' ' * 23
@@ -489,11 +486,15 @@ def TapNodeData_fig(data, outcome_direction):
 
 ### ----- display dibim forest plot on node click ------ ###
 @app.callback(Output('tapNodeData-fig-bidim', 'figure'),
-              [Input('cytoscape', 'selectedNodeData')])
-def TapNodeData_fig_bidim(data):
+              [Input('cytoscape', 'selectedNodeData'),
+               Input('forest_data_STORAGE', 'data'),
+               Input('forest_data_out2_STORAGE', 'data')])
+def TapNodeData_fig_bidim(data, forest_data, forest_data_out2):
     if data:
+        forest_data = pd.read_json(forest_data, orient='split')
+        forest_data_out2 = pd.read_json(forest_data_out2, orient='split')
         treatment = data[0]['label']
-        df = GLOBAL_DATA['forest_data'][GLOBAL_DATA['forest_data'].Reference == treatment].copy()
+        df = forest_data[forest_data.Reference == treatment]
         effect_size = df.columns[1]
         df['CI_width'] = df.CI_upper - df.CI_lower
         df['lower_error_1'] = df[effect_size] - df.CI_lower
@@ -501,7 +502,7 @@ def TapNodeData_fig_bidim(data):
         df['WEIGHT'] = round(df['WEIGHT'], 3)
         df = df.sort_values(by=effect_size, ascending=False)
         #second outcome
-        df_second = GLOBAL_DATA['forest_data_outcome2'][GLOBAL_DATA['forest_data_outcome2'].Reference == treatment].copy()
+        df_second = forest_data_out2[forest_data_out2.Reference == treatment]
         df_second['CI_width'] = df_second.CI_upper - df_second.CI_lower
         df_second['lower_error_2'] = df_second[effect_size] - df_second.CI_lower
         df_second['CI_width_hf'] = df_second['CI_width'] / 2
@@ -1072,14 +1073,15 @@ def update_boxplot(value, edges):
 
 ### - figures on edge click: pairwise forest plots  - ###
 @app.callback(Output('tapEdgeData-fig-pairwise', 'figure'),
-              Input('cytoscape', 'selectedEdgeData'))
-def update_forest_pairwise(edge):
+              [Input('cytoscape', 'selectedEdgeData'),
+               Input('forest_data_prws_STORAGE', 'data')])
+def update_forest_pairwise(edge, forest_data_prws):
     _HEIGHT_ROMB = 0.3
     slctd_comps = []
     if edge:
         src, trgt = edge[0]['source'], edge[0]['target']
         slctd_comps += [f'{src} vs {trgt}']
-        df = GLOBAL_DATA['forest_data_pairwise'].copy()
+        df = pd.read_json(forest_data_prws, orient='split') # GLOBAL_DATA['forest_data_pairwise']
         df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
         df = df[df.Comparison.isin(slctd_comps)]
         df['studlab'] += ' ' * 10
@@ -1309,13 +1311,18 @@ def update_forest_pairwise(edge):
 ############ - Funnel plot  - ###############
 @app.callback(Output('funnel-fig', 'figure'),
               [Input('cytoscape', 'selectedNodeData'),
-               Input("toggle_funnel_direction", "value")])
-def Tap_funnelplot(node, outcome2):
+               Input("toggle_funnel_direction", "value"),
+               Input("funnel_data_STORAGE", "data")
+               ])
+def Tap_funnelplot(node, outcome2, funnel_data):
     if node:
         treatment = node[0]['label']
-        df = GLOBAL_DATA['funnel_data'][GLOBAL_DATA['funnel_data'].treat2 == treatment].copy() if outcome2 else GLOBAL_DATA['funnel_data'][GLOBAL_DATA['funnel_data'].treat2 == treatment].copy()
-        df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
-        df['Comparison'] = df['Comparison'].astype(str)
+        # funnel_data = GLOBAL_DATA['funnel_data']
+        funnel_data = pd.read_json(funnel_data, orient='split')
+        df = (funnel_data[funnel_data.treat2 == treatment].copy()
+              if outcome2 else
+              funnel_data[funnel_data.treat2 == treatment].copy())
+        df['Comparison'] = (df['treat1'] + ' vs ' + df['treat2']).astype(str)
         effect_size = df.columns[3]
         df = df.sort_values(by='seTE', ascending=False)
     else:
@@ -1326,12 +1333,10 @@ def Tap_funnelplot(node, outcome2):
 
     max_y = df.seTE.max()+0.2
 
-    fig = px.scatter(df, x="TE_adj", y="seTE",
-                     #log_x=xlog,
+    fig = px.scatter(df, x="TE_adj", y="seTE",#log_x=xlog,
                      range_x=[min(df.TE_adj)-3, max(df.TE_adj)+3],
                      range_y=[0.01, max_y],
-                     symbol="Comparison",
-                     color="Comparison",
+                     symbol="Comparison", color="Comparison",
                      color_discrete_sequence = px.colors.qualitative.Light24)
 
     fig.update_traces(marker=dict(size=6, # #symbol='circle',
@@ -1398,10 +1403,12 @@ def Tap_funnelplot(node, outcome2):
               [Input('toggle_rank_direction', 'value'),
                Input('toggle_rank2_direction', 'value'),
                Input('toggle_rank2_direction_outcome1', 'value'),
-               Input('toggle_rank2_direction_outcome2', 'value')])
-def ranking_plot(outcome_direction_1, outcome_direction_2, outcome_direction_11, outcome_direction_22):
+               Input('toggle_rank2_direction_outcome2', 'value'),
+               Input('ranking_data_STORAGE', 'data')])
+def ranking_plot(outcome_direction_1, outcome_direction_2, outcome_direction_11, outcome_direction_22,
+                 ranking_data):
 
-    df = GLOBAL_DATA['ranking_data']
+    df = pd.read_json(ranking_data, orient='split')  # GLOBAL_DATA['ranking_data']
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
     outcomes = ["Outcome 1", "Outcome 2"]
 
@@ -1858,11 +1865,11 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, temporarily_uploaded_data
 
 @app.callback([Output("para-pairwise-data", "children"),
                Output('para-pairwise-data', 'data'),
-               Output('PAIRWISE_data_STORAGE', 'data')],
+               Output('forest_data_prws_STORAGE', 'data')],
               Input('NMA_data_STORAGE', 'modified_timestamp'),
               State("modal_data_checks", "is_open"),
               State("temporarily_uploaded_data", "data"),
-              State("PAIRWISE_data_STORAGE", "data")
+              State("forest_data_prws_STORAGE", "data")
               )
 def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, temporarily_uploaded_data, PAIRWISE_data):
     if modal_data_checks_is_open:
@@ -1876,7 +1883,7 @@ def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, tempora
 @app.callback([Output("para-LT-data", "children"),
                Output('para-LT-data', 'data'),
                Output('LEAGUETABLE_data_STORAGE', 'data')],
-              Input('PAIRWISE_data_STORAGE', 'modified_timestamp'),
+              Input('forest_data_prws_STORAGE', 'modified_timestamp'),
               State("modal_data_checks", "is_open"),
               State("temporarily_uploaded_data", "data"),
               State('LEAGUETABLE_data_STORAGE', 'data')
@@ -1892,11 +1899,11 @@ def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open, temporarily_up
 
 @app.callback([Output("para-FA-data", "children"),
                Output('para-FA-data', 'data'),
-               Output('FUNNEL_data_STORAGE', 'data')],
+               Output('funnel_data_STORAGE', 'data')],
               Input("LEAGUETABLE_data_STORAGE", "modified_timestamp"),
               State("modal_data_checks", "is_open"),
               State("temporarily_uploaded_data", "data"),
-              State('FUNNEL_data_STORAGE', 'data')
+              State('funnel_data_STORAGE', 'data')
               )
 def modal_submit_checks_FUNNEL(lt_data_ts, modal_data_checks_is_open, temporarily_uploaded_data, FUNNEL_data):
     if modal_data_checks_is_open:

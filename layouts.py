@@ -12,7 +12,12 @@ from assets.Tabs.tabconsistency import tab_consistency
 from assets.COLORS import *
 from assets.storage import STORAGE
 
+def Homepage(GLOBAL_DATA):
+    return html.Div([Navbar(), home_layout(GLOBAL_DATA)])
+
 def home_layout(GLOBAL_DATA):
+    consistency_data = GLOBAL_DATA['consistency_data']
+    user_elements = GLOBAL_DATA['user_elements']
     return html.Div(className="app__container", children=STORAGE + [
                         ### STORAGE DATA
                         html.Div(id='__storage_netdata', style={'display': 'none'}),
@@ -63,7 +68,7 @@ def home_layout(GLOBAL_DATA):
 
                                            ], style={'margin-left': '-20px'}),
                          cyto.Cytoscape(id='cytoscape',  responsive=True,
-                                elements=GLOBAL_DATA['user_elements'],
+                                elements=user_elements,
                                 style={ 'height': '75vh', 'width': '99%', 'margin-top': '10px',
                                         'margin-left': '-10px','margin-right': '-10px',  'z-index': '999',
                                         'padding-left': '-10px'
@@ -120,7 +125,7 @@ def home_layout(GLOBAL_DATA):
                                     selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
                                                     'align-items': 'center'},
                                     label='Consistency checks',
-                                    children=html.Div(className='control-tab', children=[tab_consistency(GLOBAL_DATA)])
+                                    children=html.Div(className='control-tab', children=[tab_consistency(consistency_data)])
                                     ),
                             dcc.Tab(style={'color':'grey','display': 'flex', 'justify-content':'center', 'align-items':'center'},
                                     selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
@@ -146,8 +151,7 @@ def home_layout(GLOBAL_DATA):
          ],
                            )
 
-def Homepage(GLOBAL_DATA):
-    return html.Div([Navbar(), home_layout(GLOBAL_DATA)])
+
 ############################################  DOCUMENTATION PAGE  #######################################################
 
 doc_layout = html.Div([Navbar(), html.Br(),  html.Br(), html.Br(),

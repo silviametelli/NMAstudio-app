@@ -16,7 +16,6 @@ import plotly.express as px, plotly.graph_objects as go
 import plotly.figure_factory as ff
 from sklearn.cluster import KMeans
 from assets.effect_sizes import get_OR, get_RR, get_MD
-from demo_data import get_demo_data
 import matplotlib
 from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
@@ -53,7 +52,7 @@ app.layout = html.Div([dcc.Location(id='url', refresh=False),
 # Load extra layouts
 cyto.load_extra_layouts()
 
-GLOBAL_DATA = get_demo_data()
+GLOBAL_DATA = dict()
 
 options_effect_size_cont = [{'label':'MD',  'value':'MD'},
                              {'label':'SMD',     'value':'SMD'}]
@@ -661,7 +660,7 @@ def netsplit(edges, net_split_data, consistency_data):
               [Input('datatable-secondfile-upload', 'contents'),
                Input('cinema_net_data1_STORAGE', 'data')],
               [State('datatable-secondfile-upload', 'filename')])
-def get_new_data_cinema(contents, cinema_net_data1, filename):
+def get_new_data_cinema1(contents, cinema_net_data1, filename):
     if contents is None:
         cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
     else:
@@ -677,7 +676,7 @@ def get_new_data_cinema(contents, cinema_net_data1, filename):
               [Input('datatable-secondfile-upload-2', 'contents'),
                Input('cinema_net_data2_STORAGE', 'data'),],
               [State('datatable-secondfile-upload-2', 'filename')])
-def get_new_data_cinema(contents, cinema_net_data2, filename):
+def get_new_data_cinema2(contents, cinema_net_data2, filename):
 
     if contents is None:
         cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
@@ -689,6 +688,16 @@ def get_new_data_cinema(contents, cinema_net_data2, filename):
     else:
         return cinema_net_data2.to_json(orient='split'), ''
 
+
+### ----- Update layout with slider ------ ###
+@app.callback([Output('cytoscape', 'elements')],
+              [Input('net_data_STORAGE', 'data'),
+               Input('slider-year', 'value')])
+def update_layour_year_slider(net_data, slider_year):
+    net_data = pd.read_json(net_data, orient='split')
+    net_data = net_data[net_data.year <= slider_year]
+    elements = get_network(df=net_data)
+    return [elements]
 
 ### ----- display Data Table and League Table ------ ###
 @app.callback([Output('datatable-upload-container', 'data'),
@@ -703,8 +712,7 @@ def get_new_data_cinema(contents, cinema_net_data2, filename):
                Output('rob_vs_cinema_modal', 'value'),
                Output('slider-year', 'min'),
                Output('slider-year', 'max'),
-               Output('slider-year', 'marks'),
-               ],
+               Output('slider-year', 'marks')],
               [Input('cytoscape', 'selectedNodeData'),
                Input('net_data_STORAGE', 'data'),
                Input('cytoscape', 'selectedEdgeData'),
@@ -735,6 +743,7 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
         data_output = _data[_data.year <= slider_value].to_dict('records')
         _OUTPUT0 = GLOBAL_DATA["data_and_league_table_callback_OUTPUT"]
         _output = [data_output]+[_OUTPUT0[1]]+[data_output] + _OUTPUT0[3:]
+
         return _output + _out_slider
 
     leaguetable = pd.read_json(league_table_data, orient='split')
@@ -837,6 +846,7 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
     GLOBAL_DATA["data_and_league_table_callback_FULL_DATA"] = net_data
     _output = [data_output, data_cols] * 2 + [league_table, league_table_modal] + [legend] * 2 + [toggle_cinema, toggle_cinema_modal]
     GLOBAL_DATA["data_and_league_table_callback_OUTPUT"] =   _output
+
     return _output + _out_slider
 
 def build_league_table(data, columns, style_data_conditional, tooltip_values, modal=False):

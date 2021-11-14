@@ -35,7 +35,7 @@ STORAGE = [
 dcc.Store(id='net_data_STORAGE', data=NET_DATA.to_json( orient='split')),
 dcc.Store(id='consistency_data_STORAGE', data=CONSISTENCY_DATA.to_json( orient='split')),
 # dcc.Store(id='default_elements_STORAGE', data=DEFAULT_ELEMENTS),
-# dcc.Store(id='user_elements_STORAGE', data=USER_ELEMENTS),
+dcc.Store(id='user_elements_STORAGE', data=USER_ELEMENTS),
 dcc.Store(id='forest_data_STORAGE', data=FOREST_DATA.to_json( orient='split')),
 dcc.Store(id='forest_data_out2_STORAGE', data=FOREST_DATA_OUT2.to_json( orient='split')),
 dcc.Store(id='forest_data_prws_STORAGE', data=FOREST_DATA_PRWS.to_json( orient='split')),

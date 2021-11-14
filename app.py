@@ -114,38 +114,48 @@ def set_docpage_active(pathname):
                Input("dropdown-outcome2", "value")],
               [State('datatable-upload', 'filename')])
 def update_options(contents, search_value_format, search_value_outcome1, search_value_outcome2, filename):
-    if contents is None:
-        data = GLOBAL_DATA['net_data']
-        selectors_ef = None
-    else:
-        data = parse_contents(contents, filename)
-        #options_var = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
+    if contents is None: data = GLOBAL_DATA['net_data']
+    else:                data = parse_contents(contents, filename)
+    #options_var = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
 
-        if search_value_format is None: return None
-        if search_value_outcome1 is None: return None
+    if search_value_format is None: return None
+    if search_value_outcome1 is None: return None
 
-        name_outcomes = ['1st outcome*', '2nd outcome'] if search_value_outcome2 is not None else ['1st outcome']
-        search_values = [search_value_outcome1, search_value_outcome2] if search_value_outcome2 is not None else [search_value_outcome1]
-        selectors_ef = html.Div([html.Div(
-            [dbc.Row([html.P("Select effect size", style={'color': 'white', 'vertical-align': 'middle'})])] +
-             [dbc.Row([dbc.Col(dbc.Row(
-                      [html.P(f"{name}", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
-                                                                       'margin-left': '0px', 'font-size': '12px'}),
-                      dcc.Dropdown(id={'type': 'dataselectors', 'index': f'dropdown-{name_outcomes}'},
-                                   options=options_effect_size_cont if val=='continuous' else options_effect_size_bin,
-                                   searchable=True, placeholder="...",
-                                   clearable=False, style={'width': '60px', "height":'20px',
-                                                           'vertical-align': 'middle',
-                                                           "font-size": "1em",
-                                                           "font-family": "sans-serif",
-                                                           'margin-bottom': '10px',
-                                                           'display': 'inline-block',
-                                                           'color': CLR_BCKGRND_old, 'font-size': '10px',
-                                                           'background-color': CLR_BCKGRND_old} )]
-              ),  style={'margin-left': '55px', 'margin-right': '5px'}) for name, val in zip(name_outcomes, search_values)]
-            )],
-         )])
+    name_outcomes = ['1st outcome*', '2nd outcome'] if search_value_outcome2 is not None else ['1st outcome']
+    search_values = [search_value_outcome1, search_value_outcome2] if search_value_outcome2 is not None else [search_value_outcome1]
+    selectors_ef = html.Div([html.Div(
+        [dbc.Row([html.P("Select effect size", style={'color': 'white', 'vertical-align': 'middle'})])] +
+         [dbc.Row([dbc.Col(dbc.Row(
+                  [html.P(f"{name}", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
+                                                                   'margin-left': '0px', 'font-size': '12px'}),
+                  dcc.Dropdown(id={'type': 'dataselectors', 'index': f'dropdown-{name_outcomes}'},
+                               options=options_effect_size_cont if val=='continuous' else options_effect_size_bin,
+                               searchable=True, placeholder="...",
+                               clearable=False, style={'width': '60px', "height":'20px',
+                                                       'vertical-align': 'middle',
+                                                       "font-size": "1em",
+                                                       "font-family": "sans-serif",
+                                                       'margin-bottom': '10px',
+                                                       'display': 'inline-block',
+                                                       'color': CLR_BCKGRND_old, 'font-size': '10px',
+                                                       'background-color': CLR_BCKGRND_old} )]
+          ),  style={'margin-left': '55px', 'margin-right': '5px'}) for name, val in zip(name_outcomes, search_values)]
+        )],
+     )])
     return selectors_ef
+
+
+@app.callback([Output("dropdowns-DIV", "style"),
+               Output("uploaded_datafile", "children")],
+              Input('datatable-upload', 'filename'))
+def is_data_file_uploaded(filename):
+    show_DIV_style = {'display': 'inline-block', 'margin-bottom': '0px'}
+    donot_show_DIV_style = {'display': 'none', 'margin-bottom': '0px'}
+    if filename:
+        return show_DIV_style, filename or ''
+    else:
+        return donot_show_DIV_style, ''
+
 
 
 
@@ -615,18 +625,18 @@ def parse_contents(contents, filename):
 
 
 ### ----- upload main data file ------ ###
-@app.callback([Output('__storage_netdata', 'children'),
-               Output('cytoscape', 'elements'),
-               Output("file-list", "children")],
-              [Input('datatable-upload', 'contents'),
-               Input({'type': 'dataselectors', 'index': ALL}, 'value'),
-               Input("dropdown-format", "value"),
-               Input("dropdown-outcome1", "value"),
-               Input("dropdown-outcome2", "value"),
-               Input('slider-year', 'value')
-               ],
-              [State('datatable-upload', 'filename')]
-              )
+# @app.callback([Output('__storage_netdata', 'children'),
+#                Output('cytoscape', 'elements'),
+#                Output("file-list", "children")],
+#               [Input('datatable-upload', 'contents'),
+#                Input({'type': 'dataselectors', 'index': ALL}, 'value'),
+#                Input("dropdown-format", "value"),
+#                Input("dropdown-outcome1", "value"),
+#                Input("dropdown-outcome2", "value"),
+#                Input('slider-year', 'value')
+#                ],
+#               [State('datatable-upload', 'filename')]
+#               )
 def get_new_data(contents, dataselectors, search_value_format, search_value_outcome1, search_value_outcome2, slider_year, filename):
 
     def apply_r_func(func, df):
@@ -794,6 +804,8 @@ def get_new_data_cinema(contents, filename):
                #Input('datatable-secondfile-upload-2', 'contents')
                 ])
 def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value):
+
+
     triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
     if 'rob_vs_cinema.value' in triggered:
         toggle_cinema_modal = toggle_cinema
@@ -807,7 +819,10 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
         _output = [data_output]+[_OUTPUT0[1]]+[data_output] + _OUTPUT0[3:]
         return _output
 
-    data = pd.read_json(data, orient='split').round(3)
+    if data is None:
+        data = GLOBAL_DATA['net_data']
+    else:
+        data = pd.read_json(data, orient='split').round(3)
     leaguetable = GLOBAL_DATA['league_table_data'].copy(deep=True)
     confidence_map = {k: n for n, k in enumerate(['low', 'medium', 'high'])}
     treatments = np.unique(data[['treat1', 'treat2']].dropna().values.flatten())

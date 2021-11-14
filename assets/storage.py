@@ -28,7 +28,8 @@ NETSPLIT_DATA =  pd.read_csv('db/consistency/consistency_netsplit.csv')
 RANKING_DATA = pd.read_csv('db/ranking/rank.csv')
 FUNNEL_DATA = pd.read_csv('db/funnel/funnel_data.csv')
 
-OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col} for col in NET_DATA.columns]
+OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col}
+               for col in NET_DATA.select_dtypes(['number']).columns]
 N_CLASSES = USER_ELEMENTS[-1]["data"]['n_class'] if "n_class" in USER_ELEMENTS[-1]["data"] else 1
 
 STORAGE = [

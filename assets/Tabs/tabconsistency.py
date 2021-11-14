@@ -1,8 +1,9 @@
 import dash_table, dash_daq as daq
 import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
 
+from assets.storage import CONSISTENCY_DATA
 
-def tab_consistency(consistency_data):
+def tab_consistency(consistency_data=CONSISTENCY_DATA):
     return html.Div([
         html.Div([dbc.Col([
                              html.P(

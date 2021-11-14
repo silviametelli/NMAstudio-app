@@ -32,8 +32,8 @@ def get_demo_data():
     #     GLOBAL_DATA['net_data']['year'] = GLOBAL_DATA['net_data'][f'{GLOBAL_DATA["net_data"].filter(regex="YEAR|year|Year|year publication|Year Publication|Year publication|year Publication").columns[0]}']
         #GLOBAL_DATA['net_data']['year'] = GLOBAL_DATA['net_data']['year'].astype(str)
 
-    GLOBAL_DATA['y_min'] = GLOBAL_DATA['net_data'].year.min()
-    GLOBAL_DATA['y_max'] = GLOBAL_DATA['net_data'].year.max()
+    # GLOBAL_DATA['y_min'] = GLOBAL_DATA['net_data'].year.min()
+    # GLOBAL_DATA['y_max'] = GLOBAL_DATA['net_data'].year.max()
     # GLOBAL_DATA['dwnld_bttn_calls'] = 0
     # GLOBAL_DATA['WAIT'] = False
     if "treat1_class" and "treat2_class" in GLOBAL_DATA['net_data'].columns:

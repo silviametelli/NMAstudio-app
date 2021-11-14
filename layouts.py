@@ -10,22 +10,17 @@ from assets.Tabs.tabfunnel import tab_funnel
 from assets.Tabs.tabranking import tab_ranking
 from assets.Tabs.tabconsistency import tab_consistency
 from assets.COLORS import *
-from assets.storage import STORAGE
+from assets.storage import STORAGE, USER_ELEMENTS
 
-def Homepage(GLOBAL_DATA):
-    consistency_data = GLOBAL_DATA['consistency_data']
-    user_elements = GLOBAL_DATA['user_elements']
-    years = GLOBAL_DATA['net_data']['year'].dropna()
-    return html.Div([Navbar(), home_layout(consistency_data, user_elements, years)])
+def Homepage():
+    return html.Div([Navbar(), home_layout()])
 
-def home_layout(consistency_data, user_elements, years):
+def home_layout(user_elements=USER_ELEMENTS):
     return html.Div(className="app__container", children=STORAGE + [
                         ### STORAGE DATA
                         html.Div(id='__storage_netdata', style={'display': 'none'}),
 
-                        html.Div(
-                          id='main_page',
-
+                        html.Div(id='main_page',
                         ### LEFT HALF OF THE PAGE
                          children=[
                             html.Div(  # NMA Graph
@@ -98,7 +93,7 @@ def home_layout(consistency_data, user_elements, years):
                                     selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
                                                     'align-items': 'center'},
                                     label='Data',
-                                    children=html.Div(className='control-tab', children=[tab_data(years)])
+                                    children=html.Div(className='control-tab', children=[tab_data()])
                                 ),
 
                             dcc.Tab(style={'color':'grey', 'display': 'flex', 'justify-content':'center', 'align-items':'center'},
@@ -124,7 +119,7 @@ def home_layout(consistency_data, user_elements, years):
                                     selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
                                                     'align-items': 'center'},
                                     label='Consistency checks',
-                                    children=html.Div(className='control-tab', children=[tab_consistency(consistency_data)])
+                                    children=html.Div(className='control-tab', children=[tab_consistency()])
                                     ),
                             dcc.Tab(style={'color':'grey','display': 'flex', 'justify-content':'center', 'align-items':'center'},
                                     selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',

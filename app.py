@@ -85,9 +85,9 @@ options_effect_size_bin = [{'label':'OR',  'value':'OR'},
 # Update the index
 @app.callback(Output('page-content', 'children'), [Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname == '/home':  return Homepage(GLOBAL_DATA)
+    if pathname == '/home':  return Homepage()
     elif pathname == '/doc': return doc_layout
-    else:                    return Homepage(GLOBAL_DATA)
+    else:                    return Homepage()
 
 # Update which link is active in the navbar
 @app.callback(Output('homepage-link', 'active'),
@@ -729,15 +729,19 @@ def get_new_data(contents, dataselectors, search_value_format, search_value_outc
         return data.to_json(orient='split'), elements, 'No file added'
 
 
-#### ---------------------- netsplit table ------------------------ ####
+#### ---------------------- consistency table and netsplit table ------------------------ ####
 @app.callback([Output('netsplit_table-container', 'data'),
-              Output('netsplit_table-container', 'columns')],
+              Output('netsplit_table-container', 'columns'),
+               Output('consistency-table', 'data'),
+               Output('consistency-table', 'columns')],
               [Input('cytoscape', 'selectedEdgeData'),
-               Input('net_split_data_STORAGE', 'data'),]
+               Input('net_split_data_STORAGE', 'data'),
+               Input('consistency_data_STORAGE', 'data'),]
               )
-def netsplit(edges, net_split_data):
+def netsplit(edges, net_split_data, consistency_data):
 
     df = pd.read_json(net_split_data, orient='split')
+    consistency_data = pd.read_json(consistency_data, orient='split')
     comparisons = df.comparison.str.split(':', expand=True)
     df['Comparison'] = comparisons[0] + ' vs ' + comparisons[1]
     df = df.loc[:, ~df.columns.str.contains("comparison")]
@@ -754,8 +758,13 @@ def netsplit(edges, net_split_data):
 
     data_cols = [{"name": c, "id": c} for c in df.columns]
     data_output = df.to_dict('records')
+    _out_net_split_table = [data_output, data_cols]
 
-    return [data_output, data_cols]
+    data_consistency = consistency_data.round(decimals=4).to_dict('records')
+    consistency_tbl_cols = [{"name": i, "id": i} for i in consistency_data.columns]
+    _out_consistency_table = [data_consistency, consistency_tbl_cols]
+
+    return _out_net_split_table + _out_consistency_table
 
 ### ----- upload CINeMA data file 1 ------ ###
 @app.callback([Output("cinema_net_data1_STORAGE", "data"),

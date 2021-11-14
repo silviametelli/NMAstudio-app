@@ -10,9 +10,10 @@ from assets.Tabs.tabfunnel import tab_funnel
 from assets.Tabs.tabranking import tab_ranking
 from assets.Tabs.tabconsistency import tab_consistency
 from assets.COLORS import *
+from assets.storage import STORAGE
 
 def home_layout(GLOBAL_DATA):
-    return html.Div(className="app__container", children=[
+    return html.Div(className="app__container", children=STORAGE + [
                         ### STORAGE DATA
                         html.Div(id='__storage_netdata', style={'display': 'none'}),
                         html.Div(id='__storage_netdata_cinema1', style={'display': 'none'}),

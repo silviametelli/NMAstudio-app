@@ -15,7 +15,7 @@ iswhole <- function(x, tol = .Machine$double.eps^0.5) abs(x - round(x)) < tol
 
 run_NetMeta <- function(dat){
   ALL_DFs <- list()
-  sm <- dat$effect_size1[1]
+  if(dat$type_outcome1[1]=="continuous"){sm <- "MD"}else{sm <- "RR"}
   dat <- dat %>% filter_at(vars(TE,seTE),all_vars(!is.na(.))) %>% filter(seTE!=0)
   treatments <- unique(c(dat$treat1, dat$treat2))
   # if incorrect number of arms, then delete entire study
@@ -54,12 +54,13 @@ run_NetMeta <- function(dat){
 #--------------------------------------- NMA league table & ranking -------------------------------------------------#
 ## league tables for either one or two outcomes
 league_rank <- function(dat){
+  # ALL_DFs <- list()
   dat1 <- dat[, c("studlab", "treat1", "treat2", "TE", "seTE")]
   dat1 <- dat1 %>% filter_at(vars(TE,seTE),all_vars(!is.na(.))) %>% filter(seTE!=0)
   tabnarms <- table(dat1$studlab)
   sel.narms <- !iswhole((1 + sqrt(8 * tabnarms + 1)) / 2)
   if (sum(sel.narms) >= 1){dat1 <- dat1 %>% filter(!studlab %in% names(tabnarms)[sel.narms])}
-  sm1 <- dat$effect_size1[1]
+  if(dat$type_outcome1[1]=="continuous"){sm1 <- "MD"}else{sm1 <- "RR"}
   nma_primary <- netmeta(TE=dat1$TE, seTE=dat1$seTE,
                          treat1=dat1$treat1, treat2=dat1$treat2,
                          studlab=dat1$studlab,
@@ -72,7 +73,7 @@ league_rank <- function(dat){
     tabnarms <- table(dat2$studlab)
     sel.narms <- !iswhole((1 + sqrt(8 * tabnarms + 1)) / 2)
     if (sum(sel.narms) >= 1){dat2 <- dat2 %>% filter(!studlab %in% names(tabnarms)[sel.narms])}
-    sm2 <- dat$effect_size2[1]
+    if(dat$type_outcome2[1]=="continuous"){sm2 <- "MD"}else{sm2 <- "RR"}
     nma_secondary <- netmeta(TE=dat2$TE2, seTE=dat2$seTE2,
                              treat1=dat2$treat1, treat2=dat2$treat2,
                              studlab=dat2$studlab, sm = sm2,
@@ -138,46 +139,35 @@ league_rank <- function(dat){
   lt <- netleague_table$random
   colnames(lt)<- sortedseq
   rownames(lt)<- sortedseq
+  # ALL_DFs[[1]] <- lt
+  # ALL_DFs[[2]] <- rank
+  # ALL_DFs[[3]] <- consistency
+  # ALL_DFs[[4]] <- df_cons
+  # ALL_DFs <- do.call('rbind', ALL_DFs)
   return(list(leaguetable=lt, pscores=rank, consist=consistency, netsplit=df_cons))
-
+  # Generate datestring "20211012"
+  # Generate random string e.g. randomstring = AOFBAOUFEHO
+  # Create folder AOFBAOUFEHO and store stuff inside
+  # AOFBAOUFEHO/lt.parq, AOFBAOUFEHO/rank.parq
+  #return(randomstring)
+  #return(ALL_DFs)
 
 }
 
 ## comparison adjusted funnel plots
-funnel_funct <- function(dat){
-  ALL_DFs <- list()
-  sm <- dat$effect_size1[1]
-  dat <- dat %>% filter_at(vars(TE,seTE),all_vars(!is.na(.))) %>% filter(seTE!=0)
-  iswhole <- function(x, tol = .Machine$double.eps^0.5) abs(x - round(x)) < tol
-  tabnarms <- table(dat$studlab)
-  sel.narms <- !iswhole((1 + sqrt(8 * tabnarms + 1)) / 2)
-  if (sum(sel.narms) >= 1){dat <- dat %>% filter(!studlab %in% names(tabnarms)[sel.narms])}
-  treatments <- unique(c(dat$treat1, dat$treat2))
-  nma <- netmeta(TE=dat$TE, seTE=dat$seTE,
-                 treat1=dat$treat1, treat2=dat$treat2,
-                 studlab=dat$studlab,
-                 sm = sm,
-                 comb.random = TRUE,
-                 backtransf = FALSE,
-                 reference.group = treatments[1])
-  for (treatment in treatments){
-    ordered_strategies <- unique(c(dat$treat1, dat$treat2))
-    ordered_strategies <- ordered_strategies[ordered_strategies!=treatment]
-    ordered_strategies <- c(ordered_strategies, rev(treatment))
-    netfun <- funnel(nma, order=ordered_strategies)
-    dev.off()
-    funneldata <- droplevels(subset(netfun,treat2==treatment))
-    if(sm=="MD"){df <- data.frame(funneldata$studlab, funneldata$treat1, funneldata$treat2, funneldata$TE,
-                                  funneldata$TE.direct, funneldata$TE.adj, funneldata$seTE)
-    }else{df <- data.frame(funneldata$studlab, funneldata$treat1, funneldata$treat2, funneldata$TE,
-                             (funneldata$TE.direct), (funneldata$TE.adj), funneldata$seTE)}
-    colnames(df) <- c("studlab", "treat1", "treat2", sm, "TE_direct", "TE_adj", "seTE")
-    rownames(df) <- NULL
-    ALL_DFs[[treatment]] <- df
-
-  }
-  ALL_DFs <- do.call('rbind', ALL_DFs)
-  return(ALL_DFs)
+funnel_plot <- function(dat,ref_vec){
+        nma <- netmeta(TE=dat$TE, seTE=dat$seTE,
+                       treat1=dat$treat1, treat2=dat$treat2,
+                       studlab=dat$studlab,
+                       sm = "MD", ## or OR TODO: pass effect size to func
+                       comb.random = TRUE,
+                       backtransf = TRUE,
+                       reference.group = ref_vec[1])
+        ordered_strategies <- unique(c(dat$treat1, dat$treat2))
+        ordered_strategies <- c(ordered_strategies, ref_vec)
+        netfun <- funnel(nma, order=ordered_strategies)
+        funneldata <- droplevels(subset(netfun,treat2==ref))
+  return(funneldata)
 }
 
 
@@ -186,7 +176,7 @@ funnel_funct <- function(dat){
 ## sorted_dat: dat sorted by treatemnt comparison
 
 pairwise_forest <- function(dat){
-  sm <- dat$effect_size1[1]
+  if(dat$type_outcome1[1]=="continuous"){sm <- "MD"}else{sm <- "RR"}
   DFs_pairwise <- list()
   dat <- dat %>% filter_at(vars(TE, seTE), all_vars(!is.na(.))) %>% filter(seTE!=0)
   dat %>% arrange(dat, treat1, treat2)

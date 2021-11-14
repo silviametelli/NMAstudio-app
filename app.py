@@ -33,7 +33,7 @@ from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from layouts import *
 # --------------------------------------------------------------------------------------------------------------------#
-from utils import write_node_topickle, read_node_frompickle, write_edge_topickle, read_edge_frompickle, get_network, data_reshape
+from utils import *
 from PATHS import TEMP_PATH
 
 UPLOAD_DIRECTORY = f"{TEMP_PATH}/UPLOAD_DIRECTORY"
@@ -59,6 +59,7 @@ app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=devi
 server = app.server
 app.layout = html.Div([dcc.Location(id='url', refresh=False),
                        html.Div(id='page-content')])
+
 
 # Load extra layouts
 cyto.load_extra_layouts()
@@ -1747,49 +1748,66 @@ def toggle_modal_edge(open_t, close):
     return False
 
 
+
 # ----- data selector modal -------#
 @app.callback([Output("modal_data", "is_open"),
-               Output("modal_data_checks", "is_open")],
+               Output("modal_data_checks", "is_open"),
+               Output("temporarily_uploaded_data", "data"),
+               Output("submitted_data", "data")],
               [Input("upload_your_data", "n_clicks"),
                Input("upload_modal_data", "n_clicks"),
                Input("submit_modal_data", "n_clicks")],
-              [State("modal_data", "is_open"),
-               State("modal_data_checks", "is_open")],
+              [State("dropdown-format","value"),
+               State("dropdown-outcome1","value"),
+               State("dropdown-outcome2","value"),
+               State("modal_data", "is_open"),
+               State("modal_data_checks", "is_open"),
+               State('datatable-upload', 'contents'),
+               State('datatable-upload', 'filename'),
+               State({'type': 'dataselectors', 'index': ALL}, 'value'),
+               State("temporarily_uploaded_data", "data"),
+               State("submitted_data", "data")],
               )
-def data_modal(open_modal_data, upload, submit, modal_data_is_open, modal_data_checks_is_open):
+def data_modal(open_modal_data, upload, submit,
+               value_format, value_outcome1, value_outcome2,
+               modal_data_is_open, modal_data_checks_is_open,
+               contents, filename, dataselectors, temporarily_uploaded_data, submitted_data):
     ctx = dash.callback_context
-    if not ctx.triggered:
-        button_id = 'No clicks yet'
-    else:
-        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    if not ctx.triggered: button_id = 'No clicks yet'
+    else:                 button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
     if submit and button_id=='submit_modal_data':
-        return False, not modal_data_checks_is_open and (not modal_data_is_open)
+        # TODO do something with submitted data
+        return False, not modal_data_checks_is_open and (not modal_data_is_open), temporarily_uploaded_data, submitted_data
     if open_modal_data:
         if upload and button_id=='upload_modal_data':
-            return not modal_data_is_open, not modal_data_checks_is_open and (modal_data_is_open)
-        return not modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open)
+            data = parse_contents(contents, filename)
+            data = adjust_data(data, dataselectors, value_format ,value_outcome1, value_outcome2)
+            temporarily_uploaded_data = data.to_json( orient='split')
+            return not modal_data_is_open, not modal_data_checks_is_open and (modal_data_is_open), temporarily_uploaded_data, submitted_data
+        return not modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), temporarily_uploaded_data, submitted_data
     else:
-        return modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open)
+        return modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), temporarily_uploaded_data, submitted_data
+
 
 
 
 # ----- data check modal -------#
-@app.callback(Output("modal_checks", "is_open"),
-              [Input("upload_your_data", "n_clicks"),
-               Input("submit_modal_data", "n_clicks")],
-              [State("modal_data_checks", "is_open"),
-               State({'type': 'dataselectors', 'index': ALL}, 'value'),
-               State('datatable-upload', 'contents')],
-              )
-def data_modal(open, submit, is_open, dataselectors, data):
-    if open:  # TODO: doesn't make sense given new inputs - but works. Consider fixing.
-        if submit:
-            # do stuff  -> TODO: rename column variables and reshape (e.g. contrast/long)
-            #data.to_json(orient='split').round(3)
-            #data = pd.read_json(data, orient='split')
-            print(dataselectors)
-        return not is_open
+# @app.callback(Output("modal_checks", "is_open"),
+#               [Input("upload_your_data", "n_clicks"),
+#                Input("submit_modal_data", "n_clicks")],
+#               [State("temporarily_uploaded_data", "data"),
+#                State("modal_data_checks", "is_open"),
+#                State({'type': 'dataselectors', 'index': ALL}, 'value'),
+#                State('datatable-upload', 'contents'),],
+#               )
+# def data_modal(open, submit, temporarily_uploaded_data, is_open, dataselectors, data):
+#     if open:
+#         if submit:
+#             data = pd.read_json(temporarily_uploaded_data, orient='split')
+#             print(dataselectors)
+#
+#         return not is_open
 
 
 @app.callback(Output("upload_modal_data", "disabled"),
@@ -1803,53 +1821,98 @@ def modal_submit_button(dataselectors):
 import time
 @app.callback([Output("para-check-data", "children"),
                Output('para-check-data', 'data')],
-              Input("modal_data_checks", "is_open")
+              Input("modal_data_checks", "is_open"),
+              State("temporarily_uploaded_data", "data")
               )
-def modal_submit_checks(modal_data_checks_is_open):
+def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, temporarily_uploaded_data):
     if modal_data_checks_is_open:
-        time.sleep(5)
-        return html.P(u"\u2713" + " SCEMUNITO del cazzo", style={"color":"green"}), '__Para_Done__'
+        data = pd.read_json(temporarily_uploaded_data, orient='split')
+        passed_checks = data_checks(data)
+        if all(passed_checks.values()):
+            return html.P(u"\u2713" + " All data checks passed.", style={"color":"green"}), '__Para_Done__'
+        else:
+            return (html.P([u"\u274C",
+                            " WARNING - some data checks failed:"]+sum([[html.Br(), f'Failed on {k}']
+                                                                        for k,v in passed_checks.items()
+                                                                        if not v], []), style={"color": "red"}),
+                    '__Para_Done__')
     else:
         return None, ''
 
 @app.callback([Output("para-anls-data", "children"),
-               Output('para-anls-data', 'data')],
-              Input("modal_data_checks", "is_open")
+               Output('para-anls-data', 'data'),
+               Output('NMA_data_STORAGE', 'data')],
+              Input("modal_data_checks", "is_open"),
+              State("temporarily_uploaded_data", "data"),
+              State('NMA_data_STORAGE', 'data')
               )
-def modal_submit_checks(modal_data_checks_is_open):
+def modal_submit_checks_NMA(modal_data_checks_is_open, temporarily_uploaded_data,
+                            NMA_data):
     if modal_data_checks_is_open:
-        time.sleep(10)
-        return html.P(u"\u2713" + " SCEMUNITO di merda", style={"color":"green"}), '__Para_Done__'
+        NMA_data = run_network_meta_analysis(pd.read_json(temporarily_uploaded_data, orient='split'))
+        NMA_data = NMA_data.to_json( orient='split')
+        return (html.P(u"\u2713" + " Network meta-analysis ran successfully.", style={"color":"green"}),
+                '__Para_Done__', NMA_data)
     else:
-        return None, ''
+        return None, '', NMA_data
+
+@app.callback([Output("para-pairwise-data", "children"),
+               Output('para-pairwise-data', 'data'),
+               Output('PAIRWISE_data_STORAGE', 'data')],
+              Input('NMA_data_STORAGE', 'modified_timestamp'),
+              State("modal_data_checks", "is_open"),
+              State("temporarily_uploaded_data", "data"),
+              State("PAIRWISE_data_STORAGE", "data")
+              )
+def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, temporarily_uploaded_data, PAIRWISE_data):
+    if modal_data_checks_is_open:
+        PAIRWISE_data = run_pairwise_MA(pd.read_json(temporarily_uploaded_data, orient='split'))
+        PAIRWISE_data = PAIRWISE_data.to_json( orient='split')
+        return (html.P(u"\u2713" + " Pairwise meta-analysis ran successfully.", style={"color":"green"}),
+                '__Para_Done__', PAIRWISE_data)
+    else:
+        return (None, '', PAIRWISE_data)
 
 @app.callback([Output("para-LT-data", "children"),
-               Output('para-LT-data', 'data')],
-              Input("modal_data_checks", "is_open")
+               Output('para-LT-data', 'data'),
+               Output('LEAGUETABLE_data_STORAGE', 'data')],
+              Input('PAIRWISE_data_STORAGE', 'modified_timestamp'),
+              State("modal_data_checks", "is_open"),
+              State("temporarily_uploaded_data", "data"),
+              State('LEAGUETABLE_data_STORAGE', 'data')
               )
-def modal_submit_checks(modal_data_checks_is_open):
+def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open, temporarily_uploaded_data, LEAGUETABLE_data):
     if modal_data_checks_is_open:
-        time.sleep(15)
-        return html.P(u"\u2713" + " SCEMUNITO di gesu", style={"color":"green"}), '__Para_Done__'
+        LEAGUETABLE_data = generate_league_table(pd.read_json(temporarily_uploaded_data, orient='split'))
+        LEAGUETABLE_data = [f.to_json( orient='split') for f in LEAGUETABLE_data]
+        return (html.P(u"\u2713" + " Successfully generated league table.", style={"color":"green"}),
+                '__Para_Done__', LEAGUETABLE_data)
     else:
-        return None, ''
+        return None, '', LEAGUETABLE_data
 
 @app.callback([Output("para-FA-data", "children"),
-               Output('para-FA-data', 'data')],
-              Input("modal_data_checks", "is_open")
+               Output('para-FA-data', 'data'),
+               Output('FUNNEL_data_STORAGE', 'data')],
+              Input("LEAGUETABLE_data_STORAGE", "modified_timestamp"),
+              State("modal_data_checks", "is_open"),
+              State("temporarily_uploaded_data", "data"),
+              State('FUNNEL_data_STORAGE', 'data')
               )
-def modal_submit_checks(modal_data_checks_is_open):
+def modal_submit_checks_FUNNEL(lt_data_ts, modal_data_checks_is_open, temporarily_uploaded_data, FUNNEL_data):
     if modal_data_checks_is_open:
-        time.sleep(8)
-        return html.P(u"\u2713" + " SCEMUNITO del demonio", style={"color":"green"}), '__Para_Done__'
+        FUNNEL_data = generate_funnel_data(pd.read_json(temporarily_uploaded_data, orient='split'))
+        FUNNEL_data = FUNNEL_data.to_json(orient='split')
+        return (html.P(u"\u2713" + " Successfully generated funnel data.", style={"color":"green"}),
+                '__Para_Done__', FUNNEL_data)
     else:
-        return None, ''
+        return None, '', FUNNEL_data
 
 @app.callback(Output("submit_modal_data", "disabled"),
-              [Input(id, 'data') for id in ['para-check-data','para-anls-data',
+              [Input(id, 'data') for id in ['para-check-data','para-anls-data','para-pairwise-data',
                                             'para-LT-data', 'para-FA-data']])
-def modal_submit_button(para_check_data_DATA, para_anls_data_DATA, para_LT_data_DATA, para_FA_data_DATA):
-    return not (para_check_data_DATA==para_check_data_DATA==para_LT_data_DATA==para_FA_data_DATA=='__Para_Done__')
+def modal_submit_button(para_check_data_DATA, para_anls_data_DATA, para_prw_data_DATA, para_LT_data_DATA, para_FA_data_DATA):
+    return not (para_check_data_DATA==para_anls_data_DATA==para_prw_data_DATA==para_LT_data_DATA==para_FA_data_DATA=='__Para_Done__')
+
 
 
 

@@ -1,7 +1,34 @@
 import pickle, numpy as np, pandas as pd
 from PATHS import TEMP_PATH
+from collections  import OrderedDict
+from assets.effect_sizes import *
+# ---------R2Py Resources --------------------------------------------------------------------------------------------#
+import rpy2.robjects as ro
+from rpy2.robjects import pandas2ri  # Define the R script and loads the instance in Python
+from rpy2.robjects.conversion import localconverter
 from  collections  import OrderedDict
 
+r = ro.r
+r['source']('R_Codes/all_R_functions.R')  # Loading the function we have defined in R.
+run_NetMeta_r = ro.globalenv['run_NetMeta']  # Get run_NetMeta from R
+league_table_r = ro.globalenv['league_rank']  # Get league_table from R
+pairwise_forest_r = ro.globalenv['pairwise_forest']  # Get pairwise_forest from R
+funnel_plot_r = ro.globalenv['funnel_funct']  # Get pairwise_forest from R
+run_pairwise_data_r = ro.globalenv['get_pairwise_data']  # Get pairwise data from long format from R
+
+
+def apply_r_func(func, df):
+    with localconverter(ro.default_converter + pandas2ri.converter):
+        df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
+    func_r_res = func(dat=df_r)
+    r_result = pandas2ri.rpy2py(func_r_res)
+    if isinstance(r_result, ro.vectors.ListVector):
+        leaguetable, pscores, consist, netsplit = (pd.DataFrame(rf) for rf in r_result)
+        return leaguetable, pscores, consist, netsplit
+    else:
+        df_result = r_result.reset_index(drop=True)  # Convert back to a pandas.DataFrame.
+        return df_result
+# ----------------------------------------------------------------------------------
 ## -------------------------------------------------------------------------------- ##
 def write_node_topickle(store_node):
     with open(f'{TEMP_PATH}/selected_nodes.pickle', 'wb') as f:
@@ -16,6 +43,13 @@ def write_edge_topickle(store_edge):
 
 def read_edge_frompickle():
     return pickle.load(open(f'{TEMP_PATH}/selected_edges.pickle', 'rb'))
+
+def write_session_pickle(dct, path):
+    with open(path, 'wb') as f:
+        pickle.dump(dct, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+def read_session_pickle(path):
+    return pickle.load(open(path, 'rb'))
 ## -------------------------------------------------------------------------------- ##
 
 
@@ -70,8 +104,54 @@ def get_network(df):
 
 ## ----------------------  Reshape pd data from long to wide  --------------------------- ##
 
-def data_reshape(long_df):
-    wide_df = long_df.pivot(index='treat')
-    return wide_df
+def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome2):
+
+    effect_sizes = {'continuous': {'MD': get_MD, 'SMD': get_SMD},
+                    'binary': {'OR': get_OR, 'RR': get_RR}}
+
+    data['effect_size1'] = dataselectors[0]
+    get_effect_size1 = effect_sizes[value_outcome1][dataselectors[0]]
+
+
+    if value_format=='long':
+        apply_r_func(func=run_pairwise_data_r, df=data)
+
+
+    if value_format=='contrast':
+        data['TE'], data['seTE'] = get_effect_size1(data, effect=1)
+        if value_outcome2:
+            data['effect_size2'] = dataselectors[1]
+            get_effect_size2 = effect_sizes[value_outcome2][dataselectors[1]]
+            data['TE2'], data['seTE2'] = get_effect_size2(data, effect=2)
+
+    return data
+
+## ----------------------  FUNCTIONS for Running data analysis  --------------------------- ##
+
+def data_checks(df):
+    return {'check1': True, 'check2': False, 'check3': False, 'check4': True}
+
+def run_network_meta_analysis(df):
+    data_forest = apply_r_func(func=run_NetMeta_r, df=df)
+    return data_forest
+
+def run_pairwise_MA(df):
+    forest_MA = apply_r_func(func=pairwise_forest_r, df=df)
+    return forest_MA
+
+def generate_league_table(df):
+    leaguetable, pscores, consist, netsplit = apply_r_func(func=league_table_r, df=df)
+    replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
+    leaguetable = pd.DataFrame([[replace_and_strip(col) for col in list(row)]
+                                for idx, row in leaguetable.iterrows()], columns=leaguetable.columns,
+                               index=leaguetable.index)
+    leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
+    leaguetable = leaguetable.reset_index().rename(columns={'index': 'Treatments'})
+    return leaguetable, pscores, consist, netsplit
+
+def generate_funnel_data(df):
+    funnel = apply_r_func(func=funnel_plot_r, df=df)
+    return funnel
+
 
 

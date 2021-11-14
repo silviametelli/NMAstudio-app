@@ -170,7 +170,8 @@ def update_cytoscape_layout(layout):
 
 ### ----- update graph layout on node click ------ ###
 @app.callback([Output('cytoscape', 'stylesheet'),
-               Output('modal-cytoscape', 'stylesheet')],
+               Output('modal-cytoscape', 'stylesheet'),
+               Output("consts_STORAGE", "data")],
               [Input('cytoscape', 'tapNode'),
                Input('cytoscape', 'selectedNodeData'),
                Input('cytoscape', 'elements'),
@@ -182,12 +183,12 @@ def update_cytoscape_layout(layout):
                Input('dd_nds', 'children'),
                Input('dd_egs', 'children'),
                Input("btn-get-png", "n_clicks"),
-               Input("btn-get-png-modal", "n_clicks"),
-               ]
+               Input("btn-get-png-modal", "n_clicks"),],
+              State("consts_STORAGE", "data"),
               )
 def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                         dd_nclr, dd_eclr, custom_nd_clr, custom_edg_clr, dd_nds, dd_egs,
-                        dwld_button, dwld_button_modal):
+                        dwld_button, dwld_button_modal, constants):
 
     nodes_color = (custom_nd_clr or DFLT_ND_CLR) if dd_nclr != 'Default' else DFLT_ND_CLR
     edges_color = (custom_edg_clr or None) if dd_eclr != 'Default' else None
@@ -249,31 +250,36 @@ def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                                              "mid-target-arrow-shape": "vee",
                                              'z-index': 5000}})
 
-    if dwld_button and dwld_button > GLOBAL_DATA['dwnld_bttn_calls']:
-        GLOBAL_DATA['dwnld_bttn_calls'] += 1
+    if dwld_button and dwld_button > constants['dwnld_bttn_calls']:
+        constants['dwnld_bttn_calls'] += 1
         stylesheet[0]['style']['color'] = 'black'
         time.sleep(0.05)
 
-    if dwld_button_modal and dwld_button_modal > GLOBAL_DATA['dwnld_bttn_calls']:
-        GLOBAL_DATA['dwnld_bttn_calls'] += 1
+    if dwld_button_modal and dwld_button_modal > constants['dwnld_bttn_calls']:
+        constants['dwnld_bttn_calls'] += 1
         stylesheet[0]['style']['color'] = 'black'
         time.sleep(0.05)
 
-    GLOBAL_DATA['WAIT'] = False
+    sess_pickle = read_session_pickle(constants['session_pickle_path'])
+    sess_pickle['wait'] = False
+    write_session_pickle(dct=sess_pickle, path=constants['session_pickle_path'])
     stylesheet_modal  = stylesheet
-    return stylesheet, stylesheet_modal
+    return stylesheet, stylesheet_modal, constants
 
 
 
 ### ----- save network plot as png ------ ###
 @app.callback(Output("cytoscape", "generateImage"),
               [Input("btn-get-png", "n_clicks"),
-               Input("btn-get-png-modal", "n_clicks"), Input('exp-options', 'children'),
-],
+               Input("btn-get-png-modal", "n_clicks"),
+               Input('exp-options', 'children'),],
+              State('consts_STORAGE','data'),
               prevent_initial_call=True)
-def get_image(button, button_modal, export):
-    GLOBAL_DATA['WAIT'] = True
-    while GLOBAL_DATA['WAIT']:
+def get_image(button, button_modal, export, constants):
+    sess_pickle = read_session_pickle(constants['session_pickle_path'])
+    sess_pickle['wait'] = True
+    write_session_pickle(dct=sess_pickle, path=constants['session_pickle_path'])
+    while read_session_pickle(constants['session_pickle_path'])['wait']:
         time.sleep(0.05)
     action = 'store'
     ctx = dash.callback_context

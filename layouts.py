@@ -13,11 +13,12 @@ from assets.COLORS import *
 from assets.storage import STORAGE
 
 def Homepage(GLOBAL_DATA):
-    return html.Div([Navbar(), home_layout(GLOBAL_DATA)])
-
-def home_layout(GLOBAL_DATA):
     consistency_data = GLOBAL_DATA['consistency_data']
     user_elements = GLOBAL_DATA['user_elements']
+    years = GLOBAL_DATA['net_data']['year'].dropna()
+    return html.Div([Navbar(), home_layout(consistency_data, user_elements, years)])
+
+def home_layout(consistency_data, user_elements, years):
     return html.Div(className="app__container", children=STORAGE + [
                         ### STORAGE DATA
                         html.Div(id='__storage_netdata', style={'display': 'none'}),
@@ -97,7 +98,7 @@ def home_layout(GLOBAL_DATA):
                                     selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
                                                     'align-items': 'center'},
                                     label='Data',
-                                    children=html.Div(className='control-tab', children=[tab_data])
+                                    children=html.Div(className='control-tab', children=[tab_data(years)])
                                 ),
 
                             dcc.Tab(style={'color':'grey', 'display': 'flex', 'justify-content':'center', 'align-items':'center'},

@@ -5,27 +5,27 @@ from utils  import get_network
 def get_demo_data():
     # Save default dataframes for demo use
     GLOBAL_DATA = {'net_data':             pd.read_csv('db/psoriasis_wide.csv'),
-                   'cinema_net_data1':     pd.read_csv('db/Cinema/cinema_report_PASI90.csv'),
-                   'cinema_net_data2':     pd.read_csv('db/Cinema/cinema_report_SAE.csv'),
+                   # 'cinema_net_data1':     pd.read_csv('db/Cinema/cinema_report_PASI90.csv'),
+                   # 'cinema_net_data2':     pd.read_csv('db/Cinema/cinema_report_SAE.csv'),
                    # 'forest_data':          pd.read_csv('db/forest_data/forest_data.csv'),
                    # 'forest_data_pairwise': pd.read_csv('db/forest_data/forest_data_pairwise.csv'),
                    # 'forest_data_outcome2': pd.read_csv('db/forest_data/forest_data_outcome2.csv'),
                    'consistency_data':     pd.read_csv('db/consistency/consistency.csv'),
-                   'netsplit_data':        pd.read_csv('db/consistency/consistency_netsplit.csv'),
+                   # 'netsplit_data':        pd.read_csv('db/consistency/consistency_netsplit.csv'),
                    # 'ranking_data':         pd.read_csv('db/ranking/rank.csv'),
                    # 'funnel_data':          pd.read_csv('db/funnel/funnel_data.csv'),
-                   'league_table_data':    pd.read_csv('db/league_table_data/league_table.csv', index_col=0)
+                   # 'league_table_data':    pd.read_csv('db/league_table_data/league_table.csv', index_col=0)
                    }
 
-    if GLOBAL_DATA['net_data']['rob'].dtype == np.object:
-        GLOBAL_DATA['net_data']['rob'] = (GLOBAL_DATA['net_data']['rob'].str.lower()
-                                          .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
-                                          .replace({'l': 1, 'm': 2, 'h': 3}))
+    # if GLOBAL_DATA['net_data']['rob'].dtype == np.object:
+    #     GLOBAL_DATA['net_data']['rob'] = (GLOBAL_DATA['net_data']['rob'].str.lower()
+    #                                       .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
+    #                                       .replace({'l': 1, 'm': 2, 'h': 3}))
 
-    replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
-    leaguetable = GLOBAL_DATA['league_table_data'].copy(deep=True)
-    GLOBAL_DATA['league_table_data'] = pd.DataFrame([[replace_and_strip(col) for col in list(row)]
-                                                    for idx, row in leaguetable.iterrows()], columns=leaguetable.columns, index=leaguetable.index)
+    # replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
+    # leaguetable = GLOBAL_DATA['league_table_data'].copy(deep=True)
+    # GLOBAL_DATA['league_table_data'] = pd.DataFrame([[replace_and_strip(col) for col in list(row)]
+    #                                                 for idx, row in leaguetable.iterrows()], columns=leaguetable.columns, index=leaguetable.index)
 
     #for year slider
     # if 'year' not in GLOBAL_DATA['net_data'].columns:

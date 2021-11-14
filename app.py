@@ -732,13 +732,13 @@ def get_new_data(contents, dataselectors, search_value_format, search_value_outc
 #### ---------------------- netsplit table ------------------------ ####
 @app.callback([Output('netsplit_table-container', 'data'),
               Output('netsplit_table-container', 'columns')],
-              Input('cytoscape', 'selectedEdgeData'),
+              [Input('cytoscape', 'selectedEdgeData'),
+               Input('net_split_data_STORAGE', 'data'),]
               )
+def netsplit(edges, net_split_data):
 
-def netsplit(edges):
-
-    df = GLOBAL_DATA['netsplit_data']
-    comparisons = GLOBAL_DATA['netsplit_data'].comparison.str.split(':', expand=True)
+    df = pd.read_json(net_split_data, orient='split')
+    comparisons = df.comparison.str.split(':', expand=True)
     df['Comparison'] = comparisons[0] + ' vs ' + comparisons[1]
     df = df.loc[:, ~df.columns.str.contains("comparison")]
     df = df.sort_values(by='Comparison').reset_index()
@@ -803,6 +803,9 @@ def get_new_data_cinema(contents, cinema_net_data2, filename):
                Output('modal_league_table_legend', 'children'),
                Output('rob_vs_cinema', 'value'),
                Output('rob_vs_cinema_modal', 'value'),
+               Output('slider-year', 'min'),
+               Output('slider-year', 'max'),
+               Output('slider-year', 'marks'),
                ],
               [Input('cytoscape', 'selectedNodeData'),
                Input('net_data_STORAGE', 'data'),
@@ -817,6 +820,12 @@ def get_new_data_cinema(contents, cinema_net_data2, filename):
                 ])
 def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
                   league_table_data, cinema_net_data1, cinema_net_data2):
+    net_data = pd.read_json(net_data, orient='split').round(3)
+    years = net_data.year
+    slider_min, slider_max = years.min(), years.max()
+    slider_marks = set_slider_marks(slider_min, slider_max, years)
+    _out_slider = [slider_min, slider_max, slider_marks]
+
     triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
     if 'rob_vs_cinema.value' in triggered:
         toggle_cinema_modal = toggle_cinema
@@ -828,9 +837,8 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
         data_output = _data[_data.year <= slider_value].to_dict('records')
         _OUTPUT0 = GLOBAL_DATA["data_and_league_table_callback_OUTPUT"]
         _output = [data_output]+[_OUTPUT0[1]]+[data_output] + _OUTPUT0[3:]
-        return _output
+        return _output + _out_slider
 
-    net_data = pd.read_json(net_data, orient='split').round(3)
     leaguetable = pd.read_json(league_table_data, orient='split') # GLOBAL_DATA['league_table_data'].copy(deep=True)
     confidence_map = {k: n for n, k in enumerate(['low', 'medium', 'high'])}
     treatments = np.unique(net_data[['treat1', 'treat2']].dropna().values.flatten())
@@ -931,7 +939,7 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
     GLOBAL_DATA["data_and_league_table_callback_FULL_DATA"] = net_data
     _output = [data_output, data_cols] * 2 + [league_table, league_table_modal] + [legend] * 2 + [toggle_cinema, toggle_cinema_modal]
     GLOBAL_DATA["data_and_league_table_callback_OUTPUT"] =   _output
-    return _output
+    return _output + _out_slider
 
 def build_league_table(data, columns, style_data_conditional, tooltip_values, modal=False):
 

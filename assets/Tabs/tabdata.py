@@ -1,8 +1,10 @@
 import numpy as np
-from app import  GLOBAL_DATA
 from assets.dropdowns_values import *
+from utils import set_slider_marks
 
-tab_data = html.Div([
+def tab_data(years):
+    y_max, y_min = years.max(), years.min()
+    return html.Div([
                     html.Button('Upload your data', 'upload_your_data', n_clicks=0,
                         style={'margin-left': '5px', 'padding': '4px 4px 4px 4px',
                                'margin-top': '15px', 'color': 'white', 'fontSize': 11,
@@ -17,16 +19,10 @@ tab_data = html.Div([
                                                        'margin-left': '10px',
                                                        'letter-spacing': '0.3rem'},
                                                  placement='right', target='data-expand'),
-                     html.Div(dcc.Slider(min=GLOBAL_DATA["y_min"], max=GLOBAL_DATA["y_max"],
+                     html.Div(dcc.Slider(min=y_min, max=y_max,
                                          step=None,
-                                         marks = {int(x): {'label': str(x),
-                                                           'style': {'color': 'white', 'font-size':'10px',
-                                                                     'opacity':1 if x in (GLOBAL_DATA['y_min'],
-                                                                                          GLOBAL_DATA['y_max']) else 0
-                                                                     }}
-                                                    for x in np.unique(GLOBAL_DATA['net_data']['year'].dropna()).astype('int')
-                                                 },
-                                         value=GLOBAL_DATA['y_max'],
+                                         marks=set_slider_marks(y_min, y_max, years),
+                                         value=y_max,
                                          updatemode='drag',
                                          id='slider-year',
                                          tooltip=dict(placement='top')),

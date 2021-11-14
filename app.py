@@ -66,10 +66,6 @@ cyto.load_extra_layouts()
 
 GLOBAL_DATA = get_demo_data()
 
-GLOBAL_DATA['default_elements'] = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
-
-
-OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col} for col in GLOBAL_DATA['net_data'].columns]
 options_effect_size_cont = [{'label':'MD',  'value':'MD'},
                              {'label':'SMD',     'value':'SMD'}]
 options_effect_size_bin = [{'label':'OR',  'value':'OR'},
@@ -345,7 +341,7 @@ def TapNodeData_info(data):
 def TapNodeData_fig(data, outcome_direction, forest_data):
     if data:
         treatment = data[0]['label']
-        forest_data = pd.read_json(forest_data, orient='split')  # GLOBAL_DATA['forest_data']
+        forest_data = pd.read_json(forest_data, orient='split')
         df = forest_data[forest_data.Reference == treatment]
         effect_size = df.columns[1]
         tau2 = round(df['tau2'].iloc[1], 2)
@@ -632,102 +628,6 @@ def parse_contents(contents, filename):
         return pd.read_excel(io.BytesIO(decoded))
 
 
-### ----- upload main data file ------ ###
-# @app.callback([Output('__storage_netdata', 'children'),
-#                Output('cytoscape', 'elements'),
-#                Output("file-list", "children")],
-#               [Input('datatable-upload', 'contents'),
-#                Input({'type': 'dataselectors', 'index': ALL}, 'value'),
-#                Input("dropdown-format", "value"),
-#                Input("dropdown-outcome1", "value"),
-#                Input("dropdown-outcome2", "value"),
-#                Input('slider-year', 'value')
-#                ],
-#               [State('datatable-upload', 'filename')]
-#               )
-def get_new_data(contents, dataselectors, search_value_format, search_value_outcome1, search_value_outcome2, slider_year, filename):
-
-    def apply_r_func(func, df):
-        with localconverter(ro.default_converter + pandas2ri.converter):
-            df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
-        func_r_res = func(dat=df_r)
-        r_result = pandas2ri.rpy2py(func_r_res)
-        if isinstance(r_result, ro.vectors.ListVector):
-            leaguetable, pscores, consist, netsplit = (pd.DataFrame(rf) for rf in r_result)
-            return leaguetable, pscores, consist, netsplit
-        else:
-            df_result = r_result.reset_index(drop=True)  # Convert back to a pandas.DataFrame.
-            return df_result
-
-    if contents is None or not all(dataselectors):
-        data = GLOBAL_DATA['net_data']
-        GLOBAL_DATA['user_elements'] = get_network(df=data)
-        elements = get_network(df=data[data.year <= slider_year])
-    else:
-        data = parse_contents(contents, filename)
-
-        # var_dict = dict()
-        # if search_value_format == 'long':
-        #     if search_value_outcome1 == 'continuous':
-        #         studlab, treat, rob, TE, seTE, n = dataselectors
-        #         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', TE: 'TE', seTE: 'seTE', n: 'n'}
-        #     elif search_value_outcome1 == 'binary':
-        #         studlab, treat, rob, r, n = dataselectors
-        #         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', r: 'r', n: 'n'}
-        # elif search_value_format == 'contrast':
-        #     if search_value_outcome1 == 'continuous':
-        #         studlab, treat1, treat2, n1, n2, rob, TE1, seTE1, TE2, seTE2 = dataselectors
-        #         var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', n1: 'n1', n2: 'n2',
-        #                     rob: 'rob', TE1: 'TE1', seTE1: 'seTE1', TE2: 'TE2', seTE2: 'seTE2'}
-        #     elif search_value_outcome1 == 'binary':
-        #         studlab, treat1, treat2, n1, n2, rob, r1, r2 = dataselectors
-        #         var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', n1: 'n1', n2: 'n2',
-        #                     rob: 'rob', r1: 'r1', r2: 'r2'}
-        # data.rename(columns=var_dict, inplace=True)
-
-        if GLOBAL_DATA['net_data']['rob'].dtype == np.object:
-            GLOBAL_DATA['net_data']['rob'] = (GLOBAL_DATA['net_data']['rob'].str.lower()
-                                              .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
-                                              .replace({'l': 1, 'm': 2, 'h': 3}))
-        print(GLOBAL_DATA['net_data']['rob'])
-
-        if "treat1_class" and "treat2_class" in GLOBAL_DATA['net_data'].columns:
-            cmaps = OrderedDict()
-            cmaps['Sequential'] = ['purple', 'green', 'blue', 'red', 'black', 'yellow', 'black', 'orange', 'pink']
-            cmaps_class = cmaps['Sequential'][:GLOBAL_DATA['n_class']]
-
-        #GLOBAL_DATA['net_data']['TE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[0]
-        #GLOBAL_DATA['net_data']['seTE'] = OR_effect_measure(GLOBAL_DATA['net_data'])[1]
-        OPTIONS_VAR = [{'label': '{}'.format(col, col), 'value': col} for col in data.columns]
-        data = GLOBAL_DATA['net_data']
-        data = data.loc[:, ~data.columns.str.contains('^Unnamed')]  # Remove unnamed columns
-        #
-        # if search_value_outcome1 is not None:
-        #     data['type_outcome1'] = "continuous" if search_value_outcome1=='continuous' else 'binary'
-        # if search_value_outcome2 is not None:
-        #     data['type_outcome2'] = "continuous" if search_value_outcome2=='continuous' else 'binary'
-
-        data['type_outcome1'] = search_value_outcome1
-        if search_value_outcome2 is not None:
-           data['type_outcome2'] = search_value_outcome2
-
-        GLOBAL_DATA['net_data'] = data
-        elements = GLOBAL_DATA['user_elements'] = get_network(df=data)
-        GLOBAL_DATA['forest_data'] = apply_r_func(func=run_NetMeta_r, df=data)
-        GLOBAL_DATA['forest_data_pairwise'] = apply_r_func(func=pairwise_forest_r, df=data)
-        leaguetable, pscores, consist, netsplit = apply_r_func(func=league_table_r, df=data)
-        replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
-        leaguetable = pd.DataFrame([[replace_and_strip(col) for col in list(row)]
-                                     for idx, row in leaguetable_r.iterrows()], columns=leaguetable.columns, index=leaguetable.index)
-        leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
-        leaguetable = leaguetable.reset_index().rename(columns={'index':'Treatments'})
-        GLOBAL_DATA['league_table_data'] = leaguetable
-    if filename is not None:
-        print(data)
-        return data.to_json(orient='split'), elements, f'{filename}'
-    else:
-        return data.to_json(orient='split'), elements, 'No file added'
-
 
 #### ---------------------- consistency table and netsplit table ------------------------ ####
 @app.callback([Output('netsplit_table-container', 'data'),
@@ -848,7 +748,7 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
         _output = [data_output]+[_OUTPUT0[1]]+[data_output] + _OUTPUT0[3:]
         return _output + _out_slider
 
-    leaguetable = pd.read_json(league_table_data, orient='split') # GLOBAL_DATA['league_table_data'].copy(deep=True)
+    leaguetable = pd.read_json(league_table_data, orient='split')
     confidence_map = {k: n for n, k in enumerate(['low', 'medium', 'high'])}
     treatments = np.unique(net_data[['treat1', 'treat2']].dropna().values.flatten())
     robs = (net_data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
@@ -1001,11 +901,13 @@ def build_league_table(data, columns, style_data_conditional, tooltip_values, mo
 ### - figures on edge click: transitivity boxplots  - ###
 @app.callback(Output('tapEdgeData-fig', 'figure'),
               [Input('dropdown-effectmod', 'value'),
-               Input('cytoscape', 'selectedEdgeData')])
-def update_boxplot(value, edges):
+               Input('cytoscape', 'selectedEdgeData'),
+               Input('net_data_STORAGE','data')])
+def update_boxplot(value, edges, net_data):
     active, non_active = '#1B58E2', '#313539'  # '#4C5353'
     if value:
-        df = GLOBAL_DATA['net_data'][['treat1', 'treat2', value, 'year']].copy()
+        net_data  = pd.read_json(net_data, orient='split')
+        df = net_data[['treat1', 'treat2', value, 'year']].copy()
         df = df.dropna(subset=[value])
         df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
         df = df.sort_values(by='Comparison').reset_index()
@@ -1341,7 +1243,6 @@ def update_forest_pairwise(edge, forest_data_prws):
 def Tap_funnelplot(node, outcome2, funnel_data):
     if node:
         treatment = node[0]['label']
-        # funnel_data = GLOBAL_DATA['funnel_data']
         funnel_data = pd.read_json(funnel_data, orient='split')
         df = (funnel_data[funnel_data.treat2 == treatment].copy()
               if outcome2 else
@@ -1428,11 +1329,13 @@ def Tap_funnelplot(node, outcome2, funnel_data):
                Input('toggle_rank2_direction', 'value'),
                Input('toggle_rank2_direction_outcome1', 'value'),
                Input('toggle_rank2_direction_outcome2', 'value'),
+               Input('net_data_STORAGE', 'data'),
                Input('ranking_data_STORAGE', 'data')])
 def ranking_plot(outcome_direction_1, outcome_direction_2, outcome_direction_11, outcome_direction_22,
-                 ranking_data):
+                 net_data, ranking_data):
 
-    df = pd.read_json(ranking_data, orient='split')  # GLOBAL_DATA['ranking_data']
+    net_data = pd.read_json(net_data, orient='split')
+    df = pd.read_json(ranking_data, orient='split')
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
     outcomes = ["Outcome 1", "Outcome 2"]
 
@@ -1490,8 +1393,8 @@ def ranking_plot(outcome_direction_1, outcome_direction_2, outcome_direction_11,
                          init='k-means++', max_iter=300, n_init=10, random_state=0)
         labels = kmeans.fit(df[['pscore1', 'pscore2']])
         df['Trt groups'] = labels.labels_.astype(str)
-        df_full = GLOBAL_DATA['net_data'].groupby(['treat1', 'treat2']).TE.count().reset_index()
-        df_full_2 = GLOBAL_DATA['net_data'].groupby(['treat1', 'treat2']).TE2.count().reset_index()
+        df_full = net_data.groupby(['treat1', 'treat2']).TE.count().reset_index()
+        df_full_2 = net_data.groupby(['treat1', 'treat2']).TE2.count().reset_index()
         node_weight, node_weight_2 = {}, {}
         for treat in df.treatment:
              n1 = df_full[df_full.treat1 == treat].TE.sum()

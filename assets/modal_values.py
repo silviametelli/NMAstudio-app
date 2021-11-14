@@ -9,7 +9,7 @@ from assets.cytoscape_styleesheeet import get_stylesheet
 from demo_data import get_demo_data
 GLOBAL_DATA = get_demo_data()
 from utils import write_node_topickle, read_node_frompickle, write_edge_topickle, read_edge_frompickle, get_network
-GLOBAL_DATA['default_elements'] = GLOBAL_DATA['user_elements'] = get_network(df=GLOBAL_DATA['net_data'])
+from assets.storage import USER_ELEMENTS
 
 
 options_format = [dict(label='long',     value='long'),
@@ -242,7 +242,7 @@ modal_network = dbc.Modal([
                      dbc.ModalBody([html.Div(id='network-expand-body'),
                                     html.Br(),
                                     html.Div(cyto.Cytoscape(id='modal-cytoscape',  responsive=True,
-                                elements=GLOBAL_DATA['user_elements'],
+                                elements=USER_ELEMENTS,
                                 style={ 'height': '95vh', 'width': '100%',  'margin-top':'-30px', 'margin-bottom': '-30px',
                                         'padding-left':'-30px', 'margin-left': '-30px','margin-right': '-30px',  'z-index': '999',
                                         'z-compound-depth': 'orphan'

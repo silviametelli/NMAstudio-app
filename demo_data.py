@@ -10,7 +10,7 @@ def get_demo_data():
                    # 'forest_data':          pd.read_csv('db/forest_data/forest_data.csv'),
                    # 'forest_data_pairwise': pd.read_csv('db/forest_data/forest_data_pairwise.csv'),
                    # 'forest_data_outcome2': pd.read_csv('db/forest_data/forest_data_outcome2.csv'),
-                   'consistency_data':     pd.read_csv('db/consistency/consistency.csv'),
+                   # 'consistency_data':     pd.read_csv('db/consistency/consistency.csv'),
                    # 'netsplit_data':        pd.read_csv('db/consistency/consistency_netsplit.csv'),
                    # 'ranking_data':         pd.read_csv('db/ranking/rank.csv'),
                    # 'funnel_data':          pd.read_csv('db/funnel/funnel_data.csv'),

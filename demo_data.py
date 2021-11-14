@@ -17,15 +17,6 @@ def get_demo_data():
                    'league_table_data':    pd.read_csv('db/league_table_data/league_table.csv', index_col=0)
                    }
 
-    ##add columns TE,seTE from raw data
-    #GLOBAL_DATA['net_data']['TE'] =  OR_effect_measure(GLOBAL_DATA['net_data'],'r1','r2','n1', 'n2')[0].astype('float64')
-    #GLOBAL_DATA['net_data']['seTE'] = OR_effect_measure(GLOBAL_DATA['net_data'],'r1','r2','n1','n2')[1].astype('float64')
-    # GLOBAL_DATA['net_data']  = GLOBAL_DATA['net_data'].loc[:, ~GLOBAL_DATA['net_data'].columns.str.contains('^Unnamed')]
-    # GLOBAL_DATA['funnel_data']  = GLOBAL_DATA['funnel_data'].loc[:, ~GLOBAL_DATA['funnel_data'].columns.str.contains('^Unnamed')]
-    # GLOBAL_DATA['forest_data_outcome2']  = GLOBAL_DATA['forest_data_outcome2'].loc[:, ~GLOBAL_DATA['forest_data_outcome2'].columns.str.contains('^Unnamed')]
-    # GLOBAL_DATA['consistency_data'] = GLOBAL_DATA['consistency_data'].loc[:, ~GLOBAL_DATA['consistency_data'].columns.str.contains('^Unnamed')]  # Remove unnamed columns
-    # GLOBAL_DATA['netsplit_data'] = GLOBAL_DATA['netsplit_data'].loc[:, ~GLOBAL_DATA['netsplit_data'].columns.str.contains('^Unnamed')]  # Remove unnamed columns
-
     if GLOBAL_DATA['net_data']['rob'].dtype == np.object:
         GLOBAL_DATA['net_data']['rob'] = (GLOBAL_DATA['net_data']['rob'].str.lower()
                                           .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
@@ -37,14 +28,14 @@ def get_demo_data():
                                                     for idx, row in leaguetable.iterrows()], columns=leaguetable.columns, index=leaguetable.index)
 
     #for year slider
-    if 'year' not in GLOBAL_DATA['net_data'].columns:
-        GLOBAL_DATA['net_data']['year'] = GLOBAL_DATA['net_data'][f'{GLOBAL_DATA["net_data"].filter(regex="YEAR|year|Year|year publication|Year Publication|Year publication|year Publication").columns[0]}']
+    # if 'year' not in GLOBAL_DATA['net_data'].columns:
+    #     GLOBAL_DATA['net_data']['year'] = GLOBAL_DATA['net_data'][f'{GLOBAL_DATA["net_data"].filter(regex="YEAR|year|Year|year publication|Year Publication|Year publication|year Publication").columns[0]}']
         #GLOBAL_DATA['net_data']['year'] = GLOBAL_DATA['net_data']['year'].astype(str)
 
     GLOBAL_DATA['y_min'] = GLOBAL_DATA['net_data'].year.min()
     GLOBAL_DATA['y_max'] = GLOBAL_DATA['net_data'].year.max()
-    GLOBAL_DATA['dwnld_bttn_calls'] = 0
-    GLOBAL_DATA['WAIT'] = False
+    # GLOBAL_DATA['dwnld_bttn_calls'] = 0
+    # GLOBAL_DATA['WAIT'] = False
     if "treat1_class" and "treat2_class" in GLOBAL_DATA['net_data'].columns:
         GLOBAL_DATA['n_class'] = get_network(GLOBAL_DATA['net_data'])[-1]["data"]['n_class']
 

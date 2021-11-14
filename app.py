@@ -8,16 +8,16 @@ import warnings
 from collections import Counter
 warnings.filterwarnings("ignore")
 # ---------R2Py Resources --------------------------------------------------------------------------------------------#
-import rpy2.robjects as ro
-from rpy2.robjects import pandas2ri  # Define the R script and loads the instance in Python
-from rpy2.robjects.conversion import localconverter
-from  collections  import OrderedDict
-
-r = ro.r
-r['source']('R_Codes/all_R_functions.R')  # Loading the function we have defined in R.
-run_NetMeta_r = ro.globalenv['run_NetMeta']  # Get run_NetMeta from R
-league_table_r = ro.globalenv['league_rank']  # Get league_table from R
-pairwise_forest_r = ro.globalenv['pairwise_forest']  # Get pairwise_forest from R
+# import rpy2.robjects as ro
+# from rpy2.robjects import pandas2ri  # Define the R script and loads the instance in Python
+# from rpy2.robjects.conversion import localconverter
+# from  collections  import OrderedDict
+#
+# r = ro.r
+# r['source']('R_Codes/all_R_functions.R')  # Loading the function we have defined in R.
+# run_NetMeta_r = ro.globalenv['run_NetMeta']  # Get run_NetMeta from R
+# league_table_r = ro.globalenv['league_rank']  # Get league_table from R
+# pairwise_forest_r = ro.globalenv['pairwise_forest']  # Get pairwise_forest from R
 # --------------------------------------------------------------------------------------------------------------------#
 import os, io, base64, shutil, time, pandas as pd, numpy as np
 import dash, dash_html_components as html, dash_bootstrap_components as dbc
@@ -804,16 +804,16 @@ def get_new_data_cinema(contents, filename):
                Output('rob_vs_cinema_modal', 'value'),
                ],
               [Input('cytoscape', 'selectedNodeData'),
-               Input('__storage_netdata', 'children'),
+               Input('net_data_STORAGE', 'data'),
                Input('cytoscape', 'selectedEdgeData'),
                Input('rob_vs_cinema', 'value'),
                Input('rob_vs_cinema_modal', 'value'),
                Input('slider-year', 'value'),
                #Input('datatable-secondfile-upload-2', 'contents')
+               Input('league_table_data_STORAGE', 'data'),
                 ])
-def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value):
-
-
+def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
+                  league_table_data):
     triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
     if 'rob_vs_cinema.value' in triggered:
         toggle_cinema_modal = toggle_cinema
@@ -827,14 +827,11 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
         _output = [data_output]+[_OUTPUT0[1]]+[data_output] + _OUTPUT0[3:]
         return _output
 
-    if data is None:
-        data = GLOBAL_DATA['net_data']
-    else:
-        data = pd.read_json(data, orient='split').round(3)
-    leaguetable = GLOBAL_DATA['league_table_data'].copy(deep=True)
+    net_data = pd.read_json(net_data, orient='split').round(3)
+    leaguetable = pd.read_json(league_table_data, orient='split') # GLOBAL_DATA['league_table_data'].copy(deep=True)
     confidence_map = {k: n for n, k in enumerate(['low', 'medium', 'high'])}
-    treatments = np.unique(data[['treat1', 'treat2']].dropna().values.flatten())
-    robs = (data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
+    treatments = np.unique(net_data[['treat1', 'treat2']].dropna().values.flatten())
+    robs = (net_data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
             .pivot_table(index='treat1', columns='treat2', values='rob')
             .reindex(index=treatments, columns=treatments, fill_value=np.nan))
 
@@ -919,15 +916,14 @@ def update_output(store_node, data, store_edge, toggle_cinema, toggle_cinema_mod
     if store_edge or store_node:
         slctd_nods = {n['id'] for n in store_node} if store_node else set()
         slctd_edgs = [e['source'] + e['target'] for e in store_edge] if store_edge else []
-        data = data[data.treat1.isin(slctd_nods) | data.treat2.isin(slctd_nods)
-                    | (data.treat1 + data.treat2).isin(slctd_edgs) | (data.treat2 + data.treat1).isin(slctd_edgs)]
+        net_data = net_data[net_data.treat1.isin(slctd_nods) | net_data.treat2.isin(slctd_nods)
+                    | (net_data.treat1 + net_data.treat2).isin(slctd_edgs) | (net_data.treat2 + net_data.treat1).isin(slctd_edgs)]
 
-    data_cols = [{"name": c, "id": c} for c in data.columns]
-    data.year = data.year
-    data_output = data[data.year <= slider_value].to_dict('records')
+    data_cols = [{"name": c, "id": c} for c in net_data.columns]
+    data_output = net_data[net_data.year <= slider_value].to_dict('records')
     league_table = build_league_table(leaguetable, leaguetable_cols, league_table_styles, tooltip_values)
     league_table_modal = build_league_table(leaguetable, leaguetable_cols, league_table_styles, tooltip_values, modal=True)
-    GLOBAL_DATA["data_and_league_table_callback_FULL_DATA"] = data
+    GLOBAL_DATA["data_and_league_table_callback_FULL_DATA"] = net_data
     _output = [data_output, data_cols] * 2 + [league_table, league_table_modal] + [legend] * 2 + [toggle_cinema, toggle_cinema_modal]
     GLOBAL_DATA["data_and_league_table_callback_OUTPUT"] =   _output
     return _output

@@ -21,6 +21,8 @@ FOREST_DATA = pd.read_csv('db/forest_data/forest_data.csv')
 FOREST_DATA_OUT2 = pd.read_csv('db/forest_data/forest_data_outcome2.csv')
 FOREST_DATA_PRWS = pd.read_csv('db/forest_data/forest_data_pairwise.csv')
 LEAGUE_TABLE_DATA = pd.read_csv('db/league_table_data/league_table.csv', index_col=0)
+CINEMA_NET_DATA1 =  pd.read_csv('db/Cinema/cinema_report_PASI90.csv')
+CINEMA_NET_DATA2 =  pd.read_csv('db/Cinema/cinema_report_SAE.csv')
 
 RANKING_DATA = pd.read_csv('db/ranking/rank.csv')
 FUNNEL_DATA = pd.read_csv('db/funnel/funnel_data.csv')
@@ -37,6 +39,8 @@ dcc.Store(id='forest_data_prws_STORAGE', data=FOREST_DATA_PRWS.to_json( orient='
 dcc.Store(id='ranking_data_STORAGE', data=RANKING_DATA.to_json( orient='split')),
 dcc.Store(id='funnel_data_STORAGE', data=FUNNEL_DATA.to_json( orient='split')),
 dcc.Store(id='league_table_data_STORAGE', data=LEAGUE_TABLE_DATA.to_json( orient='split')),
+dcc.Store(id='cinema_net_data1_STORAGE', data=CINEMA_NET_DATA1.to_json( orient='split')),
+dcc.Store(id='cinema_net_data2_STORAGE', data=CINEMA_NET_DATA2.to_json( orient='split')),
 dcc.Store(id='temporarily_uploaded_data'),
 dcc.Store(id='submitted_data'),
 dcc.Store(id='NMA_data_STORAGE'),

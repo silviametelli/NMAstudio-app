@@ -758,37 +758,38 @@ def netsplit(edges):
     return [data_output, data_cols]
 
 ### ----- upload CINeMA data file 1 ------ ###
-@app.callback([Output('__storage_netdata_cinema1', 'children'),
+@app.callback([Output("cinema_net_data1_STORAGE", "data"),
                Output("file2-list", "children")],
-              [Input('datatable-secondfile-upload', 'contents')],
+              [Input('datatable-secondfile-upload', 'contents'),
+               Input('cinema_net_data1_STORAGE', 'data')],
               [State('datatable-secondfile-upload', 'filename')])
-def get_new_data_cinema(contents, filename):
+def get_new_data_cinema(contents, cinema_net_data1, filename):
     if contents is None:
-        data1 = GLOBAL_DATA['cinema_net_data1']
+        cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
     else:
-        data1 = parse_contents(contents, filename)
-        GLOBAL_DATA['cinema_net_data1'] = data1 #= data1.loc[:,data1.columns.str.contains('^Unnamed')]  # Remove unnamed columns
-        print(GLOBAL_DATA['cinema_net_data1'])
+        cinema_net_data1 = parse_contents(contents, filename)
     if filename is not None:
-        return data1.to_json(orient='split'), 'loaded' #f'{filename}'
+        return cinema_net_data1.to_json(orient='split'), 'loaded'
     else:
-        return data1.to_json(orient='split'), ''
+        return cinema_net_data1.to_json(orient='split'), ''
 
 ### ----- upload CINeMA data file 2 ------ ###
-@app.callback([Output('__storage_netdata_cinema2', 'children'),
-               Output("file2-list-2", "children")],
-              [Input('datatable-secondfile-upload-2', 'contents')],
+@app.callback([Output("cinema_net_data2_STORAGE", "data"),
+               Output("file2-list-2", "children"),],
+              [Input('datatable-secondfile-upload-2', 'contents'),
+               Input('cinema_net_data2_STORAGE', 'data'),],
               [State('datatable-secondfile-upload-2', 'filename')])
-def get_new_data_cinema(contents, filename):
+def get_new_data_cinema(contents, cinema_net_data2, filename):
+
     if contents is None:
-        data2 = GLOBAL_DATA['cinema_net_data2']
+        cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
     else:
-        data2 = parse_contents(contents, filename)
-        GLOBAL_DATA['cinema_net_data2'] = data2 #= data2.loc[:, data2.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+        cinema_net_data2 = parse_contents(contents, filename)
+
     if filename is not None:
-        return data2.to_json(orient='split'), 'loaded' #f'{filename}'
+        return cinema_net_data2.to_json(orient='split'), 'loaded'
     else:
-        return data2.to_json(orient='split'), ''
+        return cinema_net_data2.to_json(orient='split'), ''
 
 
 ### ----- display Data Table and League Table ------ ###
@@ -811,9 +812,11 @@ def get_new_data_cinema(contents, filename):
                Input('slider-year', 'value'),
                #Input('datatable-secondfile-upload-2', 'contents')
                Input('league_table_data_STORAGE', 'data'),
+               Input('cinema_net_data1_STORAGE', 'data'),
+               Input('cinema_net_data2_STORAGE', 'data'),
                 ])
 def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
-                  league_table_data):
+                  league_table_data, cinema_net_data1, cinema_net_data2):
     triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
     if 'rob_vs_cinema.value' in triggered:
         toggle_cinema_modal = toggle_cinema
@@ -836,10 +839,12 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
             .reindex(index=treatments, columns=treatments, fill_value=np.nan))
 
     if toggle_cinema:
+        cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
+        cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
         confidence_map = {k: n for n, k in enumerate(['very low', 'low', 'moderate', 'high'])}
-        comparisons = GLOBAL_DATA['cinema_net_data1'].Comparison.str.split(':', expand=True)
-        confidence1 = GLOBAL_DATA['cinema_net_data1']['Confidence rating'].str.lower().map(confidence_map)
-        confidence2 = GLOBAL_DATA['cinema_net_data2']['Confidence rating'].str.lower().map(confidence_map) #if content2 is not None else confidence1
+        comparisons = cinema_net_data1.Comparison.str.split(':', expand=True)
+        confidence1 = cinema_net_data1['Confidence rating'].str.lower().map(confidence_map)
+        confidence2 = cinema_net_data2['Confidence rating'].str.lower().map(confidence_map) #if content2 is not None else confidence1
         comprs_conf_ut = comparisons.copy()  # Upper triangle
         comparisons.columns = [1, 0]  # To get lower triangle
         comprs_conf_lt = comparisons[[0, 1]]  # Lower triangle

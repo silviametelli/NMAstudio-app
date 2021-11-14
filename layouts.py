@@ -21,8 +21,6 @@ def home_layout(GLOBAL_DATA):
     return html.Div(className="app__container", children=STORAGE + [
                         ### STORAGE DATA
                         html.Div(id='__storage_netdata', style={'display': 'none'}),
-                        html.Div(id='__storage_netdata_cinema1', style={'display': 'none'}),
-                        html.Div(id='__storage_netdata_cinema2', style={'display': 'none'}),
 
                         html.Div(
                           id='main_page',

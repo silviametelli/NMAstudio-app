@@ -1,4 +1,5 @@
-from assets.modal_values import *
+# from assets.modal_values import *
+import dash_core_components as dcc
 import pandas as pd
 from utils import get_network, write_session_pickle
 import uuid, datetime, os, pickle
@@ -28,7 +29,7 @@ RANKING_DATA = pd.read_csv('db/ranking/rank.csv')
 FUNNEL_DATA = pd.read_csv('db/funnel/funnel_data.csv')
 
 OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col} for col in NET_DATA.columns]
-
+N_CLASSES = USER_ELEMENTS[-1]["data"]['n_class'] if "n_class" in USER_ELEMENTS[-1]["data"] else 1
 
 STORAGE = [
 dcc.Store(id='net_data_STORAGE', data=NET_DATA.to_json( orient='split')),

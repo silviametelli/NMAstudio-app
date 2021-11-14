@@ -1,23 +1,8 @@
 from assets.COLORS import *
-from demo_data import get_demo_data
-from utils import get_network
-from  collections  import OrderedDict
+from assets.storage import N_CLASSES
+from utils import CMAP
 
-
-GLOBAL_DATA = get_demo_data()
-if "treat1_class" and "treat2_class" in GLOBAL_DATA['net_data'].columns:
-    import matplotlib
-    from matplotlib import cm
-    cmaps = OrderedDict()
-    blues = cm.get_cmap('Blues', 128)
-    viridis = cm.get_cmap('viridis', 128)
-    GLOBAL_DATA['n_class'] = get_network(GLOBAL_DATA['net_data'])[-1]["data"]['n_class']
-    cmaps['Sequential'] = [matplotlib.colors.rgb2hex(viridis(i)) for i in range(0, viridis.N, 1)]
-    cmaps['Sequential'] = ['purple','green','blue','red','black','yellow','black','orange','pink']
-    cmaps_class = cmaps['Sequential'][ :GLOBAL_DATA['n_class'] ]
-else:
-    cmaps = OrderedDict()
-    cmaps_class = None
+cmaps_class = CMAP[ :N_CLASSES] if N_CLASSES>1 else None
 
 
 def get_stylesheet(node_size=False, classes = False, edg_col= False, nd_col=DFLT_ND_CLR, edge_size=False,

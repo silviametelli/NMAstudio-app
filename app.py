@@ -7,17 +7,6 @@
 import warnings
 from collections import Counter
 warnings.filterwarnings("ignore")
-# ---------R2Py Resources --------------------------------------------------------------------------------------------#
-# import rpy2.robjects as ro
-# from rpy2.robjects import pandas2ri  # Define the R script and loads the instance in Python
-# from rpy2.robjects.conversion import localconverter
-# from  collections  import OrderedDict
-#
-# r = ro.r
-# r['source']('R_Codes/all_R_functions.R')  # Loading the function we have defined in R.
-# run_NetMeta_r = ro.globalenv['run_NetMeta']  # Get run_NetMeta from R
-# league_table_r = ro.globalenv['league_rank']  # Get league_table from R
-# pairwise_forest_r = ro.globalenv['pairwise_forest']  # Get pairwise_forest from R
 # --------------------------------------------------------------------------------------------------------------------#
 import os, io, base64, shutil, time, pandas as pd, numpy as np
 import dash, dash_html_components as html, dash_bootstrap_components as dbc

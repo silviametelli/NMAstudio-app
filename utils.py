@@ -17,6 +17,9 @@ funnel_plot_r = ro.globalenv['funnel_funct']  # Get pairwise_forest from R
 run_pairwise_data_r = ro.globalenv['get_pairwise_data']  # Get pairwise data from long format from R
 
 
+CMAP = ['purple', 'green', 'blue', 'red', 'black', 'yellow', 'black', 'orange', 'pink']
+
+
 def apply_r_func(func, df):
     with localconverter(ro.default_converter + pandas2ri.converter):
         df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
@@ -60,9 +63,6 @@ def set_slider_marks(y_min, y_max, years):
 
 ## ----------------------------  NETWORK FUNCTION --------------------------------- ##
 def get_network(df):
-    global num_classes
-    cmaps = OrderedDict()
-    cmaps['Sequential'] = ['purple', 'green', 'blue', 'red', 'black', 'yellow', 'black', 'orange', 'pink']
     df = df.dropna(subset=['TE', 'seTE'])
     if "treat1_class" and "treat2_class" in df.columns:
         df_treat = df.treat1.dropna().append(df.treat2.dropna()).reset_index(drop=True)
@@ -73,7 +73,7 @@ def get_network(df):
         all_nodes_class = long_df_class.drop_duplicates().sort_values(by='treat').reset_index(drop=True)
         num_classes = all_nodes_class['class'].max()+1 #because all_nodes_class was shifted by minus 1
     sorted_edges = np.sort(df[['treat1', 'treat2']], axis=1)  ## removes directionality
-    df[['treat1', 'treat2']] = sorted_edges
+    df.loc[:,['treat1', 'treat2']] = sorted_edges
     edges = df.groupby(['treat1', 'treat2']).TE.count().reset_index()
     df_n1g = df.rename(columns={'treat1': 'treat', 'n1':'n'}).groupby(['treat'])
     df_n2g = df.rename(columns={'treat2': 'treat', 'n2':'n'}).groupby(['treat'])
@@ -94,7 +94,7 @@ def get_network(df):
                           "n_class": num_classes,
                           'size': np.sqrt(size)/max_trsfrmd_size,
                           'pie1': r1/(r1+r2+r3), 'pie2':r2/(r1+r2+r3), 'pie3': r3/(r1+r2+r3),
-                          }, 'classes': f'{cmaps["Sequential"][cls]}'} for target, size, r1, r2, r3, cls in all_nodes_sized.values]
+                          }, 'classes': f'{CMAP[cls]}'} for target, size, r1, r2, r3, cls in all_nodes_sized.values]
     else:
         print(all_nodes_robs, all_nodes_sized.values)
 

@@ -227,9 +227,7 @@ pairwise_forest <- function(dat){
   return(DFs_pairwise)
 }
 
-
 get_pairwise_data <- function(dat){
-
-  pairwise_dat <- pairwise(dat, sm=dat$effect_size1) #TODO: check if is possible to have one file for both outcomes
+  pairwise_dat <- pairwise(dat, sm=dat$effect_size1) #TODO: if two outcomes: produce two datasets, one per outcome
   return(pairwise_dat)
 }

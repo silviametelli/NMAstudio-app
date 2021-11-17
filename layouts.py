@@ -148,7 +148,7 @@ def home_layout(user_elements=USER_ELEMENTS):
 
 ############################################  DOCUMENTATION PAGE  #######################################################
 
-doc_layout = html.Div([Navbar(), html.Br(),  html.Br(), html.Br(),
+doc_layout = html.Div(id='docpage-link', children = [Navbar(), html.Br(),  html.Br(), html.Br(),
 
 html.H1("NMAstudio (version 1.1)", style={'font-size':'20px', 'color':'white', 'padding-left':'3%',
                                           'padding-right':'3%', 'font-family':'sans-serif'}),  html.Br(),
@@ -177,6 +177,30 @@ dcc.Markdown('G. Rücker, G. Schwarzer, U. Krahn, and J. König. netmeta: Networ
         , className="markdown_style"),
 
 
-
                        ]),
 
+
+
+############################################  NEWS PAGE  #######################################################
+
+news_layout = html.Div([Navbar(), html.Br(),  html.Br(), html.Br(),
+
+    html.H1("Upcoming new features", style={'font-size':'20px', 'color':'white', 'padding-left':'3%',
+                                          'padding-right':'3%', 'font-family':'sans-serif'}),  html.Br(),
+
+       dcc.Markdown('Upcoming features',
+             className="markdown_style"),
+       html.Br(),
+    dcc.Markdown('',
+                 className="markdown_style"),
+                        html.Br(),
+                        html.Br(),
+                        html.Br(),
+
+                        dcc.Markdown('Do you have any questions or suggestions for features you would like to see implemented in the next update of NMAstudio?'
+                            , className="markdown_style"),
+                        html.Br(),
+
+                        dcc.Markdown('Get in touch at silvia.metelli@u-paris.fr'
+                            , className="markdown_style"),
+    ])

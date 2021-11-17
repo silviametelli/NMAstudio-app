@@ -2,7 +2,6 @@
 # Objective :  visualization tabs based on network interactivity
 # Created by:  Silvia Metelli
 # Created on: 10/11/2020
-
 # --------------------------------------------------------------------------------------------------------------------#
 import warnings
 from collections import Counter
@@ -66,12 +65,13 @@ options_effect_size_bin = [{'label':'OR',  'value':'OR'},
 ################################ MULTIPAGE CALLBACKS ################################
 #####################################################################################
 
+
 # Update the index
 @app.callback(Output('page-content', 'children'), [Input('url', 'pathname')])
 def display_page(pathname):
     if pathname == '/home':  return Homepage()
     elif pathname == '/doc': return doc_layout
-    else:                    return Homepage()
+    elif pathname == '/news': return news_layout
 
 # Update which link is active in the navbar
 @app.callback(Output('homepage-link', 'active'),
@@ -83,6 +83,9 @@ def set_homepage_active(pathname):
 def set_docpage_active(pathname):
     return pathname == '/doc'
 
+@app.callback(Output('newspage-link', 'active'), [Input('url', 'pathname')])
+def set_docpage_active(pathname):
+    return pathname == '/news'
 
 #####################################################################################
 #####################################################################################

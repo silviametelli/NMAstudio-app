@@ -134,7 +134,7 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
 ## ----------------------  FUNCTIONS for Running data analysis  --------------------------- ##
 
 def data_checks(df):
-    return {'check1': True, 'check2': False, 'check3': False, 'check4': True}
+    return {'check1': True, 'check2': False, 'check3': False, 'check4': True} #TODO: add specific checks
 
 def run_network_meta_analysis(df):
     data_forest = apply_r_func(func=run_NetMeta_r, df=df)
@@ -148,7 +148,8 @@ def generate_league_table(df):
     leaguetable, pscores, consist, netsplit = apply_r_func(func=league_table_r, df=df)
     replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
     leaguetable = pd.DataFrame([[replace_and_strip(col) for col in list(row)]
-                                for idx, row in leaguetable.iterrows()], columns=leaguetable.columns,
+                                for idx, row in leaguetable.iterrows()],
+                               columns=leaguetable.columns,
                                index=leaguetable.index)
     leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
     leaguetable = leaguetable.reset_index().rename(columns={'index': 'Treatments'})

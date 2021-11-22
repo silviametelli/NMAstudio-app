@@ -211,11 +211,9 @@ funnel_funct <- function(dat){
     }
     res$TE.adj <- res$TE - res$TE.direct
     #netfun <- funnel(nma, order=ordered_strategies)
-    funneldata <- droplevels(subset(res,treat2==treatment))
-    if(sm=="MD"){df <- data.frame(funneldata$studlab, funneldata$treat1, funneldata$treat2, funneldata$TE,
+    funneldata <- droplevels(subset(res, treat2==treatment))
+    df <- data.frame(funneldata$studlab, funneldata$treat1, funneldata$treat2, funneldata$TE,
                                   funneldata$TE.direct, funneldata$TE.adj, funneldata$seTE)
-    }else{df <- data.frame(funneldata$studlab, funneldata$treat1, funneldata$treat2, funneldata$TE,
-                             (funneldata$TE.direct), (funneldata$TE.adj), funneldata$seTE)}
     colnames(df) <- c("studlab", "treat1", "treat2", sm, "TE_direct", "TE_adj", "seTE")
     rownames(df) <- NULL
     ALL_DFs[[treatment]] <- df
@@ -239,7 +237,7 @@ pairwise_forest <- function(dat){
 
   for (id in dat$ID){
     dat_temp <- dat[which(dat$ID==id), ]
-    model_temp = metagen(TE=TE,seTE=sqrt(seTE), studlab = studlab, data=dat_temp,
+    model_temp <- metagen(TE=TE,seTE=sqrt(seTE), studlab = studlab, data=dat_temp,
                          random = T, sm=sm, prediction=TRUE)
 
     studlab <- dat_temp$studlab
@@ -273,6 +271,6 @@ pairwise_forest <- function(dat){
 }
 
 get_pairwise_data <- function(dat){
-  pairwise_dat <- pairwise(dat, sm=dat$effect_size1) #TODO: if two outcomes: produce two datasets, one per outcome
+  pairwise_dat <- netmeta::pairwise(dat, sm=dat$effect_size1[1]) #TODO: if two outcomes: produce two datasets, one per outcome
   return(pairwise_dat)
 }

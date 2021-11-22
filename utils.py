@@ -17,7 +17,7 @@ funnel_plot_r = ro.globalenv['funnel_funct']  # Get pairwise_forest from R
 run_pairwise_data_r = ro.globalenv['get_pairwise_data']  # Get pairwise data from long format from R
 
 
-CMAP = ['purple', 'green', 'blue', 'red', 'black', 'yellow', 'black', 'orange', 'pink']
+CMAP = ['purple', 'green', 'blue', 'red', 'black', 'yellow', 'orange', 'pink', 'brown', 'grey']
 
 
 def apply_r_func(func, df):
@@ -96,8 +96,6 @@ def get_network(df):
                           'pie1': r1/(r1+r2+r3), 'pie2':r2/(r1+r2+r3), 'pie3': r3/(r1+r2+r3),
                           }, 'classes': f'{CMAP[cls]}'} for target, size, r1, r2, r3, cls in all_nodes_sized.values]
     else:
-        print(all_nodes_robs, all_nodes_sized.values)
-
         cy_nodes = [{"data": {"id": target,
                           "label": target,
                           'classes':'genesis',
@@ -117,10 +115,8 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
     data['effect_size1'] = dataselectors[0]
     get_effect_size1 = effect_sizes[value_outcome1][dataselectors[0]]
 
-
     if value_format=='long':
         apply_r_func(func=run_pairwise_data_r, df=data)
-
 
     if value_format=='contrast':
         data['TE'], data['seTE'] = get_effect_size1(data, effect=1)

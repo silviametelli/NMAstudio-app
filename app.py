@@ -1727,8 +1727,6 @@ def data_modal(open_modal_data, upload, submit,
         return modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), temporarily_uploaded_data, submitted_data
 
 
-
-
 # ----- data check modal -------#
 # @app.callback(Output("modal_checks", "is_open"),
 #               [Input("upload_your_data", "n_clicks"),
@@ -1776,6 +1774,7 @@ def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, temporarily_upload
     else:
         return None, ''
 
+
 @app.callback([Output("para-anls-data", "children"),
                Output('para-anls-data', 'data'),
                Output('NMA_data_STORAGE', 'data')],
@@ -1788,7 +1787,7 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, temporarily_uploaded_data
     if modal_data_checks_is_open:
         NMA_data = run_network_meta_analysis(pd.read_json(temporarily_uploaded_data, orient='split'))
         NMA_data = NMA_data.to_json( orient='split')
-        return (html.P(u"\u2713" + " Network meta-analysis ran successfully.", style={"color":"green"}),
+        return (html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
                 '__Para_Done__', NMA_data)
     else:
         return None, '', NMA_data
@@ -1805,7 +1804,7 @@ def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, tempora
     if modal_data_checks_is_open:
         PAIRWISE_data = run_pairwise_MA(pd.read_json(temporarily_uploaded_data, orient='split'))
         PAIRWISE_data = PAIRWISE_data.to_json( orient='split')
-        return (html.P(u"\u2713" + " Pairwise meta-analysis ran successfully.", style={"color":"green"}),
+        return (html.P(u"\u2713" + " Pairwise meta-analysis run successfully.", style={"color":"green"}),
                 '__Para_Done__', PAIRWISE_data)
     else:
         return (None, '', PAIRWISE_data)
@@ -1839,7 +1838,7 @@ def modal_submit_checks_FUNNEL(lt_data_ts, modal_data_checks_is_open, temporaril
     if modal_data_checks_is_open:
         FUNNEL_data = generate_funnel_data(pd.read_json(temporarily_uploaded_data, orient='split'))
         FUNNEL_data = FUNNEL_data.to_json(orient='split')
-        return (html.P(u"\u2713" + " Successfully generated funnel data.", style={"color":"green"}),
+        return (html.P(u"\u2713" + " Successfully generated funnel plot data.", style={"color":"green"}),
                 '__Para_Done__', FUNNEL_data)
     else:
         return None, '', FUNNEL_data

@@ -77,7 +77,7 @@ PLotly.js
     --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace
 }
 
-
+/*
 Grid
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 .container {
@@ -601,7 +601,7 @@ a.btn.disabled, fieldset:disabled a.btn {pointer-events: none}
 .btn-secondary.focus, .btn-secondary:focus {
     color: #fff;
     background-color: var(--dropdownmenu-hover-background-color);
-    border-color: none;
+    /*border-color: none;*/
     box-shadow: none
     /*border-color: #529637;*/
     /*box-shadow: 0 0 0 .2rem rgb(178, 137, 61)*/

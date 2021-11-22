@@ -4,6 +4,7 @@ venv
 .DS_Store
 .env
 .idea/
+*.pickle
 db/.temp/
 db/forest_data/old_data
 db/SennXXX.csv

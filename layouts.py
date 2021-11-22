@@ -150,7 +150,7 @@ def home_layout(user_elements=USER_ELEMENTS):
 
 doc_layout = html.Div(id='docpage-link', children = [Navbar(), html.Br(),  html.Br(), html.Br(),
 
-html.H1("NMAstudio (version 1.1)", style={'font-size':'20px', 'color':'white', 'padding-left':'3%',
+html.H1("NMAstudio (version 0.1)", style={'font-size':'20px', 'color':'white', 'padding-left':'3%',
                                           'padding-right':'3%', 'font-family':'sans-serif'}),  html.Br(),
 
 dcc.Markdown('NMAstudio is a web application to produce and visualise interactive outputs from network meta-analyses',

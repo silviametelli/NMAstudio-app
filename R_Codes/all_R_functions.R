@@ -24,7 +24,7 @@ run_NetMeta <- function(dat){
   if (sum(sel.narms) >= 1){dat <- dat %>% filter(!studlab %in% names(tabnarms)[sel.narms])}
   nma_temp <- netmeta(dat$TE, dat$seTE, dat$treat1, dat$treat2, dat$studlab,
                         sm = sm,
-                        comb.random = TRUE,
+                        random = TRUE,
                         backtransf = TRUE,
                         reference.group = treatments[1])
     ### Values
@@ -64,7 +64,7 @@ league_rank <- function(dat){
                          treat1=dat1$treat1, treat2=dat1$treat2,
                          studlab=dat1$studlab,
                          sm = sm1,
-                         comb.random = TRUE, backtransf = TRUE,
+                         random = TRUE, backtransf = TRUE,
                          reference.group = dat1$treat2[1])
   if("TE2" %in% colnames(dat)){
     dat2 <- dat[, c("studlab", "treat1", "treat2", "TE2", "seTE2")]
@@ -76,7 +76,7 @@ league_rank <- function(dat){
     nma_secondary <- netmeta(TE=dat2$TE2, seTE=dat2$seTE2,
                              treat1=dat2$treat1, treat2=dat2$treat2,
                              studlab=dat2$studlab, sm = sm2,
-                             comb.random = TRUE, backtransf = TRUE,
+                             random = TRUE, backtransf = TRUE,
                              reference.group = dat2$treat2[1])
     # - network estimates of first outcome in lower triangle, second outcome in upper triangle
     if(length(sort(nma_primary$trts))>length(sort(nma_secondary$trts))){
@@ -153,20 +153,65 @@ funnel_funct <- function(dat){
   sel.narms <- !iswhole((1 + sqrt(8 * tabnarms + 1)) / 2)
   if (sum(sel.narms) >= 1){dat <- dat %>% filter(!studlab %in% names(tabnarms)[sel.narms])}
   treatments <- unique(c(dat$treat1, dat$treat2))
-  nma <- netmeta(TE=dat$TE, seTE=dat$seTE,
+  x <- netmeta(TE=dat$TE, seTE=dat$seTE,
                  treat1=dat$treat1, treat2=dat$treat2,
                  studlab=dat$studlab,
                  sm = sm,
-                 comb.random = TRUE,
+                 random = TRUE,
                  backtransf = FALSE,
                  reference.group = treatments[1])
   for (treatment in treatments){
     ordered_strategies <- unique(c(dat$treat1, dat$treat2))
     ordered_strategies <- ordered_strategies[ordered_strategies!=treatment]
     ordered_strategies <- c(ordered_strategies, rev(treatment))
-    netfun <- funnel(nma, order=ordered_strategies)
-    dev.off()
-    funneldata <- droplevels(subset(netfun,treat2==treatment))
+    TE <- x$TE
+    seTE <- x$seTE
+    treat1 <- x$treat1
+    treat2 <- x$treat2
+    trts.abbr <- x$trts
+    trt1 <- as.character(factor(treat1, levels = x$trts, labels = trts.abbr))
+    trt2 <- as.character(factor(treat2, levels = x$trts, labels = trts.abbr))
+    studlab <- x$studlab
+    sep.trts <- ":"
+    comp <- paste(trt1, trt2, sep = sep.trts)
+    comp21 <- paste(trt2, trt1, sep = sep.trts)
+    comparison <- paste(treat1, treat2, sep = sep.trts)
+    comparison21 <- paste(treat2, treat1, sep = sep.trts)
+    treat1.pos <- as.numeric(factor(treat1, levels = ordered_strategies))
+    treat2.pos <- as.numeric(factor(treat2, levels = ordered_strategies))
+    wo <- treat1.pos > treat2.pos
+    if (any(wo)) {
+      TE[wo] <- -TE[wo]
+      ttreat1 <- treat1
+      treat1[wo] <- treat2[wo]
+      treat2[wo] <- ttreat1[wo]
+      ttreat1.pos <- treat1.pos
+      treat1.pos[wo] <- treat2.pos[wo]
+      treat2.pos[wo] <- ttreat1.pos[wo]
+      comp[wo] <- comp21[wo]
+      comparison[wo] <- comparison21[wo]
+    }
+    o <- order(treat1.pos, treat2.pos)
+    TE <- TE[o]
+    seTE <- seTE[o]
+    treat1 <- treat1[o]
+    treat2 <- treat2[o]
+    studlab <- studlab[o]
+    comp <- comp[o]
+    comparison <- comparison[o]
+    res <- data.frame(studlab, treat1, treat2, comparison, comp, TE, TE.direct = NA, TE.adj = NA, seTE)
+    if (is.numeric(treat1)){treat1 <- as.character(treat1)}
+    if (is.numeric(treat2)){treat2 <- as.character(treat2)}
+    if (x$fixed == TRUE){
+           for (i in seq_along(res$TE))
+               res$TE.direct[i] <- x$TE.direct.fixed[treat1[i], treat2[i]]
+    }else{
+           for (i in seq_along(res$TE))
+             res$TE.direct[i] <- x$TE.direct.random[treat1[i], treat2[i]]
+    }
+    res$TE.adj <- res$TE - res$TE.direct
+    #netfun <- funnel(nma, order=ordered_strategies)
+    funneldata <- droplevels(subset(res,treat2==treatment))
     if(sm=="MD"){df <- data.frame(funneldata$studlab, funneldata$treat1, funneldata$treat2, funneldata$TE,
                                   funneldata$TE.direct, funneldata$TE.adj, funneldata$seTE)
     }else{df <- data.frame(funneldata$studlab, funneldata$treat1, funneldata$treat2, funneldata$TE,
@@ -195,7 +240,7 @@ pairwise_forest <- function(dat){
   for (id in dat$ID){
     dat_temp <- dat[which(dat$ID==id), ]
     model_temp = metagen(TE=TE,seTE=sqrt(seTE), studlab = studlab, data=dat_temp,
-                         comb.random = T, sm=sm, prediction=TRUE)
+                         random = T, sm=sm, prediction=TRUE)
 
     studlab <- dat_temp$studlab
     t1 <- dat_temp$treat1

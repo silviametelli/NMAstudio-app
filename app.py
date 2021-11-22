@@ -72,6 +72,7 @@ def display_page(pathname):
     if pathname == '/home':  return Homepage()
     elif pathname == '/doc': return doc_layout
     elif pathname == '/news': return news_layout
+    else:  return Homepage()
 
 # Update which link is active in the navbar
 @app.callback(Output('homepage-link', 'active'),

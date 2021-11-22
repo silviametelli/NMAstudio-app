@@ -117,8 +117,8 @@ Grid
     .twelve.columns {width: 100%; margin-left: 0;}
     .one-third.column {width: 30.6666666667%;}
     .two-thirds.column {width: 65.3333333333%;}
-    .one-half.column {width: 44%;}
-    .one-half-2.column {width: 50%;}
+    .one-half.column {width: 42%;}
+    .one-half-2.column {width: 53%;}
 
     /* Offsets */
     .offset-by-one.column,

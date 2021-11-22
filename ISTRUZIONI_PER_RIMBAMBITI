@@ -1,3 +1,5 @@
 pip list --format=freeze > requirements.txt
 
 heroku config:set COMPILE_TIMEOUT=3000
+
+git push heroku master:main

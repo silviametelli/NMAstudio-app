@@ -25,8 +25,11 @@ LEAGUE_TABLE_DATA = pd.read_csv('db/league_table_data/league_table.csv', index_c
 CINEMA_NET_DATA1 =  pd.read_csv('db/Cinema/cinema_report_PASI90.csv')
 CINEMA_NET_DATA2 =  pd.read_csv('db/Cinema/cinema_report_SAE.csv')
 NETSPLIT_DATA =  pd.read_csv('db/consistency/consistency_netsplit.csv')
+#NETSPLIT_DATA2 =  pd.read_csv('db/consistency/consistency_netsplit2.csv')
 RANKING_DATA = pd.read_csv('db/ranking/rank.csv')
 FUNNEL_DATA = pd.read_csv('db/funnel/funnel_data.csv')
+#FUNNEL_DATA2 = pd.read_csv('db/funnel/funnel_data2.csv')
+
 
 OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col}
                for col in NET_DATA.select_dtypes(['number']).columns]

@@ -203,7 +203,7 @@ h6 {margin-top: 0;}
 
 
 .bootstrap-select > .dropdown-toggle.bs-placeholder:active {
-  border-color: #--CLR_BCKGRND;
+  /*border-color: --CLR_BCKGRND; SCEMO DI MERDA*/
 }
 
 .tab-content{
@@ -215,7 +215,7 @@ h6 {margin-top: 0;}
 
 /*div.Select–single>.Select-control .Select-value,*/
 .Select-placeholder {
-    color: --CLR_BCKGRND;
+    /*color: --CLR_BCKGRND; SCEMO DI MERDA*/
     /*background: #394046;*/
     #background-image: linear-gradient(#484e55, #3A3F44 60%, #313539);
     left: 0;
@@ -309,7 +309,7 @@ display: inline-block;
 zoom: 1;
 margin-right: 20px;
 color:white;
-right:10;
+right:10px;
 border:none;
 /*border: 1px solid #cccccc;*/
 /*background: none  repeat scroll 0 0 #ffffff;*/
@@ -500,7 +500,7 @@ img:hover {
   /*border: 0.01px solid #7e95cc;*/
   /*background-color: #7e95cc;*/
   border: none;
-  background-color: none;
+  /*background-color: none; SCEMO DI MERDA*/
   cursor: pointer;
   /*border-radius: 100%;*/
   vertical-align: middle;
@@ -537,7 +537,7 @@ img:hover {
 /*    }*/
     .btn-export {
         float: left;
-        -webkit-justify-content: left;
+        /*-webkit-justify-content: left; SCEMO DI MERDA*/
         justify-content: left;
     }
 
@@ -621,7 +621,9 @@ li a {
 @media (min-width:962px){
     .navbar-expand-lg .navbar-nav{-ms-flex-direction:row; flex-direction:row;}
     .navbar-expand-lg .navbar-nav .nav-link{padding-right:.8rem; float:right;width:100px;
-                                            padding-left:.8rem; align-items:right !important;}
+                                            padding-left:.8rem;
+        /*align-items:right !important; SCEMO DI MERDA*/
+    }
 
     .navbar-expand-lg .navbar-collapse{
                                         /*display:-ms-flexbox!important;*/
@@ -630,8 +632,8 @@ li a {
     .navbar-expand-lg .navbar-toggler{display:none}}
 
 /* NAVBAR color */
-@keyframes
-button.bg-light:hover{background-color:#dae0e5!important}
-.bg-dark{background-color: var(--CLR_BCKGRND) !important}  a.bg-dark:focus,a.bg-dark:hover,button.bg-dark:focus
+/*@keyframes*/
+/*button.bg-light:hover{background-color:#dae0e5!important}*/
+/*.bg-dark{background-color: var(--CLR_BCKGRND) !important}  a.bg-dark:focus,a.bg-dark:hover,button.bg-dark:focus*/
 /*var(--CLR_BCKGRND)*/
 /* #36726e color green as nodes */

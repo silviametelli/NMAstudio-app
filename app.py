@@ -4,10 +4,10 @@
 # Created on: 10/11/2020
 # --------------------------------------------------------------------------------------------------------------------#
 import os, io, base64, shutil
-from tools.PATHS import __SESSIONS_FOLDER
+from tools.PATHS import __SESSIONS_FOLDER, TEMP_PATH
 
 TEMP_DIR = "./__temp_logs_and_globals"
-for dir in [TEMP_DIR, __SESSIONS_FOLDER, './db/.temp']:
+for dir in [TEMP_DIR, __SESSIONS_FOLDER, TEMP_PATH]:
     if not os.path.exists(dir): os.makedirs(dir)
 
 import warnings

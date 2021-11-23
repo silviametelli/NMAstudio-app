@@ -2,7 +2,7 @@
 import dash_core_components as dcc
 import pandas as pd
 from tools.utils import get_network, write_session_pickle
-import uuid, os
+import uuid
 from tools.PATHS import __SESSIONS_FOLDER, TODAY
 
 SESSION_ID = uuid.uuid4().__str__()

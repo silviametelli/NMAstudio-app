@@ -18,10 +18,9 @@ from tools.layouts import *
 from tools.utils import *
 from tools.PATHS import TEMP_PATH
 
-UPLOAD_DIR = f"{TEMP_PATH}/UPLOAD_DIRECTORY"
-TEMP_DIR = "__temp_logs_and_globals"
-DB_TEMP_DIR = "db/.temp"
-for dir in [UPLOAD_DIR, TEMP_DIR, DB_TEMP_DIR]:
+UPLOAD_DIR = f"./{TEMP_PATH}/UPLOAD_DIRECTORY"
+TEMP_DIR = "./__temp_logs_and_globals"
+for dir in [UPLOAD_DIR, TEMP_DIR]:
     if not os.path.exists(dir): os.makedirs(dir)
 
 shutil.rmtree(TEMP_PATH, ignore_errors=True)

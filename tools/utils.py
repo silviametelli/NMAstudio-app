@@ -1,12 +1,10 @@
-import pickle, numpy as np, pandas as pd
-from PATHS import TEMP_PATH
-from collections  import OrderedDict
+import pickle
+from tools.PATHS import TEMP_PATH
 from assets.effect_sizes import *
 # ---------R2Py Resources --------------------------------------------------------------------------------------------#
 import rpy2.robjects as ro
 from rpy2.robjects import pandas2ri  # Define the R script and loads the instance in Python
 from rpy2.robjects.conversion import localconverter
-from  collections  import OrderedDict
 
 r = ro.r
 r['source']('R_Codes/all_R_functions.R')  # Loading the function we have defined in R.

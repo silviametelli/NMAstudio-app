@@ -8,30 +8,20 @@ import warnings
 warnings.filterwarnings("ignore")
 #---------R2Py Resources --------------------------------------------------------------------------------------------#
 import rpy2.robjects as ro
-from rpy2.robjects import pandas2ri # Define the R script and loads the instance in Python
-from rpy2.robjects.conversion import localconverter
+
 r = ro.r
 r['source']('R_Codes/all_R_functions.R')  # Loading the function we have defined in R.
 run_NetMeta_r = ro.globalenv['run_NetMeta']    # Get run_NetMeta from R
 league_table_r = ro.globalenv['league_table']  # Get league_table from R
 pairwise_forest_r = ro.globalenv['pairwise_forest'] # Get pairwise_forest from R
 #--------------------------------------------------------------------------------------------------------------------#
-import os, io, base64, pickle, shutil, time, copy
+import os, pickle, shutil, time
 import pandas as pd, numpy as np
-import dash, dash_html_components as html, dash_bootstrap_components as dbc
-import dash_daq as daq, dash_table
+import dash
 #from dash_extensions import Download
-import dash_cytoscape as cyto
-from assets.cytoscape_styleesheeet import get_stylesheet
-from assets.tab_styles import subtab_style, subtab_selected_style
 from assets.dropdowns_values import *
-from dash.dependencies import Input, Output, State, MATCH, ALL
-import plotly.express as px
-import plotly.graph_objects as go
-import matplotlib.pyplot as plt
-import matplotlib.colors as clrs
-from assets.COLORS import *
-from navbar import Navbar
+from dash.dependencies import Input, Output, State
+from tools.navbar import Navbar
 
 
 #--------------------------------------------------------------------------------------------------------------------#

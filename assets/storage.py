@@ -1,8 +1,8 @@
 # from assets.modal_values import *
 import dash_core_components as dcc
 import pandas as pd
-from utils import get_network, write_session_pickle
-import uuid, datetime, os, pickle
+from tools.utils import get_network, write_session_pickle
+import uuid, datetime, os
 
 TODAY = str(datetime.datetime.today().date())
 __SESSIONS_FOLDER = f'__temp_logs_and_globals/{TODAY}'

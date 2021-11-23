@@ -1,6 +1,6 @@
 from assets.COLORS import *
 from assets.storage import N_CLASSES
-from utils import CMAP
+from tools.utils import CMAP
 
 cmaps_class = CMAP[ :N_CLASSES] if N_CLASSES>1 else None
 

@@ -7,7 +7,6 @@ from assets.COLORS import *
 import dash_cytoscape as cyto
 from assets.cytoscape_styleesheeet import get_stylesheet
 
-from utils import write_node_topickle, read_node_frompickle, write_edge_topickle, read_edge_frompickle, get_network
 from assets.storage import USER_ELEMENTS
 
 

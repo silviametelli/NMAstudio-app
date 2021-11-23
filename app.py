@@ -7,21 +7,16 @@ import warnings
 from collections import Counter
 warnings.filterwarnings("ignore")
 # --------------------------------------------------------------------------------------------------------------------#
-import os, io, base64, shutil, time, pandas as pd, numpy as np
-import dash, dash_html_components as html, dash_bootstrap_components as dbc
-from dash.dependencies import Input, Output, State, MATCH, ALL
-from dash.exceptions import PreventUpdate
+import os, io, base64, shutil
+import dash
+from dash.dependencies import Input, Output, State, ALL
 import plotly.express as px, plotly.graph_objects as go
 import plotly.figure_factory as ff
 from sklearn.cluster import KMeans
-from assets.effect_sizes import get_OR, get_RR, get_MD
-import matplotlib
-from matplotlib import cm
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-from layouts import *
+from tools.layouts import *
 # --------------------------------------------------------------------------------------------------------------------#
-from utils import *
-from PATHS import TEMP_PATH
+from tools.utils import *
+from tools.PATHS import TEMP_PATH
 
 UPLOAD_DIRECTORY = f"{TEMP_PATH}/UPLOAD_DIRECTORY"
 if not os.path.exists(UPLOAD_DIRECTORY):

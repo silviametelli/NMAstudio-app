@@ -18,9 +18,11 @@ from tools.layouts import *
 from tools.utils import *
 from tools.PATHS import TEMP_PATH
 
-UPLOAD_DIRECTORY = f"{TEMP_PATH}/UPLOAD_DIRECTORY"
-if not os.path.exists(UPLOAD_DIRECTORY):
-    os.makedirs(UPLOAD_DIRECTORY)
+UPLOAD_DIR = f"{TEMP_PATH}/UPLOAD_DIRECTORY"
+TEMP_DIR = "/__temp_logs_and_globals"
+DB_TEMP_DIR = "/db/.temp"
+for dir in [UPLOAD_DIR, TEMP_DIR, DB_TEMP_DIR]:
+    if not os.path.exists(dir): os.makedirs(dir)
 
 shutil.rmtree(TEMP_PATH, ignore_errors=True)
 os.makedirs(TEMP_PATH, exist_ok=True)
@@ -1891,4 +1893,4 @@ def toggle_modal(open, close, is_open):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True, port=8888)
+    app.run_server(debug=True)

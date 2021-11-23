@@ -3,7 +3,7 @@ import dash_core_components as dcc
 import pandas as pd
 from tools.utils import get_network, write_session_pickle
 import uuid, os
-from tools.PATHS import __SESSIONS_FOLDER
+from tools.PATHS import __SESSIONS_FOLDER, TODAY
 
 SESSION_ID = uuid.uuid4().__str__()
 SESSION_PICKLE_PATH = f'{__SESSIONS_FOLDER}/{SESSION_ID}.pickle'

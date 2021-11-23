@@ -1,6 +1,5 @@
-import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
+import dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
 import dash_daq as daq
-from assets.COLORS import *
 
 tab_funnel = html.Div([dbc.Row([dbc.Col(html.P("Click treatment sequentially to get desired ordering",
                                          className="graph__title2",

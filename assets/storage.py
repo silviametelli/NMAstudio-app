@@ -2,16 +2,14 @@
 import dash_core_components as dcc
 import pandas as pd
 from tools.utils import get_network, write_session_pickle
-import uuid, datetime, os
+import uuid, os
+from tools.PATHS import __SESSIONS_FOLDER
 
-TODAY = str(datetime.datetime.today().date())
-__SESSIONS_FOLDER = f'__temp_logs_and_globals/{TODAY}'
 SESSION_ID = uuid.uuid4().__str__()
 SESSION_PICKLE_PATH = f'{__SESSIONS_FOLDER}/{SESSION_ID}.pickle'
 SESSION_PICKLE = {'wait':False}
 
-if not os.path.exists(__SESSIONS_FOLDER):
-    os.mkdir(__SESSIONS_FOLDER)
+
 write_session_pickle(dct=SESSION_PICKLE, path=SESSION_PICKLE_PATH)
 # read_session_pickle(SESSION_PICKLE_PATH)
 

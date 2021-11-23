@@ -3,11 +3,17 @@
 # Created by:  Silvia Metelli
 # Created on: 10/11/2020
 # --------------------------------------------------------------------------------------------------------------------#
+import os, io, base64, shutil
+from tools.PATHS import __SESSIONS_FOLDER
+
+TEMP_DIR = "./__temp_logs_and_globals"
+for dir in [TEMP_DIR, __SESSIONS_FOLDER, './db/.temp']:
+    if not os.path.exists(dir): os.makedirs(dir)
+
 import warnings
 from collections import Counter
 warnings.filterwarnings("ignore")
 # --------------------------------------------------------------------------------------------------------------------#
-import os, io, base64, shutil
 import dash
 from dash.dependencies import Input, Output, State, ALL
 import plotly.express as px, plotly.graph_objects as go
@@ -16,12 +22,7 @@ from sklearn.cluster import KMeans
 from tools.layouts import *
 # --------------------------------------------------------------------------------------------------------------------#
 from tools.utils import *
-from tools.PATHS import TEMP_PATH
 
-UPLOAD_DIR = f"./{TEMP_PATH}/UPLOAD_DIRECTORY"
-TEMP_DIR = "./__temp_logs_and_globals"
-for dir in [UPLOAD_DIR, TEMP_DIR]:
-    if not os.path.exists(dir): os.makedirs(dir)
 
 shutil.rmtree(TEMP_PATH, ignore_errors=True)
 os.makedirs(TEMP_PATH, exist_ok=True)

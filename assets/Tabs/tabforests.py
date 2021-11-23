@@ -1,4 +1,4 @@
-import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
+import dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
 import dash_daq as daq
 from assets.COLORS import *
 

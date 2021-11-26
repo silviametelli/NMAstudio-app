@@ -1,4 +1,4 @@
-import dash, dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
+import dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
 from assets.storage import OPTIONS_VAR
 
 tab_trstvty = html.Div([html.Div([dbc.Row([html.P("Choose effect modifier:", className="graph__title2",

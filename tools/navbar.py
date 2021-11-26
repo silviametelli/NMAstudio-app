@@ -18,13 +18,15 @@ def Navbar():
                                          style = {'color':'white','font-family': "sans-serif ",
                                                   'font-size': '13px' }))
     navbar = dbc.Navbar([
-            html.Div(dbc.Col(html.Img(src=NMASTUDIO_LOGO, height="53px", style={'filter': 'invert()',
-                                                                       #'filter': 'invert(44%) sepia(57%) saturate(3117%) hue-rotate(147deg) brightness(99%) contrast(94%)',
-                                                                       'padding-left': '2%','padding-right': '2%',
-                                                                       'padding-bottom':'0.4%','padding-top':'0.4%'}),
+            html.Div(dbc.Col(html.Img(src=NMASTUDIO_LOGO, height="53px",
+                                      style={'filter': 'invert()',
+                                             # 'filter': 'invert(42 %) sepia(26 %) saturate(2474 %) hue-rotate(218deg) brightness(97 %) contrast(89 %)',
+                                              #'filter': 'invert(44%) sepia(57%) saturate(3117%) hue-rotate(147deg) brightness(99%) contrast(94%)',
+                                              'padding-left': '2%','padding-right': '2%',
+                                              'padding-bottom':'0.4%','padding-top':'0.4%'}),
                              className="child", sm=3, md=2),
                      style={
-                            "border": "0.01px white solid",
+                            #"border": "0.01px white solid",
                             'padding-bottom':'0.2%','padding-left':'0.2%',
                             'padding-right':'0.2%', 'padding-top':'0.2%',
                             'background-color':'#304569'

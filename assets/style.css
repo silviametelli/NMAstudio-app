@@ -203,7 +203,7 @@ h6 {margin-top: 0;}
 
 
 .bootstrap-select > .dropdown-toggle.bs-placeholder:active {
-  /*border-color: --CLR_BCKGRND; SCEMO DI MERDA*/
+  /*border-color: --CLR_BCKGRND; */
 }
 
 .tab-content{
@@ -215,7 +215,7 @@ h6 {margin-top: 0;}
 
 /*div.Select–single>.Select-control .Select-value,*/
 .Select-placeholder {
-    /*color: --CLR_BCKGRND; SCEMO DI MERDA*/
+    /*color: --CLR_BCKGRND; */
     /*background: #394046;*/
     #background-image: linear-gradient(#484e55, #3A3F44 60%, #313539);
     left: 0;
@@ -500,7 +500,7 @@ img:hover {
   /*border: 0.01px solid #7e95cc;*/
   /*background-color: #7e95cc;*/
   border: none;
-  /*background-color: none; SCEMO DI MERDA*/
+  /*background-color: none; */
   cursor: pointer;
   /*border-radius: 100%;*/
   vertical-align: middle;
@@ -537,7 +537,7 @@ img:hover {
 /*    }*/
     .btn-export {
         float: left;
-        /*-webkit-justify-content: left; SCEMO DI MERDA*/
+        /*-webkit-justify-content: left; */
         justify-content: left;
     }
 
@@ -622,7 +622,7 @@ li a {
     .navbar-expand-lg .navbar-nav{-ms-flex-direction:row; flex-direction:row;}
     .navbar-expand-lg .navbar-nav .nav-link{padding-right:.8rem; float:right;width:100px;
                                             padding-left:.8rem;
-        /*align-items:right !important; SCEMO DI MERDA*/
+        /*align-items:right !important*/
     }
 
     .navbar-expand-lg .navbar-collapse{
@@ -637,3 +637,4 @@ li a {
 /*.bg-dark{background-color: var(--CLR_BCKGRND) !important}  a.bg-dark:focus,a.bg-dark:hover,button.bg-dark:focus*/
 /*var(--CLR_BCKGRND)*/
 /* #36726e color green as nodes */
+

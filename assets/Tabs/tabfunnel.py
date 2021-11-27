@@ -18,7 +18,8 @@ tab_funnel = html.Div([dbc.Row([dbc.Col(html.P("Click treatment sequentially to 
                                     'padding-left': '0px'}),
                              daq.ToggleSwitch(
                                  id='toggle_funnel_direction',
-                                 color='', size=30, vertical=False,
+                                 color='',
+                                 size=30, vertical=False,
                                  label={'label': "",
                                         'style': dict(color='white', font='0.5em')},
                                  labelPosition="top",
@@ -54,7 +55,7 @@ tab_funnel = html.Div([dbc.Row([dbc.Col(html.P("Click treatment sequentially to 
                                                      colorbarTitleText=False,
                                                      titleText=False,
                                                      legendPosition=True, legendText=True,
-                                                     shapePosition=True),
+                                                     shapePosition=False),
                                        'modeBarButtonsToRemove': [
                                            'toggleSpikelines',
                                            'resetScale2d',

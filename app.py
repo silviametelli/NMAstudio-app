@@ -16,6 +16,7 @@ warnings.filterwarnings("ignore")
 # --------------------------------------------------------------------------------------------------------------------#
 import dash
 from dash.dependencies import Input, Output, State, ALL
+from flask_caching import Cache
 import plotly.express as px, plotly.graph_objects as go
 import plotly.figure_factory as ff
 from sklearn.cluster import KMeans
@@ -23,7 +24,6 @@ from tools.layouts import *
 from tools.utils import *
 from tools.functions import __ranking_plot
 # --------------------------------------------------------------------------------------------------------------------#
-
 
 shutil.rmtree(TEMP_PATH, ignore_errors=True)
 os.makedirs(TEMP_PATH, exist_ok=True)
@@ -39,7 +39,13 @@ app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=devi
                 #external_stylesheets=[dbc.themes.BOOTSTRAP],
                 suppress_callback_exceptions=True)
 
-#app.config.suppress_callback_exceptions = True
+# cache = Cache(app.server, config={
+#     # try 'filesystem' if you don't want to setup redis
+#     'CACHE_TYPE': 'filesystem',
+#     # 'CACHE_REDIS_URL': os.environ.get('REDIS_URL', '')
+# })
+# __TIME_OUT_CACHE = 20  # in seconds
+app.config.suppress_callback_exceptions = True
 
 server = app.server
 app.layout = html.Div([dcc.Location(id='url', refresh=False),
@@ -272,12 +278,13 @@ def get_image(button, button_modal, export, constants):
     if ctx.triggered:
         input_id = ctx.triggered[0]["prop_id"].split(".")[0]
         if input_id != "tabs": action = "download"
-    # return {'type': 'jpeg' if export=='as jpeg' else ('png' if export=='as png' else 'svg'), 'action': action,
-    #         'options': {  # 'bg':'#40515e',
-    #             'scale': 3}}
-    return {'type': 'jpeg' , 'action': action,
+    export_selection = export or 'as jpeg'
+    return {'type': 'jpeg' if export_selection=='as jpeg' else ('png' if export_selection=='as png' else 'svg'), 'action': action,
             'options': {  # 'bg':'#40515e',
                 'scale': 3}}
+    # return {'type': 'jpeg' , 'action': action,
+    #         'options': {  # 'bg':'#40515e',
+    #             'scale': 3}}
 
 ### ----- update node info on NMA forest plot  ------ ###
 @app.callback(Output('tapNodeData-info', 'children'),
@@ -327,11 +334,14 @@ def TapNodeData_info(data):
 @app.callback(Output('tapNodeData-fig', 'figure'),
               [Input('cytoscape', 'selectedNodeData'),
                Input("toggle_forest_direction", "value"),
-               Input("forest_data_STORAGE", "data")])
-def TapNodeData_fig(data, outcome_direction, forest_data):
+               Input("toggle_forest_outcome", "value"),
+               Input("forest_data_STORAGE", "data"),
+               Input("forest_data_out2_STORAGE", "data")
+               ])
+def TapNodeData_fig(data, outcome_direction, outcome, forest_data, forest_data_out2):
     if data:
         treatment = data[0]['label']
-        forest_data = pd.read_json(forest_data, orient='split')
+        forest_data = pd.read_json(forest_data_out2, orient='split') if outcome else pd.read_json(forest_data, orient='split')
         df = forest_data[forest_data.Reference == treatment]
         effect_size = df.columns[1]
         tau2 = round(df['tau2'].iloc[1], 2)
@@ -625,12 +635,14 @@ def parse_contents(contents, filename):
                Output('consistency-table', 'data'),
                Output('consistency-table', 'columns')],
               [Input('cytoscape', 'selectedEdgeData'),
+               Input("toggle_consistency_direction", "value"),
                Input('net_split_data_STORAGE', 'data'),
+               Input('net_split_data_out2_STORAGE', 'data'),
                Input('consistency_data_STORAGE', 'data'),]
               )
-def netsplit(edges, net_split_data, consistency_data):
+def netsplit(edges, outcome, net_split_data, net_split_data_out2, consistency_data):
 
-    df = pd.read_json(net_split_data, orient='split')
+    df = pd.read_json(net_split_data_out2, orient='split') if outcome else pd.read_json(net_split_data, orient='split')
     consistency_data = pd.read_json(consistency_data, orient='split')
     comparisons = df.comparison.str.split(':', expand=True)
     df['Comparison'] = comparisons[0] + ' vs ' + comparisons[1]
@@ -1001,14 +1013,16 @@ def update_boxplot(value, edges, net_data):
 ### - figures on edge click: pairwise forest plots  - ###
 @app.callback(Output('tapEdgeData-fig-pairwise', 'figure'),
               [Input('cytoscape', 'selectedEdgeData'),
-               Input('forest_data_prws_STORAGE', 'data')])
-def update_forest_pairwise(edge, forest_data_prws):
+               Input("toggle_forest_pair_outcome", "value"),
+               Input('forest_data_prws_STORAGE', 'data'),
+               Input('forest_data_prws_out2_STORAGE', 'data')])
+def update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2):
     _HEIGHT_ROMB = 0.3
     slctd_comps = []
     if edge:
         src, trgt = edge[0]['source'], edge[0]['target']
         slctd_comps += [f'{src} vs {trgt}']
-        df = pd.read_json(forest_data_prws, orient='split') # GLOBAL_DATA['forest_data_pairwise']
+        df = pd.read_json(forest_data_prws_out_2, orient='split') if outcome else pd.read_json(forest_data_prws, orient='split')
         df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
         df = df[df.Comparison.isin(slctd_comps)]
         df['studlab'] += ' ' * 10
@@ -1239,21 +1253,23 @@ def update_forest_pairwise(edge, forest_data_prws):
 @app.callback(Output('funnel-fig', 'figure'),
               [Input('cytoscape', 'selectedNodeData'),
                Input("toggle_funnel_direction", "value"),
-               Input("funnel_data_STORAGE", "data")
+               Input("funnel_data_STORAGE", "data"),
+               Input("funnel_data_out2_STORAGE", "data"),
                ])
-def Tap_funnelplot(node, outcome2, funnel_data):
+def Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):
     if node:
         treatment = node[0]['label']
         funnel_data = pd.read_json(funnel_data, orient='split')
-        df = (funnel_data[funnel_data.treat2 == treatment].copy()
+        funnel_data_out2 = pd.read_json(funnel_data_out2, orient='split')
+        df = (funnel_data_out2[funnel_data_out2.treat2 == treatment].copy()
               if outcome2 else
               funnel_data[funnel_data.treat2 == treatment].copy())
         df['Comparison'] = (df['treat1'] + ' vs ' + df['treat2']).astype(str)
-        effect_size = df.columns[3]
+        effect_size = df.columns[4]
         df = df.sort_values(by='seTE', ascending=False)
     else:
         effect_size = ''
-        df = pd.DataFrame([[0] * 8], columns=['studlab', 'treat1', 'treat2', effect_size,
+        df = pd.DataFrame([[0] * 9], columns=[ 'index', 'studlab', 'treat1', 'treat2', effect_size,
                                               'TE_direct', 'TE_adj',
                                               'seTE', 'Comparison'])
 
@@ -1261,7 +1277,7 @@ def Tap_funnelplot(node, outcome2, funnel_data):
 
     fig = px.scatter(df, x="TE_adj", y="seTE",#log_x=xlog,
                      range_x=[min(df.TE_adj)-3, max(df.TE_adj)+3],
-                     range_y=[0.01, max_y],
+                     range_y=[0.01, max_y+10],
                      symbol="Comparison", color="Comparison",
                      color_discrete_sequence = px.colors.qualitative.Light24)
 
@@ -1301,11 +1317,6 @@ def Tap_funnelplot(node, outcome2, funnel_data):
         fig.add_shape(type='line', y0=max_y, x0= 2.58 * max_y, y1=0, x1=0,
                       line=dict(color="black", dash='dot', width=1.5))
 
-        # fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black',
-        #                  ticklen=5,
-        #                  autorange=True,
-        #                  showline=True, linewidth=1, linecolor='black',
-        #                  zeroline=True, zerolinecolor='black')
 
         fig.update_yaxes(autorange="reversed", range=[max_y,0])
 
@@ -1777,4 +1788,6 @@ def toggle_modal(open, close, is_open):
 
 
 if __name__ == '__main__':
+    app._favicon = ("assets/favicon.ico")
+    app.title = 'NMAstudio'
     app.run_server(debug=True)

@@ -262,8 +262,8 @@ pairwise_forest <- function(dat){
                            exp(ci_up_individual), exp(ci_lo), exp(ci_up), exp(predict_lo),
                            exp(predict_up), TEweights, tau2, I2)}
     colnames(df) <- c(sm , "TE_diamond", "id", "studlab", "treat1", "treat2", "CI_lower",
-                       "CI_upper","CI_lower_diamond", "CI_upper_diamond", "Predict_lo",
-                       "Predict_up", "WEIGHT", "tau2", "I2")
+                           "CI_upper", "CI_lower_diamond", "CI_upper_diamond", "Predict_lo",
+                           "Predict_up", "WEIGHT", "tau2", "I2")
     DFs_pairwise[[id]] <- df
   }
   DFs_pairwise <- do.call('rbind', DFs_pairwise)

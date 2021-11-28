@@ -122,6 +122,10 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
             data['effect_size2'] = dataselectors[1]
             get_effect_size2 = effect_sizes[value_outcome2][dataselectors[1]]
             data['TE2'], data['seTE2'] = get_effect_size2(data, effect=2)
+    if data['rob'].dtype == np.object:
+        data['rob'] = (data['rob'].str.lower()
+                      .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
+                      .replace({'l': 1, 'm': 2, 'h': 3}))
 
     return data
 

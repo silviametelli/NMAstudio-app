@@ -640,24 +640,26 @@ def parse_contents(contents, filename):
               )
 def netsplit(edges, outcome, net_split_data, net_split_data_out2, consistency_data):
 
-    df = pd.read_json(net_split_data_out2, orient='split') if outcome else pd.read_json(net_split_data, orient='split')
+    df = (pd.read_json(net_split_data, orient='split') if not outcome
+          else  pd.read_json(net_split_data_out2, orient='split') if net_split_data_out2 else None)
     consistency_data = pd.read_json(consistency_data, orient='split')
     comparisons = df.comparison.str.split(':', expand=True)
-    df['Comparison'] = comparisons[0] + ' vs ' + comparisons[1]
-    df = df.loc[:, ~df.columns.str.contains("comparison")]
-    df = df.sort_values(by='Comparison').reset_index()
-    df = df[['Comparison', "direct", "indirect", "p-value"]]
-    df = df.round(decimals=4)
+    if df is not None:
+        df['Comparison'] = comparisons[0] + ' vs ' + comparisons[1]
+        df = df.loc[:, ~df.columns.str.contains("comparison")]
+        df = df.sort_values(by='Comparison').reset_index()
+        df = df[['Comparison', "direct", "indirect", "p-value"]]
+        df = df.round(decimals=4)
 
     slctd_comps = []
     for edge in edges or []:
         src, trgt = edge['source'], edge['target']
         slctd_comps += [f'{src} vs {trgt}']
-    if edges:
+    if edges and df:
         df = df[df.Comparison.isin(slctd_comps)]
 
     data_cols = [{"name": c, "id": c} for c in df.columns]
-    data_output = df.to_dict('records')
+    data_output = df.to_dict('records') if df is not None else dict()
     _out_net_split_table = [data_output, data_cols]
 
     data_consistency = consistency_data.round(decimals=4).to_dict('records')
@@ -1255,6 +1257,9 @@ def update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out
                Input("funnel_data_out2_STORAGE", "data"),
                ])
 def Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):
+    EMPTY_DF = pd.DataFrame([[0] * 9],
+                            columns=[ 'index', 'studlab', 'treat1', 'treat2', '',
+                                      'TE_direct', 'TE_adj', 'seTE', 'Comparison'])
     if node:
         treatment = node[0]['label']
         funnel_data = pd.read_json(funnel_data, orient='split')
@@ -1267,13 +1272,12 @@ def Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):
         df = df.sort_values(by='seTE', ascending=False)
     else:
         effect_size = ''
-        df = pd.DataFrame([[0] * 9], columns=[ 'index', 'studlab', 'treat1', 'treat2', effect_size,
-                                              'TE_direct', 'TE_adj',
-                                              'seTE', 'Comparison'])
+        df = EMPTY_DF
 
     max_y = df.seTE.max()+0.2
 
-    fig = px.scatter(df, x="TE_adj", y="seTE",#log_x=xlog,
+    fig = px.scatter(df if df is not None else EMPTY_DF,
+                     x="TE_adj", y="seTE",#log_x=xlog,
                      range_x=[min(df.TE_adj)-3, max(df.TE_adj)+3],
                      range_y=[0.01, max_y+10],
                      symbol="Comparison", color="Comparison",
@@ -1344,7 +1348,7 @@ def Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):
 def ranking_plot(outcome_direction_1, outcome_direction_2, outcome_direction_11, outcome_direction_22,
                  net_data, ranking_data):
 
-    net_data = pd.read_json(net_data, orient='split')
+    net_data = pd.read_json(net_data, orient='split')  if net_data else None
     df = pd.read_json(ranking_data, orient='split')
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
     outcomes = ["Outcome 1", "Outcome 2"]
@@ -1797,7 +1801,6 @@ def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, TEMP_net_data_STOR
         return None, ''
 
 
-
 @app.callback([Output("para-anls-data", "children"),
                Output('para-anls-data', 'data'),
                Output("TEMP_forest_data_STORAGE", "data"),
@@ -1811,12 +1814,13 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE, TE
         net_data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
         NMA_data = run_network_meta_analysis(net_data)
         TEMP_forest_data_STORAGE = NMA_data.to_json( orient='split')
-        print(net_data)
         TEMP_user_elements_STORAGE = get_network(df=net_data)
         return (html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
                 '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_user_elements_STORAGE)
     else:
         return None, '', TEMP_forest_data_STORAGE, None
+
+
 
 @app.callback([Output("para-pairwise-data", "children"),
                Output('para-pairwise-data', 'data'),
@@ -1838,7 +1842,7 @@ def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, TEMP_ne
 @app.callback([Output("para-LT-data", "children"),
                Output('para-LT-data', 'data'),
                Output('TEMP_league_table_data_STORAGE', 'data')],
-              Input('forest_data_prws_STORAGE', 'modified_timestamp'),
+              Input('TEMP_forest_data_prws_STORAGE', 'modified_timestamp'),
               State("modal_data_checks", "is_open"),
               State("TEMP_net_data_STORAGE", "data"),
               State('TEMP_league_table_data_STORAGE', 'data')

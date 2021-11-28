@@ -4,6 +4,7 @@ import pandas as pd
 from tools.utils import get_network, write_session_pickle
 import uuid
 from tools.PATHS import __SESSIONS_FOLDER, TODAY
+from collections import OrderedDict
 
 SESSION_ID = uuid.uuid4().__str__()
 SESSION_PICKLE_PATH = f'{__SESSIONS_FOLDER}/{SESSION_ID}.pickle'
@@ -28,36 +29,39 @@ NETSPLIT_DATA_OUT2 =  pd.read_csv('db/consistency/consistency_netsplit_out2.csv'
 RANKING_DATA = pd.read_csv('db/ranking/rank.csv')
 FUNNEL_DATA = pd.read_csv('db/funnel/funnel_data.csv')
 FUNNEL_DATA_OUT2 = pd.read_csv('db/funnel/funnel_data_out2.csv')
-#FUNNEL_DATA2 = pd.read_csv('db/funnel/funnel_data2.csv')
 
-
+DEFAULT_DATA = OrderedDict(net_data_STORAGE=NET_DATA,
+                           consistency_data_STORAGE=CONSISTENCY_DATA,
+                           user_elements_STORAGE=USER_ELEMENTS,
+                           forest_data_STORAGE=FOREST_DATA,
+                           forest_data_out2_STORAGE=FOREST_DATA_OUT2,
+                           forest_data_prws_STORAGE=FOREST_DATA_PRWS,
+                           forest_data_prws_out2_STORAGE=FOREST_DATA_PRWS_OUT2,
+                           ranking_data_STORAGE=RANKING_DATA,
+                           funnel_data_STORAGE=FUNNEL_DATA,
+                           funnel_data_out2_STORAGE=FUNNEL_DATA_OUT2,
+                           league_table_data_STORAGE=LEAGUE_TABLE_DATA,
+                           net_split_data_STORAGE=NETSPLIT_DATA,
+                           net_split_data_out2_STORAGE=NETSPLIT_DATA_OUT2,
+                           cinema_net_data1_STORAGE=CINEMA_NET_DATA1,
+                           cinema_net_data2_STORAGE=CINEMA_NET_DATA2,
+                           )
 OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col}
                for col in NET_DATA.select_dtypes(['number']).columns]
 N_CLASSES = USER_ELEMENTS[-1]["data"]['n_class'] if "n_class" in USER_ELEMENTS[-1]["data"] else 1
 
-STORAGE = [
-dcc.Store(id='net_data_STORAGE',               data=NET_DATA.to_json(orient='split')),
-dcc.Store(id='consistency_data_STORAGE',       data=CONSISTENCY_DATA.to_json(orient='split')),
-# dcc.Store(id='default_elements_STORAGE',     data=DEFAULT_ELEMENTS),
-dcc.Store(id='user_elements_STORAGE',          data=USER_ELEMENTS),
-dcc.Store(id='forest_data_STORAGE',            data=FOREST_DATA.to_json(orient='split')),
-dcc.Store(id='forest_data_out2_STORAGE',       data=FOREST_DATA_OUT2.to_json(orient='split')),
-dcc.Store(id='forest_data_prws_STORAGE',       data=FOREST_DATA_PRWS.to_json(orient='split')),
-dcc.Store(id='forest_data_prws_out2_STORAGE',  data=FOREST_DATA_PRWS_OUT2.to_json(orient='split')),
-dcc.Store(id='ranking_data_STORAGE',           data=RANKING_DATA.to_json(orient='split')),
-dcc.Store(id='funnel_data_STORAGE',            data=FUNNEL_DATA.to_json(orient='split')),
-dcc.Store(id='funnel_data_out2_STORAGE',       data=FUNNEL_DATA_OUT2.to_json(orient='split')),
-dcc.Store(id='league_table_data_STORAGE',      data=LEAGUE_TABLE_DATA.to_json(orient='split')),
-dcc.Store(id='cinema_net_data1_STORAGE',       data=CINEMA_NET_DATA1.to_json(orient='split')),
-dcc.Store(id='cinema_net_data2_STORAGE',       data=CINEMA_NET_DATA2.to_json(orient='split')),
-dcc.Store(id='net_split_data_STORAGE',         data=NETSPLIT_DATA.to_json(orient='split')),
-dcc.Store(id='net_split_data_out2_STORAGE',    data=NETSPLIT_DATA_OUT2.to_json(orient='split')),
-dcc.Store(id='temporarily_uploaded_data'),
-dcc.Store(id='submitted_data'),
-dcc.Store(id='NMA_data_STORAGE'),
-dcc.Store(id='LEAGUETABLE_data_STORAGE'),
-dcc.Store(id='consts_STORAGE', data={'dwnld_bttn_calls':0,
-                                     'today':TODAY,
-                                     'session_ID':SESSION_ID,
-                                     'session_pickle_path':SESSION_PICKLE_PATH}),
-]
+
+STORAGE = [dcc.Store(id=label, data=data.to_json(orient='split') if label!='user_elements_STORAGE' else data)
+           for label, data in DEFAULT_DATA.items()
+           ] + [
+    dcc.Store(id='TEMP_net_data_STORAGE'),
+    dcc.Store(id='consts_STORAGE', data={'dwnld_bttn_calls':0,
+                                         'today':TODAY,
+                                         'session_ID':SESSION_ID,
+                                         'session_pickle_path':SESSION_PICKLE_PATH})
+] + [
+    dcc.Store(id='TEMP_'+new_id) for new_id in DEFAULT_DATA.keys()
+] + [
+    dcc.Store(id=new_id) for new_id in ('NMA_data_STORAGE',)# TODO: possibly to b dleted
+     ]
+

@@ -241,7 +241,7 @@ modal_network = dbc.Modal([
                                     html.Br(),
                                     html.Div(cyto.Cytoscape(id='modal-cytoscape',  responsive=True,
                                 elements=USER_ELEMENTS,
-                                style={ 'height': '95vh', 'width': '100%',  'margin-top':'-30px', 'margin-bottom': '-30px',
+                                style={ 'height': '93vh', 'width': '100%',  'margin-top':'-30px', 'margin-bottom': '-30px',
                                         'padding-left':'-30px', 'margin-left': '-30px','margin-right': '-30px',  'z-index': '999',
                                         'z-compound-depth': 'orphan'
                                        },

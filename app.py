@@ -144,8 +144,6 @@ def is_data_file_uploaded(filename):
         return donot_show_DIV_style, ''
 
 
-
-
 ### --- update graph layout with dropdown: graph layout --- ###
 @app.callback([Output('cytoscape', 'layout'),
                Output('modal-cytoscape', 'layout')],
@@ -491,6 +489,7 @@ def TapNodeData_fig(data, outcome_direction, outcome, forest_data, forest_data_o
                Input('forest_data_STORAGE', 'data'),
                Input('forest_data_out2_STORAGE', 'data')])
 def TapNodeData_fig_bidim(data, forest_data, forest_data_out2):
+    """If click on node uss node to produce forst plot."""
     if data:
         forest_data = pd.read_json(forest_data, orient='split')
         forest_data_out2 = pd.read_json(forest_data_out2, orient='split')
@@ -1184,7 +1183,7 @@ def update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out
                                  yaxis="y4"))
 
         fig.update_traces(overwrite=False)
-        
+
         fig.update_layout(
             autosize=True,
             yaxis2=dict(tickvals=[], ticktext=[],
@@ -1669,7 +1668,7 @@ def which_dd_nds(circle_t, circle_v, breadthfirst_t, breadthfirst_v,
 
 
 #################################################################
-############### Bootstrap Modals callbacks ######################
+############### Bootstrap MODALS callbacks ######################
 #################################################################
 
 # ----- node color modal -----#
@@ -1693,15 +1692,15 @@ def toggle_modal_edge(open_t, close):
     return False
 
 
-
 # ----- data selector modal -------#
+
 @app.callback([Output("modal_data", "is_open"),
                Output("modal_data_checks", "is_open"),
-               Output("temporarily_uploaded_data", "data"),
-               Output("submitted_data", "data")],
-              [Input("upload_your_data", "n_clicks"),
-               Input("upload_modal_data", "n_clicks"),
-               Input("submit_modal_data", "n_clicks")],
+               Output("TEMP_net_data_STORAGE", "data"),
+               ],
+              [Input("upload_your_data", "n_clicks_timestamp"),
+               Input("upload_modal_data", "n_clicks_timestamp"),
+              ],
               [State("dropdown-format","value"),
                State("dropdown-outcome1","value"),
                State("dropdown-outcome2","value"),
@@ -1710,66 +1709,81 @@ def toggle_modal_edge(open_t, close):
                State('datatable-upload', 'contents'),
                State('datatable-upload', 'filename'),
                State({'type': 'dataselectors', 'index': ALL}, 'value'),
-               State("temporarily_uploaded_data", "data"),
-               State("submitted_data", "data")],
+               State("TEMP_net_data_STORAGE", "data")
+               ]
               )
-def data_modal(open_modal_data, upload, submit,
+def data_modal(open_modal_data, upload,
                value_format, value_outcome1, value_outcome2,
                modal_data_is_open, modal_data_checks_is_open,
-               contents, filename, dataselectors, temporarily_uploaded_data, submitted_data):
+               contents, filename, dataselectors, TEMP_net_data_STORAGE
+               ):
     ctx = dash.callback_context
     if not ctx.triggered: button_id = 'No clicks yet'
     else:                 button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-
-    if submit and button_id=='submit_modal_data':
-        # TODO do something with submitted data
-        return False, not modal_data_checks_is_open and (not modal_data_is_open), temporarily_uploaded_data, submitted_data
     if open_modal_data:
         if upload and button_id=='upload_modal_data':
             data = parse_contents(contents, filename)
             data = adjust_data(data, dataselectors, value_format ,value_outcome1, value_outcome2)
-            temporarily_uploaded_data = data.to_json( orient='split')
-            return not modal_data_is_open, not modal_data_checks_is_open and (modal_data_is_open), temporarily_uploaded_data, submitted_data
-        return not modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), temporarily_uploaded_data, submitted_data
+            TEMP_net_data_STORAGE = data.to_json( orient='split')
+            return not modal_data_is_open, not modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE
+        return not modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE
     else:
-        return modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), temporarily_uploaded_data, submitted_data
+        return modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE
 
-
-# ----- data check modal -------#
-# @app.callback(Output("modal_checks", "is_open"),
-#               [Input("upload_your_data", "n_clicks"),
-#                Input("submit_modal_data", "n_clicks")],
-#               [State("temporarily_uploaded_data", "data"),
-#                State("modal_data_checks", "is_open"),
-#                State({'type': 'dataselectors', 'index': ALL}, 'value'),
-#                State('datatable-upload', 'contents'),],
-#               )
-# def data_modal(open, submit, temporarily_uploaded_data, is_open, dataselectors, data):
-#     if open:
-#         if submit:
-#             data = pd.read_json(temporarily_uploaded_data, orient='split')
-#             print(dataselectors)
-#
-#         return not is_open
 
 
 @app.callback(Output("upload_modal_data", "disabled"),
               Input({'type': 'dataselectors', 'index': ALL}, 'value'),
               )
-def modal_submit_button(dataselectors):
-    dis = not all(dataselectors) if len(dataselectors) else True
-    return dis
+def modal_ENABLE_UPLOAD_button(dataselectors):
+    return not all(dataselectors) if len(dataselectors) else True
+
+
+from assets.storage import DEFAULT_DATA
+
+OUTPUTS_STORAGE_IDS = list(DEFAULT_DATA.keys())[1:-2]
+
+@app.callback([Output(id, 'data') for id in OUTPUTS_STORAGE_IDS],
+              [Input("submit_modal_data", "n_clicks")],
+              [State('TEMP_'+id, 'data') for id in OUTPUTS_STORAGE_IDS],
+              prevent_initial_call=True)
+def modal_SUBMIT_button(submit,
+                        TEMP_consistency_data_STORAGE,
+                        TEMP_user_elements_STORAGE,
+                        TEMP_forest_data_STORAGE,
+                        TEMP_forest_data_out2_STORAGE,
+                        TEMP_forest_data_prws_STORAGE,
+                        TEMP_forest_data_prws_out2_STORAGE,
+                        TEMP_ranking_data_STORAGE,
+                        TEMP_funnel_data_STORAGE,
+                        TEMP_funnel_data_out2_STORAGE,
+                        TEMP_league_table_data_STORAGE,
+                        TEMP_net_split_data_STORAGE,
+                        TEMP_net_split_data_out2_STORAGE,
+                        ):
+    """ reads in temporary data for all analyses and outputs them in non-temp storages """
+    if submit:
+        OUT_DATA = [TEMP_consistency_data_STORAGE, TEMP_user_elements_STORAGE, TEMP_forest_data_STORAGE,
+                    TEMP_forest_data_out2_STORAGE, TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2_STORAGE,
+                    TEMP_ranking_data_STORAGE, TEMP_funnel_data_STORAGE, TEMP_funnel_data_out2_STORAGE,
+                    TEMP_league_table_data_STORAGE, TEMP_net_split_data_STORAGE, TEMP_net_split_data_out2_STORAGE]
+        OUT_DATA = OUT_DATA or [None] * len(OUTPUTS_STORAGE_IDS)
+        return OUT_DATA
+    else:
+        return list(DEFAULT_DATA.values())[1:-2]
+
+
 
 
 import time
 @app.callback([Output("para-check-data", "children"),
                Output('para-check-data', 'data')],
               Input("modal_data_checks", "is_open"),
-              State("temporarily_uploaded_data", "data")
+              State("TEMP_net_data_STORAGE", "data"),
               )
-def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, temporarily_uploaded_data):
+def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, TEMP_net_data_STORAGE):
     if modal_data_checks_is_open:
-        data = pd.read_json(temporarily_uploaded_data, orient='split')
+        data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
         passed_checks = data_checks(data)
         if all(passed_checks.values()):
             return html.P(u"\u2713" + " All data checks passed.", style={"color":"green"}), '__Para_Done__'
@@ -1783,51 +1797,56 @@ def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, temporarily_upload
         return None, ''
 
 
+
 @app.callback([Output("para-anls-data", "children"),
                Output('para-anls-data', 'data'),
-               Output('NMA_data_STORAGE', 'data')],
+               Output("TEMP_forest_data_STORAGE", "data"),
+               Output("TEMP_user_elements_STORAGE", "data")],
               Input("modal_data_checks", "is_open"),
-              State("temporarily_uploaded_data", "data"),
-              State('NMA_data_STORAGE', 'data')
+              State("TEMP_net_data_STORAGE", "data"),
+              State("TEMP_forest_data_STORAGE", "data")
               )
-def modal_submit_checks_NMA(modal_data_checks_is_open, temporarily_uploaded_data,
-                            NMA_data):
+def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE, TEMP_forest_data_STORAGE):
     if modal_data_checks_is_open:
-        NMA_data = run_network_meta_analysis(pd.read_json(temporarily_uploaded_data, orient='split'))
-        NMA_data = NMA_data.to_json( orient='split')
+        net_data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
+        NMA_data = run_network_meta_analysis(net_data)
+        TEMP_forest_data_STORAGE = NMA_data.to_json( orient='split')
+        print(net_data)
+        TEMP_user_elements_STORAGE = get_network(df=net_data)
         return (html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
-                '__Para_Done__', NMA_data)
+                '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_user_elements_STORAGE)
     else:
-        return None, '', NMA_data
+        return None, '', TEMP_forest_data_STORAGE, None
 
 @app.callback([Output("para-pairwise-data", "children"),
                Output('para-pairwise-data', 'data'),
-               Output('forest_data_prws_STORAGE', 'data')],
-              Input('NMA_data_STORAGE', 'modified_timestamp'),
+               Output("TEMP_forest_data_prws_STORAGE", "data")],
+              Input('TEMP_forest_data_STORAGE', 'modified_timestamp'),
               State("modal_data_checks", "is_open"),
-              State("temporarily_uploaded_data", "data"),
-              State("forest_data_prws_STORAGE", "data")
+              State("TEMP_net_data_STORAGE", "data"),
+              State("TEMP_forest_data_prws_STORAGE", "data")
               )
-def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, temporarily_uploaded_data, PAIRWISE_data):
+def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, TEMP_net_data_STORAGE, TEMP_forest_data_prws_STORAGE):
     if modal_data_checks_is_open:
-        PAIRWISE_data = run_pairwise_MA(pd.read_json(temporarily_uploaded_data, orient='split'))
-        PAIRWISE_data = PAIRWISE_data.to_json( orient='split')
+        PAIRWISE_data = run_pairwise_MA(pd.read_json(TEMP_net_data_STORAGE, orient='split'))
+        TEMP_forest_data_prws_STORAGE = PAIRWISE_data.to_json( orient='split')
         return (html.P(u"\u2713" + " Pairwise meta-analysis run successfully.", style={"color":"green"}),
-                '__Para_Done__', PAIRWISE_data)
+                '__Para_Done__', TEMP_forest_data_prws_STORAGE)
     else:
-        return (None, '', PAIRWISE_data)
+        return None, '', TEMP_forest_data_prws_STORAGE
 
 @app.callback([Output("para-LT-data", "children"),
                Output('para-LT-data', 'data'),
-               Output('LEAGUETABLE_data_STORAGE', 'data')],
+               Output('TEMP_league_table_data_STORAGE', 'data')],
               Input('forest_data_prws_STORAGE', 'modified_timestamp'),
               State("modal_data_checks", "is_open"),
-              State("temporarily_uploaded_data", "data"),
-              State('LEAGUETABLE_data_STORAGE', 'data')
+              State("TEMP_net_data_STORAGE", "data"),
+              State('TEMP_league_table_data_STORAGE', 'data')
               )
-def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open, temporarily_uploaded_data, LEAGUETABLE_data):
+def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open, TEMP_net_data_STORAGE, LEAGUETABLE_data):
+    """ produce new league table from R """
     if modal_data_checks_is_open:
-        LEAGUETABLE_data = generate_league_table(pd.read_json(temporarily_uploaded_data, orient='split'))
+        LEAGUETABLE_data = generate_league_table(pd.read_json(TEMP_net_data_STORAGE, orient='split'))
         LEAGUETABLE_data = [f.to_json( orient='split') for f in LEAGUETABLE_data]
         return (html.P(u"\u2713" + " Successfully generated league table.", style={"color":"green"}),
                 '__Para_Done__', LEAGUETABLE_data)
@@ -1836,15 +1855,15 @@ def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open, temporarily_up
 
 @app.callback([Output("para-FA-data", "children"),
                Output('para-FA-data', 'data'),
-               Output('funnel_data_STORAGE', 'data')],
-              Input("LEAGUETABLE_data_STORAGE", "modified_timestamp"),
+               Output('TEMP_funnel_data_STORAGE', 'data')],
+              Input("TEMP_league_table_data_STORAGE", "modified_timestamp"),
               State("modal_data_checks", "is_open"),
-              State("temporarily_uploaded_data", "data"),
-              State('funnel_data_STORAGE', 'data')
+              State("TEMP_net_data_STORAGE", "data"),
+              State('TEMP_funnel_data_STORAGE', 'data')
               )
-def modal_submit_checks_FUNNEL(lt_data_ts, modal_data_checks_is_open, temporarily_uploaded_data, FUNNEL_data):
+def modal_submit_checks_FUNNEL(lt_data_ts, modal_data_checks_is_open, TEMP_net_data_STORAGE, FUNNEL_data):
     if modal_data_checks_is_open:
-        FUNNEL_data = generate_funnel_data(pd.read_json(temporarily_uploaded_data, orient='split'))
+        FUNNEL_data = generate_funnel_data(pd.read_json(TEMP_net_data_STORAGE, orient='split'))
         FUNNEL_data = FUNNEL_data.to_json(orient='split')
         return (html.P(u"\u2713" + " Successfully generated funnel plot data.", style={"color":"green"}),
                 '__Para_Done__', FUNNEL_data)

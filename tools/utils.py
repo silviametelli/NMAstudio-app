@@ -2,6 +2,8 @@ import pickle
 from tools.PATHS import TEMP_PATH
 from assets.effect_sizes import *
 # ---------R2Py Resources --------------------------------------------------------------------------------------------#
+from rpy2.robjects import pandas2ri
+pandas2ri.activate()
 import rpy2.robjects as ro
 from rpy2.robjects import pandas2ri  # Define the R script and loads the instance in Python
 from rpy2.robjects.conversion import localconverter
@@ -24,7 +26,7 @@ def apply_r_func(func, df):
     func_r_res = func(dat=df_r)
     r_result = pandas2ri.rpy2py(func_r_res)
     if isinstance(r_result, ro.vectors.ListVector):
-        leaguetable, pscores, consist, netsplit = (pd.DataFrame(rf) for rf in r_result)
+        leaguetable, pscores, consist, netsplit = (ro.conversion.rpy2py(rf) for rf in r_result)
         return leaguetable, pscores, consist, netsplit
     else:
         df_result = r_result.reset_index(drop=True)  # Convert back to a pandas.DataFrame.

@@ -1609,9 +1609,6 @@ def data_modal(open_modal_data, upload,
     if not ctx.triggered: button_id = 'No clicks yet'
     else:                 button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
-    if submit and button_id=='submit_modal_data':
-        # TODO do something with submitted data
-        return False, not modal_data_checks_is_open and (not modal_data_is_open), temporarily_uploaded_data, submitted_data
     if open_modal_data:
         if upload and button_id=='upload_modal_data':
             data = parse_contents(contents, filename)

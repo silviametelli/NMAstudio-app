@@ -644,13 +644,12 @@ def netsplit(edges, outcome, net_split_data, net_split_data_out2, consistency_da
     df = (pd.read_json(net_split_data, orient='split') if not outcome
           else  pd.read_json(net_split_data_out2, orient='split') if net_split_data_out2 else None)
     consistency_data = pd.read_json(consistency_data, orient='split')
-    comparisons = df.comparison.str.split(':', expand=True)
     if df is not None:
+        comparisons = df.comparison.str.split(':', expand=True)
         df['Comparison'] = comparisons[0] + ' vs ' + comparisons[1]
         df = df.loc[:, ~df.columns.str.contains("comparison")]
         df = df.sort_values(by='Comparison').reset_index()
-        df = df[['Comparison', "direct", "indirect", "p-value"]]
-        df = df.round(decimals=4)
+        df = df[['Comparison', "direct", "indirect", "p-value"]].round(decimals=4)
 
     slctd_comps = []
     for edge in edges or []:
@@ -999,10 +998,10 @@ def update_boxplot(value, edges, net_data):
                           modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'),
                           yaxis=dict(showgrid=False, tick0=0, title=''),
                           annotations=[{
-                              "text": "Check whether transitivity holds in the network: compare the distributions  <br>"
-                                      "of your potential effect modifiers across the different comparisons <br>"
-                                      " by visual inspection of the effect modifiers box plots <br> <br>"
-                                      "Effect modifiers should be similarly distributed across comparisons",
+                              "text": """Check whether transitivity holds in the network: compare the distributions  <br>
+                                      of your potential effect modifiers across the different comparisons <br>
+                                       by visual inspection of the effect modifiers box plots <br> <br>
+                                      Effect modifiers should be similarly distributed across comparisons""",
                               "font": {"size": 15, "color": "white", 'family': 'sans-serif'}}]
                           ),
         fig.update_annotations(align="center")
@@ -1656,7 +1655,8 @@ def modal_SUBMIT_button(submit,
                     TEMP_forest_data_out2_STORAGE, TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2_STORAGE,
                     TEMP_ranking_data_STORAGE, TEMP_funnel_data_STORAGE, TEMP_funnel_data_out2_STORAGE,
                     TEMP_league_table_data_STORAGE, TEMP_net_split_data_STORAGE, TEMP_net_split_data_out2_STORAGE]
-        OUT_DATA = OUT_DATA or [None] * len(OUTPUTS_STORAGE_IDS)
+        for x in OUT_DATA:
+            print(type(x))
         return OUT_DATA
     else:
         return list(DEFAULT_DATA.values())[1:-2]
@@ -1726,21 +1726,34 @@ def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, TEMP_ne
 
 @app.callback([Output("para-LT-data", "children"),
                Output('para-LT-data', 'data'),
-               Output('TEMP_league_table_data_STORAGE', 'data')],
+               Output('TEMP_league_table_data_STORAGE', 'data'),
+               Output('TEMP_ranking_data_STORAGE', 'data'),
+               Output('TEMP_consistency_data_STORAGE', 'data'),
+               Output('TEMP_net_split_data_STORAGE', 'data')],
               Input('TEMP_forest_data_prws_STORAGE', 'modified_timestamp'),
               State("modal_data_checks", "is_open"),
               State("TEMP_net_data_STORAGE", "data"),
-              State('TEMP_league_table_data_STORAGE', 'data')
+              State('TEMP_league_table_data_STORAGE', 'data'),
+              State('TEMP_ranking_data_STORAGE', 'data'),
+              State('TEMP_consistency_data_STORAGE', 'data'),
+              State('TEMP_net_split_data_STORAGE', 'data')
               )
-def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open, TEMP_net_data_STORAGE, LEAGUETABLE_data):
+def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
+                           TEMP_net_data_STORAGE, LEAGUETABLE_data,
+                           ranking_data, consistency_data, net_split_data):
     """ produce new league table from R """
     if modal_data_checks_is_open:
-        LEAGUETABLE_data = generate_league_table(pd.read_json(TEMP_net_data_STORAGE, orient='split'))
-        LEAGUETABLE_data = [f.to_json( orient='split') for f in LEAGUETABLE_data]
+        LEAGUETABLE_OUTS = generate_league_table(pd.read_json(TEMP_net_data_STORAGE, orient='split'))
+
+        print(LEAGUETABLE_OUTS)
+
+        (LEAGUETABLE_data, ranking_data,
+         consistency_data, net_split_data) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
+
         return (html.P(u"\u2713" + " Successfully generated league table.", style={"color":"green"}),
-                '__Para_Done__', LEAGUETABLE_data)
+                '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data)
     else:
-        return None, '', LEAGUETABLE_data
+        return None, '', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data
 
 @app.callback([Output("para-FA-data", "children"),
                Output('para-FA-data', 'data'),

@@ -10,6 +10,7 @@ SESSION_ID = uuid.uuid4().__str__()
 SESSION_PICKLE_PATH = f'{__SESSIONS_FOLDER}/{SESSION_ID}.pickle'
 SESSION_PICKLE = {'wait':False}
 
+SESSION_TYPE = 'session'
 
 write_session_pickle(dct=SESSION_PICKLE, path=SESSION_PICKLE_PATH)
 # read_session_pickle(SESSION_PICKLE_PATH)
@@ -51,17 +52,16 @@ OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col}
 N_CLASSES = USER_ELEMENTS[-1]["data"]['n_class'] if "n_class" in USER_ELEMENTS[-1]["data"] else 1
 
 
-STORAGE = [dcc.Store(id=label, data=data.to_json(orient='split') if label!='user_elements_STORAGE' else data)
+STORAGE = [dcc.Store(id=label, data=data.to_json(orient='split') if label!='user_elements_STORAGE' else data,
+                     storage_type=SESSION_TYPE)
            for label, data in DEFAULT_DATA.items()
            ] + [
-    dcc.Store(id='TEMP_net_data_STORAGE'),
     dcc.Store(id='consts_STORAGE', data={'dwnld_bttn_calls':0,
                                          'today':TODAY,
                                          'session_ID':SESSION_ID,
-                                         'session_pickle_path':SESSION_PICKLE_PATH})
+                                         'session_pickle_path':SESSION_PICKLE_PATH},
+              storage_type=SESSION_TYPE)
 ] + [
-    dcc.Store(id='TEMP_'+new_id) for new_id in DEFAULT_DATA.keys()
-] + [
-    dcc.Store(id=new_id) for new_id in ('NMA_data_STORAGE',)# TODO: possibly to b dleted
-     ]
+    dcc.Store(id='TEMP_'+new_id, storage_type=SESSION_TYPE) for new_id in DEFAULT_DATA.keys()
+]
 

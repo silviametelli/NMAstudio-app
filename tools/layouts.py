@@ -8,13 +8,15 @@ from assets.Tabs.tabfunnel import tab_funnel
 from assets.Tabs.tabranking import tab_ranking
 from assets.Tabs.tabconsistency import tab_consistency
 from assets.COLORS import *
-from assets.storage import STORAGE, USER_ELEMENTS
+from assets.storage import STORAGE
+
 
 def Homepage():
     return html.Div([Navbar(), home_layout()])
 
-def home_layout(user_elements=USER_ELEMENTS):
-    return html.Div(className="app__container", children=STORAGE + [
+
+def home_layout():
+    return html.Div(className="app__container", children=STORAGE+[
 
                         html.Div(id='main_page',
                         ### LEFT HALF OF THE PAGE
@@ -58,7 +60,7 @@ def home_layout(user_elements=USER_ELEMENTS):
 
                                            ], style={'margin-left': '-20px'}),
                          cyto.Cytoscape(id='cytoscape',  responsive=True,
-                                elements=[], #user_elements,
+                                elements=[],
                                 style={ 'height': '75vh', 'width': '99%', 'margin-top': '10px',
                                         'margin-left': '-10px','margin-right': '-10px',  'z-index': '999',
                                         'padding-left': '-10px'

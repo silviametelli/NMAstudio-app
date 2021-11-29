@@ -34,25 +34,6 @@ EMPTY_SELECTION_EDGES = {'id': None}
 write_node_topickle(EMPTY_SELECTION_NODES)
 write_edge_topickle(EMPTY_SELECTION_EDGES)
 
-GRAPH_INTERVAL = os.environ.get("GRAPH_INTERVAL", 5000)
-
-app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}],
-                #external_stylesheets=[dbc.themes.BOOTSTRAP],
-                suppress_callback_exceptions=True)
-
-# cache = Cache(app.server, config={
-#     # try 'filesystem' if you don't want to setup redis
-#     'CACHE_TYPE': 'filesystem',
-#     # 'CACHE_REDIS_URL': os.environ.get('REDIS_URL', '')
-# })
-# __TIME_OUT_CACHE = 20  # in seconds
-app.config.suppress_callback_exceptions = True
-
-server = app.server
-app.layout = html.Div([dcc.Location(id='url', refresh=False),
-                       html.Div(id='page-content')])
-
-
 # Load extra layouts
 cyto.load_extra_layouts()
 
@@ -63,6 +44,20 @@ options_effect_size_cont = [{'label':'MD',  'value':'MD'},
 options_effect_size_bin = [{'label':'OR',  'value':'OR'},
                              {'label':'RR',     'value':'RR'}]
 
+GRAPH_INTERVAL = os.environ.get("GRAPH_INTERVAL", 5000)
+
+app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}],
+                #external_stylesheets=[dbc.themes.BOOTSTRAP],
+                suppress_callback_exceptions=True)
+# app.config.suppress_callback_exceptions = True
+
+
+# from assets.storage import STORAGE
+
+server = app.server
+app.layout = html.Div([dcc.Location(id='url', refresh=False),
+                       html.Div(id='page-content')])
+
 
 # ------------------------------ app interactivity ----------------------------------#
 
@@ -70,14 +65,15 @@ options_effect_size_bin = [{'label':'OR',  'value':'OR'},
 ################################ MULTIPAGE CALLBACKS ################################
 #####################################################################################
 
+HOMEPAGE = Homepage()
 
 # Update the index
 @app.callback(Output('page-content', 'children'), [Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname == '/home':  return Homepage()
+    if pathname == '/home':  return HOMEPAGE
     elif pathname == '/doc': return doc_layout
     elif pathname == '/news': return news_layout
-    else:  return Homepage()
+    else:  return HOMEPAGE
 
 # Update which link is active in the navbar
 @app.callback(Output('homepage-link', 'active'),

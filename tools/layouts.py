@@ -15,8 +15,6 @@ def Homepage():
 
 def home_layout(user_elements=USER_ELEMENTS):
     return html.Div(className="app__container", children=STORAGE + [
-                        ### STORAGE DATA
-                        html.Div(id='__storage_netdata', style={'display': 'none'}),
 
                         html.Div(id='main_page',
                         ### LEFT HALF OF THE PAGE
@@ -60,11 +58,12 @@ def home_layout(user_elements=USER_ELEMENTS):
 
                                            ], style={'margin-left': '-20px'}),
                          cyto.Cytoscape(id='cytoscape',  responsive=True,
-                                elements=user_elements,
+                                elements=[], #user_elements,
                                 style={ 'height': '75vh', 'width': '99%', 'margin-top': '10px',
                                         'margin-left': '-10px','margin-right': '-10px',  'z-index': '999',
                                         'padding-left': '-10px'
                                        },
+                                layout={'name': 'circle', 'animate': True},
                                 stylesheet=get_stylesheet()),
 
                         html.P('Copyright © 2020. All rights reserved.', className='__footer'),

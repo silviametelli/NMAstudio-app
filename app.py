@@ -782,9 +782,6 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
             .pivot_table(index='treat1', columns='treat2', values='rob')
             .reindex(index=treatments, columns=treatments, fill_value=np.nan))
 
-    print(treatments)
-
-
     if toggle_cinema:
         cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
         cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
@@ -853,12 +850,6 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
     # Prepare for output
     tips = robs
     leaguetable = leaguetable.reset_index().rename(columns={'index': 'Treatment'})
-
-    # print(leaguetable)
-    # leaguetable.to_csv('__temp_logs_and_globals/temp_LT.csv')
-    # tips.to_csv('__temp_logs_and_globals/temp_tips.csv')
-    # print(league_table_styles)
-
 
     leaguetable_cols = [{"name": c, "id": c} for c in leaguetable.columns]
     leaguetable = leaguetable.to_dict('records')

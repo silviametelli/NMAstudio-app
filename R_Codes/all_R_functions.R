@@ -138,10 +138,6 @@ league_rank <- function(dat){
   lt <- netleague_table$random
   colnames(lt)<- sortedseq
   rownames(lt)<- sortedseq
-  # return(list(leaguetable=lt, pscores=rank, consist=consistency, netsplit=df_cons))
-  print(rank)
-  print(consistency)
-  print(df_cons)
   return(list(lt, rank, consistency, df_cons))
 
 

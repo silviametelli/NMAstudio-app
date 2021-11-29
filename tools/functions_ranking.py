@@ -25,11 +25,11 @@ def __ranking_plot(outcome_direction_1, outcome_direction_2,
                   tuple(df1.pscore2.round(2).astype(str).values))
         pscores = (tuple(df1.pscore1), tuple(df1.pscore2))
     else:
-        outcomes = "Outcome"
-        if outcome_direction_1: pscore = 1 - df1.pscore
-        pscore.sort_values(ascending=False, inplace=True) # TODO: check if it works
-        z_text = tuple(pscore.round(2).astype(str).values)
-        pscores = tuple(pscore)
+        outcomes = ("Outcome",)
+        pscore = 1 - df1.pscore if outcome_direction_1 else df1.pscore
+        pscore = pscore.sort_values(ascending=False)
+        z_text = (tuple(pscore.round(2).astype(str).values),)
+        pscores = (tuple(pscore),)
 
     treatments = tuple(df1.treatment)
 
@@ -43,6 +43,8 @@ def __ranking_plot(outcome_direction_1, outcome_direction_2,
 
 @lru_cache(maxsize=None)
 def __ranking_heatmap(treatments, pscores, outcomes, z_text):
+    if len(pscores)+len(outcomes)+len(z_text)==3:
+        pscores, outcomes, z_text = list(pscores), list(outcomes), list(z_text)
     fig = ff.create_annotated_heatmap(pscores, x=treatments, y=outcomes,
                                       reversescale=True,
                                       annotation_text=z_text, colorscale= 'Viridis',
@@ -135,5 +137,6 @@ def __ranking_scatter(df, net_data, outcome_direction_11, outcome_direction_22):
                                          "font": {"size": 15, "color": "white", 'family': 'sans-serif'}}]
                            ),
         fig2.update_annotations(align="center")
-        fig2.update_traces(quartilemethod="exclusive", hoverinfo='skip', hovertemplate=None)
+        # TODO: this below gives error
+        # fig2.update_traces(quartilemethod="exclusive", hoverinfo='skip', hovertemplate=None)
     return fig2

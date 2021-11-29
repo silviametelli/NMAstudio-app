@@ -16,13 +16,14 @@ warnings.filterwarnings("ignore")
 # --------------------------------------------------------------------------------------------------------------------#
 import dash
 from dash.dependencies import Input, Output, State, ALL
+from dash.exceptions import PreventUpdate
 from flask_caching import Cache
 import plotly.express as px, plotly.graph_objects as go
 import plotly.figure_factory as ff
 from sklearn.cluster import KMeans
 from tools.layouts import *
 from tools.utils import *
-from tools.functions import __ranking_plot
+from tools.functions_ranking import __ranking_plot
 # --------------------------------------------------------------------------------------------------------------------#
 
 shutil.rmtree(TEMP_PATH, ignore_errors=True)
@@ -737,9 +738,24 @@ def update_layour_year_slider(net_data, slider_year):
                Input('league_table_data_STORAGE', 'data'),
                Input('cinema_net_data1_STORAGE', 'data'),
                Input('cinema_net_data2_STORAGE', 'data'),
-                ])
+                ],
+              [State('net_data_STORAGE', 'modified_timestamp'),
+               State('league_table_data_STORAGE', 'modified_timestamp')],
+              prevent_initial_call=True)
 def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
-                  league_table_data, cinema_net_data1, cinema_net_data2):
+                  league_table_data, cinema_net_data1, cinema_net_data2,
+                  net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP):
+
+    # ctx = dash.callback_context
+    # print(net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP,
+    #       net_data_STORAGE_TIMESTAMP - league_table_data_STORAGE_TIMESTAMP)
+    # if ((abs(net_data_STORAGE_TIMESTAMP - league_table_data_STORAGE_TIMESTAMP)>150_000) and
+    #     (net_data_STORAGE_TIMESTAMP < league_table_data_STORAGE_TIMESTAMP)):
+    #     print('preventing update')
+    #     raise PreventUpdate
+    # if ctx.triggered:
+    #     print(ctx.triggered[0]['prop_id'].split('.')[0])
+
     net_data = pd.read_json(net_data, orient='split').round(3)
     years = net_data.year
     slider_min, slider_max = years.min(), years.max()
@@ -759,13 +775,15 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
         _output = [data_output]+[_OUTPUT0[1]]+[data_output] + _OUTPUT0[3:]
 
         return _output + _out_slider
-
     leaguetable = pd.read_json(league_table_data, orient='split')
     confidence_map = {k: n for n, k in enumerate(['low', 'medium', 'high'])}
     treatments = np.unique(net_data[['treat1', 'treat2']].dropna().values.flatten())
     robs = (net_data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
             .pivot_table(index='treat1', columns='treat2', values='rob')
             .reindex(index=treatments, columns=treatments, fill_value=np.nan))
+
+    print(treatments)
+
 
     if toggle_cinema:
         cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
@@ -835,6 +853,13 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
     # Prepare for output
     tips = robs
     leaguetable = leaguetable.reset_index().rename(columns={'index': 'Treatment'})
+
+    # print(leaguetable)
+    # leaguetable.to_csv('__temp_logs_and_globals/temp_LT.csv')
+    # tips.to_csv('__temp_logs_and_globals/temp_tips.csv')
+    # print(league_table_styles)
+
+
     leaguetable_cols = [{"name": c, "id": c} for c in leaguetable.columns]
     leaguetable = leaguetable.to_dict('records')
 
@@ -1629,13 +1654,14 @@ def modal_ENABLE_UPLOAD_button(dataselectors):
 
 from assets.storage import DEFAULT_DATA
 
-OUTPUTS_STORAGE_IDS = list(DEFAULT_DATA.keys())[1:-2]
+OUTPUTS_STORAGE_IDS = list(DEFAULT_DATA.keys())[:-2]
 
 @app.callback([Output(id, 'data') for id in OUTPUTS_STORAGE_IDS],
               [Input("submit_modal_data", "n_clicks")],
               [State('TEMP_'+id, 'data') for id in OUTPUTS_STORAGE_IDS],
               prevent_initial_call=True)
 def modal_SUBMIT_button(submit,
+                        TEMP_net_data_STORAGE,
                         TEMP_consistency_data_STORAGE,
                         TEMP_user_elements_STORAGE,
                         TEMP_forest_data_STORAGE,
@@ -1651,15 +1677,13 @@ def modal_SUBMIT_button(submit,
                         ):
     """ reads in temporary data for all analyses and outputs them in non-temp storages """
     if submit:
-        OUT_DATA = [TEMP_consistency_data_STORAGE, TEMP_user_elements_STORAGE, TEMP_forest_data_STORAGE,
+        OUT_DATA = [TEMP_net_data_STORAGE, TEMP_consistency_data_STORAGE, TEMP_user_elements_STORAGE, TEMP_forest_data_STORAGE,
                     TEMP_forest_data_out2_STORAGE, TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2_STORAGE,
                     TEMP_ranking_data_STORAGE, TEMP_funnel_data_STORAGE, TEMP_funnel_data_out2_STORAGE,
                     TEMP_league_table_data_STORAGE, TEMP_net_split_data_STORAGE, TEMP_net_split_data_out2_STORAGE]
-        for x in OUT_DATA:
-            print(type(x))
         return OUT_DATA
     else:
-        return list(DEFAULT_DATA.values())[1:-2]
+        return list(DEFAULT_DATA.values())[:-2]
 
 
 
@@ -1744,9 +1768,6 @@ def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
     """ produce new league table from R """
     if modal_data_checks_is_open:
         LEAGUETABLE_OUTS = generate_league_table(pd.read_json(TEMP_net_data_STORAGE, orient='split'))
-
-        print(LEAGUETABLE_OUTS)
-
         (LEAGUETABLE_data, ranking_data,
          consistency_data, net_split_data) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
 

@@ -128,15 +128,22 @@ def __ranking_scatter(df, net_data, outcome_direction_11, outcome_direction_22):
         df = pd.DataFrame([[0] * 2], columns=['pscore1', 'pscore2'])
         fig2 = px.scatter(df, x="pscore1", y="pscore2")
         fig2.update_shapes(dict(xref='x', yref='y'))
-        fig2.update_xaxes(tickvals=[], ticktext=[], visible=False)
-        fig2.update_yaxes(tickvals=[], ticktext=[], visible=False)
-        fig2.update_layout(margin=dict(l=100, r=100, t=12, b=80), xaxis=dict(showgrid=False, tick0=0, title=''),
-                           modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'),
-                           yaxis=dict(showgrid=False, tick0=0, title=''),
-                           annotations=[{"text": "Please provide a second outcome",
-                                         "font": {"size": 15, "color": "white", 'family': 'sans-serif'}}]
+        fig2.update_xaxes(tickvals=[], ticktext=[], visible=False, zeroline=False)
+        fig2.update_yaxes(tickvals=[], ticktext=[], visible=False, zeroline=False)
+        fig2.update_layout(margin=dict(l=100, r=100, t=12, b=80),
+                          xaxis=dict(showgrid=False, title=''),
+                          modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'),
+                          yaxis=dict(showgrid=False, title=''),
+                          showlegend=False,
+                          coloraxis_showscale=False,
+                          paper_bgcolor='rgba(0,0,0,0)',
+                          plot_bgcolor='rgba(0,0,0,0)',
+                          autosize=True,
+                          annotations=[{"text": "Go back to data upload and provide a second outcome to display this plot",
+                                         "font": {"size": 15, "color": "white", 'family': 'sans-serif'},
+                                         "xref":"paper", "yref":"paper",
+                                         "showarrow":False},
+                                       ]
                            ),
         fig2.update_annotations(align="center")
-        # TODO: this below gives error
-        # fig2.update_traces(quartilemethod="exclusive", hoverinfo='skip', hovertemplate=None)
     return fig2

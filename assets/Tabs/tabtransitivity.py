@@ -6,7 +6,7 @@ tab_trstvty = html.Div([html.Div([dbc.Row([html.P("Choose effect modifier:", cla
                                                 'verticalAlign':"top",
                                                 'font-size': '12px',
                                                 'margin-bottom': '-10px'}),
-                                  dcc.Dropdown(id='dropdown-effectmod', options=OPTIONS_VAR,
+                                  dcc.Dropdown(id='dropdown-effectmod', #options=OPTIONS_VAR,
                                                clearable=True, placeholder="",
                                                className="tapEdgeData-fig-class",
                                                style={'width': '150px', 'height': '30px',

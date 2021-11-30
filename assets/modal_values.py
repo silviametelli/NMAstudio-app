@@ -84,7 +84,7 @@ modal_data = dbc.Modal([dbc.ModalHeader("Data selection"),
                                                                        'color':'white'},
                                                                 ), style={'display': 'inline-block'}),
                                                          html.Div([html.P('', style={'padding-left':'10px'}),
-                                                         html.P('',id='uploaded_datafile', style={'color':'white'})],
+                                                         html.P('',id='uploaded_datafile', style={'color':'violet', 'padding-left':"20px"})],
                                                                     style={'font-family':'italic', 'display': 'inline-block'})
                                                          ],style={'display': 'inline-block'}),
                                            dbc.Col([html.Br(),html.Ul(id="file-list", style={'margin-left': '15px', 'color':'white','opacity':'60%'})],

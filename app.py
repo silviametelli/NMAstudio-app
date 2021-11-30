@@ -16,6 +16,7 @@ warnings.filterwarnings("ignore")
 # --------------------------------------------------------------------------------------------------------------------#
 import dash
 from dash.dependencies import Input, Output, State, ALL
+import dash_core_components as dcc
 from dash.exceptions import PreventUpdate
 from flask_caching import Cache
 import plotly.express as px, plotly.graph_objects as go
@@ -1017,9 +1018,10 @@ def update_boxplot(value, edges, net_data):
 
     if not any(value):
         fig.update_shapes(dict(xref='x', yref='y'))
-        fig.update_xaxes(tickvals=[], ticktext=[], visible=False)
-        fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
-        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80), xaxis=dict(showgrid=False, tick0=0, title=''),
+        fig.update_xaxes(tickvals=[], ticktext=[], visible=False, zeroline=False)
+        fig.update_yaxes(tickvals=[], ticktext=[], visible=False, zeroline=False)
+        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80),
+                          xaxis=dict(showgrid=False, tick0=0, title=''),
                           modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'),
                           yaxis=dict(showgrid=False, tick0=0, title=''),
                           annotations=[{
@@ -1027,7 +1029,11 @@ def update_boxplot(value, edges, net_data):
                                       of your potential effect modifiers across the different comparisons <br>
                                        by visual inspection of the effect modifiers box plots <br> <br>
                                       Effect modifiers should be similarly distributed across comparisons""",
-                              "font": {"size": 15, "color": "white", 'family': 'sans-serif'}}]
+                              "font": {"size": 15, "color": "white", 'family': 'sans-serif'},
+                              "xref": "paper", "yref": "paper", #"yshift": 10,
+                              "xanchor": "center",
+                              "showarrow": False},
+                                     ]
                           ),
         fig.update_annotations(align="center")
         fig.update_traces(quartilemethod="exclusive", hoverinfo='skip', hovertemplate=None)
@@ -1494,36 +1500,56 @@ def color_funnel_toggle(toggle_value):
 ######################### DISABLE  TOGGLE SWITCHES ###########################
 ##############################################################################
 
-## disable outcome 2 in funnel plot if no outcome 2
+## disable outcome 2 toggle if no outcome 2 is given in data
+@app.callback([Output('toggle_funnel_direction', 'disabled'),
+              Output('toggle_forest_outcome', 'disabled'),
+              Output('toggle_forest_pair_outcome', 'disabled'),
+              Output('toggle_rank2_direction', 'disabled'),
+              Output('toggle_rank2_direction_outcome1', 'disabled'),
+              Output('toggle_rank2_direction_outcome2', 'disabled'),
+              Output('toggle_consistency_direction', 'disabled'),
+               ],
+              Input('ranking_data_STORAGE','data')
+              )
+def disable_out2_toggle(ranking_data):
+    df_ranking = pd.read_json(ranking_data, orient='split')
+    df_ranking = df_ranking.loc[:, ~df_ranking.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+    if "pscore2" not in df_ranking.columns:
+        return True, True, True, True, True, True, True
+    else: return False, False, False, False, False, False, False
+
+
 @app.callback(Output('toggle_funnel_direction', 'disabled'),
-              Input({'type': 'dataselectors', 'index': ALL}, 'value')
+              [Input('cinema_net_data1_STORAGE', 'data'),
+               Input('cinema_net_data2_STORAGE', 'data')]
               )
-def disable_funnel_out2_toggle(dataselectors):
-    if len(dataselectors)==1:
-        return True
+def disable_cinema_toggle(cinema1, cinema2):
+    df_cinema1 = pd.read_json(cinema1, orient='split')
+    df_cinema2 = pd.read_json(cinema2, orient='split')
+    if df_cinema1 or df_cinema2 is None: return True
     else: return False
 
-##disable outcome 2 in nma forest plot if no outcome 2
-@app.callback(Output('toggle_forest_direction', 'disabled'),
-              Input({'type': 'dataselectors', 'index': ALL}, 'value')
-              )
-def disable_forestnma_out2_toggle(dataselectors):
-    if len(dataselectors)==1:
-        return True
-    else: return False
+###############################################################################
+################### EXPORT TO  CSV ON CLICK BUTTON ############################
+###############################################################################
 
-##disable outcome 2 in pairw forest plot if no outcome 2
-@app.callback(Output('toggle_forest_pair_outcome', 'disabled'),
-              Input({'type': 'dataselectors', 'index': ALL}, 'value')
-              )
-def disable_forestpairw_out2_toggle(dataselectors):
-    if len(dataselectors)==1:
-        return True
-    else: return False
+@app.callback(Output("download_datatable", "data"),
+              [Input('data-export', "n_clicks"),
+               State("net_data_STORAGE", "data")],
+               prevent_initial_call=True)
+def generate_csv(n_nlicks, data):
+    df = pd.read_json(data, orient='split')
+    return dash.dcc.send_data_frame(df.to_csv, filename="data_contrast_format.csv")
 
+@app.callback(Output("download_leaguetable", "data"),
+              [Input('league-export', "n_clicks"),
+               State("league_table_data_STORAGE", "data")],
+               prevent_initial_call=True)
+def generate_csv(n_nlicks, leaguedata):
+    df = pd.read_json(leaguedata, orient='split')
+    return dash.dcc.send_data_frame(df.to_csv, filename="league_table.csv")
 
-
- ###############################################################################
+###############################################################################
 ################### Bootstrap Dropdowns callbacks #############################
 ###############################################################################
 

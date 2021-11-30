@@ -31,13 +31,13 @@ Input_color_edge = dcc.Input(id="edge_color_input",
 
 modal = dbc.Modal([dbc.ModalHeader("Node color selection"),
                    dbc.ModalBody(Input_color),
-                   dbc.ModalFooter(dbc.Button("Close", id="close_modal_dd_nclr_input", className="ml-auto"))
+                   dbc.ModalFooter(dbc.Button("Close", id="close_modal_dd_nclr_input", n_clicks=0, className="ml-auto"))
                   ],
             id="modal",style={'background-color':'#40515e','margin-left':'-px', 'font-size':'10.5px', 'padding-left':'-2px'})
 
 modal_edges = dbc.Modal([dbc.ModalHeader("Edge color selection"),
                    dbc.ModalBody(Input_color_edge),
-                   dbc.ModalFooter(dbc.Button("Close", id="close_modal_dd_eclr_input", className="ml-auto"))
+                   dbc.ModalFooter(dbc.Button("Close", id="close_modal_dd_eclr_input", n_clicks=0, className="ml-auto"))
                   ],
             id="modal_edge",style={'background-color':'#40515e','margin-left':'-px', 'font-size':'10.5px', 'padding-left':'-2px'})
 
@@ -99,7 +99,7 @@ modal_data = dbc.Modal([dbc.ModalHeader("Data selection"),
                   ], id="modal_data", centered=False, style={'background-color':'#40515e',"max-width": "none", "width": "50%"})
 
 
-modal_checks = dbc.Modal([
+modal_checks = dbc.Modal(is_open=False, children=[
                    dbc.ModalHeader("Running data analysis"),
                    dbc.ModalBody([html.Div(id='data_checks_div', style={"color":"white"}),
                                   html.Br(),
@@ -135,9 +135,8 @@ modal_checks = dbc.Modal([
 
 
                                   html.Br()]),
-
-    dbc.ModalFooter([dbc.Button("Submit", id="submit_modal_data", className="ml-auto", disabled=True)])
-                  ], id="modal_data_checks", centered=False, style={'background-color':'#40515e',"max-width": "none", "width": "50%"})
+                   dbc.ModalFooter([dbc.Button("Submit", id="submit_modal_data", n_clicks=0, className="ml-auto", disabled=True)])
+                        ], id="modal_data_checks", centered=False, style={'background-color':'#40515e',"max-width": "none", "width": "50%"})
 
 
 modal_data_table = dbc.Modal([
@@ -180,13 +179,14 @@ modal_data_table = dbc.Modal([
                                             'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}])
                                   ]),
                    dbc.ModalFooter([
-                       html.Div([html.Button('Export', 'data-export', n_clicks=0,className="btn-export",
+                       html.Div([html.Button('Export', id='data-export', n_clicks=0, className="btn-export",
                                    style={'margin-left': '5px', 'padding': '4px 4px 4px 4px',
                                           'color': 'white', 'fontSize': 11, 'text-align':'left',
                                           'font-weight': '900', 'font-family': 'sans-serif',
                                           'display': 'inline-block', 'vertical-align': 'top'}),
                                  html.P(id='export-button-hidden', style={'display': 'none'}),
-                                ]),
+                                 dcc.Download(id="download_datatable")
+                           ]),
                             dbc.Button("Close", id="close-data-expanded", className="ml-auto")])
                              ],
                              id="modal_data_table", centered=False, style={'background-color':'#40515e',
@@ -223,11 +223,18 @@ modal_league_table = dbc.Modal([
                                     html.Div(id='modal_league_table_data')
                                   ]),
                      dbc.ModalFooter([
-                         html.Div([html.Button('Export', 'league-export', n_clicks=0, className="btn-export",
-                                     style={'margin-left': '5px', 'padding': '4px 4px 4px 4px',
+                         html.Div([
+                             html.Button('Save as image', id='league-image', n_clicks=0, className="btn-export",
+                                         style={'margin-left': '5px', 'padding': '4px 4px 4px 4px',
+                                                'color': 'white', 'fontSize': 11, 'text-align': 'left',
+                                                'font-weight': '900', 'font-family': 'sans-serif',
+                                                'display': 'inline-block', 'vertical-align': 'top'}),
+                             html.Button('Export', id='league-export', n_clicks=0, className="btn-export",
+                                     style={'margin-left': '10px', 'padding': '4px 4px 4px 4px',
                                             'color': 'white', 'fontSize': 11, 'text-align': 'left',
                                             'font-weight': '900', 'font-family': 'sans-serif',
                                             'display': 'inline-block', 'vertical-align': 'top'}),
+                            dcc.Download(id="download_leaguetable")
                                   ]),
                          dbc.Button("Close", id="close-league-expanded", className="ml-auto")])
                      ],

@@ -19,9 +19,8 @@ from dash.dependencies import Input, Output, State, ALL
 import dash_core_components as dcc
 from dash.exceptions import PreventUpdate
 from flask_caching import Cache
+from assets.COLORS import CINEMA_g, CINEMA_y, CINEMA_lb, CINEMA_r
 import plotly.express as px, plotly.graph_objects as go
-import plotly.figure_factory as ff
-from sklearn.cluster import KMeans
 from tools.layouts import *
 from tools.utils import *
 from tools.functions_ranking import __ranking_plot
@@ -209,12 +208,11 @@ def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                          {"selector": 'edge[id= "{}"]'.format(edge['id']),
                           "style": {'opacity': 1,  # "line-color": 'pink',
                                     'z-index': 5000}} for edge in edgedata if edge['source'] in selected_nodes_id
-                                                                              or edge[
-                                                                                  'target'] in selected_nodes_id] + [
+                                                                              or edge['target'] in selected_nodes_id] + [
                          {"selector": 'node[id = "{}"]'.format(id),
                           "style": {"opacity": 1}}
                          for id in all_nodes_id if id not in slct_nodesdata and id in all_slct_src_trgt]
-    if slct_edgedata and False:  #TODO: Not doing anything at the moment
+    if slct_edgedata and False:  #TODO: Not doing much at the moment
         for edge in edgedata:
             if edge['source'] in selected_nodes_id:
                 stylesheet.append({
@@ -605,7 +603,7 @@ def TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
                                plot_bgcolor='rgba(0,0,0,0)',
                                autosize=True,
                                annotations=[
-                                   {"text": "Go back to data upload and provide a second outcome to display this plot",
+                                   {"text": "Please provide a second outcome from data upload to display bi-dimensional plot",
                                     "font": {"size": 15, "color": "white", 'family': 'sans-serif'},
                                     "xref": "paper", "yref": "paper",
                                     "showarrow": False},
@@ -731,7 +729,9 @@ def update_layour_year_slider(net_data, slider_year):
     elements = get_network(df=net_data)
     return elements, elements
 
+#########################################################
 ### ----- display Data Table and League Table ------ ###
+#########################################################
 @app.callback([Output('datatable-upload-container', 'data'),
                Output('datatable-upload-container', 'columns'),
                Output('datatable-upload-container-expanded', 'data'),
@@ -830,9 +830,8 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
     np.fill_diagonal(leaguetable_colr.values, np.nan)
     leaguetable_colr = leaguetable_colr.astype(np.float64)
 
-    g, y, lb, r = '#5aa469', '#f8d49d', '#75cfb8', '#d35d6e'
     # cmap = [clrs.to_hex(plt.get_cmap('RdYlGn_r', N_BINS)(n)) for n in range(N_BINS)]
-    cmap = [g, y, r] if not toggle_cinema else [r, y, lb, g]
+    cmap = [CINEMA_g, CINEMA_y, CINEMA_r] if not toggle_cinema else [CINEMA_r, CINEMA_y, CINEMA_lb, CINEMA_g]
     legend_height = '4px'
     legend = [html.Div(style={'display': 'inline-block', 'width': '100px'},
                        children=[html.Div(),
@@ -893,7 +892,6 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
     GLOBAL_DATA["data_and_league_table_callback_FULL_DATA"] = net_data
     _output = [data_output, data_cols] * 2 + [league_table, league_table_modal] + [legend] * 2 + [toggle_cinema, toggle_cinema_modal]
     GLOBAL_DATA["data_and_league_table_callback_OUTPUT"] =   _output
-
     return _output + _out_slider
 
 def build_league_table(data, columns, style_data_conditional, tooltip_values, modal=False):
@@ -1534,18 +1532,50 @@ def disable_cinema_toggle(filename):
 
 @app.callback(Output("download_datatable", "data"),
               [Input('data-export', "n_clicks"),
-               State("net_data_STORAGE", "data")],
+               State('datatable-upload-container', 'data')],
                prevent_initial_call=True)
 def generate_csv(n_nlicks, data):
-    df = pd.read_json(data, orient='split')
-    return dash.dcc.send_data_frame(df.to_csv, filename="data_contrast_format.csv")
+    df = pd.DataFrame(data)
+    return dash.dcc.send_data_frame(df.to_csv, filename="data_wide.csv")
 
 @app.callback(Output("download_leaguetable", "data"),
               [Input('league-export', "n_clicks"),
-               State("league_table_data_STORAGE", "data")],
+               State("league_table", "children")],
                prevent_initial_call=True)
 def generate_csv(n_nlicks, leaguedata):
-    df = pd.read_json(leaguedata, orient='split')
+    df = pd.DataFrame(leaguedata['props']['data'])
+    # df.sort_values(by='Treatment').set_index('Treatment', inplace=True)
+    df = df.set_index('Treatment')[df.Treatment]
+
+    # def to_xlsx(bytes_io):
+    #     writer = pd.ExcelWriter(bytes_io, engine='xlsxwriter')  # Create a Pandas Excel writer using XlsxWriter as the engine.
+    #     df.to_excel(writer, sheet_name='Sheet1')  # Convert the dataframe to an XlsxWriter Excel object.
+    #     workbook, worksheet = writer.book, writer.sheets['Sheet1']  # Get the xlsxwriter workbook and worksheet objects.
+    #     # Add a format. Light red fill with dark red text.
+    #     # CINEMA_r, CINEMA_y, CINEMA_lb, CINEMA_g
+    #     format1 = workbook.add_format({'bg_color': CINEMA_r,
+    #                                    'font_color': '#9C0006'})
+    #     # Set the conditional format range.
+    #     start_row, start_col = 1, 3
+    #     end_row, end_cold = len(df), start_col
+    #     # Apply a conditional format to the cell range.
+    #     worksheet.conditional_format(start_row, start_col, end_row, end_cold,
+    #                                  {'type': 'cell',
+    #                                   'criteria': '>',
+    #                                   'value': 20,
+    #                                   'format': format1})
+    #     for idx, col in enumerate(df):  # loop through all columns
+    #         series = df[col]
+    #         max_len = max((
+    #             series.astype(str).map(len).max(),  # len of largest item
+    #             len(str(series.name))  # len of column name/header
+    #         )) + 1  # adding a little extra space
+    #         worksheet.set_column(idx, idx, max_len)  # set column width
+    #     writer.save()  # Close the Pandas Excel writer and output the Excel file.
+    #
+    # return dash.dcc.send_bytes(to_xlsx, filename="league_table.xlsx")
+   # return dash.dcc.send_data_frame(writer.save(), filename="league_table.xlsx")
+
     return dash.dcc.send_data_frame(df.to_csv, filename="league_table.csv")
 
 ###############################################################################

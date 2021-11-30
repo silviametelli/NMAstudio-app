@@ -17,7 +17,7 @@ def Homepage():
 
 def home_layout():
     return html.Div(className="app__container", children=STORAGE+[
-
+                        html.Div(id='img_div', style={'display': 'none'}),
                         html.Div(id='main_page',
                         ### LEFT HALF OF THE PAGE
                          children=[
@@ -29,7 +29,7 @@ def home_layout():
                                                     html.Div(modal_data, style={'display': 'inline-block', 'font-size': '11px'}),
                                                     html.Div(modal_checks,style={'display': 'inline-block', 'font-size': '11px'}),
                                                     html.Div(modal_data_table, style={'display': 'inline-block', 'font-size': '11px'}),
-                                                    html.Div(modal_league_table, style={'display': 'inline-block', 'font-size': '11px'}),
+                                                    html.Div(modal_league_table, id="modal_league_div", style={'display': 'inline-block', 'font-size': '11px'}),
                                                     html.Div(modal_network, style={'display': 'inline-block', 'font-size': '11px'}),
                                                     html.A(html.Img(src="/assets/icons/NETD.png", style={'width': '50px', 'filter': 'invert()'}),
                                                                     id="btn-get-png", style={'display': 'inline-block'}),

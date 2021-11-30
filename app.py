@@ -172,7 +172,7 @@ def update_cytoscape_layout(layout):
                Input('dd_egs', 'children'),
                Input("btn-get-png", "n_clicks"),
                Input("btn-get-png-modal", "n_clicks"),],
-              State("consts_STORAGE", "data"),
+               State("consts_STORAGE", "data"),
               )
 def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                         dd_nclr, dd_eclr, custom_nd_clr, custom_edg_clr, dd_nds, dd_egs,
@@ -720,14 +720,16 @@ def get_new_data_cinema2(contents, cinema_net_data2, filename):
 
 
 ### ----- Update layout with slider ------ ###
-@app.callback([Output('cytoscape', 'elements')],
+@app.callback([Output('cytoscape', 'elements'),
+               Output('modal-cytoscape', 'elements')
+               ],
               [Input('net_data_STORAGE', 'data'),
                Input('slider-year', 'value')])
 def update_layour_year_slider(net_data, slider_year):
     net_data = pd.read_json(net_data, orient='split')
     net_data = net_data[net_data.year <= slider_year]
     elements = get_network(df=net_data)
-    return [elements]
+    return elements, elements
 
 ### ----- display Data Table and League Table ------ ###
 @app.callback([Output('datatable-upload-container', 'data'),
@@ -1519,14 +1521,11 @@ def disable_out2_toggle(ranking_data):
     else: return False, False, False, False, False, False, False
 
 
-@app.callback(Output('toggle_funnel_direction', 'disabled'),
-              [Input('cinema_net_data1_STORAGE', 'data'),
-               Input('cinema_net_data2_STORAGE', 'data')]
+@app.callback(Output('rob_vs_cinema', 'disabled'),
+              Input('datatable-secondfile-upload', 'filename')
               )
-def disable_cinema_toggle(cinema1, cinema2):
-    df_cinema1 = pd.read_json(cinema1, orient='split')
-    df_cinema2 = pd.read_json(cinema2, orient='split')
-    if df_cinema1 or df_cinema2 is None: return True
+def disable_cinema_toggle(filename):
+    if filename is None: return True
     else: return False
 
 ###############################################################################
@@ -1671,7 +1670,8 @@ def toggle_modal_edge(open_t, close):
                ],
               [Input("upload_your_data", "n_clicks_timestamp"),
                Input("upload_modal_data", "n_clicks_timestamp"),
-              ],
+               Input("submit_modal_data", "n_clicks_timestamp"),
+               ],
               [State("dropdown-format","value"),
                State("dropdown-outcome1","value"),
                State("dropdown-outcome2","value"),
@@ -1683,7 +1683,7 @@ def toggle_modal_edge(open_t, close):
                State("TEMP_net_data_STORAGE", "data")
                ]
               )
-def data_modal(open_modal_data, upload,
+def data_modal(open_modal_data, upload, submit,
                value_format, value_outcome1, value_outcome2,
                modal_data_is_open, modal_data_checks_is_open,
                contents, filename, dataselectors, TEMP_net_data_STORAGE
@@ -1697,7 +1697,10 @@ def data_modal(open_modal_data, upload,
             data = parse_contents(contents, filename)
             data = adjust_data(data, dataselectors, value_format ,value_outcome1, value_outcome2)
             TEMP_net_data_STORAGE = data.to_json( orient='split')
-            return not modal_data_is_open, not modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE
+            if submit and button_id == 'submit_modal_data':
+                return not modal_data_is_open, not modal_data_checks_is_open and (not modal_data_is_open), TEMP_net_data_STORAGE
+            return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE
+
         return not modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE
     else:
         return modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE
@@ -1910,7 +1913,62 @@ def toggle_modal(open, close, is_open):
 ##################################################################
 ########################### MAIN #################################
 ##################################################################
+app.clientside_callback(
+    '''
+    function (n_clicks) {
+        if (n_clicks > 0) {
+            window.scrollTo(0, 0);
+            htmlRef = document.getElementById('league_table');
+            html2canvas(htmlRef,  {
+                scrollX: -window.scrollX,
+                scrollY: -window.scrollY,
+                windowWidth: document.documentElement.offsetWidth,
+                windowHeight: htmlRef.scrollHeight,
+      }).then(function(canvas) {
+                var img = new Image();
+                var height = canvas.height;
+                img.src = canvas.toDataURL("image/png");
+                document.getElementById('img_div').appendChild(img);
 
+                var doc = new PDFDocument({layout:'portrait', margin: 25});
+                var stream = doc.pipe(blobStream());
+
+                var img_container = document.getElementById('img_div');
+                var imgElement = img_container.getElementsByTagName('img');
+                var imgSrc = imgElement[imgElement.length - 1].src;
+                doc.image(imgSrc, {width: 600});
+
+                doc.end();
+
+                var saveData = (function () {
+                    var a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.style = "display: none";
+                    return function (blob, fileName) {
+                        var url = window.URL.createObjectURL(blob);
+                        a.href = url;
+                        a.download = fileName;
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                    };
+                }());
+
+                stream.on('finish', function() {
+                  var blob = stream.toBlob('application/pdf');
+                  saveData(blob, 'LeagueTable.pdf');
+                });
+            });
+
+
+        }
+        return false;
+    }
+    ''',
+    Output('button', 'disabled'),
+    [
+        Input('button', 'n_clicks'),
+    ]
+)
 
 if __name__ == '__main__':
     app._favicon = ("assets/favicon.ico")

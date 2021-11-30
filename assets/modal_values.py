@@ -195,7 +195,7 @@ modal_data_table = dbc.Modal([
 
 
 modal_league_table = dbc.Modal([
-                     dbc.ModalHeader([html.Div("League Table", style={'display': 'inline-block'}),
+                     dbc.ModalHeader([html.Div("League Table",  style={'display': 'inline-block'}),
                                       html.Div([html.P("Risk of Bias", id='cinemaswitchlabel1_modal',
                                                        style={'display': 'inline-block',
                                                               'font-size': '12px',
@@ -224,7 +224,7 @@ modal_league_table = dbc.Modal([
                                   ]),
                      dbc.ModalFooter([
                          html.Div([
-                             html.Button('Save as image', id='league-image', n_clicks=0, className="btn-export",
+                             html.Button('Save as image', id='button', n_clicks=0, className="btn-export",
                                          style={'margin-left': '5px', 'padding': '4px 4px 4px 4px',
                                                 'color': 'white', 'fontSize': 11, 'text-align': 'left',
                                                 'font-weight': '900', 'font-family': 'sans-serif',
@@ -247,7 +247,7 @@ modal_network = dbc.Modal([
                      dbc.ModalBody([html.Div(id='network-expand-body'),
                                     html.Br(),
                                     html.Div(cyto.Cytoscape(id='modal-cytoscape',  responsive=True,
-                                elements=USER_ELEMENTS,
+                                elements=[],
                                 style={ 'height': '93vh', 'width': '100%',  'margin-top':'-30px', 'margin-bottom': '-30px',
                                         'padding-left':'-30px', 'margin-left': '-30px','margin-right': '-30px',  'z-index': '999',
                                         'z-compound-depth': 'orphan'

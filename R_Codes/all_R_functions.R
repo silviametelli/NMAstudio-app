@@ -255,9 +255,9 @@ pairwise_forest <- function(dat){
     TEweights <- model_temp$w.random
     tau2 <- model_temp$tau^2
     I2 <- model_temp$I2
-    if(sm=="MD"){df <- data.frame(TE, TE_diamond, id, studlab, t1, t2, ci_lo_individual,
-                                  ci_up_individual, ci_lo, ci_up, predict_lo, predict_up,
-                                  TEweights, tau2, I2)
+    if(sm=="MD" | sm=="SMD"){df <- data.frame(TE, TE_diamond, id, studlab, t1, t2, ci_lo_individual,
+                                              ci_up_individual, ci_lo, ci_up, predict_lo, predict_up,
+                                              TEweights, tau2, I2)
     }else{df <- data.frame(exp(TE), exp(TE_diamond), id, studlab, t1, t2, exp(ci_lo_individual),
                            exp(ci_up_individual), exp(ci_lo), exp(ci_up), exp(predict_lo),
                            exp(predict_up), TEweights, tau2, I2)}

@@ -51,6 +51,7 @@ OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col}
                for col in NET_DATA.select_dtypes(['number']).columns]
 N_CLASSES = USER_ELEMENTS[-1]["data"]['n_class'] if "n_class" in USER_ELEMENTS[-1]["data"] else 1
 
+
 STORAGE = [dcc.Store(id=label, data=data.to_json(orient='split') if label!='user_elements_STORAGE' else data,
                      storage_type=SESSION_TYPE)
            for label, data in DEFAULT_DATA.items()

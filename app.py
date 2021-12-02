@@ -1235,12 +1235,13 @@ def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
     if modal_data_checks_is_open:
         data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
         LEAGUETABLE_OUTS =  generate_league_table(data, outcome2=False) if "TE2" not in data.columns else generate_league_table(data, outcome2=True)
-        if "TE2" not in data.columns:
-            (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data)= [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
-        else:  (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2)= [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
+
+        if "TE2" not in data.columns: (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
+        else:                         (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
 
         return (html.P(u"\u2713" + " Successfully generated league table.", style={"color":"green"}),
-                '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data) if "TE2" not in data.columns else  (html.P(u"\u2713" + " Successfully generated league table.", style={"color":"green"}),
+                '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data) if "TE2" not in data.columns else \
+                                (html.P(u"\u2713" + " Successfully generated league table.", style={"color":"green"}),
                 '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2)
     else:
         net_split_data2 = {}
@@ -1327,7 +1328,8 @@ def display_confirm(filename, data, modal_data_open, value_outcome1, value_outco
         if value_outcome2 is None:
             return True if ('y1' in data_.columns and value_outcome1=="continuous") or ('r1' in data_.columns and value_outcome1=="binary") else False
         else:
-            return True if ('y1' in data_.columns and value_outcome1=="continuous") or ('r1' in data_.columns and value_outcome1=="binary") or ('y2' in data_.columns and value_outcome2=="continuous") or ('r2' in data_.columns and value_outcome2=="binary") else False
+            return True if ('y1' in data_.columns and value_outcome1=="continuous") or ('r1' in data_.columns and value_outcome1=="binary") or \
+                           ('y2' in data_.columns and value_outcome2=="continuous") or ('r2' in data_.columns and value_outcome2=="binary") else False
     else: return False
 
 

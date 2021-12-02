@@ -30,6 +30,19 @@ def apply_r_func(func, df):
     else:
         df_result = r_result.reset_index(drop=True)  # Convert back to a pandas.DataFrame.
         return df_result
+
+def apply_r_func_twooutcomes(func, df):
+    with localconverter(ro.default_converter + pandas2ri.converter):
+        df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
+    func_r_res = func(dat=df_r, outcome2=True)
+    r_result = pandas2ri.rpy2py(func_r_res)
+    if isinstance(r_result, ro.vectors.ListVector):
+        with localconverter(ro.default_converter + pandas2ri.converter):
+            leaguetable, pscores, consist, netsplit, netsplit2 = (ro.conversion.rpy2py(rf) for rf in r_result)
+        return leaguetable, pscores, consist, netsplit, netsplit2
+    else:
+        df_result = r_result.reset_index(drop=True)  # Convert back to a pandas.DataFrame.
+        return df_result
 # ----------------------------------------------------------------------------------
 ## -------------------------------------------------------------------------------- ##
 def write_node_topickle(store_node):
@@ -141,7 +154,6 @@ def data_checks(df):
     return {'check1': True, 'check2': False, 'check3': False, 'check4': True} #TODO: add specific checks
 
 
-
 def run_network_meta_analysis(df):
     data_forest = apply_r_func(func=run_NetMeta_r, df=df)
     return data_forest
@@ -153,19 +165,20 @@ def run_pairwise_MA(df):
     return forest_MA
 
 
-
 def generate_league_table(df, outcome2=False):
-    leaguetable, pscores, consist, netsplit = apply_r_func(func=league_table_r, df=df)
-    if outcome2: leaguetable, pscores, consist, netsplit, netsplit2 = apply_r_func(func=league_table_r, df=df)
+
+    if outcome2: leaguetable, pscores, consist, netsplit, netsplit2 = apply_r_func_twooutcomes(func=league_table_r, df=df)
+    else:        leaguetable, pscores, consist, netsplit = apply_r_func(func=league_table_r, df=df)
 
     replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
-    leaguetable = pd.DataFrame([[replace_and_strip(col) for col in list(row)]
-                                for idx, row in leaguetable.iterrows()],
+    leaguetable = pd.DataFrame([[replace_and_strip(col) for col in list(row)] for idx, row in leaguetable.iterrows()],
                                columns=leaguetable.columns,
                                index=leaguetable.index)
     leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
-    # leaguetable = leaguetable.reset_index().rename(columns={'index': 'Treatment'})
-    return leaguetable, pscores, consist, netsplit, netsplit2 if outcome2 else leaguetable, pscores, consist, netsplit
+    if outcome2:
+        return leaguetable, pscores, consist, netsplit, netsplit2
+    else:
+        return leaguetable, pscores, consist, netsplit
 
 
 

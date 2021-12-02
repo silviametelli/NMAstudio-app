@@ -27,7 +27,7 @@ import plotly.express as px, plotly.graph_objects as go
 from tools.layouts import *
 from tools.utils import *
 
-from tools.functions_ranking_plots import __ranking_plot
+from tools.functions_ranking_plots import __ranking_plot, __ranking_heatmap, __ranking_scatter
 from tools.functions_funnel_plot import __Tap_funnelplot
 from tools.functions_nmaforest_plot import __TapNodeData_fig, __TapNodeData_fig_bidim
 from tools.functions_pairwise_plots import __update_forest_pairwise
@@ -672,7 +672,99 @@ def build_league_table(data, columns, style_data_conditional, tooltip_values, mo
                Input('cytoscape', 'selectedEdgeData'),
                Input('net_data_STORAGE','data')])
 def update_boxplot(value, edges, net_data):
-    return __update_forest_pairwise(value, edges, net_data)
+    #return __update_boxplot(value, edges, net_data)
+    active, non_active = '#1B58E2', '#313539'  # '#4C5353'
+    if value:
+        net_data  = pd.read_json(net_data, orient='split')
+        df = net_data[['treat1', 'treat2', value, 'year']].copy()
+        df = df.dropna(subset=[value])
+        df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
+        df = df.sort_values(by='Comparison').reset_index()
+        df[value] = pd.to_numeric(df[value], errors='coerce')
+        margin = (df[value].max() - df[value].min()) * .1  # 10%
+        range1 = df[value].min() - margin
+        range2 = df[value].max() + margin
+        df['color'] = non_active
+        df['selected'] = 'nonactive'
+
+        slctd_comps = []
+        for edge in edges or []:
+            src, trgt = edge['source'], edge['target']
+            slctd_comps += [f'{src} vs {trgt}']
+
+        for ind, row in df.iterrows():
+            df.loc[ind, 'color'] = active if row.Comparison in slctd_comps else non_active
+            df.loc[ind, 'selected'] = 'active' if row.Comparison in slctd_comps else 'nonactive'
+
+        unique_comparisons = df.Comparison.sort_values().unique()
+        unique_comparisons = unique_comparisons[~pd.isna(unique_comparisons)]
+        fig = go.Figure(data=[go.Box(y=df[df.Comparison == comp][value],
+                                     visible=True,
+                                     name=comp, # jitter=0.2, # width=0.6,
+                                     marker_color=active if comp in slctd_comps else non_active,
+                                     )
+                              for comp in unique_comparisons]
+                        )
+
+    else:
+        df = pd.DataFrame([[0] * 3], columns=['Comparison', 'value', 'selected'])
+        value = df['value']
+        range1 = range2 = 0
+        fig = go.Figure(data=[go.Box(y=df['value'])])
+        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80), xaxis=dict(showgrid=False, tick0=0, title=''),
+                          yaxis=dict(showgrid=False, tick0=0, title=''))
+
+    fig.update_layout(clickmode='event+select',
+                      paper_bgcolor='rgba(0,0,0,0)',
+                      plot_bgcolor='rgba(0,0,0,0)',
+                      font_color="black",
+                      modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'),
+                      yaxis_range=[range1, range2],
+                      showlegend=False,
+                      autosize=True,
+                      font=dict(  # family="sans serif", #size=11,
+                          color='black'
+                      ),
+                      xaxis=dict(showgrid=False, tick0=0),
+                      yaxis=dict(showgrid=False)
+                      )
+
+    fig.update_traces(boxpoints='outliers', quartilemethod="inclusive", hoverinfo="x+y",
+                      selector=dict(mode='markers'), showlegend=False, opacity=1,
+                      marker=dict(opacity=1, line=dict(color='black', outlierwidth=2))
+                      )
+
+    fig.update_xaxes(ticks="outside", tickwidth=1, tickcolor='black', ticklen=5, tickmode='linear',
+                     autorange=True,
+                     showline=True, linecolor='black', type="category")  # tickangle=30,
+
+    fig.update_yaxes(showgrid=False, ticklen=5, tickwidth=2, tickcolor='black', autorange=True,
+                     showline=True, linecolor='black', zeroline=False)
+
+    if not any(value):
+        fig.update_shapes(dict(xref='x', yref='y'))
+        fig.update_xaxes(tickvals=[], ticktext=[], visible=False, zeroline=False)
+        fig.update_yaxes(tickvals=[], ticktext=[], visible=False, zeroline=False)
+        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80),
+                          xaxis=dict(showgrid=False, tick0=0, title=''),
+                          modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'),
+                          yaxis=dict(showgrid=False, tick0=0, title=''),
+                          annotations=[{
+                              "text": """Check whether transitivity holds in the network: compare the distributions  <br>
+                                      of your potential effect modifiers across the different comparisons <br>
+                                       by visual inspection of the effect modifiers box plots <br> <br>
+                                      Effect modifiers should be similarly distributed across comparisons""",
+                              "font": {"size": 15, "color": "white", 'family': 'sans-serif'},
+                              "xref": "paper", "yref": "paper", #"yshift": 10,
+                              "xanchor": "center",
+                              "showarrow": False},
+                                     ]
+                          ),
+        fig.update_annotations(align="center")
+        fig.update_traces(quartilemethod="exclusive", hoverinfo='skip', hovertemplate=None)
+
+    return fig
+
 
 
 ### - figures on edge click: pairwise forest plots  - ###
@@ -683,7 +775,246 @@ def update_boxplot(value, edges, net_data):
                Input('forest_data_prws_out2_STORAGE', 'data')])
 
 def  update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2):
-    return __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2)
+    #return __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2)
+    _HEIGHT_ROMB = 0.3
+    slctd_comps = []
+    if edge:
+        src, trgt = edge[0]['source'], edge[0]['target']
+        slctd_comps += [f'{src} vs {trgt}']
+        df = pd.read_json(forest_data_prws_out_2, orient='split') if outcome else pd.read_json(forest_data_prws, orient='split')
+        df = df.reset_index(drop=True)
+        df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
+        df = df[df.Comparison.isin(slctd_comps)]
+        #df['studlab'] = str(df['studlab'])
+        df['studlab'] += ' ' * 10
+        effect_size = df.columns[0]
+        tau2 = round(df['tau2'].iloc[0], 2) if len(df['tau2'])>0 and df['tau2'].iloc[0] and ~np.isnan(df['tau2'].iloc[0]) else np.nan
+        I2 = round(df['I2'].iloc[0], 2) if len(df['I2'])>0 else np.nan
+        FOREST_ANNOTATION = ('<b>RE model:</b>  I<sup>2</sup>='
+                             + f"{'NA' if np.isnan(I2) else I2}%, "
+                             + u"\u03C4" + '<sup>2</sup>='
+                             +  f"{'NA' if np.isnan(tau2) else tau2}")
+        LEN_FOREST_ANNOT = 25 + len(str(I2))  + len(str(tau2))
+        df['CI_width'] = df.CI_upper - df.CI_lower
+        df['lower_error'] = df[effect_size] - df.CI_lower
+        df['CI_width_hf'] = df['CI_width'] / 2
+        df['CI_width_diamond'] = df.CI_upper_diamond - df.CI_lower_diamond
+        df['WEIGHT'] = round(df['WEIGHT'], 3)
+        df['CI_width_hf_diamond'] = df['CI_width_diamond'] / 2
+        CI_lower, CI_upper = df["CI_lower"].map('{:,.2f}'.format), df["CI_upper"].map('{:,.2f}'.format)
+        df['CI'] = '(' + CI_lower.astype(str) + ', ' + CI_upper.astype(str) + ')'
+        CI_lower_diamond, CI_upper_diamond = df["CI_lower_diamond"].map('{:,.2f}'.format), df["CI_upper_diamond"].map('{:,.2f}'.format)
+        CI_d = '(' + CI_lower_diamond.astype(str) + ', ' + CI_upper_diamond.astype(str) + ')'
+        df = df.sort_values(by=effect_size, ascending=False)
+        pred_lo  = df['Predict_lo'].reset_index().Predict_lo[0]
+        pred_up  = df['Predict_up'].reset_index().Predict_up[0]
+        if abs(pred_lo) > np.float64(1000) or abs(pred_up) > np.float64(1000) :
+            pred_lo, pred_up = np.nan, np.nan
+
+        center = df['TE_diamond'].reset_index().TE_diamond[0]
+        width = df['CI_width_diamond'].reset_index().CI_width_diamond[0]
+
+    else:
+        FOREST_ANNOTATION = ''
+        LEN_FOREST_ANNOT = 0
+        center = width = 0
+        effect_size = ''
+        df = pd.DataFrame([[0] * 11],
+                          columns=[effect_size, "TE_diamond", "id", "studlab", "treat1", "treat2", "CI_lower",
+                                   "CI_upper", "CI_lower_diamond", "CI_upper_diamond", "WEIGHT"])
+        df.studlab = ''
+
+    xlog = effect_size in ('RR', 'OR')
+    up_rng_, low_rng_ = df.CI_upper.max(), df.CI_lower.min()
+
+    up_rng = 10 ** np.floor(np.log10(up_rng_)) if xlog else None
+    low_rng = 10 ** np.floor(np.log10(low_rng_)) if xlog else None
+
+    fig = px.scatter(df, x= df[effect_size], y=df["studlab"].str.pad(max(LEN_FOREST_ANNOT, df["studlab"].str.len().max()), fillchar=' '),
+                       error_x_minus='lower_error' if xlog else None,
+                       error_x='CI_width_hf' if xlog else 'CI_width' if edge else None,
+                       log_x=xlog,
+                       size_max=10,
+                       range_x=[min(low_rng, 0.1), max([up_rng, 10])] if xlog else [up_rng_, low_rng_],
+                       range_y=[-1,len(df.studlab)+2],
+                       size=df.WEIGHT if edge else None)
+
+    if xlog:
+        fig.add_shape(type='line', yref='paper', y0=0, y1=1, xref='x', x0=1, x1=1,
+                      line=dict(color="black", width=1), layer='below')
+
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
+                          plot_bgcolor='rgba(0,0,0,0)',
+                          showlegend=False,
+                          xaxis_type="log" if xlog else 'linear',
+                          modebar= dict(orientation = 'h', bgcolor = 'rgba(0,0,0,0)'),
+                          xaxis=dict(showgrid=False, tick0=0, title=''),
+                          yaxis=dict(showgrid=False, title=''),
+                          )
+
+    fig.update_yaxes(ticks="outside",
+                         type='category',
+                         showgrid=False,
+                         tickcolor='rgba(0,0,0,0)',
+                         linecolor='rgba(0,0,0,0)',
+                         linewidth=1,
+                         zeroline=True, zerolinecolor='black', zerolinewidth=1),
+
+    fig.update_xaxes(ticks="outside",
+                         showgrid=False,
+                         autorange=True, showline=True,
+                         tickcolor='rgba(0,0,0,0)',
+                         linecolor='rgba(0,0,0,0)'),
+
+    fig.update_traces(marker=dict(symbol='square',
+                                          opacity=0.8 if edge else 0,
+                                          line=dict(color='DarkSlateGrey'),
+                                          color='grey'),
+                              error_x=dict(thickness=2, color='#313539'))  # '#ef563b' nice orange trace
+        #
+    if edge:
+        fig.update_layout(clickmode='event+select',
+                              font_color="black",
+                              modebar=dict(orientation='v', bgcolor='rgba(0,0,0,0)'),
+                              autosize=True,
+                              # width=500,
+                              margin=dict(l=5, r=10, t=12, b=80),
+                              xaxis=dict(showgrid=False, autorange=True,
+                                        showline=True, linewidth=1, linecolor='black',
+                                         zeroline=True, zerolinecolor='black', zerolinewidth=1,
+                                         title=''),
+                              yaxis=dict(showgrid=False, title=''),
+                              annotations=[dict(x=0 if xlog else 1, y=-0.12,
+                                                xref='x',  yref='paper',
+                                                showarrow=False, text=effect_size),
+                                           dict(x=np.floor(np.log10(min(low_rng, 0.1))) if xlog else low_rng_,
+                                                ax=0, y=-0.14, ay=-0.1,
+                                                xref='x', axref='x', yref='paper',
+                                                showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.8,
+                                                arrowcolor='black'),
+                                           dict(x=np.floor(np.log10(max([up_rng, 10]))) if xlog else up_rng_,
+                                                ax=0, y=-0.14, ay=-0.1,
+                                                xref='x', axref='x', yref='paper',
+                                                showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.8,
+                                                arrowcolor='black'),  # '#751225'
+                                           dict(x=np.floor(
+                                               np.log10(min(low_rng, 0.1))) / 2 if xlog else df.CI_lower.min() / 2,
+                                                y=-0.22, xref='x', yref='paper', xanchor='auto',
+                                                text=f'Favours {df.treat1.iloc[0]}',
+                                                showarrow=False),
+                                           dict(x=np.floor(
+                                               np.log10(max([up_rng, 10]))) / 2 if xlog else df.CI_upper.max() / 2,
+                                                y=-0.22,
+                                                xref='x', yref='paper', xanchor='auto',
+                                                text=f'Favours {df.treat2.iloc[0]}',
+                                                showarrow=False),
+                                           dict(x=0, y=1, xanchor='left',
+                                                xref='paper', yref='paper',
+                                                text='<b>Study</b>',
+                                                showarrow=False),
+                                           dict(x=0, y=0, xanchor='right',
+                                                xref='paper', yref='paper',
+                                                text=FOREST_ANNOTATION,
+                                                showarrow=False),
+                                           ]
+                              )
+        fig.add_vline(x=center, line_width=1, line_dash='dash', line_color='black')
+
+        def romb(center, low=None, up=None, width=None, height=_HEIGHT_ROMB):
+            if width:
+                low, up =  center - width/2, center + width/2
+            return {'x': [center, low, center, up, center],
+                    'y': [-height/2, 0, height/2, 0, -height/2]}
+        fig.add_trace(go.Scatter(x=romb(center, low=CI_lower_diamond.iloc[0], up=CI_upper_diamond.iloc[0])['x'],
+                                 y=romb(center, low=CI_lower_diamond.iloc[0],up=CI_upper_diamond.iloc[0])['y'],
+                                 fill="toself", mode="lines", line=dict(color='black'),
+                                 fillcolor='#1f77b4', yaxis="y2", showlegend=False))
+
+        fig.add_trace(
+            go.Scatter(x=[pred_lo, pred_up],
+                       y=[-_HEIGHT_ROMB*2] * 2, #["Prediction Interval"],
+                       mode="lines",
+                       line=dict( color='#8B0000', width=4), showlegend=False, yaxis="y3",
+                     ))
+
+        fig.update_yaxes(range=[-.3, 1 + df.studlab.shape[0]],
+                         autorange=True,ticks="outside", tickwidth=2, tickcolor='black',
+                         ticklen=5,
+                         tickfont=dict(color='rgba(0,0,0,0)'),
+                         linecolor='rgba(0,0,0,0)',
+                         secondary_y=True,
+                         zeroline=False)
+
+        fig.add_trace(go.Scatter(x=[], y=[],
+                                 marker=dict(opacity=0),
+                                 showlegend=False, mode='markers',
+                                 yaxis="y4"))
+
+        fig.update_traces(overwrite=False)
+
+        fig.update_layout(
+            autosize=True,
+            yaxis2=dict(tickvals=[], ticktext=[],
+                        showgrid=False, zeroline=False,
+                        titlefont=dict(color='black'),
+                        tickfont=dict(color='black'),
+                        range=[-1, len(df.studlab)+1],
+                        anchor="free", overlaying="y"
+                        ),
+            yaxis3=dict(tickvals=[], ticktext=[],
+                        showgrid=False, zeroline=False,
+                        titlefont=dict(color='black'),
+                        tickfont=dict(color='black'),
+                        range=[-1, len(df.studlab) + 1],
+                        scaleanchor = 'y',
+                        anchor="x",  overlaying="y2"
+                        ),
+            yaxis4=dict(tickvals=[*range(df.shape[0])],
+                        ticktext=[' ' * 5 + '{:.2f}   {:<17}'.format(x, y)
+                                  # for x, y in zip(df[effect_size].values, df['CI'].values)],
+                                  for x, y in zip(np.append(df[effect_size].values, center),
+                                                  np.append(df['CI'].values, CI_d.iloc[0]))],
+                        showgrid=False, zeroline=False,
+                        titlefont=dict(color='black'),
+                        tickfont=dict(color='black'),
+                        type='category',
+                        range=[-2.4, df.shape[0]+1],
+                        anchor="x", overlaying="y",
+                        side="right"),
+        ),
+
+        fig.update_layout(yaxis_range=[-2.4, len(df.studlab)+1])
+
+        fig.add_annotation(x=1.15, y=1, xanchor='center',  align='center',
+                           xref='paper', yref='y domain',
+                           text=f'<b>{effect_size}</b>',
+                           showarrow=False)
+
+        fig.add_annotation(x=1.4, y=1, align='center', ayref= 'y3 domain',
+                           xref='paper', yref='y3 domain',
+                           xanchor='center',
+                           text='<b>95% CI</b>',
+                           showarrow=False)
+
+    else:
+        fig.update_layout(clickmode='event+select',
+                  font_color="black",
+                  margin=dict(l=5, r=10, t=12, b=80),
+                  xaxis=dict(showgrid=False, tick0=0, title=''),
+                  yaxis=dict(showgrid=False, title=''),
+                  title_text='  ', title_x=0.02, title_y=.98, title_font_size=14,
+                  annotations=[]
+                  )
+    if not edge:
+        fig.update_shapes(dict(xref='x', yref='y'))
+        fig.update_xaxes(zerolinecolor='black', zerolinewidth=1, title='', visible=False)
+        fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
+        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80),
+                          modebar=dict(orientation='v', bgcolor='rgba(0,0,0,0)'))
+        fig.update_traces(hoverinfo='skip', hovertemplate=None)
+
+    return fig
+
 
 ### ----- display forest plot on node click ------ ###
 @app.callback(Output('tapNodeData-fig', 'figure'),
@@ -694,7 +1025,152 @@ def  update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_ou
                Input("forest_data_out2_STORAGE", "data")
                ])
 def TapNodeData_fig(data, outcome_direction, outcome, forest_data, forest_data_out2):
-    return __TapNodeData_fig(data, outcome_direction, outcome, forest_data, forest_data_out2)
+    #return __TapNodeData_fig(data, outcome_direction, outcome, forest_data, forest_data_out2)
+    if data:
+        treatment = data[0]['label']
+        forest_data = pd.read_json(forest_data_out2, orient='split') if outcome else pd.read_json(forest_data, orient='split')
+        df = forest_data[forest_data.Reference == treatment]
+        effect_size = df.columns[1]
+        tau2 = round(df['tau2'].iloc[1], 2)
+        df['Treatment'] += ' ' * 23
+        df['CI_width'] = df.CI_upper - df.CI_lower
+        df['lower_error'] = df[effect_size] - df.CI_lower
+        df['CI_width_hf'] = df['CI_width'] / 2
+        df['WEIGHT'] = round(df['WEIGHT'], 3)
+        CI_lower, CI_upper = df["CI_lower"].map('{:,.2f}'.format), df["CI_upper"].map('{:,.2f}'.format),
+        df['CI'] = '(' + CI_lower.astype(str) + ', ' + CI_upper.astype(str) + ')'
+        df = df.sort_values(by=effect_size, ascending=False)
+    else:
+        effect_size = ''
+        df = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
+                                              'CI_width', 'CI_width_hf'])
+
+
+    xlog = effect_size in ('RR', 'OR')
+    up_rng, low_rng = df.CI_upper.max(), df.CI_lower.min()
+    up_rng = 10**np.floor(np.log10(up_rng)) if xlog else None
+    low_rng = 10 ** np.floor(np.log10(low_rng)) if xlog else None
+    fig = px.scatter(df, x=effect_size, y="Treatment",
+                     error_x_minus='lower_error' if xlog else None,
+                     error_x='CI_width_hf' if xlog else 'CI_width' if data else None,
+                     log_x=xlog,
+                     size_max=5,
+                     range_x=[min(low_rng, 0.1), max([up_rng, 10])] if xlog else None,
+                     range_y=[-1, len(df.Treatment)],
+                     size=df.WEIGHT if data else None)
+
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
+                      plot_bgcolor='rgba(0,0,0,0)')
+    if xlog:
+        fig.add_shape(type='line', yref='paper', y0=0, y1=1, xref='x', x0=1, x1=1,
+                      line=dict(color="black", width=1), layer='below')
+
+    fig.update_traces(marker=dict(symbol='circle',
+                                  opacity=0.8 if data else 0,
+                                  line=dict(color='DarkSlateGrey'),
+                                  color='green'),
+                      error_x=dict(thickness=2.1, color='#313539')  # '#ef563b' nice orange trace
+                      )
+    fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black',
+                     ticklen=5,
+                     categoryorder='category descending' if outcome_direction else 'category ascending',
+                     # dtick=1,
+                     autorange=False,
+                     showline=True, linewidth=1, linecolor='black',
+                     zeroline=True, zerolinecolor='black')
+
+    if data:
+        fig.update_layout(clickmode='event+select',
+                          font_color="black",
+                          modebar= dict(orientation = 'v', bgcolor = 'rgba(0,0,0,0)'),
+                          autosize=True,
+                          #width=500,
+                          margin=dict(l=5, r=10, t=12, b=80),
+                          xaxis=dict(showgrid=False, autorange=True,
+                                     #tick0=0, # TODO: JUST EXPLAIN IT!!!
+                                     title=''),
+                          yaxis=dict(showgrid=False, title=''),
+                          annotations=[dict(x=0, ax=0, y=-0.12, ay=-0.1, xref='x', axref='x', yref='paper',
+                                             showarrow=False, text=effect_size),
+                                       dict(x=np.floor(np.log10(min(low_rng, 0.1))) if xlog else df.CI_lower.min(),
+                                            ax=0, y=-0.14, ay=-0.1,
+                                            xref='x', axref='x', yref='paper',
+                                            showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.8,
+                                            arrowcolor='green' if outcome_direction else 'black'),
+                                       dict(x= np.floor(np.log10(max([up_rng, 10]))) if xlog else df.CI_upper.max(),
+                                            ax=0, y=-0.14, ay=-0.1,
+                                            xref='x', axref='x', yref='paper',
+                                            showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.8,
+                                            arrowcolor='black' if outcome_direction else 'green'),  #'#751225'
+                                       dict(x=np.floor(np.log10(min(low_rng, 0.1)))/2 if xlog else df.CI_lower.min()/2,
+                                            y=-0.22,  xref='x', yref='paper',
+                                            text='Favours treatment' if outcome_direction else f'Favours {treatment}',
+                                            showarrow=False),
+                                       dict(x=np.floor(np.log10(max([up_rng, 10])))/2 if xlog else df.CI_upper.max()/2, y=-0.22,
+                                            xref='x', yref='paper',
+                                            text=f'Favours {treatment}'if outcome_direction else 'Favours treatment',
+                                            showarrow=False),
+                                       dict(x=-0.47, y=1.03, align='center',
+                                            xref='paper', yref='paper',
+                                            text='<b>Treatment</b>',
+                                            showarrow=False),
+                                       dict(x=-0.52, y=-0.033, align='center',
+                                            xref='paper', yref='paper',
+                                            text='<b>RE model:</b> ' u"\u03C4" '<sup>2</sup>=' f'{tau2}',
+                                            showarrow=False),
+                                 ]
+                          )
+
+
+        fig.add_trace(go.Scatter(x=[], y=[],
+                                 marker=dict(opacity=0),
+                                 showlegend=False, mode='markers',
+                                 yaxis="y2"))
+
+        fig.update_layout(
+            autosize=True,
+            yaxis2=dict(tickvals = [*range(df.shape[0])],
+                        ticktext=[' '*8 + '{:.2f}   {:<17}'.format(x,y)
+                                  for x, y in zip(df[effect_size].values, df['CI'].values)],
+                        showgrid=False,  zeroline=False,
+                        titlefont=dict(color='black'),
+                        tickfont=dict(color='black'),
+                        type='category',
+                        range=[-1.4, df.shape[0]],
+                        anchor="x", overlaying="y",
+                        side="right"),
+        ),
+
+        fig.add_annotation(x=1.19, y=1.03, align='center',
+             xref='paper', yref='y domain',
+             text=f'<b>{effect_size}</b>',
+             showarrow=False)
+
+
+        fig.add_annotation(x=1.44, y=1.03, align='center',
+                           xref='paper', yref='y2 domain',
+                           text='<b>95% CI</b>',
+                           showarrow=False)
+
+    else:
+        fig.update_layout(clickmode='event+select',
+                          font_color="black",
+                          margin=dict(l=5, r=10, t=12, b=80),
+                          xaxis=dict(showgrid=False, tick0=0, title=''),
+                          yaxis=dict(showgrid=False, title=''),
+                          title_text='  ', title_x=0.02, title_y=.98, title_font_size=14,
+                          annotations=[]
+                          )
+
+    if not data:
+        fig.update_shapes(dict(xref='x', yref='y'))
+        fig.update_xaxes(zerolinecolor='black', zerolinewidth=1, title='', visible=False)
+        fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
+        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80),
+                          modebar= dict(orientation = 'v', bgcolor = 'rgba(0,0,0,0)'))
+        fig.update_traces(hoverinfo='skip', hovertemplate=None)
+
+    return fig
 
 
 ### ----- display dibim forest plot on node click ------ ###
@@ -705,7 +1181,129 @@ def TapNodeData_fig(data, outcome_direction, outcome, forest_data, forest_data_o
                State('ranking_data_STORAGE', 'data')
               )
 def TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
-    return __TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data)
+    #return __TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data)
+    df_ranking = pd.read_json(ranking_data, orient='split')
+    df_ranking = df_ranking.loc[:, ~df_ranking.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+    if data:
+        if "pscore2" in df_ranking.columns:
+            forest_data = pd.read_json(forest_data, orient='split')
+            forest_data_out2 = pd.read_json(forest_data_out2, orient='split')
+            treatment = data[0]['label']
+            df = forest_data[forest_data.Reference == treatment]
+            effect_size = df.columns[1]
+            df['CI_width'] = df.CI_upper - df.CI_lower
+            df['lower_error_1'] = df[effect_size] - df.CI_lower
+            df['CI_width_hf'] = df['CI_width'] / 2
+            df['WEIGHT'] = round(df['WEIGHT'], 3)
+            df = df.sort_values(by=effect_size, ascending=False)
+            #second outcome
+            df_second = forest_data_out2[forest_data_out2.Reference == treatment]
+            df_second['CI_width'] = df_second.CI_upper - df_second.CI_lower
+            df_second['lower_error_2'] = df_second[effect_size] - df_second.CI_lower
+            df_second['CI_width_hf'] = df_second['CI_width'] / 2
+            effect_size_2 = df_second.columns[1]
+        else:
+            effect_size = effect_size_2 = ''
+            df = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
+                                                  'CI_width', 'CI_width_hf'])
+            df_second = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
+                                                         'CI_width', 'CI_width_hf'])
+    else:
+            effect_size = effect_size_2 = ''
+            df = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
+                                                  'CI_width', 'CI_width_hf'])
+            df_second = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
+                                                         'CI_width', 'CI_width_hf'])
+
+    xlog = effect_size in ('RR', 'OR')
+    up_rng, low_rng = df.CI_upper.max(), df.CI_lower.min()
+    up_rng = 10**np.floor(np.log10(up_rng)) if xlog else None
+    low_rng = 10 ** np.floor(np.log10(low_rng)) if xlog else None
+    if len(df_second.Treatment) > len(df.Treatment):
+        trts_rmd = set(df_second.Treatment).difference(df.Treatment)
+        df_second[df_second['Treatment'].isin(trts_rmd) == False]
+    else:
+        trts_rmd = set(df.Treatment).difference(df_second.Treatment)
+        df[df['Treatment'].isin(trts_rmd) == False]
+    df['size'] = df.Treatment.astype("category").cat.codes
+    fig = px.scatter(df, x=df[effect_size], y=df_second[effect_size_2],
+                 color=df.Treatment,
+                 error_x_minus=df['lower_error_1'] if xlog else None,
+                 error_x='CI_width_hf' if xlog else 'CI_width' if data else None,
+                 error_y_minus=df_second['lower_error_2'] if xlog else None,
+                 error_y=df_second.CI_width_hf if data else df_second.CI_width if xlog else None,
+                 log_x=xlog,
+                 log_y=xlog,
+                 size_max = 10,
+                 color_discrete_sequence = px.colors.qualitative.Light24,
+                 range_x = [min(low_rng, 0.1), max([up_rng, 10])] if xlog else None
+                 )
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
+                  plot_bgcolor='rgba(0,0,0,0)',
+                  autosize=True,
+                  modebar=dict(orientation='v', bgcolor='rgba(0,0,0,0)'),
+                  legend=dict(itemsizing='trace', itemclick="toggle",
+                              itemdoubleclick="toggleothers", # orientation='v', xanchor='auto',
+                              traceorder='normal',
+                              orientation='h', y=1.25, xanchor='auto',
+                              font=dict(size=10)) if df['Treatment'].unique().size > 10 else
+                                        dict(itemsizing='trace', itemclick="toggle", itemdoubleclick="toggleothers", orientation='v',
+                      font=dict(size=10))
+                  )
+    if xlog:
+            fig.add_hline(y=1,line=dict(color="black", width=1, dash='dashdot'))
+            fig.add_vline(x=1,line=dict(color="black", width=1, dash='dashdot'))
+    fig.update_traces(marker=dict(symbol='circle',
+                              size=9,
+                              opacity=1 if data else 0,
+                              line=dict(color='black'),
+                              ),
+                  error_y=dict(thickness=1.3),
+                  error_x=dict(thickness=1.3), ),
+    fig.update_xaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5, dtick=1,
+                 autorange=True, showline=True, linewidth=1, linecolor='black',
+                 zeroline=True, zerolinecolor='gray', zerolinewidth=1),
+    fig.update_yaxes(ticks="outside", tickwidth=2, tickcolor='black', ticklen=5, dtick=1,
+                 autorange=True, showline=True, linewidth=1, linecolor='black',
+                 zeroline=True, zerolinecolor='gray', zerolinewidth=1),
+    fig.update_layout(clickmode='event+select',
+                  font_color="black",
+                  margin=dict(l=10, r=10, t=12, b=80),
+                  xaxis=dict(showgrid=False, tick0=0, title=f'Click to enter x label ({effect_size})'),
+                  yaxis=dict(showgrid=False, title=f'Click to enter y label ({effect_size})'),
+                  title_text='  ', title_x=0.02, title_y=.98, title_font_size=14,
+                  )
+    if not data:
+            fig.update_shapes(dict(xref='x', yref='y'))
+            fig.update_xaxes(zerolinecolor='black', zerolinewidth=1, title='', visible=False)
+            fig.update_yaxes(tickvals=[], ticktext=[], title='', visible=False)
+            fig.update_layout(margin=dict(l=100, r=100, t=12, b=80),
+                             coloraxis_showscale=False)  ## remove visible=False to show initial axes
+            fig.update_traces(hoverinfo='skip', hovertemplate=None)
+    if data and  "pscore2" not in df_ranking.columns:
+            fig = px.scatter(df, x=df[effect_size], y=df_second[effect_size_2])
+            fig.update_shapes(dict(xref='x', yref='y'))
+            fig.update_xaxes(tickvals=[], ticktext=[], visible=False, zeroline=False)
+            fig.update_yaxes(tickvals=[], ticktext=[], visible=False, zeroline=False)
+            fig.update_layout(margin=dict(l=100, r=100, t=12, b=80),
+                               xaxis=dict(showgrid=False, title=''),
+                               modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'),
+                               yaxis=dict(showgrid=False, title=''),
+                               showlegend=False,
+                               coloraxis_showscale=False,
+                               paper_bgcolor='rgba(0,0,0,0)',
+                               plot_bgcolor='rgba(0,0,0,0)',
+                               autosize=True,
+                               annotations=[
+                                   {"text": "Please provide a second outcome from data upload to display bi-dimensional plot",
+                                    "font": {"size": 15, "color": "white", 'family': 'sans-serif'},
+                                    "xref": "paper", "yref": "paper",
+                                    "showarrow": False},
+                                   ]
+                               ),
+            fig.update_annotations(align="center")
+            fig.update_traces(hoverinfo='skip', hovertemplate=None)
+    return fig
 
 ############ - Funnel plot  - ###############
 @app.callback(Output('funnel-fig', 'figure'),
@@ -713,10 +1311,89 @@ def TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
                Input("toggle_funnel_direction", "value"),
                Input("funnel_data_STORAGE", "data"),
                Input("funnel_data_out2_STORAGE", "data")],
-               State({'type': 'dataselectors', 'index': ALL}, 'value')
+               #State({'type': 'dataselectors', 'index': ALL}, 'value')
                )
-def Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2, dataselectors):
-    return __Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2, dataselectors)
+def Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):
+    #return __Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2)
+    EMPTY_DF = pd.DataFrame([[0] * 9],
+                                columns=['index', 'studlab', 'treat1', 'treat2', '',
+                                         'TE_direct', 'TE_adj', 'seTE', 'Comparison'])
+    if node:
+            treatment = node[0]['label']
+            funnel_data = pd.read_json(funnel_data, orient='split')
+            funnel_data_out2 = pd.read_json(funnel_data_out2, orient='split') if outcome2 else None
+            df = (funnel_data_out2[funnel_data_out2.treat2 == treatment].copy() if outcome2 else funnel_data[
+                funnel_data.treat2 == treatment].copy())
+            df['Comparison'] = (df['treat1'] + ' vs ' + df['treat2']).astype(str)
+            effect_size = df.columns[3]
+            df = df.sort_values(by='seTE', ascending=False)
+    else:
+            effect_size = ''
+            df = EMPTY_DF
+
+    max_y = df.seTE.max() + 0.2
+
+
+    fig = px.scatter(df if df is not None else EMPTY_DF,
+                     x="TE_adj", y="seTE",  # log_x=xlog,
+                     range_x=[min(df.TE_adj) - 3, max(df.TE_adj) + 3],
+                     range_y=[0.01, max_y + 10],
+                     symbol="Comparison", color="Comparison",
+                     color_discrete_sequence=px.colors.qualitative.Light24)
+
+    fig.update_traces(marker=dict(size=6,  # #symbol='circle',
+                                  line=dict(width=1, color='black')),
+                      )
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
+                      plot_bgcolor='rgba(0,0,0,0)')
+
+    if node:
+        fig.update_layout(clickmode='event+select',
+                          font_color="black",
+                          coloraxis_showscale=False,
+                          showlegend=True,
+                          modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'),
+                          autosize=True,
+                          margin=dict(l=10, r=5, t=20, b=60),
+                          xaxis=dict(showgrid=False, autorange=False, zeroline=False,
+                                     title='', showline=True, linewidth=1, linecolor='black'),
+                          yaxis=dict(showgrid=False, autorange=False, title='Standard Error',
+                                     showline=True, linewidth=1, linecolor='black',
+                                     zeroline=False,
+                                     ),
+                          annotations=[dict(x=0, ax=0, y=-0.12, ay=-0.1, xref='x', axref='x', yref='paper',
+                                            showarrow=False,
+                                            text='Log' f'{effect_size} ' ' centered at comparison-specific pooled effect' if effect_size in [
+                                                'OR',
+                                                'RR'] else f'{effect_size}' ' centered at comparison-specific pooled effect'
+                                            )],
+
+                          )
+        fig.add_shape(type='line', yref='paper', y0=0, y1=1, xref='x', x0=0, x1=0,
+                      line=dict(color="black", width=1), layer='below')
+
+        fig.add_shape(type='line', y0=max_y, x0=-1.96 * max_y, y1=0, x1=0,
+                      line=dict(color="black", dash='dashdot', width=1.5))
+        fig.add_shape(type='line', y0=max_y, x0=1.96 * max_y, y1=0, x1=0,
+                      line=dict(color="black", dash='dashdot', width=1.5))
+        fig.add_shape(type='line', y0=max_y, x0=-2.58 * max_y, y1=0, x1=0,
+                      line=dict(color="black", dash='dot', width=1.5))
+        fig.add_shape(type='line', y0=max_y, x0=2.58 * max_y, y1=0, x1=0,
+                      line=dict(color="black", dash='dot', width=1.5))
+
+        fig.update_yaxes(autorange="reversed", range=[max_y, 0])
+
+    if not node:
+        fig.update_shapes(dict(xref='x', yref='y'))
+        fig.update_xaxes(zeroline=False, title='', visible=False)
+        fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
+        fig.update_layout(margin=dict(l=100, r=100, t=12, b=80),
+                          coloraxis_showscale=False,
+                          showlegend=False,
+                          modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'))
+        fig.update_traces(hoverinfo='skip', hovertemplate=None)
+
+    return fig
 
 
 ############ - ranking plots  - ###############

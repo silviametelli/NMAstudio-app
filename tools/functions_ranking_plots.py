@@ -43,15 +43,13 @@ def __ranking_plot(outcome_direction_1, outcome_direction_2,
 
 @lru_cache(maxsize=None)
 def __ranking_heatmap(treatments, pscores, outcomes, z_text):
-    if len(pscores)+len(outcomes)+len(z_text)==3:
-        pscores, outcomes, z_text = list(pscores), list(outcomes), list(z_text)
+    if len(pscores)+len(outcomes)+len(z_text)==3: pscores, outcomes, z_text = list(pscores), list(outcomes), list(z_text)
+
     fig = ff.create_annotated_heatmap(pscores, x=treatments, y=outcomes,
                                       reversescale=True,
                                       annotation_text=z_text, colorscale= 'Viridis',
                                       hoverongaps=False)
-
     for annotation in fig.layout.annotations: annotation.font.size = 9
-
     fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
                       plot_bgcolor='rgba(0,0,0,0)',
                       modebar= dict(orientation = 'h', bgcolor = 'rgba(0,0,0,0)'),
@@ -67,6 +65,7 @@ def __ranking_heatmap(treatments, pscores, outcomes, z_text):
     fig.layout.margin = dict(l=0, r=0, t=70, b=180)
 
     return fig
+
 
 
 def __ranking_scatter(df, net_data, outcome_direction_11, outcome_direction_22):

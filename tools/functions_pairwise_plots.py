@@ -21,7 +21,7 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
         FOREST_ANNOTATION = ('<b>RE model:</b>  I<sup>2</sup>='
                              + f"{'NA' if np.isnan(I2) else I2}%, "
                              + u"\u03C4" + '<sup>2</sup>='
-                             +  f"{'NA' if np.isnan(tau2) else tau2}")
+                             + f"{'NA' if np.isnan(tau2) else tau2}")
         LEN_FOREST_ANNOT = 25 + len(str(I2))  + len(str(tau2))
         df['CI_width'] = df.CI_upper - df.CI_lower
         df['lower_error'] = df[effect_size] - df.CI_lower

@@ -43,8 +43,10 @@ def apply_r_func_twooutcomes(func, df):
     else:
         df_result = r_result.reset_index(drop=True)  # Convert back to a pandas.DataFrame.
         return df_result
+
 # ----------------------------------------------------------------------------------
 ## -------------------------------------------------------------------------------- ##
+
 def write_node_topickle(store_node):
     with open(f'{TEMP_PATH}/selected_nodes.pickle', 'wb') as f:
         pickle.dump(store_node, f, protocol=pickle.HIGHEST_PROTOCOL)

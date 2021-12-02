@@ -18,7 +18,7 @@ def Homepage():
 def home_layout():
     return html.Div(className="app__container", children=STORAGE+[
                         html.Div(id='img_div', style={'display': 'none'}),
-                        html.Div(alert_data_type),
+                        html.Div(alert_data_type, style={'vertical-align':"top"}),
                         html.Div(id='main_page',
                         ### LEFT HALF OF THE PAGE
                          children=[

@@ -1844,20 +1844,22 @@ def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, TEMP_net_data_STOR
                Output("TEMP_forest_data_STORAGE", "data"),
                Output("TEMP_user_elements_STORAGE", "data")],
               Input("modal_data_checks", "is_open"),
+              Input("toggle_forest_outcome", "value"),
               State("TEMP_net_data_STORAGE", "data"),
               State("TEMP_forest_data_STORAGE", "data")
               )
-def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE, TEMP_forest_data_STORAGE):
+def modal_submit_checks_NMA(modal_data_checks_is_open, outcome2, TEMP_net_data_STORAGE, TEMP_forest_data_STORAGE):
     if modal_data_checks_is_open:
         net_data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
         NMA_data = run_network_meta_analysis(net_data)
         TEMP_forest_data_STORAGE = NMA_data.to_json( orient='split')
         TEMP_user_elements_STORAGE = get_network(df=net_data)
+        if outcome2:
+            pass
         return (html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
                 '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_user_elements_STORAGE)
     else:
         return None, '', TEMP_forest_data_STORAGE, None
-
 
 
 @app.callback([Output("para-pairwise-data", "children"),
@@ -1974,12 +1976,23 @@ def toggle_modal(open, close, is_open):
 ########################### ALERTS ###############################
 ##################################################################
 
-# @app.callback(Output('confirm-danger', 'displayed'),
-#               Input('dropdown-danger', 'value'))
-# def display_confirm(value):
-#     if value == 'Danger!!':
-#         return True
-#     return False
+@app.callback(Output('data-type-danger', 'displayed'),
+              [Input('datatable-upload', 'filename'),
+              Input("net_data_STORAGE", "data"),
+              Input("modal_data", "is_open"),
+              Input("dropdown-outcome1", "value"),
+              Input("dropdown-outcome2", "value")],
+              )
+def display_confirm(filename, data, modal_data_open, value_outcome1, value_outcome2):
+    data_ = pd.read_json(data, orient='split')
+    if modal_data_open and filename is not None and value_outcome1 is not None:
+        if value_outcome2 is None:
+            return True if ('y1' in data_.columns and value_outcome1=="continuous") or ('r1' in data_.columns and value_outcome1=="binary") else False
+        else:
+            return True if ('y1' in data_.columns and value_outcome1=="continuous") or ('r1' in data_.columns and value_outcome1=="binary") or ('y2' in data_.columns and value_outcome2=="continuous") or ('r2' in data_.columns and value_outcome2=="binary") else False
+    else: return False
+
+
 
 
 ###################################################################

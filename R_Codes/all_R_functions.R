@@ -26,6 +26,7 @@ run_NetMeta <- function(dat){
                         sm = sm,
                         random = TRUE,
                         backtransf = TRUE,
+                        #prediction = TRUE,
                         reference.group = treatments[1])
     ### Values
   for (treatment in treatments){

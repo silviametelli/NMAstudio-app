@@ -9,7 +9,7 @@ from assets.Tabs.tabranking import tab_ranking
 from assets.Tabs.tabconsistency import tab_consistency
 from assets.COLORS import *
 from assets.storage import STORAGE
-
+from assets.alerts import alert_data_type
 
 def Homepage():
     return html.Div([Navbar(), home_layout()])
@@ -18,6 +18,7 @@ def Homepage():
 def home_layout():
     return html.Div(className="app__container", children=STORAGE+[
                         html.Div(id='img_div', style={'display': 'none'}),
+                        html.Div(alert_data_type),
                         html.Div(id='main_page',
                         ### LEFT HALF OF THE PAGE
                          children=[

@@ -158,7 +158,7 @@ tab_forests = dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persisten
                                                          config={'editable': True,
                                                                #  'showEditInChartStudio': True,
                                                                #  'plotlyServerURL': "https://chart-studio.plotly.com",
-                                                         'edits': dict(annotationPosition=False,
+                                                         'edits': dict(annotationPosition=True,
                                                                       annotationTail=True,
                                                                       annotationText=False, axisTitleText=False,
                                                                       colorbarPosition=False,

@@ -1063,8 +1063,8 @@ def update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out
         #df['studlab'] = str(df['studlab'])
         df['studlab'] += ' ' * 10
         effect_size = df.columns[0]
-        tau2 = round(df['tau2'].iloc[0], 2) if df['tau2'].iloc[0] else np.nan
-        I2 = round(df['I2'].iloc[0], 2)
+        tau2 = round(df['tau2'].iloc[0], 2) if len(df['tau2'])>0 and df['tau2'].iloc[0] and ~np.isnan(df['tau2'].iloc[0]) else np.nan
+        I2 = round(df['I2'].iloc[0], 2) if len(df['I2'])>0 else np.nan
         FOREST_ANNOTATION = ('<b>RE model:</b>  I<sup>2</sup>='
                              + f"{'NA' if np.isnan(I2) else I2}%, "
                              + u"\u03C4" + '<sup>2</sup>='
@@ -1083,8 +1083,9 @@ def update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out
         df = df.sort_values(by=effect_size, ascending=False)
         pred_lo  = df['Predict_lo'].reset_index().Predict_lo[0]
         pred_up  = df['Predict_up'].reset_index().Predict_up[0]
-        if pred_lo or pred_up < -2000:
-            pred_lo = pred_up = np.nan
+        if abs(pred_lo) > np.float64(1000) or abs(pred_up) > np.float64(1000) :
+            pred_lo, pred_up = np.nan, np.nan
+
         center = df['TE_diamond'].reset_index().TE_diamond[0]
         width = df['CI_width_diamond'].reset_index().CI_width_diamond[0]
 
@@ -1155,34 +1156,34 @@ def update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out
                               margin=dict(l=5, r=10, t=12, b=80),
                               xaxis=dict(showgrid=False, autorange=True,
                                         showline=True, linewidth=1, linecolor='black',
-                                         zeroline=True, zerolinecolor='gray', zerolinewidth=1,
+                                         zeroline=True, zerolinecolor='black', zerolinewidth=1,
                                          title=''),
                               yaxis=dict(showgrid=False, title=''),
-                              annotations=[dict(x=0 if effect_size=='RR' else 1, y=-0.12,
+                              annotations=[dict(x=0 if xlog else 1, y=-0.12,
                                                 xref='x',  yref='paper',
                                                 showarrow=False, text=effect_size),
-                                           dict(x=np.floor(np.log10(min(low_rng, 0.1))) if xlog else df.CI_lower.min(),
+                                           dict(x=np.floor(np.log10(min(low_rng, 0.1))) if xlog else low_rng_,
                                                 ax=0, y=-0.14, ay=-0.1,
                                                 xref='x', axref='x', yref='paper',
                                                 showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.8,
                                                 arrowcolor='black'),
-                                           dict(x=np.floor(np.log10(max([up_rng, 10]))) if xlog else df.CI_upper.max(),
+                                           dict(x=np.floor(np.log10(max([up_rng, 10]))) if xlog else up_rng_,
                                                 ax=0, y=-0.14, ay=-0.1,
                                                 xref='x', axref='x', yref='paper',
                                                 showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.8,
                                                 arrowcolor='black'),  # '#751225'
                                            dict(x=np.floor(
                                                np.log10(min(low_rng, 0.1))) / 2 if xlog else df.CI_lower.min() / 2,
-                                                y=-0.22, xref='x', yref='paper', xanchor='left',
+                                                y=-0.22, xref='x', yref='paper', xanchor='auto',
                                                 text=f'Favours {df.treat1.iloc[0]}',
                                                 showarrow=False),
                                            dict(x=np.floor(
                                                np.log10(max([up_rng, 10]))) / 2 if xlog else df.CI_upper.max() / 2,
                                                 y=-0.22,
-                                                xref='x', yref='paper', xanchor='right',
+                                                xref='x', yref='paper', xanchor='auto',
                                                 text=f'Favours {df.treat2.iloc[0]}',
                                                 showarrow=False),
-                                           dict(x=0, y=1, xanchor='right',
+                                           dict(x=0, y=1, xanchor='left',
                                                 xref='paper', yref='paper',
                                                 text='<b>Study</b>',
                                                 showarrow=False),
@@ -1213,7 +1214,7 @@ def update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out
 
         fig.update_yaxes(range=[-.3, 1 + df.studlab.shape[0]],
                          autorange=True,ticks="outside", tickwidth=2, tickcolor='black',
-                        ticklen=5,
+                         ticklen=5,
                          tickfont=dict(color='rgba(0,0,0,0)'),
                          linecolor='rgba(0,0,0,0)',
                          secondary_y=True,
@@ -1232,7 +1233,7 @@ def update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out
                         showgrid=False, zeroline=False,
                         titlefont=dict(color='black'),
                         tickfont=dict(color='black'),
-                        range=[-1,len(df.studlab)+1],
+                        range=[-1, len(df.studlab)+1],
                         anchor="free", overlaying="y"
                         ),
             yaxis3=dict(tickvals=[], ticktext=[],
@@ -1259,13 +1260,14 @@ def update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out
 
         fig.update_layout(yaxis_range=[-2.4, len(df.studlab)+1])
 
-        fig.add_annotation(x=1.18, y=1, align='center',
+        fig.add_annotation(x=1.15, y=1, xanchor='center',  align='center',
                            xref='paper', yref='y domain',
                            text=f'<b>{effect_size}</b>',
                            showarrow=False)
 
-        fig.add_annotation(x=1.52, y=1, align='center',
+        fig.add_annotation(x=1.4, y=1, align='center', ayref= 'y3 domain',
                            xref='paper', yref='y3 domain',
+                           xanchor='center',
                            text='<b>95% CI</b>',
                            showarrow=False)
 

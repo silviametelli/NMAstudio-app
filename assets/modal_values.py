@@ -11,7 +11,9 @@ from assets.storage import USER_ELEMENTS
 
 
 options_format = [dict(label='long',     value='long'),
-                  dict(label='contrast', value='contrast')]
+                  dict(label='contrast', value='contrast'),
+                  dict(label='iv',       value='iv')
+                  ]
 options_outcomes = [dict(label='continuous', value='continuous'),
                     dict(label='binary', value='binary')]
 
@@ -48,7 +50,7 @@ file_upload_controls=[html.Br(),
                                html.Div(dcc.RadioItems(id='dropdown-format', options=options_format,
                                                        style={'width': '80px', 'margin-left': '-20px',
                                                'color': 'white', 'font-size': '11px',
-                                               'background-color': CLR_BCKGRND}),
+                                               'background-color': CLR_BCKGRND}, labelStyle = {'margin-right': 10}),
                                         style={'display': 'inline-block', 'margin-bottom': '0px'})],
                               width="auto", style={'display': 'inline-block'}),
 

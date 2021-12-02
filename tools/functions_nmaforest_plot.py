@@ -1,9 +1,7 @@
 import numpy as np, pandas as pd
 import plotly.express as px, plotly.graph_objects as go
-from functools import lru_cache
 
 
-@lru_cache(maxsize=None)
 def __TapNodeData_fig(data, outcome_direction, outcome, forest_data, forest_data_out2):
     if data:
         treatment = data[0]['label']
@@ -153,7 +151,6 @@ def __TapNodeData_fig(data, outcome_direction, outcome, forest_data, forest_data
 
 ###### BIDIMENSIONAL PLOT
 
-@lru_cache(maxsize=None)
 def __TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
     """If click on node uses node as reference to produce both forest plots."""
     ##  ranking data used to check if second outcome is present (easier to check than using dataselectors)

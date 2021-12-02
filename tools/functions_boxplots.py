@@ -1,8 +1,6 @@
 import pandas as pd
 import plotly.graph_objects as go
-from functools import lru_cache
 
-@lru_cache(maxsize=None)
 def __update_boxplot(value, edges, net_data):
     active, non_active = '#1B58E2', '#313539'  # '#4C5353'
     if value:

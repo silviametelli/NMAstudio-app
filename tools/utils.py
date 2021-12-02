@@ -115,7 +115,7 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
     get_effect_size1 = effect_sizes[value_outcome1][dataselectors[0]]
 
     if value_format=='long':
-        apply_r_func(func=run_pairwise_data_r, df=data)
+        data = apply_r_func(func=run_pairwise_data_r, df=data)
 
     if value_format=='contrast':
         data['TE'], data['seTE'] = get_effect_size1(data, effect=1)
@@ -128,6 +128,11 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
                       .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
                       .replace({'l': 1, 'm': 2, 'h': 3}))
 
+    if value_format == 'iv':
+        data['effect_size1'] = dataselectors[0]
+        if value_outcome2: data['effect_size2'] = dataselectors[1]
+        data = data
+
     return data
 
 ## ----------------------  FUNCTIONS for Running data analysis  --------------------------- ##
@@ -135,16 +140,24 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
 def data_checks(df):
     return {'check1': True, 'check2': False, 'check3': False, 'check4': True} #TODO: add specific checks
 
+
+
 def run_network_meta_analysis(df):
     data_forest = apply_r_func(func=run_NetMeta_r, df=df)
     return data_forest
+
+
 
 def run_pairwise_MA(df):
     forest_MA = apply_r_func(func=pairwise_forest_r, df=df)
     return forest_MA
 
-def generate_league_table(df):
+
+
+def generate_league_table(df, outcome2=False):
     leaguetable, pscores, consist, netsplit = apply_r_func(func=league_table_r, df=df)
+    if outcome2: leaguetable, pscores, consist, netsplit, netsplit2 = apply_r_func(func=league_table_r, df=df)
+
     replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
     leaguetable = pd.DataFrame([[replace_and_strip(col) for col in list(row)]
                                 for idx, row in leaguetable.iterrows()],
@@ -152,7 +165,9 @@ def generate_league_table(df):
                                index=leaguetable.index)
     leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
     # leaguetable = leaguetable.reset_index().rename(columns={'index': 'Treatment'})
-    return leaguetable, pscores, consist, netsplit
+    return leaguetable, pscores, consist, netsplit, netsplit2 if outcome2 else leaguetable, pscores, consist, netsplit
+
+
 
 def generate_funnel_data(df):
     funnel = apply_r_func(func=funnel_plot_r, df=df)

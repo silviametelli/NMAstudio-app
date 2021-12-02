@@ -1,8 +1,6 @@
 import numpy as np, pandas as pd
 import plotly.express as px, plotly.graph_objects as go
-from functools import lru_cache
 
-@lru_cache(maxsize=None)
 def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2):
     _HEIGHT_ROMB = 0.3
     slctd_comps = []

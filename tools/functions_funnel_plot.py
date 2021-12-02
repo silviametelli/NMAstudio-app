@@ -4,7 +4,6 @@ from functools import lru_cache
 
 
 
-@lru_cache(maxsize=None)
 def __Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):
     EMPTY_DF = pd.DataFrame([[0] * 9],
                             columns=[ 'index', 'studlab', 'treat1', 'treat2', '',

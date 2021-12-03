@@ -1,7 +1,5 @@
 import pandas as pd
 import plotly.express as px
-from functools import lru_cache
-
 
 
 def __Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):

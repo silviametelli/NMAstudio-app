@@ -4,7 +4,6 @@
 # Created on: 10/11/2020
 # --------------------------------------------------------------------------------------------------------------------#
 import os, io, base64, shutil
-import logging
 from tools.PATHS import __SESSIONS_FOLDER, TEMP_PATH
 
 TEMP_DIR = "./__temp_logs_and_globals"
@@ -40,6 +39,7 @@ EMPTY_SELECTION_EDGES = {'id': None}
 write_node_topickle(EMPTY_SELECTION_NODES)
 write_edge_topickle(EMPTY_SELECTION_EDGES)
 
+
 # Load extra layouts
 cyto.load_extra_layouts()
 
@@ -49,15 +49,6 @@ options_effect_size_cont = [{'label':'MD',  'value':'MD'}, {'label':'SMD',     '
 options_effect_size_bin = [{'label':'OR',  'value':'OR'}, {'label':'RR',     'value':'RR'}]
 
 GRAPH_INTERVAL = os.environ.get("GRAPH_INTERVAL", 5000)
-
-
-class DashLoggerHandler(logging.StreamHandler):
-    def __init__(self):
-        logging.StreamHandler.__init__(self)
-        self.queue = []
-    def emit(self, record):
-        msg = self.format(record)
-        self.queue.append(msg)
 
 
 app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}],
@@ -1160,21 +1151,26 @@ import time
               )
 def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, TEMP_net_data_STORAGE):
     if modal_data_checks_is_open:
-        data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
-        passed_checks = data_checks(data)
-        if all(passed_checks.values()):
-            return html.P(u"\u2713" + " All data checks passed.", style={"color":"green"}), '__Para_Done__'
-        else:
-            return (html.P([u"\u274C",
-                            " WARNING - some data checks failed:"]+sum([[html.Br(), f'Failed on {k}']
+        try:
+            data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
+            passed_checks = data_checks(data)
+            if all(passed_checks.values()):
+                return html.P(u"\u2713" + " All data checks passed.", style={"color":"green"}), '__Para_Done__'
+        except:
+            passed_checks = data_checks(data)
+            passed_checks["Conversion to wide format failed"] = False
+            else:
+                return (html.P([u"\u274C",
+                                " WARNING - some data checks failed:"]+sum([[html.Br(), f'Failed on {k}']
                                                                         for k,v in passed_checks.items()
-                                                                        if not v], []), style={"color": "red"}),
-                    '__Para_Done__')
+                                                                            if not v], []), style={"color": "red"}),
+                                '__Para_Done__')
     else:
         return None, ''
 
 
-@app.callback([Output('R-alert-nma', 'displayed'),
+@app.callback([Output('R-alert-nma', 'is_open'),
+               Output('R_errors_nma_console', 'children'),
                Output("para-anls-data", "children"),
                Output('para-anls-data', 'data'),
                Output("TEMP_forest_data_STORAGE", "data"),
@@ -1198,15 +1194,18 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE, TE
                 NMA_data2 = run_network_meta_analysis(net_data_out2)
                 TEMP_forest_data_out2_STORAGE = NMA_data2.to_json(orient='split')
                 #TEMP_user_elements2_STORAGE = get_network(df=net_data_out2)
+                error = ' '
 
-            return (False, html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
+            return (False, error, html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
                     '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE)
         except:
-            return (True, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
+            error = ' here should go the error printed in R[write to console]: Error: '
+            return (True, error, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
                     '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE)
 
     else:
-        return False, None, '', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, None
+        error = ''
+        return False, error, None, '', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, None
 
 
 
@@ -1280,7 +1279,7 @@ def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
         except:
             return (True, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
                     '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data) if "TE2" not in data.columns else \
-                                    (False, html.P(u"\u2713" + "An error occurred when computing analyses in R: check your data", style={"color":"green"}),
+                                    (False, html.P(u"\u274C" + "An error occurred when computing analyses in R: check your data", style={"color":"green"}),
                     '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2)
     else:
         #net_split_data2 = {}

@@ -2,6 +2,8 @@ import pickle
 from tools.PATHS import TEMP_PATH
 from assets.effect_sizes import *
 # ---------R2Py Resources --------------------------------------------------------------------------------------------#
+import rpy2
+from rpy2.rinterface_lib.embedded import RRuntimeError
 from rpy2.robjects import pandas2ri  # Define the R script and loads the instance in Python
 import rpy2.robjects as ro
 from rpy2.robjects.conversion import localconverter
@@ -14,8 +16,10 @@ pairwise_forest_r = ro.globalenv['pairwise_forest']  # Get pairwise_forest from 
 funnel_plot_r = ro.globalenv['funnel_funct']  # Get pairwise_forest from R
 run_pairwise_data_r = ro.globalenv['get_pairwise_data']  # Get pairwise data from long format from R
 
-
-CMAP = ['purple', 'green', 'blue', 'red', 'black', 'yellow', 'orange', 'pink', 'brown', 'grey']
+## read R console for printing errors
+def  my_consoleread(promp: str) -> str:
+    custom_prompt = f'R is asking this: {promp}'
+    return input(custom_prompt)
 
 
 def apply_r_func(func, df):
@@ -76,6 +80,7 @@ def set_slider_marks(y_min, y_max, years):
             }
 
 ## ----------------------------  NETWORK FUNCTION --------------------------------- ##
+CMAP = ['purple', 'green', 'blue', 'red', 'black', 'yellow', 'orange', 'pink', 'brown', 'grey']
 def get_network(df):
     df = df.dropna(subset=['TE', 'seTE'])
     if "treat1_class" and "treat2_class" in df.columns:
@@ -130,7 +135,10 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
     get_effect_size1 = effect_sizes[value_outcome1][dataselectors[0]]
 
     if value_format=='long':
-        data = apply_r_func(func=run_pairwise_data_r, df=data)
+        try:
+            data = apply_r_func(func=run_pairwise_data_r, df=data)
+        except:
+            data = 'conversion failed'
 
     if value_format=='contrast':
         data['TE'], data['seTE'] = get_effect_size1(data, effect=1)
@@ -150,23 +158,31 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
 
     return data
 
-## ----------------------  FUNCTIONS for Running data analysis  --------------------------- ##
+## ----------------------  FUNCTIONS for Running data analysis in R  --------------------------- ##
 
 def data_checks(df):
-    return {'check1': True, 'check2': False, 'check3': False, 'check4': True} #TODO: add specific checks
+    return {'Conversion to wide format failed': True,
+            'Some variables are a mix of numerical and string values': True if df.applymap(type).nunique() >1 else False,
+            'Missing values present': False if df.isnull().sum().sum() < 1 else True,
+            'Negative variances present': (any(df.seTE<0)
+                                           if ("seTE2" not in df.columns) else
+                                           (any(df.seTE < 0) or any(df.seTE2 < 0)))
+            }
 
 
+## run netmeta for nma forest plots
 def run_network_meta_analysis(df):
     data_forest = apply_r_func(func=run_NetMeta_r, df=df)
     return data_forest
 
 
-
+## run metagen for pairwise forest plots
 def run_pairwise_MA(df):
     forest_MA = apply_r_func(func=pairwise_forest_r, df=df)
     return forest_MA
 
 
+## run netmeta for league table, consistency tables and ranking plots
 def generate_league_table(df, outcome2=False):
 
     if outcome2: leaguetable, pscores, consist, netsplit, netsplit2 = apply_r_func_twooutcomes(func=league_table_r, df=df)
@@ -183,7 +199,7 @@ def generate_league_table(df, outcome2=False):
         return leaguetable, pscores, consist, netsplit
 
 
-
+## run netmeta for funnel plots
 def generate_funnel_data(df):
     funnel = apply_r_func(func=funnel_plot_r, df=df)
     return funnel

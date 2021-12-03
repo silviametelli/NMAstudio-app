@@ -1154,16 +1154,16 @@ def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, TEMP_net_data_STOR
         try:
             data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
             passed_checks = data_checks(data)
-            if all(passed_checks.values()):
-                return html.P(u"\u2713" + " All data checks passed.", style={"color":"green"}), '__Para_Done__'
         except:
             passed_checks = data_checks(data)
             passed_checks["Conversion to wide format failed"] = False
-            else:
-                return (html.P([u"\u274C",
+        if all(passed_checks.values()):
+                return html.P(u"\u2713" + " All data checks passed.", style={"color":"green"}), '__Para_Done__'
+        else:
+            return (html.P([u"\u274C",
                                 " WARNING - some data checks failed:"]+sum([[html.Br(), f'Failed on {k}']
                                                                         for k,v in passed_checks.items()
-                                                                            if not v], []), style={"color": "red"}),
+                                                                            if not v], []), style={"color": "orange"}),
                                 '__Para_Done__')
     else:
         return None, ''

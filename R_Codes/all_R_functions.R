@@ -139,7 +139,7 @@ league_rank <- function(dat, outcome2=FALSE){
 }
 
 ## comparison adjusted funnel plots
-funnel_funct <- function(dat){
+funnel_funct <- function(dat, outcome2=FALSE){
   ALL_DFs <- list()
   sm <- dat$effect_size1[1]
   dat <- dat %>% filter_at(vars(TE,seTE),all_vars(!is.na(.))) %>% filter(seTE!=0)

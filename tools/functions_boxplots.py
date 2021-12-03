@@ -84,7 +84,9 @@ def __update_boxplot(value, edges, net_data):
                                        by visual inspection of the effect modifiers box plots <br> <br>
                                       Effect modifiers should be similarly distributed across comparisons""",
                               "font": {"size": 15, "color": "white", 'family': 'sans-serif'},
-                              "xref": "paper", "yref": "paper", #"yshift": 10,
+                              "xref": "paper",
+                              "yref": "y",
+                              #"y" : 3,
                               "xanchor": "center",
                               "showarrow": False},
                                      ]

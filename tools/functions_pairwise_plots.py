@@ -11,6 +11,7 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
         df = df.reset_index(drop=True)
         df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
         df = df[df.Comparison.isin(slctd_comps)]
+
         #df['studlab'] = str(df['studlab'])
         df['studlab'] += ' ' * 10
         effect_size = df.columns[0]

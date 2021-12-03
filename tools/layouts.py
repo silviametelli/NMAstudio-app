@@ -9,7 +9,7 @@ from assets.Tabs.tabranking import tab_ranking
 from assets.Tabs.tabconsistency import tab_consistency
 from assets.COLORS import *
 from assets.storage import STORAGE
-from assets.alerts import alert_data_type
+from assets.alerts import alert_outcome_type, alert_data_type, R_errors_nma, R_errors_pair, R_errors_league, R_errors_funnel
 
 def Homepage():
     return html.Div([Navbar(), home_layout()])
@@ -19,7 +19,13 @@ def home_layout():
     return html.Div(className="app__container", children=STORAGE+[
                         html.Div(id='img_div', style={'display': 'none'}),
                         html.Div(alert_data_type, style={'vertical-align':"top"}),
-                        html.Div(id='main_page',
+                        html.Div(alert_outcome_type, style={'vertical-align': "top"}),
+                        html.Div(alert_data_type, style={'vertical-align': "top"}),
+                        html.Div(R_errors_nma, style={'vertical-align': "top"}),
+                        html.Div(R_errors_pair, style={'vertical-align': "top"}),
+                        html.Div(R_errors_league, style={'vertical-align': "top"}),
+                        html.Div(R_errors_funnel, style={'vertical-align': "top"}),
+        html.Div(id='main_page',
                         ### LEFT HALF OF THE PAGE
                          children=[
                             html.Div(  # NMA Graph

@@ -4,9 +4,7 @@
 # Created on: 10/11/2020
 # --------------------------------------------------------------------------------------------------------------------#
 import os, io, base64, shutil
-
-import numpy as np
-
+import logging
 from tools.PATHS import __SESSIONS_FOLDER, TEMP_PATH
 
 TEMP_DIR = "./__temp_logs_and_globals"
@@ -14,7 +12,6 @@ for dir in [TEMP_DIR, __SESSIONS_FOLDER, TEMP_PATH]:
     if not os.path.exists(dir): os.makedirs(dir)
 
 import warnings
-from collections import Counter
 warnings.filterwarnings("ignore")
 # --------------------------------------------------------------------------------------------------------------------#
 import dash
@@ -48,12 +45,20 @@ cyto.load_extra_layouts()
 
 GLOBAL_DATA = dict()
 
-options_effect_size_cont = [{'label':'MD',  'value':'MD'},
-                             {'label':'SMD',     'value':'SMD'}]
-options_effect_size_bin = [{'label':'OR',  'value':'OR'},
-                             {'label':'RR',     'value':'RR'}]
+options_effect_size_cont = [{'label':'MD',  'value':'MD'}, {'label':'SMD',     'value':'SMD'}]
+options_effect_size_bin = [{'label':'OR',  'value':'OR'}, {'label':'RR',     'value':'RR'}]
 
 GRAPH_INTERVAL = os.environ.get("GRAPH_INTERVAL", 5000)
+
+
+class DashLoggerHandler(logging.StreamHandler):
+    def __init__(self):
+        logging.StreamHandler.__init__(self)
+        self.queue = []
+    def emit(self, record):
+        msg = self.format(record)
+        self.queue.append(msg)
+
 
 app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}],
                 #external_stylesheets=[dbc.themes.BOOTSTRAP],
@@ -61,7 +66,6 @@ app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=devi
 # app.config.suppress_callback_exceptions = True
 
 
-# from assets.storage import STORAGE
 
 server = app.server
 app.layout = html.Div([dcc.Location(id='url', refresh=False),
@@ -856,9 +860,10 @@ def color_funnel_toggle(toggle_value):
               'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
     return style1, style2
 
-##############################################################################
-######################### DISABLE  TOGGLE SWITCHES ###########################
-##############################################################################
+
+#############################################################################
+######################### DISABLE TOGGLE SWITCHES ###########################
+#############################################################################
 
 ## disable outcome 2 toggle if no outcome 2 is given in data
 @app.callback([Output('toggle_funnel_direction', 'disabled'),
@@ -1011,16 +1016,15 @@ flatten = lambda t: [item for sublist in t for item in sublist]
               flatten([[Input(f'dd_ngl_{item.lower()}', 'n_clicks_timestamp'),
                         Input(f'dd_ngl_{item.lower()}', 'children')]
                        for item in ['Circle', 'Breadthfirst', 'Grid', 'Spread', 'Cose', 'Cola',
-                                    'Cose-Bilkent', 'Dagre', 'Klay']
+                                    'Dagre', 'Klay']
                        ]),
               prevent_initial_call=True)
 def which_dd_nds(circle_t, circle_v, breadthfirst_t, breadthfirst_v,
                  grid_t, grid_v, spread_t, spread_v, cose_t, cose_v,
-                 cola_t, cola_v, cose_bilkent_t, cose_bilkent_v,
-                 dagre_t, dagre_v, klay_t, klay_v):
-    values = [circle_v, breadthfirst_v, grid_v, spread_v, cose_v, cola_v, cose_bilkent_v,
+                 cola_t, cola_v, dagre_t, dagre_v, klay_t, klay_v):
+    values = [circle_v, breadthfirst_v, grid_v, spread_v, cose_v, cola_v,
               dagre_v, klay_v]
-    times = [circle_t, breadthfirst_t, grid_t, spread_t, cose_t, cola_t, cose_bilkent_t,
+    times = [circle_t, breadthfirst_t, grid_t, spread_t, cose_t, cola_t,
              dagre_t, klay_t]
     dd_ngl = [t or 0 for t in times]
     which = dd_ngl.index(max(dd_ngl))
@@ -1170,49 +1174,78 @@ def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, TEMP_net_data_STOR
         return None, ''
 
 
-@app.callback([Output("para-anls-data", "children"),
+@app.callback([Output('R-alert-nma', 'displayed'),
+               Output("para-anls-data", "children"),
                Output('para-anls-data', 'data'),
                Output("TEMP_forest_data_STORAGE", "data"),
+               Output("TEMP_forest_data_out2_STORAGE", "data"),
                Output("TEMP_user_elements_STORAGE", "data")],
               Input("modal_data_checks", "is_open"),
-              Input("toggle_forest_outcome", "value"),
               State("TEMP_net_data_STORAGE", "data"),
-              State("TEMP_forest_data_STORAGE", "data")
+              State("TEMP_forest_data_STORAGE", "data"),
+              State("TEMP_forest_data_out2_STORAGE", "data"),
               )
-def modal_submit_checks_NMA(modal_data_checks_is_open, outcome2, TEMP_net_data_STORAGE, TEMP_forest_data_STORAGE):
+def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE, TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE):
     if modal_data_checks_is_open:
-        net_data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
-        NMA_data = run_network_meta_analysis(net_data)
-        TEMP_forest_data_STORAGE = NMA_data.to_json( orient='split')
-        TEMP_user_elements_STORAGE = get_network(df=net_data)
-        if outcome2:
-            pass
-        return (html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
-                '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_user_elements_STORAGE)
+        try:
+            net_data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
+            NMA_data = run_network_meta_analysis(net_data)
+            TEMP_forest_data_STORAGE = NMA_data.to_json( orient='split')
+            TEMP_user_elements_STORAGE = get_network(df=net_data)
+            if "TE2" in net_data.columns:
+                net_data_out2 = net_data.drop(["TE", "seTE",  "n1",  "n2"], axis=1)
+                net_data_out2 = net_data_out2.rename(columns={"TE2": "TE", "seTE2": "seTE", "n2.1": "n1", "n2.2": "n2"})
+                NMA_data2 = run_network_meta_analysis(net_data_out2)
+                TEMP_forest_data_out2_STORAGE = NMA_data2.to_json(orient='split')
+                #TEMP_user_elements2_STORAGE = get_network(df=net_data_out2)
+
+            return (False, html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
+                    '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE)
+        except:
+            return (True, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
+                    '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE)
+
     else:
-        return None, '', TEMP_forest_data_STORAGE, None
+        return False, None, '', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, None
 
 
-@app.callback([Output("para-pairwise-data", "children"),
+
+@app.callback([Output('R-alert-pair', 'displayed'),
+               Output("para-pairwise-data", "children"),
                Output('para-pairwise-data', 'data'),
-               Output("TEMP_forest_data_prws_STORAGE", "data")],
-              Input('TEMP_forest_data_STORAGE', 'modified_timestamp'),
-              State("modal_data_checks", "is_open"),
-              State("TEMP_net_data_STORAGE", "data"),
-              State("TEMP_forest_data_prws_STORAGE", "data")
+               Output("TEMP_forest_data_prws_STORAGE", "data"),
+               Output("TEMP_forest_data_prws_out2_STORAGE", "data")],
+               Input('TEMP_forest_data_STORAGE', 'modified_timestamp'),
+               State("modal_data_checks", "is_open"),
+               State("TEMP_net_data_STORAGE", "data"),
+               State("TEMP_forest_data_prws_STORAGE", "data"),
+               State("TEMP_forest_data_prws_out2_STORAGE", "data"),
               )
-def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, TEMP_net_data_STORAGE, TEMP_forest_data_prws_STORAGE):
+def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, TEMP_net_data_STORAGE, TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2):
     if modal_data_checks_is_open:
-        PAIRWISE_data = run_pairwise_MA(pd.read_json(TEMP_net_data_STORAGE, orient='split'))
-        TEMP_forest_data_prws_STORAGE = PAIRWISE_data.to_json( orient='split')
 
+        data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
+        try:
+            PAIRWISE_data = run_pairwise_MA(data)
+            TEMP_forest_data_prws_STORAGE = PAIRWISE_data.to_json( orient='split')
+            if "TE2" in data.columns:
+                pair_data_out2 = data.drop(["TE", "seTE",  "n1",  "n2"], axis=1)
+                pair_data_out2 = pair_data_out2.rename(columns={"TE2": "TE", "seTE2": "seTE", "n2.1": "n1", "n2.2": "n2"})
+                PAIRWISE_data2 = run_pairwise_MA(pair_data_out2)
+                TEMP_forest_data_prws_out2 = PAIRWISE_data2.to_json(orient='split')
 
-        return (html.P(u"\u2713" + " Pairwise meta-analysis run successfully.", style={"color":"green"}),
-                '__Para_Done__', TEMP_forest_data_prws_STORAGE)
+                return (False, html.P(u"\u2713" + " Pairwise meta-analysis run successfully.", style={"color":"green"}),
+                               '__Para_Done__', TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2)
+        except:
+                return (True, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
+                              '__Para_Done__', TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2)
+
     else:
-        return None, '', TEMP_forest_data_prws_STORAGE
+        return False, None, '', TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2
 
-@app.callback([Output("para-LT-data", "children"),
+
+@app.callback([Output('R-alert-league', 'displayed'),
+               Output("para-LT-data", "children"),
                Output('para-LT-data', 'data'),
                Output('TEMP_league_table_data_STORAGE', 'data'),
                Output('TEMP_ranking_data_STORAGE', 'data'),
@@ -1234,36 +1267,60 @@ def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
     """ produce new league table from R """
     if modal_data_checks_is_open:
         data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
-        LEAGUETABLE_OUTS =  generate_league_table(data, outcome2=False) if "TE2" not in data.columns else generate_league_table(data, outcome2=True)
+        try:
+            LEAGUETABLE_OUTS =  generate_league_table(data, outcome2=False) if "TE2" not in data.columns else generate_league_table(data, outcome2=True)
 
-        if "TE2" not in data.columns: (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
-        else:                         (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
+            if "TE2" not in data.columns: (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
+            else:                         (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
 
-        return (html.P(u"\u2713" + " Successfully generated league table.", style={"color":"green"}),
-                '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data) if "TE2" not in data.columns else \
-                                (html.P(u"\u2713" + " Successfully generated league table.", style={"color":"green"}),
-                '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2)
+            return (False, html.P(u"\u2713" + " Successfully generated league table.", style={"color":"green"}),
+                    '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data) if "TE2" not in data.columns else \
+                                    (False, html.P(u"\u2713" + " Successfully generated league table.", style={"color":"green"}),
+                    '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2)
+        except:
+            return (True, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
+                    '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data) if "TE2" not in data.columns else \
+                                    (False, html.P(u"\u2713" + "An error occurred when computing analyses in R: check your data", style={"color":"green"}),
+                    '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2)
     else:
-        net_split_data2 = {}
-        return None, '', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2
+        #net_split_data2 = {}
+        return False, None, '', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2
 
 
-@app.callback([Output("para-FA-data", "children"),
+@app.callback([Output('R-alert-funnel', 'displayed'),
+               Output("para-FA-data", "children"),
                Output('para-FA-data', 'data'),
-               Output('TEMP_funnel_data_STORAGE', 'data')],
-              Input("TEMP_league_table_data_STORAGE", "modified_timestamp"),
-              State("modal_data_checks", "is_open"),
-              State("TEMP_net_data_STORAGE", "data"),
-              State('TEMP_funnel_data_STORAGE', 'data')
+               Output('TEMP_funnel_data_STORAGE', 'data'),
+               Output('TEMP_funnel_data_out2_STORAGE', 'data')],
+               Input("TEMP_league_table_data_STORAGE", "modified_timestamp"),
+               State("modal_data_checks", "is_open"),
+               State("TEMP_net_data_STORAGE", "data"),
+               State('TEMP_funnel_data_STORAGE', 'data'),
+               State('TEMP_funnel_data_out2_STORAGE', 'data')
+
               )
-def modal_submit_checks_FUNNEL(lt_data_ts, modal_data_checks_is_open, TEMP_net_data_STORAGE, FUNNEL_data):
+def modal_submit_checks_FUNNEL(lt_data_ts, modal_data_checks_is_open, TEMP_net_data_STORAGE, FUNNEL_data, FUNNEL_data2):
     if modal_data_checks_is_open:
-        FUNNEL_data = generate_funnel_data(pd.read_json(TEMP_net_data_STORAGE, orient='split'))
-        FUNNEL_data = FUNNEL_data.to_json(orient='split')
-        return (html.P(u"\u2713" + " Successfully generated funnel plot data.", style={"color":"green"}),
-                '__Para_Done__', FUNNEL_data)
+        try:
+            data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
+            FUNNEL_data = generate_funnel_data(data)
+            FUNNEL_data = FUNNEL_data.to_json(orient='split')
+
+            if "TE2" in data.columns:
+                data_out2 = data.drop(["TE", "seTE",  "n1",  "n2"], axis=1)
+                data_out2 = data_out2.rename(columns={"TE2": "TE", "seTE2": "seTE", "n2.1": "n1", "n2.2": "n2"})
+                FUNNEL_data2 = generate_funnel_data(data_out2)
+                FUNNEL_data2 = FUNNEL_data2.to_json(orient='split')
+
+            return (False, html.P(u"\u2713" + " Successfully generated funnel plot data.", style={"color": "green"}),
+            '__Para_Done__', FUNNEL_data, FUNNEL_data2)
+        except:
+            return (True, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color": "red"}),
+                    '__Para_Done__', FUNNEL_data, FUNNEL_data2)
+
     else:
-        return None, '', FUNNEL_data
+        return False, None, '', FUNNEL_data, FUNNEL_data2
+
 
 @app.callback(Output("submit_modal_data", "disabled"),
               [Input(id, 'data') for id in ['para-check-data','para-anls-data','para-pairwise-data',
@@ -1273,6 +1330,7 @@ def modal_submit_button(para_check_data_DATA, para_anls_data_DATA, para_prw_data
 
 
 
+##############################  expand callbacks ###################################
 
 # ----- data expand modal -----#
 @app.callback(
@@ -1285,7 +1343,6 @@ def toggle_modal(open, close, is_open):
     if open or close:
         return not is_open
     return is_open
-
 
 # ----- league expand modal -----#
 @app.callback(
@@ -1311,9 +1368,20 @@ def toggle_modal(open, close, is_open):
         return not is_open
     return is_open
 
-##################################################################
-########################### ALERTS ###############################
-##################################################################
+#####################################################################
+######################## ALERTS/ERRORS ##############################
+#####################################################################
+
+# @app.callback(
+#     Output("R-alert", "is_open"),
+#     [Input("alert-toggle-no-fade", "n_clicks")],
+#     [State("alert-no-fade", "is_open")],
+# )
+# def toggle_alert_no_fade(n, is_open):
+#     if n:
+#         return not is_open
+#     return is_open
+
 
 @app.callback(Output('data-type-danger', 'displayed'),
               [Input('datatable-upload', 'filename'),
@@ -1331,8 +1399,6 @@ def display_confirm(filename, data, modal_data_open, value_outcome1, value_outco
             return True if ('y1' in data_.columns and value_outcome1=="continuous") or ('r1' in data_.columns and value_outcome1=="binary") or \
                            ('y2' in data_.columns and value_outcome2=="continuous") or ('r2' in data_.columns and value_outcome2=="binary") else False
     else: return False
-
-
 
 
 ###################################################################

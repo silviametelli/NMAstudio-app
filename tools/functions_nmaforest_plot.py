@@ -149,6 +149,10 @@ def __TapNodeData_fig(data, outcome_direction, outcome, forest_data, forest_data
 
     return fig
 
+
+
+
+
 ###### BIDIMENSIONAL PLOT
 
 def __TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
@@ -156,6 +160,7 @@ def __TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
     ##  ranking data used to check if second outcome is present (easier to check than using dataselectors)
     df_ranking = pd.read_json(ranking_data, orient='split')
     df_ranking = df_ranking.loc[:, ~df_ranking.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+
     if data:
         if "pscore2" in df_ranking.columns:
             forest_data = pd.read_json(forest_data, orient='split')
@@ -170,10 +175,11 @@ def __TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
             df = df.sort_values(by=effect_size, ascending=False)
             #second outcome
             df_second = forest_data_out2[forest_data_out2.Reference == treatment]
+
+            effect_size_2 = df_second.columns[1]
             df_second['CI_width'] = df_second.CI_upper - df_second.CI_lower
             df_second['lower_error_2'] = df_second[effect_size] - df_second.CI_lower
             df_second['CI_width_hf'] = df_second['CI_width'] / 2
-            effect_size_2 = df_second.columns[1]
         else:
             effect_size = effect_size_2 = ''
             df = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
@@ -242,7 +248,7 @@ def __TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
                   font_color="black",
                   margin=dict(l=10, r=10, t=12, b=80),
                   xaxis=dict(showgrid=False, tick0=0, title=f'Click to enter x label ({effect_size})'),
-                  yaxis=dict(showgrid=False, title=f'Click to enter y label ({effect_size})'),
+                  yaxis=dict(showgrid=False, title=f'Click to enter y label ({effect_size_2})'),
                   title_text='  ', title_x=0.02, title_y=.98, title_font_size=14,
                   )
     if not data:

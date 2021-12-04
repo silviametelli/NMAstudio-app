@@ -554,7 +554,7 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
                                             style={'color': 'white'})])]
     legend += [html.Div(style={'display': 'inline-block', 'width': '60px'},
                         children=[html.Div(style={'backgroundColor': cmap[n],
-                                                  'borderLeft': '1px rgb(50, 50, 50) solid',
+                                                  # 'borderLeft': f'1px {BORDER_LEFT_CLR} solid',
                                                   'height': legend_height}), html.Small(
                             ('Very Low' if toggle_cinema else 'Low') if n == 0 else 'High' if n == N_BINS - 1 else None,
                             style={'paddingLeft': '2px', 'color': 'white'})])
@@ -572,11 +572,11 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
             clr_indx = indxs[0] - 1 if len(indxs) else 0
             diag, empty = treat_r == treat_c, rob != rob
             league_table_styles.append({'if': {'filter_query': f'{{Treatment}} = {{{treat_r}}}',
-                                  'column_id': treat_c},
-                           'backgroundColor': cmap[clr_indx] if not empty else '#40515e',
-                           'color': 'rgb(26, 36, 43)' if not empty else '#d6d6d6' if diag else 'white'})
+                                               'column_id': treat_c},
+                                        'backgroundColor': cmap[clr_indx] if not empty else CLR_BCKGRND2,
+                                        'color': CX1 if not empty else CX2 if diag else 'white'})
     league_table_styles.append({'if': {'column_id': 'Treatment'},
-                   'backgroundColor': 'rgb(26, 36, 43)'})
+                                'backgroundColor': CX1})
 
     # Prepare for output
     tips = robs
@@ -900,39 +900,67 @@ def generate_csv(n_nlicks, data):
                prevent_initial_call=True)
 def generate_csv(n_nlicks, leaguedata):
     df = pd.DataFrame(leaguedata['props']['data'])
-    # df.sort_values(by='Treatment').set_index('Treatment', inplace=True)
+    df = df.set_index('Treatment')[df.Treatment]
+    return dash.dcc.send_data_frame(df.to_csv, filename="league_table.csv")
+
+
+@app.callback(Output("download_leaguetable-colored", "data"),
+              [Input('button-league-color', "n_clicks"),
+               State("league_table", "children")],
+               prevent_initial_call=True)
+def generate_csv(n_nlicks, leaguedata):
+    df = pd.DataFrame(leaguedata['props']['data'])
+
+    style_data_conditional = leaguedata['props']['style_data_conditional']
+
+    conditional_df = {r: {c: None for c in df.columns} for r in  df.columns}
+    for d in style_data_conditional:
+        print(d)
+        col_k = d['if']['column_id']
+        if 'filter_query' in d['if']:
+            row_string = d['if']['filter_query'].split('=')[-1]
+            row_k = row_string[row_string.find("{") + 1: row_string.find("}")]
+            conditional_df[row_k][col_k] = d['backgroundColor']
+
     df = df.set_index('Treatment')[df.Treatment]
 
-    # def to_xlsx(bytes_io):
-    #     writer = pd.ExcelWriter(bytes_io, engine='xlsxwriter')  # Create a Pandas Excel writer using XlsxWriter as the engine.
-    #     df.to_excel(writer, sheet_name='Sheet1')  # Convert the dataframe to an XlsxWriter Excel object.
-    #     workbook, worksheet = writer.book, writer.sheets['Sheet1']  # Get the xlsxwriter workbook and worksheet objects.
-    #     # Add a format. Light red fill with dark red text.
-    #     # CINEMA_r, CINEMA_y, CINEMA_lb, CINEMA_g
-    #     format1 = workbook.add_format({'bg_color': CINEMA_r,
-    #                                    'font_color': '#9C0006'})
-    #     # Set the conditional format range.
-    #     start_row, start_col = 1, 3
-    #     end_row, end_cold = len(df), start_col
-    #     # Apply a conditional format to the cell range.
-    #     worksheet.conditional_format(start_row, start_col, end_row, end_cold,
-    #                                  {'type': 'cell',
-    #                                   'criteria': '>',
-    #                                   'value': 20,
-    #                                   'format': format1})
-    #     for idx, col in enumerate(df):  # loop through all columns
-    #         series = df[col]
-    #         max_len = max((
-    #             series.astype(str).map(len).max(),  # len of largest item
-    #             len(str(series.name))  # len of column name/header
-    #         )) + 1  # adding a little extra space
-    #         worksheet.set_column(idx, idx, max_len)  # set column width
-    #     writer.save()  # Close the Pandas Excel writer and output the Excel file.
-    #
-    # return dash.dcc.send_bytes(to_xlsx, filename="league_table.xlsx")
-   # return dash.dcc.send_data_frame(writer.save(), filename="league_table.xlsx")
+    def to_xlsx(bytes_io):
+        writer = pd.ExcelWriter(bytes_io, engine='xlsxwriter')  # Create a Pandas Excel writer using XlsxWriter as the engine.
+        df.to_excel(writer, sheet_name='League_Table')  # Convert the dataframe to an XlsxWriter Excel object.
+        workbook, worksheet = writer.book, writer.sheets['League_Table']  # Get the xlsxwriter workbook and worksheet objects.
+        wrap_format = workbook.add_format({'text_wrap': True,
+                                           'border':1})
+        wrap_format.set_align('center')
+        wrap_format.set_align('vcenter')
 
-    return dash.dcc.send_data_frame(df.to_csv, filename="league_table.csv")
+        for r, rl in enumerate(df.columns):
+            for c, cl in enumerate(df.columns):
+                worksheet.write(r+1, c+1, df.loc[rl, cl], wrap_format) # Overwrite both the value and the format of each header cell
+                worksheet.conditional_format(first_row=r+1, first_col=c+1,
+                                             last_row=r+1, last_col=c+1,
+                                             options={'type': 'cell',
+                                                      'format': workbook.add_format({
+                                                          'bg_color': (conditional_df[rl][cl]
+                                                                       if conditional_df[rl][cl]!=CLR_BCKGRND2
+                                                                       else 'white'),
+                                                          # 'font_color': '#9C0006'
+                                                          'text_wrap': True
+                                                           }),
+                                                      'criteria': '>',
+                                                      'value': -int(1e8)
+                                                      })
+        worksheet.set_default_row(30)  # Set the default height of Rows to 20.
+        for idx, col in enumerate(df):  # loop through all columns
+            series = df[col].astype(str).str.split('\n').str[-1]
+            max_len = max((
+                series.map(len).max(),  # len of largest item
+                len(str(series.name))  # len of column name/header
+            )) + 0  # adding a little extra space
+            worksheet.set_column(idx+1, idx+1, max_len)  # set column width
+        writer.save()  # Close the Pandas Excel writer and output the Excel file.
+
+    return dash.dcc.send_bytes(to_xlsx, filename="league_table.xlsx")
+    return dash.dcc.send_data_frame(writer.save(), filename="league_table.xlsx")
 
 ###############################################################################
 ################### Bootstrap Dropdowns callbacks #############################
@@ -1371,16 +1399,6 @@ def toggle_modal(open, close, is_open):
 ######################## ALERTS/ERRORS ##############################
 #####################################################################
 
-# @app.callback(
-#     Output("R-alert", "is_open"),
-#     [Input("alert-toggle-no-fade", "n_clicks")],
-#     [State("alert-no-fade", "is_open")],
-# )
-# def toggle_alert_no_fade(n, is_open):
-#     if n:
-#         return not is_open
-#     return is_open
-
 
 @app.callback(Output('data-type-danger', 'displayed'),
               [Input('datatable-upload', 'filename'),
@@ -1406,63 +1424,6 @@ def display_confirm(filename, data, modal_data_open, value_outcome1, value_outco
 ###################################################################
 ###################################################################
 
-## screenshot leaguetable div TODO: change to xlsx colored file
-app.clientside_callback(
-    '''
-    function (n_clicks) {
-        if (n_clicks > 0) {
-            window.scrollTo(0, 0);
-            htmlRef = document.getElementById('league_table');
-            html2canvas(htmlRef,  {
-                scrollX: -window.scrollX,
-                scrollY: -window.scrollY,
-                windowWidth: document.documentElement.offsetWidth,
-                windowHeight: htmlRef.scrollHeight,
-      }).then(function(canvas) {
-                var img = new Image();
-                var height = canvas.height;
-                img.src = canvas.toDataURL("image/png");
-                document.getElementById('img_div').appendChild(img);
-
-                var doc = new PDFDocument({layout:'portrait', margin: 25});
-                var stream = doc.pipe(blobStream());
-
-                var img_container = document.getElementById('img_div');
-                var imgElement = img_container.getElementsByTagName('img');
-                var imgSrc = imgElement[imgElement.length - 1].src;
-                doc.image(imgSrc, {width: 600});
-
-                doc.end();
-
-                var saveData = (function () {
-                    var a = document.createElement("a");
-                    document.body.appendChild(a);
-                    a.style = "display: none";
-                    return function (blob, fileName) {
-                        var url = window.URL.createObjectURL(blob);
-                        a.href = url;
-                        a.download = fileName;
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                    };
-                }());
-
-                stream.on('finish', function() {
-                  var blob = stream.toBlob('application/pdf');
-                  saveData(blob, 'LeagueTable.pdf');
-                });
-            });
-
-
-        }
-        return false;
-    }
-    ''',
-    Output('button', 'disabled'),
-    [
-        Input('button', 'n_clicks'),
-    ]
-)
 
 if __name__ == '__main__':
     app._favicon = ("assets/favicon.ico")

@@ -2,11 +2,10 @@ from assets.COLORS import *
 from assets.storage import N_CLASSES
 from tools.utils import CMAP
 
-cmaps_class = CMAP[ :N_CLASSES] if N_CLASSES>1 else None
 
-
-def get_stylesheet(node_size=False, classes = False, edg_col= False, nd_col=DFLT_ND_CLR, edge_size=False,
+def get_stylesheet(node_size=False, classes=False, n_class=N_CLASSES, edg_col= False, nd_col=DFLT_ND_CLR, edge_size=False,
                    pie=False, edg_lbl=False, nodes_opacity=1, edges_opacity=0.75):
+    cmaps_class = CMAP[:n_class] if n_class > 1 else [DFLT_ND_CLR]
     default_stylesheet = [
         {"selector": 'node',
          'style': {"opacity": nodes_opacity,
@@ -23,8 +22,6 @@ def get_stylesheet(node_size=False, classes = False, edg_col= False, nd_col=DFLT
                    'width': 'data(weight)',
                    #'line-color':edg_col,
                     "opacity": edges_opacity}}]
-    if node_size:
-        default_stylesheet[0]['style'].update({"width": "data(size)", "height": "data(size)"})
     if classes:
        # default_stylesheet[0]['style'].update({"shape": "triangle"})
        list_classes = [{'selector': '.' + f'{x}',
@@ -32,6 +29,8 @@ def get_stylesheet(node_size=False, classes = False, edg_col= False, nd_col=DFLT
                                   }} for x in cmaps_class]
        for x in list_classes:
            default_stylesheet.append(x)
+    if node_size:
+        default_stylesheet[0]['style'].update({"width": "data(size)", "height": "data(size)"})
     if edge_size:
         default_stylesheet[1]['style'].update({"width": None})
     if edg_lbl:

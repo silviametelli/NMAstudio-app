@@ -192,7 +192,10 @@ def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
     cls = dd_nclr == 'By class'
     edg_lbl = dd_eclr == 'Add label'
     FOLLOWER_COLOR, FOLLOWING_COLOR = DFLT_ND_CLR, DFLT_ND_CLR
-    stylesheet = get_stylesheet(pie=pie, classes=cls, edg_lbl=edg_lbl, edg_col=edges_color, nd_col=nodes_color, node_size=node_size, edge_size=edge_size)
+    n_cls = elements[-1]["data"]['n_class'] if "n_class" in elements[-1]["data"] and cls else 1
+    print(n_cls)
+    stylesheet = get_stylesheet(pie=pie, classes=cls, n_class=n_cls, edg_lbl=edg_lbl, edg_col=edges_color,
+                                nd_col=nodes_color, node_size=node_size, edge_size=edge_size)
     edgedata = [el['data'] for el in elements if 'target' in el['data'].keys()]
     all_nodes_id = [el['data']['id'] for el in elements if 'target' not in el['data'].keys()]
 
@@ -203,7 +206,7 @@ def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                                  | {e['target'] for e in edgedata if e['source'] in selected_nodes_id
                                     or e['target'] in selected_nodes_id})
 
-        stylesheet = get_stylesheet(pie=pie,  classes=cls, edg_lbl=edg_lbl, edg_col=edges_color, nd_col=nodes_color, node_size=node_size,
+        stylesheet = get_stylesheet(pie=pie,  classes=cls,  n_class=n_cls, edg_lbl=edg_lbl, edg_col=edges_color, nd_col=nodes_color, node_size=node_size,
                                     nodes_opacity=0.2, edges_opacity=0.1) + [
                          {"selector": 'node[id = "{}"]'.format(id),
                           "style": {"border-color": "#751225", "border-width": 5, "border-opacity": 1,
@@ -1131,7 +1134,7 @@ def data_modal(open_modal_data, upload, submit,
             return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE
 
         if submit and button_id == 'submit_modal_data':
-                return not modal_data_is_open, not modal_data_checks_is_open and (not modal_data_is_open), TEMP_net_data_STORAGE
+                return modal_data_is_open, not modal_data_checks_is_open and (not modal_data_is_open), TEMP_net_data_STORAGE
 
         return not modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE
     else:

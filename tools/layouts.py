@@ -90,6 +90,11 @@ def home_layout():
                                   html.Div([html.P(id='cytoscape-mouseTapEdgeData-output',  style={'margin-top':'-20px'},
                                                    className="info_box" )],
                                         )], className="info__container"),
+                           html.Div([html.Button('Reset Project', id='reset_project', style={'color':'white', "font-size":" 11px",
+                                                                                             "font-type": "sans-serif"}) ##DIV RESET  BUTTON
+                                      ], style={"display":'inline-block', 'margin-left':'20px',
+                                                'margin-bottom':'2px'}),
+
                 html.Div(
                     id='all-control-tabs',
                     children=[

@@ -1,5 +1,6 @@
 import dash_table, dash_daq as daq
 import dash_html_components as html, dash_bootstrap_components as dbc
+import dash_core_components as dcc
 
 from assets.storage import CONSISTENCY_DATA
 
@@ -80,22 +81,37 @@ def tab_consistency(consistency_data=CONSISTENCY_DATA):
          'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}]
     ),
     html.Br(),
-    html.Div([html.P("Node-splitting model",
+    html.Div([ html.Div([ html.P("Node-splitting model",
                      style={'font-size': '12px', 'margin-top': '0.8%', 'display': 'inline-block'},
                      className="box__title"),html.Br(),
-              html.P("Select edge(s) to display specific comparison(s) test(s)",
+              html.P("Select edge(s) to display specific comparison(s)",
                      style={'font-size': '12px', 'margin-top': '-1.2%', 'display': 'inline-block'},
-                     className="box__title"),
-
-              # html.Button('Show  all', 'btn-netsplit', n_clicks=0,
-              #             style={'margin-left': '15px', 'padding': '0px 4px 0px 4px',
-              #                    'margin-bottom': '2px', 'color': 'white', 'fontSize': 10,
-              #                    'font-weight': '900', 'font-family': 'sans-serif',
-              #                    'display': 'inline-block', 'vertical-align': 'middle'}),
+                     className="box__title") ]),
+              html.Div([html.Button('Export', id='consistency-export', n_clicks=0, className="btn-export2",
+                                    style={'margin-right': '31%', 'padding': '4px 4px 4px 4px',
+                                           'color': 'white', 'fontSize': 10, 'margin-top': '-7%',
+                                           'font-weight': '900', 'font-family': 'sans-serif', 'display': 'inline-block',
+                                           }),
+                        html.P(id='export-cons-button-hidden', style={'display': 'none'}),
+                        dcc.Download(id="download_consistency")]),
+              html.Div([html.Button('Show  all', 'btn-netsplit-all', n_clicks=0,className="btn-export2",
+                          style={'padding': '0px 4px 0px 4px','margin-right': '20%',
+                                 'margin-bottom': '2px', 'color': 'white', 'fontSize': 10,'margin-top': '-7%',
+                                 'font-weight': '900', 'font-family': 'sans-serif', 'display': 'inline-block',
+                                 }),
+                        html.P(id='export-cons-all-button-hidden', style={'display': 'none'}),
+                        dcc.Download(id="download_consistency_all"),
+                        dbc.Tooltip("All net-split results with indirect comparisons",
+                                    style={'color': 'white', 'font-size': 9,
+                                           'margin-left': '10px',
+                                           'letter-spacing': '0.3rem'},
+                                    placement='top',
+                                    target='btn-netsplit-all'),
+                        ]),
               html.Div(dash_table.DataTable(
             id='netsplit_table-container',
             fixed_rows={'headers': True, 'data': 0},
-            export_format="csv", #xlsx
+            #export_format="csv", #xlsx
             #columns=[{"name": i, "id": i} for i in df.columns],
             #data=df.to_dict('records'),
             style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
@@ -139,6 +155,7 @@ def tab_consistency(consistency_data=CONSISTENCY_DATA):
             {'selector': 'tr:hover',
             'rule': 'background-color: rgba(0, 0, 0, 0);'},
             {'selector': 'td:hover',
-             'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}]))]),
+             'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}])),
+              ]),
     html.Br(),
     ])

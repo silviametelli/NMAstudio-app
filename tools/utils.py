@@ -29,8 +29,8 @@ def apply_r_func(func, df):
     r_result = pandas2ri.rpy2py(func_r_res)
     if isinstance(r_result, ro.vectors.ListVector):
         with localconverter(ro.default_converter + pandas2ri.converter):
-            leaguetable, pscores, consist, netsplit = (ro.conversion.rpy2py(rf) for rf in r_result)
-        return leaguetable, pscores, consist, netsplit
+            leaguetable, pscores, consist, netsplit, netsplit_all  = (ro.conversion.rpy2py(rf) for rf in r_result)
+        return leaguetable, pscores, consist, netsplit, netsplit_all
     else:
         df_result = r_result.reset_index(drop=True)  # Convert back to a pandas.DataFrame.
         return df_result
@@ -42,8 +42,8 @@ def apply_r_func_twooutcomes(func, df):
     r_result = pandas2ri.rpy2py(func_r_res)
     if isinstance(r_result, ro.vectors.ListVector):
         with localconverter(ro.default_converter + pandas2ri.converter):
-            leaguetable, pscores, consist, netsplit, netsplit2 = (ro.conversion.rpy2py(rf) for rf in r_result)
-        return leaguetable, pscores, consist, netsplit, netsplit2
+            leaguetable, pscores, consist, netsplit, netsplit2, netsplit_all, netsplit_all2 = (ro.conversion.rpy2py(rf) for rf in r_result)
+        return leaguetable, pscores, consist, netsplit, netsplit2, netsplit_all, netsplit_all2
     else:
         df_result = r_result.reset_index(drop=True)  # Convert back to a pandas.DataFrame.
         return df_result
@@ -183,8 +183,8 @@ def run_pairwise_MA(df):
 ## run netmeta for league table, consistency tables and ranking plots
 def generate_league_table(df, outcome2=False):
 
-    if outcome2: leaguetable, pscores, consist, netsplit, netsplit2 = apply_r_func_twooutcomes(func=league_table_r, df=df)
-    else:        leaguetable, pscores, consist, netsplit = apply_r_func(func=league_table_r, df=df)
+    if outcome2: leaguetable, pscores, consist, netsplit, netsplit2, netsplit_all, netsplit_all2  = apply_r_func_twooutcomes(func=league_table_r, df=df)
+    else:        leaguetable, pscores, consist, netsplit, netsplit_all = apply_r_func(func=league_table_r, df=df)
 
     replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
     leaguetable = pd.DataFrame([[replace_and_strip(col) for col in list(row)] for idx, row in leaguetable.iterrows()],
@@ -192,9 +192,9 @@ def generate_league_table(df, outcome2=False):
                                index=leaguetable.index)
     leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
     if outcome2:
-        return leaguetable, pscores, consist, netsplit, netsplit2
+        return leaguetable, pscores, consist, netsplit, netsplit2, netsplit_all, netsplit_all2
     else:
-        return leaguetable, pscores, consist, netsplit
+        return leaguetable, pscores, consist, netsplit, netsplit_all
 
 
 ## run netmeta for funnel plots

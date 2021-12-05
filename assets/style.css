@@ -541,6 +541,14 @@ img:hover {
         justify-content: left;
     }
 
+    .btn-export2 {
+        float: right;
+        -webkit-justify-content: left;
+        justify-content: left;
+        display: inline-block;
+        font-size: 0.9em;
+
+    }
 
 
 /* FOR NAVBAR */

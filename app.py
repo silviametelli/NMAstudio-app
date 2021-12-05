@@ -193,7 +193,6 @@ def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
     edg_lbl = dd_eclr == 'Add label'
     FOLLOWER_COLOR, FOLLOWING_COLOR = DFLT_ND_CLR, DFLT_ND_CLR
     n_cls = elements[-1]["data"]['n_class'] if "n_class" in elements[-1]["data"] and cls else 1
-    print(n_cls)
     stylesheet = get_stylesheet(pie=pie, classes=cls, n_class=n_cls, edg_lbl=edg_lbl, edg_col=edges_color,
                                 nd_col=nodes_color, node_size=node_size, edge_size=edge_size)
     edgedata = [el['data'] for el in elements if 'target' in el['data'].keys()]
@@ -915,18 +914,90 @@ def generate_csv(n_nlicks, data):
     df = pd.DataFrame(data)
     return dash.dcc.send_data_frame(df.to_csv, filename="data_wide.csv")
 
-@app.callback(Output("download_leaguetable", "data"),
-              [Input('league-export', "n_clicks"),
-               State("league_table", "children")],
+
+@app.callback(Output("download_consistency_all", "data"),
+              [Input('btn-netsplit-all', "n_clicks"),
+               Input('toggle_consistency_direction','value'),
+               State("net_split_ALL_data_STORAGE", "data"),
+               State("net_split_ALL_data_out2_STORAGE", "data")],
                prevent_initial_call=True)
-def generate_csv(n_nlicks, leaguedata):
-    df = pd.DataFrame(leaguedata['props']['data'])
-    df = df.set_index('Treatment')[df.Treatment]
-    return dash.dcc.send_data_frame(df.to_csv, filename="league_table.csv")
+def generate_csv(n_nlicks, outcome2, consistencydata_all,  consistencydata_all_out2):
+
+    df = (pd.read_json(consistencydata_all, orient='split') if not outcome2
+          else  pd.read_json(consistencydata_all_out2, orient='split') if consistencydata_all_out2 else None)
+
+    if df is not None:
+        comparisons = df.comparison.str.split(':', expand=True)
+        df['Comparison'] = comparisons[0] + ' vs ' + comparisons[1]
+        df = df.loc[:, ~df.columns.str.contains("comparison")]
+        df = df.sort_values(by='Comparison').reset_index()
+        df = df[['Comparison', 'k', "direct", 'nma', "indirect", "p-value"]].round(decimals=4)
+
+    df = df.set_index('Comparison')
+    df =  df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+
+    return dash.dcc.send_data_frame(df.to_csv, filename="consistency_table_full.csv")
 
 
+@app.callback(Output("download_consistency", "data"),
+              [Input('consistency-export', "n_clicks"),
+               State("netsplit_table-container", "data")],
+               prevent_initial_call=True)
+def generate_xlsx(n_nlicks, consistencydata):
+    df = pd.DataFrame(consistencydata)
+    df = df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+    def to_xlsx(bytes_io):
+        writer = pd.ExcelWriter(bytes_io, engine='xlsxwriter')  # Create a Pandas Excel writer using XlsxWriter as the engine.
+        df.to_excel(writer, sheet_name='Netsplit_Table', index=False)  # Convert the dataframe to an XlsxWriter Excel object.
+        workbook, worksheet = writer.book, writer.sheets['Netsplit_Table']  # Get the xlsxwriter workbook and worksheet objects.
+        wrap_format = workbook.add_format({'text_wrap': True,
+                                           'border':1})
+        wrap_format.set_align('center')
+        wrap_format.set_align('vcenter')
+
+        col_pval=3
+        start_row, end_row =0, df.shape[0]
+        #worksheet.write(r+1, col_pval, df.loc[rl, cl], wrap_format) # Overwrite both the value and the format of each header cell
+        worksheet.conditional_format(first_row=0, first_col=col_pval,
+                                             last_row=end_row, last_col=col_pval,
+                                             options={'type': 'cell',
+                                                      'format': workbook.add_format({
+                                                          'bg_color': 'white',
+                                                          'font_color': 'orange',
+                                                          'text_wrap': True
+                                                           }),
+                                                      'criteria': 'between',
+                                                      'minimum': 0.10001,
+                                                      'maximum': 0.15,
+                                                      })
+        worksheet.conditional_format(first_row=0, first_col=col_pval,
+                                             last_row=end_row, last_col=col_pval,
+                                             options={'type': 'cell',
+                                                      'format': workbook.add_format({
+                                                          'bg_color': 'white',
+                                                          'font_color': 'red',
+                                                          'text_wrap': True
+                                                           }),
+                                                      'criteria': '<=',
+                                                      'value': 0.10
+                                                      })
+        worksheet.set_default_row(30)  # Set the default height of Rows to 20.
+        for idx, col in enumerate(df):  # loop through all columns
+            series = df[col].astype(str).str.split('\n').str[-1]
+            max_len = max((
+                series.map(len).max(),  # len of largest item
+                len(str(series.name))  # len of column name/header
+            )) + 0  # adding a little extra space
+            worksheet.set_column(idx+1, idx+1, max_len)  # set column width
+        writer.save()  # Close the Pandas Excel writer and output the Excel file.
+
+    return dash.dcc.send_bytes(to_xlsx, filename="Netsplit_Table_table.xlsx")
+    return dash.dcc.send_data_frame(writer.save(), filename="Netsplit_Table_table.xlsx")
+
+
+#### xlsx colors league table
 @app.callback(Output("download_leaguetable-colored", "data"),
-              [Input('button-league-color', "n_clicks"),
+              [Input('league-export', "n_clicks"),
                State("league_table", "children")],
                prevent_initial_call=True)
 def generate_xlsx(n_nlicks, leaguedata):
@@ -936,7 +1007,6 @@ def generate_xlsx(n_nlicks, leaguedata):
 
     conditional_df = {r: {c: None for c in df.columns} for r in  df.columns}
     for d in style_data_conditional:
-        print(d)
         col_k = d['if']['column_id']
         if 'filter_query' in d['if']:
             row_string = d['if']['filter_query'].split('=')[-1]
@@ -1173,14 +1243,16 @@ def modal_SUBMIT_button(submit,
                         TEMP_league_table_data_STORAGE,
                         TEMP_net_split_data_STORAGE,
                         TEMP_net_split_data_out2_STORAGE,
+                        TEMP_net_split_ALL_data_STORAGE,
+                        TEMP_net_split_ALL_data_out2_STORAGE,
                         ):
     """ reads in temporary data for all analyses and outputs them in non-temp storages """
     if submit:
         OUT_DATA = [TEMP_net_data_STORAGE, TEMP_net_data_out2_STORAGE, TEMP_consistency_data_STORAGE, TEMP_user_elements_STORAGE,
-                    TEMP_user_elements_out2_STORAGE, TEMP_forest_data_STORAGE,
-                    TEMP_forest_data_out2_STORAGE, TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2_STORAGE,
-                    TEMP_ranking_data_STORAGE, TEMP_funnel_data_STORAGE, TEMP_funnel_data_out2_STORAGE,
-                    TEMP_league_table_data_STORAGE, TEMP_net_split_data_STORAGE, TEMP_net_split_data_out2_STORAGE]
+                    TEMP_user_elements_out2_STORAGE, TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_forest_data_prws_STORAGE,
+                    TEMP_forest_data_prws_out2_STORAGE, TEMP_ranking_data_STORAGE, TEMP_funnel_data_STORAGE, TEMP_funnel_data_out2_STORAGE,
+                    TEMP_league_table_data_STORAGE, TEMP_net_split_data_STORAGE, TEMP_net_split_data_out2_STORAGE,TEMP_net_split_ALL_data_STORAGE,
+                    TEMP_net_split_ALL_data_out2_STORAGE]
         return OUT_DATA
     else:
         return list(DEFAULT_DATA.values())[:-2]
@@ -1304,7 +1376,10 @@ def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, TEMP_ne
                Output('TEMP_ranking_data_STORAGE', 'data'),
                Output('TEMP_consistency_data_STORAGE', 'data'),
                Output('TEMP_net_split_data_STORAGE', 'data'),
-               Output('TEMP_net_split_data_out2_STORAGE', 'data')],
+               Output('TEMP_net_split_data_out2_STORAGE', 'data'),
+               Output('TEMP_net_split_ALL_data_STORAGE', 'data'),
+               Output('TEMP_net_split_ALL_data_out2_STORAGE', 'data')
+               ],
                Input('TEMP_forest_data_prws_STORAGE', 'modified_timestamp'),
                State("modal_data_checks", "is_open"),
                State("TEMP_net_data_STORAGE", "data"),
@@ -1312,32 +1387,35 @@ def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, TEMP_ne
                State('TEMP_ranking_data_STORAGE', 'data'),
                State('TEMP_consistency_data_STORAGE', 'data'),
                State('TEMP_net_split_data_STORAGE', 'data'),
-               State('TEMP_net_split_data_out2_STORAGE', 'data')
+               State('TEMP_net_split_data_out2_STORAGE', 'data'),
+               State('TEMP_net_split_ALL_data_STORAGE', 'data'),
+               State('TEMP_net_split_ALL_data_out2_STORAGE', 'data')
               )
 def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
                            TEMP_net_data_STORAGE, LEAGUETABLE_data,
-                           ranking_data, consistency_data, net_split_data, net_split_data2):
+                           ranking_data, consistency_data, net_split_data, net_split_data2,
+                           netsplit_all, netsplit_all2):
     """ produce new league table from R """
     if modal_data_checks_is_open:
         data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
         try:
             LEAGUETABLE_OUTS =  generate_league_table(data, outcome2=False) if "TE2" not in data.columns else generate_league_table(data, outcome2=True)
 
-            if "TE2" not in data.columns: (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
-            else:                         (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
+            if "TE2" not in data.columns: (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, netsplit_all) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
+            else:                         (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
 
             return (False, html.P(u"\u2713" + " Successfully generated league table.", style={"color":"green"}),
-                    '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data) if "TE2" not in data.columns else \
+                    '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, netsplit_all) if "TE2" not in data.columns else \
                                     (False, html.P(u"\u2713" + " Successfully generated league table.", style={"color":"green"}),
-                    '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2)
+                    '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2)
         except:
             return (True, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
-                    '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data) if "TE2" not in data.columns else \
+                    '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, netsplit_all) if "TE2" not in data.columns else \
                                     (False, html.P(u"\u274C" + "An error occurred when computing analyses in R: check your data", style={"color":"green"}),
-                    '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2)
+                    '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2)
     else:
         #net_split_data2 = {}
-        return False, None, '', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2
+        return False, None, '', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2
 
 
 @app.callback([Output('R-alert-funnel', 'displayed'),

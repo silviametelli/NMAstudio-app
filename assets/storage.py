@@ -56,21 +56,19 @@ DEFAULT_DATA = OrderedDict(net_data_STORAGE=NET_DATA,
                            cinema_net_data1_STORAGE=CINEMA_NET_DATA1,
                            cinema_net_data2_STORAGE=CINEMA_NET_DATA2,
                            )
-OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col}
-               for col in NET_DATA.select_dtypes(['number']).columns]
+
+OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col} for col in NET_DATA.select_dtypes(['number']).columns]
 N_CLASSES = USER_ELEMENTS[-1]["data"]['n_class'] if "n_class" in USER_ELEMENTS[-1]["data"] else 1
 
 
 STORAGE = [dcc.Store(id=label, data=data.to_json(orient='split') if label not in ['user_elements_STORAGE', 'user_elements_out2_STORAGE'] else data,
                      storage_type=SESSION_TYPE)
-           for label, data in DEFAULT_DATA.items()
-           ] + [
-    dcc.Store(id='consts_STORAGE', data={'dwnld_bttn_calls':0,
+           for label, data in DEFAULT_DATA.items()] + [
+            dcc.Store(id='consts_STORAGE', data={'dwnld_bttn_calls':0,
                                          'today':TODAY,
                                          'session_ID':SESSION_ID,
                                          'session_pickle_path':SESSION_PICKLE_PATH},
-              storage_type=SESSION_TYPE)
-] + [
-    dcc.Store(id='TEMP_'+new_id, storage_type=SESSION_TYPE) for new_id in DEFAULT_DATA.keys()
+                      storage_type=SESSION_TYPE)] + [
+            dcc.Store(id='TEMP_'+new_id, storage_type=SESSION_TYPE) for new_id in DEFAULT_DATA.keys()
 ]
 

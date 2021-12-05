@@ -902,156 +902,6 @@ def disable_cinema_toggle(filename,filename_data):
     if filename is None and filename_data is not None: return True
     else: return False
 
-###############################################################################
-################### EXPORT TO  CSV ON CLICK BUTTON ############################
-###############################################################################
-
-@app.callback(Output("download_datatable", "data"),
-              [Input('data-export', "n_clicks"),
-               State('datatable-upload-container', 'data')],
-               prevent_initial_call=True)
-def generate_csv(n_nlicks, data):
-    df = pd.DataFrame(data)
-    return dash.dcc.send_data_frame(df.to_csv, filename="data_wide.csv")
-
-
-@app.callback(Output("download_consistency_all", "data"),
-              [Input('btn-netsplit-all', "n_clicks"),
-               Input('toggle_consistency_direction','value'),
-               State("net_split_ALL_data_STORAGE", "data"),
-               State("net_split_ALL_data_out2_STORAGE", "data")],
-               prevent_initial_call=True)
-def generate_csv(n_nlicks, outcome2, consistencydata_all,  consistencydata_all_out2):
-
-    df = (pd.read_json(consistencydata_all, orient='split') if not outcome2
-          else  pd.read_json(consistencydata_all_out2, orient='split') if consistencydata_all_out2 else None)
-
-    if df is not None:
-        comparisons = df.comparison.str.split(':', expand=True)
-        df['Comparison'] = comparisons[0] + ' vs ' + comparisons[1]
-        df = df.loc[:, ~df.columns.str.contains("comparison")]
-        df = df.sort_values(by='Comparison').reset_index()
-        df = df[['Comparison', 'k', "direct", 'nma', "indirect", "p-value"]].round(decimals=4)
-
-    df = df.set_index('Comparison')
-    df =  df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
-
-    return dash.dcc.send_data_frame(df.to_csv, filename="consistency_table_full.csv")
-
-
-@app.callback(Output("download_consistency", "data"),
-              [Input('consistency-export', "n_clicks"),
-               State("netsplit_table-container", "data")],
-               prevent_initial_call=True)
-def generate_xlsx(n_nlicks, consistencydata):
-    df = pd.DataFrame(consistencydata)
-    df = df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
-    def to_xlsx(bytes_io):
-        writer = pd.ExcelWriter(bytes_io, engine='xlsxwriter')  # Create a Pandas Excel writer using XlsxWriter as the engine.
-        df.to_excel(writer, sheet_name='Netsplit_Table', index=False)  # Convert the dataframe to an XlsxWriter Excel object.
-        workbook, worksheet = writer.book, writer.sheets['Netsplit_Table']  # Get the xlsxwriter workbook and worksheet objects.
-        wrap_format = workbook.add_format({'text_wrap': True,
-                                           'border':1})
-        wrap_format.set_align('center')
-        wrap_format.set_align('vcenter')
-
-        col_pval=3
-        start_row, end_row =0, df.shape[0]
-        #worksheet.write(r+1, col_pval, df.loc[rl, cl], wrap_format) # Overwrite both the value and the format of each header cell
-        worksheet.conditional_format(first_row=0, first_col=col_pval,
-                                             last_row=end_row, last_col=col_pval,
-                                             options={'type': 'cell',
-                                                      'format': workbook.add_format({
-                                                          'bg_color': 'white',
-                                                          'font_color': 'orange',
-                                                          'text_wrap': True
-                                                           }),
-                                                      'criteria': 'between',
-                                                      'minimum': 0.10001,
-                                                      'maximum': 0.15,
-                                                      })
-        worksheet.conditional_format(first_row=0, first_col=col_pval,
-                                             last_row=end_row, last_col=col_pval,
-                                             options={'type': 'cell',
-                                                      'format': workbook.add_format({
-                                                          'bg_color': 'white',
-                                                          'font_color': 'red',
-                                                          'text_wrap': True
-                                                           }),
-                                                      'criteria': '<=',
-                                                      'value': 0.10
-                                                      })
-        worksheet.set_default_row(30)  # Set the default height of Rows to 20.
-        for idx, col in enumerate(df):  # loop through all columns
-            series = df[col].astype(str).str.split('\n').str[-1]
-            max_len = max((
-                series.map(len).max(),  # len of largest item
-                len(str(series.name))  # len of column name/header
-            )) + 0  # adding a little extra space
-            worksheet.set_column(idx+1, idx+1, max_len)  # set column width
-        writer.save()  # Close the Pandas Excel writer and output the Excel file.
-
-    return dash.dcc.send_bytes(to_xlsx, filename="Netsplit_Table_table.xlsx")
-    return dash.dcc.send_data_frame(writer.save(), filename="Netsplit_Table_table.xlsx")
-
-
-#### xlsx colors league table
-@app.callback(Output("download_leaguetable-colored", "data"),
-              [Input('league-export', "n_clicks"),
-               State("league_table", "children")],
-               prevent_initial_call=True)
-def generate_xlsx(n_nlicks, leaguedata):
-    df = pd.DataFrame(leaguedata['props']['data'])
-
-    style_data_conditional = leaguedata['props']['style_data_conditional']
-
-    conditional_df = {r: {c: None for c in df.columns} for r in  df.columns}
-    for d in style_data_conditional:
-        col_k = d['if']['column_id']
-        if 'filter_query' in d['if']:
-            row_string = d['if']['filter_query'].split('=')[-1]
-            row_k = row_string[row_string.find("{") + 1: row_string.find("}")]
-            conditional_df[row_k][col_k] = d['backgroundColor']
-
-    df = df.set_index('Treatment')[df.Treatment]
-
-    def to_xlsx(bytes_io):
-        writer = pd.ExcelWriter(bytes_io, engine='xlsxwriter')  # Create a Pandas Excel writer using XlsxWriter as the engine.
-        df.to_excel(writer, sheet_name='League_Table')  # Convert the dataframe to an XlsxWriter Excel object.
-        workbook, worksheet = writer.book, writer.sheets['League_Table']  # Get the xlsxwriter workbook and worksheet objects.
-        wrap_format = workbook.add_format({'text_wrap': True,
-                                           'border':1})
-        wrap_format.set_align('center')
-        wrap_format.set_align('vcenter')
-
-        for r, rl in enumerate(df.columns):
-            for c, cl in enumerate(df.columns):
-                worksheet.write(r+1, c+1, df.loc[rl, cl], wrap_format) # Overwrite both the value and the format of each header cell
-                worksheet.conditional_format(first_row=r+1, first_col=c+1,
-                                             last_row=r+1, last_col=c+1,
-                                             options={'type': 'cell',
-                                                      'format': workbook.add_format({
-                                                          'bg_color': (conditional_df[rl][cl]
-                                                                       if conditional_df[rl][cl]!=CLR_BCKGRND2
-                                                                       else 'white'),
-                                                          # 'font_color': '#9C0006'
-                                                          'text_wrap': True
-                                                           }),
-                                                      'criteria': '>',
-                                                      'value': -int(1e8)
-                                                      })
-        worksheet.set_default_row(30)  # Set the default height of Rows to 20.
-        for idx, col in enumerate(df):  # loop through all columns
-            series = df[col].astype(str).str.split('\n').str[-1]
-            max_len = max((
-                series.map(len).max(),  # len of largest item
-                len(str(series.name))  # len of column name/header
-            )) + 0  # adding a little extra space
-            worksheet.set_column(idx+1, idx+1, max_len)  # set column width
-        writer.save()  # Close the Pandas Excel writer and output the Excel file.
-
-    return dash.dcc.send_bytes(to_xlsx, filename="league_table.xlsx")
-    return dash.dcc.send_data_frame(writer.save(), filename="league_table.xlsx")
 
 ###############################################################################
 ################### Bootstrap Dropdowns callbacks #############################
@@ -1224,10 +1074,12 @@ from assets.storage import DEFAULT_DATA
 OUTPUTS_STORAGE_IDS = list(DEFAULT_DATA.keys())[:-2]
 
 @app.callback([Output(id, 'data') for id in OUTPUTS_STORAGE_IDS],
-              [Input("submit_modal_data", "n_clicks")],
+              [Input("submit_modal_data", "n_clicks"),
+               #Input('reset_project','n_clicks')
+               ],
               [State('TEMP_'+id, 'data') for id in OUTPUTS_STORAGE_IDS],
               prevent_initial_call=True)
-def modal_SUBMIT_button(submit,
+def modal_SUBMIT_button(submit, # reset_btn,
                         TEMP_net_data_STORAGE,
                         TEMP_net_data_out2_STORAGE,
                         TEMP_consistency_data_STORAGE,
@@ -1253,9 +1105,10 @@ def modal_SUBMIT_button(submit,
                     TEMP_forest_data_prws_out2_STORAGE, TEMP_ranking_data_STORAGE, TEMP_funnel_data_STORAGE, TEMP_funnel_data_out2_STORAGE,
                     TEMP_league_table_data_STORAGE, TEMP_net_split_data_STORAGE, TEMP_net_split_data_out2_STORAGE,TEMP_net_split_ALL_data_STORAGE,
                     TEMP_net_split_ALL_data_out2_STORAGE]
-        return OUT_DATA
+        return OUT_DATA #if not reset_btn else list(DEFAULT_DATA.values())[:-2]
     else:
         return list(DEFAULT_DATA.values())[:-2]
+
 
 
 @app.callback(Output("dropdown-effectmod", "options"),
@@ -1522,11 +1375,165 @@ def display_confirm(filename, data, modal_data_open, value_outcome1, value_outco
     else: return False
 
 
-###################################################################
-###################################################################
-########################### MAIN ##################################
-###################################################################
-###################################################################
+
+###############################################################################
+################### EXPORT TO  CSV ON CLICK BUTTON ############################
+###############################################################################
+
+@app.callback(Output("download_datatable", "data"),
+              [Input('data-export', "n_clicks"),
+               State('datatable-upload-container', 'data')],
+               prevent_initial_call=True)
+def generate_csv(n_nlicks, data):
+    df = pd.DataFrame(data)
+    return dash.dcc.send_data_frame(df.to_csv, filename="data_wide.csv")
+
+
+@app.callback(Output("download_consistency_all", "data"),
+              [Input('btn-netsplit-all', "n_clicks"),
+               Input('toggle_consistency_direction','value'),
+               State("net_split_ALL_data_STORAGE", "data"),
+               State("net_split_ALL_data_out2_STORAGE", "data")],
+               prevent_initial_call=True)
+def generate_csv(n_nlicks, outcome2, consistencydata_all,  consistencydata_all_out2):
+
+    df = (pd.read_json(consistencydata_all, orient='split') if not outcome2
+          else  pd.read_json(consistencydata_all_out2, orient='split') if consistencydata_all_out2 else None)
+
+    if df is not None:
+        comparisons = df.comparison.str.split(':', expand=True)
+        df['Comparison'] = comparisons[0] + ' vs ' + comparisons[1]
+        df = df.loc[:, ~df.columns.str.contains("comparison")]
+        df = df.sort_values(by='Comparison').reset_index()
+        df = df[['Comparison', 'k', "direct", 'nma', "indirect", "p-value"]].round(decimals=4)
+
+    df = df.set_index('Comparison')
+    df =  df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+
+    return dash.dcc.send_data_frame(df.to_csv, filename="consistency_table_full.csv")
+
+
+@app.callback(Output("download_consistency", "data"),
+              [Input('consistency-export', "n_clicks"),
+               State("netsplit_table-container", "data")],
+               prevent_initial_call=True)
+def generate_xlsx(n_nlicks, consistencydata):
+    df = pd.DataFrame(consistencydata)
+    df = df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+    def to_xlsx(bytes_io):
+        writer = pd.ExcelWriter(bytes_io, engine='xlsxwriter')  # Create a Pandas Excel writer using XlsxWriter as the engine.
+        df.to_excel(writer, sheet_name='Netsplit_Table', index=False)  # Convert the dataframe to an XlsxWriter Excel object.
+        workbook, worksheet = writer.book, writer.sheets['Netsplit_Table']  # Get the xlsxwriter workbook and worksheet objects.
+        wrap_format = workbook.add_format({'text_wrap': True,
+                                           'border':1})
+        wrap_format.set_align('center')
+        wrap_format.set_align('vcenter')
+
+        col_pval=3
+        start_row, end_row =0, df.shape[0]
+        #worksheet.write(r+1, col_pval, df.loc[rl, cl], wrap_format) # Overwrite both the value and the format of each header cell
+        worksheet.conditional_format(first_row=0, first_col=col_pval,
+                                             last_row=end_row, last_col=col_pval,
+                                             options={'type': 'cell',
+                                                      'format': workbook.add_format({
+                                                          'bg_color': 'white',
+                                                          'font_color': 'orange',
+                                                          'text_wrap': True
+                                                           }),
+                                                      'criteria': 'between',
+                                                      'minimum': 0.10001,
+                                                      'maximum': 0.15,
+                                                      })
+        worksheet.conditional_format(first_row=0, first_col=col_pval,
+                                             last_row=end_row, last_col=col_pval,
+                                             options={'type': 'cell',
+                                                      'format': workbook.add_format({
+                                                          'bg_color': 'white',
+                                                          'font_color': 'red',
+                                                          'text_wrap': True
+                                                           }),
+                                                      'criteria': '<=',
+                                                      'value': 0.10
+                                                      })
+        worksheet.set_default_row(30)  # Set the default height of Rows to 20.
+        for idx, col in enumerate(df):  # loop through all columns
+            series = df[col].astype(str).str.split('\n').str[-1]
+            max_len = max((
+                series.map(len).max(),  # len of largest item
+                len(str(series.name))  # len of column name/header
+            )) + 0  # adding a little extra space
+            worksheet.set_column(idx+1, idx+1, max_len)  # set column width
+        writer.save()  # Close the Pandas Excel writer and output the Excel file.
+
+    return dash.dcc.send_bytes(to_xlsx, filename="Netsplit_Table_table.xlsx")
+    return dash.dcc.send_data_frame(writer.save(), filename="Netsplit_Table_table.xlsx")
+
+
+#### xlsx colors league table
+@app.callback(Output("download_leaguetable-colored", "data"),
+              [Input('league-export', "n_clicks"),
+               State("league_table", "children")],
+               prevent_initial_call=True)
+def generate_xlsx(n_nlicks, leaguedata):
+    df = pd.DataFrame(leaguedata['props']['data'])
+
+    style_data_conditional = leaguedata['props']['style_data_conditional']
+
+    conditional_df = {r: {c: None for c in df.columns} for r in  df.columns}
+    for d in style_data_conditional:
+        col_k = d['if']['column_id']
+        if 'filter_query' in d['if']:
+            row_string = d['if']['filter_query'].split('=')[-1]
+            row_k = row_string[row_string.find("{") + 1: row_string.find("}")]
+            conditional_df[row_k][col_k] = d['backgroundColor']
+
+    df = df.set_index('Treatment')[df.Treatment]
+
+    def to_xlsx(bytes_io):
+        writer = pd.ExcelWriter(bytes_io, engine='xlsxwriter')  # Create a Pandas Excel writer using XlsxWriter as the engine.
+        df.to_excel(writer, sheet_name='League_Table')  # Convert the dataframe to an XlsxWriter Excel object.
+        workbook, worksheet = writer.book, writer.sheets['League_Table']  # Get the xlsxwriter workbook and worksheet objects.
+        wrap_format = workbook.add_format({'text_wrap': True,
+                                           'border':1})
+        wrap_format.set_align('center')
+        wrap_format.set_align('vcenter')
+
+        for r, rl in enumerate(df.columns):
+            for c, cl in enumerate(df.columns):
+                worksheet.write(r+1, c+1, df.loc[rl, cl], wrap_format) # Overwrite both the value and the format of each header cell
+                worksheet.conditional_format(first_row=r+1, first_col=c+1,
+                                             last_row=r+1, last_col=c+1,
+                                             options={'type': 'cell',
+                                                      'format': workbook.add_format({
+                                                          'bg_color': (conditional_df[rl][cl]
+                                                                       if conditional_df[rl][cl]!=CLR_BCKGRND2
+                                                                       else 'white'),
+                                                          # 'font_color': '#9C0006'
+                                                          'text_wrap': True
+                                                           }),
+                                                      'criteria': '>',
+                                                      'value': -int(1e8)
+                                                      })
+        worksheet.set_default_row(30)  # Set the default height of Rows to 20.
+        for idx, col in enumerate(df):  # loop through all columns
+            series = df[col].astype(str).str.split('\n').str[-1]
+            max_len = max((
+                series.map(len).max(),  # len of largest item
+                len(str(series.name))  # len of column name/header
+            )) + 0  # adding a little extra space
+            worksheet.set_column(idx+1, idx+1, max_len)  # set column width
+        writer.save()  # Close the Pandas Excel writer and output the Excel file.
+
+    return dash.dcc.send_bytes(to_xlsx, filename="league_table.xlsx")
+    return dash.dcc.send_data_frame(writer.save(), filename="league_table.xlsx")
+
+
+
+####################################################################
+####################################################################
+############################ MAIN ##################################
+####################################################################
+####################################################################
 
 
 if __name__ == '__main__':

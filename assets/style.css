@@ -550,6 +550,16 @@ img:hover {
 
     }
 
+.reset{
+    display: inline-block;
+    font-size: 1.03em;
+    padding: 0wpx 0px 0px 0px;
+    margin-left: 4px;
+    color: #607383;
+    border: var(--CLR_BCKGRND);
+
+}
+
 
 /* FOR NAVBAR */
 @media (min-width:1200px){

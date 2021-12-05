@@ -1,5 +1,5 @@
 import numpy as np, pandas as pd
-import plotly.express as px, plotly.graph_objects as go
+import plotly.express as px
 import plotly.figure_factory as ff
 from sklearn.cluster import KMeans
 from collections import Counter

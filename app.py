@@ -4,9 +4,6 @@
 # Created on: 10/11/2020
 # --------------------------------------------------------------------------------------------------------------------#
 import os, io, base64, shutil
-
-import pandas as pd
-
 from tools.PATHS import __SESSIONS_FOLDER, TEMP_PATH
 
 TEMP_DIR = "./__temp_logs_and_globals"
@@ -18,15 +15,10 @@ warnings.filterwarnings("ignore")
 # --------------------------------------------------------------------------------------------------------------------#
 import dash
 from dash.dependencies import Input, Output, State, ALL
-import dash_core_components as dcc
-from dash.exceptions import PreventUpdate
-from flask_caching import Cache
-from assets.COLORS import CINEMA_g, CINEMA_y, CINEMA_lb, CINEMA_r
-import plotly.express as px, plotly.graph_objects as go
 from tools.layouts import *
 from tools.utils import *
 
-from tools.functions_ranking_plots import __ranking_plot, __ranking_heatmap, __ranking_scatter
+from tools.functions_ranking_plots import __ranking_plot
 from tools.functions_funnel_plot import __Tap_funnelplot
 from tools.functions_nmaforest_plot import __TapNodeData_fig, __TapNodeData_fig_bidim
 from tools.functions_pairwise_plots import __update_forest_pairwise
@@ -1490,7 +1482,7 @@ def generate_xlsx(n_nlicks, consistencydata):
         writer.save()  # Close the Pandas Excel writer and output the Excel file.
 
     return dash.dcc.send_bytes(to_xlsx, filename="Netsplit_Table_table.xlsx")
-    return dash.dcc.send_data_frame(writer.save(), filename="Netsplit_Table_table.xlsx")
+    ###########return dash.dcc.send_data_frame(writer.save(), filename="Netsplit_Table_table.xlsx")
 
 
 #### xlsx colors league table
@@ -1549,7 +1541,7 @@ def generate_xlsx(n_nlicks, leaguedata):
         writer.save()  # Close the Pandas Excel writer and output the Excel file.
 
     return dash.dcc.send_bytes(to_xlsx, filename="league_table.xlsx")
-    return dash.dcc.send_data_frame(writer.save(), filename="league_table.xlsx")
+    ######### return dash.dcc.send_data_frame(writer.save(), filename="league_table.xlsx")
 
 
 
@@ -1563,4 +1555,4 @@ def generate_xlsx(n_nlicks, leaguedata):
 if __name__ == '__main__':
     app._favicon = ("assets/favicon.ico")
     app.title = 'NMAstudio'
-    app.run_server(debug=True)
+    app.run_server(debug=False)

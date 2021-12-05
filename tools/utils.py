@@ -2,8 +2,6 @@ import pickle
 from tools.PATHS import TEMP_PATH
 from assets.effect_sizes import *
 # ---------R2Py Resources --------------------------------------------------------------------------------------------#
-import rpy2
-from rpy2.rinterface_lib.embedded import RRuntimeError
 from rpy2.robjects import pandas2ri  # Define the R script and loads the instance in Python
 import rpy2.robjects as ro
 from rpy2.robjects.conversion import localconverter

@@ -1,6 +1,5 @@
 import dash_bootstrap_components as dbc
 import dash_html_components as html
-from assets.COLORS import *
 
 NMASTUDIO_LOGO = "/assets/logos/NMAstudio_bold.png"
 CRESS_LOGO = "/assets/logos/CRESS_logo.png"

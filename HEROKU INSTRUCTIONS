@@ -1,4 +1,9 @@
 pip list --format=freeze > requirements.txt
 
 
+heroku plugins:install heroku-builds
+
+heroku builds:cache:purge
+
+
 git push heroku main

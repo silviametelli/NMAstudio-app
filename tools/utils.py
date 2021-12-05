@@ -69,6 +69,9 @@ def write_session_pickle(dct, path):
 
 def read_session_pickle(path):
     return pickle.load(open(path, 'rb'))
+
+
+
 ## --------------------------------MISC-------------------------------------------- ##
 def set_slider_marks(y_min, y_max, years):
     return {int(x): {'label': str(x),

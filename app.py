@@ -1428,7 +1428,7 @@ def generate_csv(n_nlicks, outcome2, consistencydata_all,  consistencydata_all_o
     else: return None
 
 
-
+#### xlsx colors netsplit table
 @app.callback(Output("download_consistency", "data"),
               [Input('consistency-export', "n_clicks"),
                State("netsplit_table-container", "data")],
@@ -1481,18 +1481,18 @@ def generate_xlsx(n_nlicks, consistencydata):
             worksheet.set_column(idx+1, idx+1, max_len)  # set column width
         writer.save()  # Close the Pandas Excel writer and output the Excel file.
 
-    return dash.dcc.send_bytes(to_xlsx, filename="Netsplit_Table_table.xlsx")
+    return dash.dcc.send_bytes(to_xlsx, filename="Netsplit_Table.xlsx")
     ###########return dash.dcc.send_data_frame(writer.save(), filename="Netsplit_Table_table.xlsx")
 
 
 #### xlsx colors league table
-@app.callback(Output("download_leaguetable-colored", "data"),
+@app.callback(Output("download_leaguetable", "data"),
               [Input('league-export', "n_clicks"),
                State("league_table", "children")],
                prevent_initial_call=True)
-def generate_xlsx(n_nlicks, leaguedata):
+def generate_xlsx(n_clicks, leaguedata):
+    print(n_clicks)
     df = pd.DataFrame(leaguedata['props']['data'])
-
     style_data_conditional = leaguedata['props']['style_data_conditional']
 
     conditional_df = {r: {c: None for c in df.columns} for r in  df.columns}
@@ -1524,7 +1524,6 @@ def generate_xlsx(n_nlicks, leaguedata):
                                                           'bg_color': (conditional_df[rl][cl]
                                                                        if conditional_df[rl][cl]!=CLR_BCKGRND2
                                                                        else 'white'),
-                                                          # 'font_color': '#9C0006'
                                                           'text_wrap': True
                                                            }),
                                                       'criteria': '>',
@@ -1540,7 +1539,8 @@ def generate_xlsx(n_nlicks, leaguedata):
             worksheet.set_column(idx+1, idx+1, max_len)  # set column width
         writer.save()  # Close the Pandas Excel writer and output the Excel file.
 
-    return dash.dcc.send_bytes(to_xlsx, filename="league_table.xlsx")
+    return dash.dcc.send_bytes(to_xlsx, filename="League_Table.xlsx")
+
     ######### return dash.dcc.send_data_frame(writer.save(), filename="league_table.xlsx")
 
 
@@ -1556,3 +1556,4 @@ if __name__ == '__main__':
     app._favicon = ("assets/favicon.ico")
     app.title = 'NMAstudio'
     app.run_server(debug=False)
+

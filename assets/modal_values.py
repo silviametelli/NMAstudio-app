@@ -186,7 +186,6 @@ modal_data_table = dbc.Modal([
                                           'color': 'white', 'fontSize': 11, 'text-align':'left',
                                           'font-weight': '900', 'font-family': 'sans-serif',
                                           'display': 'inline-block', 'vertical-align': 'top'}),
-                                 html.P(id='export-button-hidden', style={'display': 'none'}),
                                  dcc.Download(id="download_datatable")
                            ]),
                             dbc.Button("Close", id="close-data-expanded", className="ml-auto")])
@@ -226,13 +225,12 @@ modal_league_table = dbc.Modal([
                                   ]),
                      dbc.ModalFooter([
                          html.Div([
-
                              html.Button('Export', id='league-export', n_clicks=0, className="btn-export",
-                                     style={'margin-left': '10px', 'padding': '4px 4px 4px 4px',
-                                            'color': 'white', 'fontSize': 11, 'text-align': 'left',
-                                            'font-weight': '900', 'font-family': 'sans-serif',
-                                            'display': 'inline-block', 'vertical-align': 'top'}),
-                            dcc.Download(id="download_leaguetable"),
+                                                   style={'margin-left': '5px', 'padding': '4px 4px 4px 4px',
+                                                          'color': 'white', 'fontSize': 11, 'text-align': 'left',
+                                                          'font-weight': '900', 'font-family': 'sans-serif',
+                                                          'display': 'inline-block', 'vertical-align': 'top'}),
+                             dcc.Download(id="download_leaguetable")
 
                                   ]),
                          dbc.Button("Close", id="close-league-expanded", className="ml-auto")])

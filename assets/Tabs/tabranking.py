@@ -103,7 +103,7 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                                          'format': 'png',
                                                          # one of png, svg,
                                                          'filename': 'custom_image',
-                                                         'scale': 3
+                                                         'scale': 5
                                                          # Multiply title/legend/axis/canvas sizes by this factor
                                                      },
                                                      'displaylogo': False}))
@@ -183,10 +183,10 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                      dcc.Loading(
                                          dcc.Graph(
                                              id='tab-rank2',
-                                             style={'height': '99%',
-                                                    'max-height': 'calc(52vh)',
+                                             style={'height': '98%',
+                                                    'max-height': 'calc(51vh)',
                                                     'width': '96%',
-                                                    'margin-top': '1%',
+                                                    'margin-top': '0%',
                                                     'max-width': 'calc(52vw)'},
                                              config={'editable': True,
                                                   #   'showEditInChartStudio': True,
@@ -211,8 +211,7 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                                          'format': 'png',
                                                          # one of png, svg,
                                                          'filename': 'custom_image',
-                                                         'scale': 3
-                                                         # Multiply title/legend/axis/canvas sizes by this factor
+                                                         'scale': 5                                                         # Multiply title/legend/axis/canvas sizes by this factor
                                                      },
                                                      'displaylogo': False}))
 

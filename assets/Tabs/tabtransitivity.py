@@ -35,7 +35,7 @@ tab_trstvty = html.Div([html.Div([dbc.Row([html.P("Choose effect modifier:", cla
                                                                  "hoverCompareCartesian"],
                                           'toImageButtonOptions': {'format': 'png', # one of png, svg,
                                                                'filename': 'custom_image',
-                                                              # 'scale': 8 # Multiply title/legend/axis/canvas sizes by this factor
+                                                               'scale': 5
                                                                },
                                           'displaylogo': False})
                     ], style={'margin-top':'-20px'})])

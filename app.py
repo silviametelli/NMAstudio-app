@@ -1075,11 +1075,11 @@ OUTPUTS_STORAGE_IDS = list(DEFAULT_DATA.keys())[:-2]
 
 @app.callback([Output(id, 'data') for id in OUTPUTS_STORAGE_IDS],
               [Input("submit_modal_data", "n_clicks"),
-               #Input('reset_project','n_clicks')
+               Input('reset_project','n_clicks')
                ],
               [State('TEMP_'+id, 'data') for id in OUTPUTS_STORAGE_IDS],
               prevent_initial_call=True)
-def modal_SUBMIT_button(submit, # reset_btn,
+def modal_SUBMIT_button(submit,  reset_btn,
                         TEMP_net_data_STORAGE,
                         TEMP_net_data_out2_STORAGE,
                         TEMP_consistency_data_STORAGE,
@@ -1099,15 +1099,23 @@ def modal_SUBMIT_button(submit, # reset_btn,
                         TEMP_net_split_ALL_data_out2_STORAGE,
                         ):
     """ reads in temporary data for all analyses and outputs them in non-temp storages """
-    if submit:
+    submit_modal_data_trigger = False
+
+    triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
+    if 'submit_modal_data.n_clicks' in triggered: submit_modal_data_trigger = True
+
+    if submit_modal_data_trigger:  # Is triggered by submit_modal_data.n_clicks
         OUT_DATA = [TEMP_net_data_STORAGE, TEMP_net_data_out2_STORAGE, TEMP_consistency_data_STORAGE, TEMP_user_elements_STORAGE,
                     TEMP_user_elements_out2_STORAGE, TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_forest_data_prws_STORAGE,
                     TEMP_forest_data_prws_out2_STORAGE, TEMP_ranking_data_STORAGE, TEMP_funnel_data_STORAGE, TEMP_funnel_data_out2_STORAGE,
                     TEMP_league_table_data_STORAGE, TEMP_net_split_data_STORAGE, TEMP_net_split_data_out2_STORAGE,TEMP_net_split_ALL_data_STORAGE,
                     TEMP_net_split_ALL_data_out2_STORAGE]
-        return OUT_DATA #if not reset_btn else list(DEFAULT_DATA.values())[:-2]
-    else:
-        return list(DEFAULT_DATA.values())[:-2]
+        return OUT_DATA
+    else:  # Must be triggered by reset_project.n_clicks
+        return [data.to_json(orient='split')
+                if label not in ['user_elements_STORAGE', 'user_elements_out2_STORAGE']
+                else data
+                for label, data in DEFAULT_DATA.items()][:-2]
 
 
 

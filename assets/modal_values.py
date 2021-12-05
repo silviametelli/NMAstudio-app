@@ -226,12 +226,6 @@ modal_league_table = dbc.Modal([
                                   ]),
                      dbc.ModalFooter([
                          html.Div([
-                             html.Button('Export colored', id='button-league-color', n_clicks=0, className="btn-export",
-                                         style={'margin-left': '5px', 'padding': '4px 4px 4px 4px',
-                                                'color': 'white', 'fontSize': 11, 'text-align': 'left',
-                                                'font-weight': '900', 'font-family': 'sans-serif',
-                                                'display': 'inline-block', 'vertical-align': 'top'}),
-                             dcc.Download(id="download_leaguetable-colored"),
 
                              html.Button('Export', id='league-export', n_clicks=0, className="btn-export",
                                      style={'margin-left': '10px', 'padding': '4px 4px 4px 4px',

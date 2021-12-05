@@ -103,7 +103,7 @@ tab_forests = dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persisten
                                                          'format': 'png',
                                                          # one of png, svg,
                                                          'filename': 'custom_image',
-                                                         'scale': 3
+                                                         'scale': 3.5
                                                          # Multiply title/legend/axis/canvas sizes by this factor
                                                      },
                                                      'displaylogo': False}))])
@@ -177,7 +177,7 @@ tab_forests = dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persisten
                                                                  'format': 'png',
                                                                  # one of png, svg,
                                                                  'filename': 'custom_image',
-                                                                 'scale': 3
+                                                                 'scale': 3.5
                                                                  # Multiply title/legend/axis/canvas sizes by this factor
                                                              },
                                                              'displaylogo': False})])

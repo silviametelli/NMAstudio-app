@@ -1,11 +1,11 @@
-import pandas as pd
+import pandas as pd, numpy as np
 import plotly.express as px
 
 
 def __Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):
-    EMPTY_DF = pd.DataFrame([[0] * 9],
+    EMPTY_DF = pd.DataFrame([],
                             columns=[ 'index', 'studlab', 'treat1', 'treat2', '',
-                                     'TE_direct', 'TE_adj', 'seTE', 'Comparison'])
+                            'TE_direct', 'TE_adj', 'seTE', 'Comparison'])
     if node:
         treatment = node[0]['label']
         funnel_data = pd.read_json(funnel_data, orient='split')
@@ -18,11 +18,12 @@ def __Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):
         effect_size = ''
         df = EMPTY_DF
 
-    max_y = df.seTE.max()+0.2
+    max_y = df.seTE.max()+0.2 if not np.isnan(df.seTE.max()) else 0.2
+    range_x = [min(df.TE_adj)-3, max(df.TE_adj)+3] if not np.isnan(df.TE_adj.max()) else None
 
-    fig = px.scatter(df if df is not None else EMPTY_DF,
-                     x="TE_adj", y="seTE",#log_x=xlog,
-                     range_x=[min(df.TE_adj)-3, max(df.TE_adj)+3],
+    fig = px.scatter(df,
+                     x="TE_adj", y="seTE", #log_x=xlog,
+                     range_x=range_x,
                      range_y=[0.01, max_y+10],
                      symbol="Comparison", color="Comparison",
                      color_discrete_sequence = px.colors.qualitative.Light24)

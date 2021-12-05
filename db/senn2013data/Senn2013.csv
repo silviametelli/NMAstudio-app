@@ -17,7 +17,7 @@ TE,seTE,treat1,treat2,studlab,rob,year,mean age,perc male ,indirectness,TE2,seTE
 -0.8,0.1432,Acarbose,Placebo,Costa1997,1,1997,55.1,55,3,-0.8,0.1432,100,100,100,100,1,2
 -0.57,0.1291,Sitagliptin,Placebo,Hermansen2007,1,2007,54.7,63,3,-0.57,0.1291,100,100,100,100,1,2
 -0.7,0.1273,Vildagliptin,Placebo,Garber2008,1,2008,55,61,3,-0.7,0.1273,43,43,43,43,1,2
--0.37,0.1184,Metformin,Sulfonylurea,Alex1998,1,1998,58.2,60,3,-0.27,0.0184,100,100,100,100,1,1
+-0.37,0.1184,Metformin,Sulfonylurea,Alex1998,1,1998,58.2,60,3,NA,0.0184,100,100,100,100,1,1
 -0.74,0.1839,Miglitol,Placebo,Johnston1994,2,1994,57.5,57,3,-0.73,0.1839,100,100,100,100,1,2
 -1.41,0.2235,Miglitol,Placebo,Johnston1998a,2,1998,57.6,61,3,-1.21,0.2235,50,50,50,50,1,2
 0,0.2339,Rosiglitazone,Metformin,Kim2007,2,2007,55.4,62,3,0,0.2339,100,100,100,100,1,1

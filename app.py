@@ -4,6 +4,9 @@
 # Created on: 10/11/2020
 # --------------------------------------------------------------------------------------------------------------------#
 import os, io, base64, shutil
+
+import pandas as pd
+
 from tools.PATHS import __SESSIONS_FOLDER, TEMP_PATH
 
 TEMP_DIR = "./__temp_logs_and_globals"
@@ -440,19 +443,25 @@ def get_new_data_cinema2(contents, cinema_net_data2, filename):
 @app.callback([Output('cytoscape', 'elements'),
                Output('modal-cytoscape', 'elements')],
               [Input('net_data_STORAGE', 'data'),
-               Input('net_data_out2_STORAGE', 'data'),
                Input('slider-year', 'value'),
                Input('toggle_forest_outcome', 'value'),
                Input('toggle_forest_pair_outcome', 'value'),
                Input('toggle_consistency_direction', 'value'),
                Input('toggle_funnel_direction', 'value')
                ])
-def update_layour_year_slider(net_data, net_data2, slider_year, out2_nma, out2_pair, out2_cons, out2_fun):
+def update_layour_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_cons, out2_fun):
+
     net_data = pd.read_json(net_data, orient='split')
-    net_data = net_data[net_data.year <= slider_year]
-    elements = get_network(df=net_data)
+
     if out2_nma or out2_pair or out2_cons or out2_fun:
-        net_data = pd.read_json(net_data2, orient='split')
+        net_data2 =  net_data.drop(["TE", "seTE", "n1", "n2"], axis=1)
+        net_data2 = net_data2.rename(columns={"TE2": "TE", "seTE2": "seTE", "n2.1": "n1", "n2.2": "n2"})
+        net_data = pd.DataFrame(net_data2)
+        print(net_data)
+
+        net_data = net_data[net_data.year <= slider_year]
+        elements = get_network(df=net_data)
+    else:
         net_data = net_data[net_data.year <= slider_year]
         elements = get_network(df=net_data)
     return elements, elements
@@ -867,9 +876,6 @@ def color_funnel_toggle(toggle_value):
 
 
 
-
-
-
 #############################################################################
 ######################### DISABLE TOGGLE SWITCHES ###########################
 #############################################################################
@@ -1034,23 +1040,27 @@ def toggle_modal_edge(open_t, close):
                State('datatable-upload', 'contents'),
                State('datatable-upload', 'filename'),
                State({'type': 'dataselectors', 'index': ALL}, 'value'),
-               State("TEMP_net_data_STORAGE", "data")
+               State("TEMP_net_data_STORAGE", "data"),
+
                ]
               )
 def data_modal(open_modal_data, upload, submit,
                value_format, value_outcome1, value_outcome2,
                modal_data_is_open, modal_data_checks_is_open,
-               contents, filename, dataselectors, TEMP_net_data_STORAGE
+               contents, filename, dataselectors, TEMP_net_data_STORAGE,
                ):
     ctx = dash.callback_context
     if not ctx.triggered: button_id = 'No clicks yet'
     else:                 button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
     if open_modal_data:
+
         if upload and button_id=='upload_modal_data':
             data = parse_contents(contents, filename)
             data = adjust_data(data, dataselectors, value_format ,value_outcome1, value_outcome2)
             TEMP_net_data_STORAGE = data.to_json( orient='split')
+
+
             return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE
 
         if submit and button_id == 'submit_modal_data':
@@ -1405,20 +1415,26 @@ def generate_csv(n_nlicks, data):
                prevent_initial_call=True)
 def generate_csv(n_nlicks, outcome2, consistencydata_all,  consistencydata_all_out2):
 
+    button_trigger  = False
+    triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
+    if 'btn-netsplit-all.n_clicks' in triggered: button_trigger = True
+
     df = (pd.read_json(consistencydata_all, orient='split') if not outcome2
           else  pd.read_json(consistencydata_all_out2, orient='split') if consistencydata_all_out2 else None)
 
-    if df is not None:
-        comparisons = df.comparison.str.split(':', expand=True)
-        df['Comparison'] = comparisons[0] + ' vs ' + comparisons[1]
-        df = df.loc[:, ~df.columns.str.contains("comparison")]
-        df = df.sort_values(by='Comparison').reset_index()
-        df = df[['Comparison', 'k', "direct", 'nma', "indirect", "p-value"]].round(decimals=4)
+    if button_trigger:
+        if df is not None:
+            comparisons = df.comparison.str.split(':', expand=True)
+            df['Comparison'] = comparisons[0] + ' vs ' + comparisons[1]
+            df = df.loc[:, ~df.columns.str.contains("comparison")]
+            df = df.sort_values(by='Comparison').reset_index()
+            df = df[['Comparison', 'k', "direct", 'nma', "indirect", "p-value"]].round(decimals=4)
+            df = df.set_index('Comparison')
+            df = df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+            return dash.dcc.send_data_frame(df.to_csv, filename="consistency_table_full.csv")
 
-    df = df.set_index('Comparison')
-    df =  df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+    else: return None
 
-    return dash.dcc.send_data_frame(df.to_csv, filename="consistency_table_full.csv")
 
 
 @app.callback(Output("download_consistency", "data"),

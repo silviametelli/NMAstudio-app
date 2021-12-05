@@ -1128,9 +1128,10 @@ def data_modal(open_modal_data, upload, submit,
             data = parse_contents(contents, filename)
             data = adjust_data(data, dataselectors, value_format ,value_outcome1, value_outcome2)
             TEMP_net_data_STORAGE = data.to_json( orient='split')
-            if submit and button_id == 'submit_modal_data':
-                return not modal_data_is_open, not modal_data_checks_is_open and (not modal_data_is_open), TEMP_net_data_STORAGE
             return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE
+
+        if submit and button_id == 'submit_modal_data':
+                return not modal_data_is_open, not modal_data_checks_is_open and (not modal_data_is_open), TEMP_net_data_STORAGE
 
         return not modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE
     else:
@@ -1155,8 +1156,10 @@ OUTPUTS_STORAGE_IDS = list(DEFAULT_DATA.keys())[:-2]
               prevent_initial_call=True)
 def modal_SUBMIT_button(submit,
                         TEMP_net_data_STORAGE,
+                        TEMP_net_data_out2_STORAGE,
                         TEMP_consistency_data_STORAGE,
                         TEMP_user_elements_STORAGE,
+                        TEMP_user_elements_out2_STORAGE,
                         TEMP_forest_data_STORAGE,
                         TEMP_forest_data_out2_STORAGE,
                         TEMP_forest_data_prws_STORAGE,
@@ -1170,7 +1173,8 @@ def modal_SUBMIT_button(submit,
                         ):
     """ reads in temporary data for all analyses and outputs them in non-temp storages """
     if submit:
-        OUT_DATA = [TEMP_net_data_STORAGE, TEMP_consistency_data_STORAGE, TEMP_user_elements_STORAGE, TEMP_forest_data_STORAGE,
+        OUT_DATA = [TEMP_net_data_STORAGE, TEMP_net_data_out2_STORAGE, TEMP_consistency_data_STORAGE, TEMP_user_elements_STORAGE,
+                    TEMP_user_elements_out2_STORAGE, TEMP_forest_data_STORAGE,
                     TEMP_forest_data_out2_STORAGE, TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2_STORAGE,
                     TEMP_ranking_data_STORAGE, TEMP_funnel_data_STORAGE, TEMP_funnel_data_out2_STORAGE,
                     TEMP_league_table_data_STORAGE, TEMP_net_split_data_STORAGE, TEMP_net_split_data_out2_STORAGE]

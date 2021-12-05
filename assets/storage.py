@@ -16,8 +16,11 @@ write_session_pickle(dct=SESSION_PICKLE, path=SESSION_PICKLE_PATH)
 # read_session_pickle(SESSION_PICKLE_PATH)
 
 NET_DATA = pd.read_csv('db/psoriasis_wide.csv')
+NET_DATA2 = NET_DATA.drop(["TE", "seTE", "n1", "n2"], axis=1)
+NET_DATA2 = NET_DATA2.rename(columns={"TE2": "TE", "seTE2": "seTE", "n2.1": "n1", "n2.2": "n2"})
 CONSISTENCY_DATA = pd.read_csv('db/consistency/consistency.csv')
-DEFAULT_ELEMENTS = USER_ELEMENTS = get_network(df=NET_DATA)
+DEFAULT_ELEMENTS = USER_ELEMENTS = get_network(df=NET_DATA2)
+DEFAULT_ELEMENTS2 = USER_ELEMENTS2 = get_network(df=NET_DATA2)
 FOREST_DATA = pd.read_csv('db/forest_data/forest_data.csv')
 FOREST_DATA_OUT2 = pd.read_csv('db/forest_data/forest_data_outcome2.csv')
 FOREST_DATA_PRWS = pd.read_csv('db/forest_data/forest_data_pairwise.csv')
@@ -32,8 +35,10 @@ FUNNEL_DATA = pd.read_csv('db/funnel/funnel_data.csv')
 FUNNEL_DATA_OUT2 = pd.read_csv('db/funnel/funnel_data_out2.csv')
 
 DEFAULT_DATA = OrderedDict(net_data_STORAGE=NET_DATA,
+                           net_data_out2_STORAGE=NET_DATA2,
                            consistency_data_STORAGE=CONSISTENCY_DATA,
                            user_elements_STORAGE=USER_ELEMENTS,
+                           user_elements_out2_STORAGE=USER_ELEMENTS2,
                            forest_data_STORAGE=FOREST_DATA,
                            forest_data_out2_STORAGE=FOREST_DATA_OUT2,
                            forest_data_prws_STORAGE=FOREST_DATA_PRWS,
@@ -52,7 +57,7 @@ OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col}
 N_CLASSES = USER_ELEMENTS[-1]["data"]['n_class'] if "n_class" in USER_ELEMENTS[-1]["data"] else 1
 
 
-STORAGE = [dcc.Store(id=label, data=data.to_json(orient='split') if label!='user_elements_STORAGE' else data,
+STORAGE = [dcc.Store(id=label, data=data.to_json(orient='split') if label not in ['user_elements_STORAGE', 'user_elements_out2_STORAGE'] else data,
                      storage_type=SESSION_TYPE)
            for label, data in DEFAULT_DATA.items()
            ] + [

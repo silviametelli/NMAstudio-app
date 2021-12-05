@@ -346,6 +346,8 @@ def TapEdgeData(edge):
         return "Click on an edge to get information."
 
 
+
+
 def parse_contents(contents, filename):
     content_type, content_string = contents.split(',')
     decoded = base64.b64decode(content_string)
@@ -434,15 +436,25 @@ def get_new_data_cinema2(contents, cinema_net_data2, filename):
 
 ### ----- Update layout with slider ------ ###
 @app.callback([Output('cytoscape', 'elements'),
-               Output('modal-cytoscape', 'elements')
-               ],
+               Output('modal-cytoscape', 'elements')],
               [Input('net_data_STORAGE', 'data'),
-               Input('slider-year', 'value')])
-def update_layour_year_slider(net_data, slider_year):
+               Input('net_data_out2_STORAGE', 'data'),
+               Input('slider-year', 'value'),
+               Input('toggle_forest_outcome', 'value'),
+               Input('toggle_forest_pair_outcome', 'value'),
+               Input('toggle_consistency_direction', 'value'),
+               Input('toggle_funnel_direction', 'value')
+               ])
+def update_layour_year_slider(net_data, net_data2, slider_year, out2_nma, out2_pair, out2_cons, out2_fun):
     net_data = pd.read_json(net_data, orient='split')
     net_data = net_data[net_data.year <= slider_year]
     elements = get_network(df=net_data)
+    if out2_nma or out2_pair or out2_cons or out2_fun:
+        net_data = pd.read_json(net_data2, orient='split')
+        net_data = net_data[net_data.year <= slider_year]
+        elements = get_network(df=net_data)
     return elements, elements
+
 
 #########################################################
 ### ----- display Data Table and League Table ------ ###
@@ -852,6 +864,10 @@ def color_funnel_toggle(toggle_value):
     return style1, style2
 
 
+
+
+
+
 #############################################################################
 ######################### DISABLE TOGGLE SWITCHES ###########################
 #############################################################################
@@ -876,10 +892,12 @@ def disable_out2_toggle(ranking_data):
 
 
 @app.callback(Output('rob_vs_cinema', 'disabled'),
-              Input('datatable-secondfile-upload', 'filename')
+              Input('datatable-secondfile-upload', 'filename'),
+              Input('uploaded_datafile', 'filename')
+
               )
-def disable_cinema_toggle(filename):
-    if filename is None: return True
+def disable_cinema_toggle(filename,filename_data):
+    if filename is None and filename_data is not None: return True
     else: return False
 
 ###############################################################################
@@ -908,7 +926,7 @@ def generate_csv(n_nlicks, leaguedata):
               [Input('button-league-color', "n_clicks"),
                State("league_table", "children")],
                prevent_initial_call=True)
-def generate_csv(n_nlicks, leaguedata):
+def generate_xlsx(n_nlicks, leaguedata):
     df = pd.DataFrame(leaguedata['props']['data'])
 
     style_data_conditional = leaguedata['props']['style_data_conditional']
@@ -1203,7 +1221,8 @@ def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, TEMP_net_data_STOR
                Output('para-anls-data', 'data'),
                Output("TEMP_forest_data_STORAGE", "data"),
                Output("TEMP_forest_data_out2_STORAGE", "data"),
-               Output("TEMP_user_elements_STORAGE", "data")],
+               Output("TEMP_user_elements_STORAGE", "data"),
+               Output("TEMP_user_elements_out2_STORAGE", 'data')],
               Input("modal_data_checks", "is_open"),
               State("TEMP_net_data_STORAGE", "data"),
               State("TEMP_forest_data_STORAGE", "data"),
@@ -1221,19 +1240,19 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE, TE
                 net_data_out2 = net_data_out2.rename(columns={"TE2": "TE", "seTE2": "seTE", "n2.1": "n1", "n2.2": "n2"})
                 NMA_data2 = run_network_meta_analysis(net_data_out2)
                 TEMP_forest_data_out2_STORAGE = NMA_data2.to_json(orient='split')
-                #TEMP_user_elements2_STORAGE = get_network(df=net_data_out2)
+                TEMP_user_elements_out2_STORAGE = get_network(df=net_data_out2)
                 error = ' '
 
             return (False, error, html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
-                    '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE)
+                    '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE, TEMP_user_elements_out2_STORAGE)
         except:
             error = ' here should go the error printed in R[write to console]: Error: '
             return (True, error, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
-                    '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE)
+                    '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE, TEMP_user_elements_out2_STORAGE)
 
     else:
         error = ''
-        return False, error, None, '', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, None
+        return False, error, None, '', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, None, None
 
 
 

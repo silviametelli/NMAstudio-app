@@ -280,7 +280,40 @@ pairwise_forest <- function(dat){
   return(DFs_pairwise)
 }
 
-get_pairwise_data <- function(dat){
-  pairwise_dat <- netmeta::pairwise(dat, sm=dat$effect_size1[1]) #TODO: if two outcomes: produce two datasets, one per outcome
-  return(pairwise_dat)
+
+
+#----------------------------------- pairwise function to convert data -----------------------------------------#
+
+get_pairwise_data <- function(dat, outcome2=FALSE){
+  if(outcome2==TRUE){
+    sm1 <- dat$effect_size1[1]
+    sm2 <- dat$effect_size2[1]
+    pairwise_dat1 <- netmeta::pairwise(data=dat,
+                                       event=r1,
+                                       n=n1,
+                                       studlab=studlab,
+                                       treat=treat,
+                                       incr=0.5,
+                                       sm=sm1)
+    pairwise_dat2 <- netmeta::pairwise(data=dat,
+                                       event=r2,
+                                       n=n2,
+                                       studlab=studlab,
+                                       treat=treat,
+                                       incr=0.5,
+                                       sm=sm2)
+    pairwise_dat <- full_join(pairwise_dat1, pairwise_dat2, by = c("studlab","treat1","treat2"))
+    }else{sm1 <- dat$effect_size1[1]
+          pairwise_dat1 <- netmeta::pairwise(data=dat,
+                                             event=r1,
+                                             n=n1,
+                                             studlab=studlab,
+                                             treat=treat,
+                                             incr=0.5,
+                                             sm=sm1)
+          pairwise_dat <- pairwise_dat1
+    }
+
+  return (pairwise_dat)
+
 }

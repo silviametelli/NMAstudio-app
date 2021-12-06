@@ -38,16 +38,12 @@ app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=devi
                 suppress_callback_exceptions=True)
 # app.config.suppress_callback_exceptions = True
 
-SESSION_ID = get_new_session_id()
 
 def get_new_layout():
+    SESSION_ID = get_new_session_id()
     SESSION_PICKLE_PATH = get_session_pickle_path(session_id=SESSION_ID)
     write_session_pickle(dct=SESSION_PICKLE, path=SESSION_PICKLE_PATH)
 
-    EMPTY_SELECTION_NODES = {'active': {'ids': dict()}}
-    EMPTY_SELECTION_EDGES = {'id': None}
-    write_node_topickle(store_node=EMPTY_SELECTION_NODES, session_id=SESSION_ID)
-    write_edge_topickle(store_edge=EMPTY_SELECTION_EDGES, session_id=SESSION_ID)
 
     return html.Div([dcc.Location(id='url', refresh=False),
                      html.Div(id='page-content'),
@@ -56,7 +52,7 @@ def get_new_layout():
                                      'today': TODAY,
                                      'session_ID': SESSION_ID,
                                      'session_pickle_path': SESSION_PICKLE_PATH},
-                               storage_type=SESSION_TYPE,
+                               storage_type='memory',
                                )
                      ])
 
@@ -1057,8 +1053,12 @@ def data_modal(open_modal_data, upload, submit,
 
         if upload and button_id=='upload_modal_data':
             data = parse_contents(contents, filename)
-            data = adjust_data(data, dataselectors, value_format ,value_outcome1, value_outcome2)
-            TEMP_net_data_STORAGE = data.to_json( orient='split')
+            try:
+                data = adjust_data(data, dataselectors, value_format ,value_outcome1, value_outcome2)
+                TEMP_net_data_STORAGE = data.to_json(orient='split')
+            except:
+                 TEMP_net_data_STORAGE = {}
+                 raise ValueError('data conversion failed')
 
 
             return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE
@@ -1156,8 +1156,7 @@ def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, TEMP_net_data_STOR
         if all(passed_checks.values()):
                 return html.P(u"\u2713" + " All data checks passed.", style={"color":"green"}), '__Para_Done__'
         else:
-            return (html.P([u"\u274C",
-                                " WARNING - some data checks failed:"]+sum([[html.Br(), f'Failed on {k}']
+            return (html.P(["WARNING - some data checks failed:"]+sum([[html.Br(), f'Failed on {k}']
                                                                         for k,v in passed_checks.items()
                                                                             if not v], []), style={"color": "orange"}),
                                 '__Para_Done__')
@@ -1379,17 +1378,25 @@ def toggle_modal(open, close, is_open):
               [Input('datatable-upload', 'filename'),
               Input("net_data_STORAGE", "data"),
               Input("modal_data", "is_open"),
+              Input("dropdown-format", "value"),
               Input("dropdown-outcome1", "value"),
               Input("dropdown-outcome2", "value")],
               )
-def display_confirm(filename, data, modal_data_open, value_outcome1, value_outcome2):
+def display_confirm(filename, data, modal_data_open, value_format, value_outcome1, value_outcome2):
     data_ = pd.read_json(data, orient='split')
     if modal_data_open and filename is not None and value_outcome1 is not None:
-        if value_outcome2 is None:
-            return True if ('y1' in data_.columns and value_outcome1=="continuous") or ('r1' in data_.columns and value_outcome1=="binary") else False
-        else:
-            return True if ('y1' in data_.columns and value_outcome1=="continuous") or ('r1' in data_.columns and value_outcome1=="binary") or \
-                           ('y2' in data_.columns and value_outcome2=="continuous") or ('r2' in data_.columns and value_outcome2=="binary") else False
+        if value_format == 'contrast':
+            if value_outcome2 is None:
+                return True if ('y1' in data_.columns and value_outcome1=="continuous") or ('r1' in data_.columns and value_outcome1=="binary") else False
+            else:
+                return True if ('y1' in data_.columns and value_outcome1=="continuous") or ('r1' in data_.columns and value_outcome1=="binary") or \
+                               ('y2' in data_.columns and value_outcome2=="continuous") or ('r2' in data_.columns and value_outcome2=="binary") else False
+        elif value_format == 'long':
+            if value_outcome2 is None:
+                return True if ('y1' in data_.columns and value_outcome1=="binary") or ('r1' in data_.columns and value_outcome1=="continuous") else False
+            else:
+                return True if ('y1' in data_.columns and value_outcome1=="binary") or ('r1' in data_.columns and value_outcome1=="continuous") or \
+                               ('y2' in data_.columns and value_outcome2=="binary") or ('r2' in data_.columns and value_outcome2=="continuous") else False
     else: return False
 
 
@@ -1562,5 +1569,5 @@ def generate_xlsx(n_clicks, leaguedata):
 if __name__ == '__main__':
     app._favicon = ("assets/favicon.ico")
     app.title = 'NMAstudio'
-    app.run_server(debug=False)
+    app.run_server(debug=True)
 

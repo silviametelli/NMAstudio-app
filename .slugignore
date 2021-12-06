@@ -5,3 +5,4 @@ db/data_testing.csv
 db/long_df.csv
 db/psoriasis_wide_small.csv
 senn2013data
+db/psoriasis_merged_arm.csv

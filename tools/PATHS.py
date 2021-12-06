@@ -9,7 +9,7 @@ get_new_session_id = lambda: uuid.uuid4().__str__()
 get_session_pickle_path = lambda session_id: f'{__SESSIONS_FOLDER}/{session_id}.pickle'
 SESSION_PICKLE = {'wait':False}
 
-SESSION_TYPE = 'memory'
+SESSION_TYPE = 'session'
 
 """
 SESSION_TYPE: (a value equal to: 'local', 'session', 'memory'; default 'memory'):

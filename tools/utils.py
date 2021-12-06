@@ -49,19 +49,6 @@ def apply_r_func_twooutcomes(func, df):
 # ----------------------------------------------------------------------------------
 ## -------------------------------------------------------------------------------- ##
 
-def write_node_topickle(store_node, session_id):
-    with open(f'{__SESSIONS_FOLDER}/selected_nodes_{session_id}.pickle', 'wb') as f:
-        pickle.dump(store_node, f, protocol=pickle.HIGHEST_PROTOCOL)
-
-def read_node_frompickle(session_id):
-    return pickle.load(open(f'{__SESSIONS_FOLDER}/selected_nodes_{session_id}.pickle', 'rb'))
-
-def write_edge_topickle(store_edge, session_id):
-    with open(f'{__SESSIONS_FOLDER}/selected_edges_{session_id}.pickle', 'wb') as f:
-        pickle.dump(store_edge, f, protocol=pickle.HIGHEST_PROTOCOL)
-
-def read_edge_frompickle(session_id):
-    return pickle.load(open(f'{__SESSIONS_FOLDER}/selected_edges_{session_id}.pickle', 'rb'))
 
 def write_session_pickle(dct, path):
     with open(path, 'wb') as f:
@@ -136,10 +123,17 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
     get_effect_size1 = effect_sizes[value_outcome1][dataselectors[0]]
 
     if value_format=='long':
-        try:
-            data = apply_r_func(func=run_pairwise_data_r, df=data)
-        except:
-            data = 'conversion failed'
+
+        if value_outcome2:
+            data['effect_size2'] = dataselectors[1]
+
+        if data['rob'].dtype == np.object:
+            data['rob'] = (data['rob'].str.lower()
+                           .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
+                           .replace({'l': 1, 'm': 2, 'h': 3}))
+
+        data = apply_r_func(func=run_pairwise_data_r, df=data)
+
 
     if value_format=='contrast':
         data['TE'], data['seTE'] = get_effect_size1(data, effect=1)
@@ -152,12 +146,14 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
                       .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
                       .replace({'l': 1, 'm': 2, 'h': 3}))
 
+
     if value_format == 'iv':
         data['effect_size1'] = dataselectors[0]
         if value_outcome2: data['effect_size2'] = dataselectors[1]
         data = data
 
     return data
+
 
 ## ----------------------  FUNCTIONS for Running data analysis in R  --------------------------- ##
 

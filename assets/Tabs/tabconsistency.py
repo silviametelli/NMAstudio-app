@@ -94,7 +94,7 @@ def tab_consistency(consistency_data=CONSISTENCY_DATA):
                                            }),
                         html.P(id='export-cons-button-hidden', style={'display': 'none'}),
                         dcc.Download(id="download_consistency")]),
-              html.Div([html.Button('Show  all', 'btn-netsplit-all', n_clicks=0,className="btn-export2",
+              html.Div([html.Button('Save all', 'btn-netsplit-all', n_clicks=0,className="btn-export2",
                           style={'padding': '0px 4px 0px 4px','margin-right': '20%',
                                  'margin-bottom': '2px', 'color': 'white', 'fontSize': 10,'margin-top': '-7%',
                                  'font-weight': '900', 'font-family': 'sans-serif', 'display': 'inline-block',

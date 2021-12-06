@@ -1,19 +1,10 @@
 # from assets.modal_values import *
 import dash_core_components as dcc
 import pandas as pd
-from tools.utils import get_network, write_session_pickle
-import uuid
-from tools.PATHS import __SESSIONS_FOLDER, TODAY
+from tools.utils import get_network
+from tools.PATHS import SESSION_TYPE
 from collections import OrderedDict
 
-SESSION_ID = uuid.uuid4().__str__()
-SESSION_PICKLE_PATH = f'{__SESSIONS_FOLDER}/{SESSION_ID}.pickle'
-SESSION_PICKLE = {'wait':False}
-
-SESSION_TYPE = 'session'
-
-write_session_pickle(dct=SESSION_PICKLE, path=SESSION_PICKLE_PATH)
-# read_session_pickle(SESSION_PICKLE_PATH)
 
 NET_DATA = pd.read_csv('db/psoriasis_wide.csv')
 NET_DATA2 = NET_DATA.drop(["TE", "seTE", "n1", "n2"], axis=1)
@@ -61,14 +52,11 @@ OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col} for col in NET_DATA.sel
 N_CLASSES = USER_ELEMENTS[-1]["data"]['n_class'] if "n_class" in USER_ELEMENTS[-1]["data"] else 1
 
 
-STORAGE = [dcc.Store(id=label, data=data.to_json(orient='split') if label not in ['user_elements_STORAGE', 'user_elements_out2_STORAGE'] else data,
+STORAGE = [dcc.Store(id=label, data=(data.to_json(orient='split')
+                                     if label not in ['user_elements_STORAGE', 'user_elements_out2_STORAGE']
+                                     else data),
                      storage_type=SESSION_TYPE)
            for label, data in DEFAULT_DATA.items()] + [
-            dcc.Store(id='consts_STORAGE', data={'dwnld_bttn_calls':0,
-                                         'today':TODAY,
-                                         'session_ID':SESSION_ID,
-                                         'session_pickle_path':SESSION_PICKLE_PATH},
-                      storage_type=SESSION_TYPE)] + [
             dcc.Store(id='TEMP_'+new_id, storage_type=SESSION_TYPE) for new_id in DEFAULT_DATA.keys()
 ]
 

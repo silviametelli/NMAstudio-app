@@ -1,5 +1,5 @@
-import pickle
-from tools.PATHS import TEMP_PATH
+import os, shutil, pickle
+from tools.PATHS import __TEMP_LOGS_AND_GLOBALS, __SESSIONS_FOLDER, YESTERDAY
 from assets.effect_sizes import *
 # ---------R2Py Resources --------------------------------------------------------------------------------------------#
 from rpy2.robjects import pandas2ri  # Define the R script and loads the instance in Python
@@ -49,19 +49,19 @@ def apply_r_func_twooutcomes(func, df):
 # ----------------------------------------------------------------------------------
 ## -------------------------------------------------------------------------------- ##
 
-def write_node_topickle(store_node):
-    with open(f'{TEMP_PATH}/selected_nodes.pickle', 'wb') as f:
+def write_node_topickle(store_node, session_id):
+    with open(f'{__SESSIONS_FOLDER}/selected_nodes_{session_id}.pickle', 'wb') as f:
         pickle.dump(store_node, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-def read_node_frompickle():
-    return pickle.load(open(f'{TEMP_PATH}/selected_nodes.pickle', 'rb'))
+def read_node_frompickle(session_id):
+    return pickle.load(open(f'{__SESSIONS_FOLDER}/selected_nodes_{session_id}.pickle', 'rb'))
 
-def write_edge_topickle(store_edge):
-    with open(f'{TEMP_PATH}/selected_edges.pickle', 'wb') as f:
+def write_edge_topickle(store_edge, session_id):
+    with open(f'{__SESSIONS_FOLDER}/selected_edges_{session_id}.pickle', 'wb') as f:
         pickle.dump(store_edge, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-def read_edge_frompickle():
-    return pickle.load(open(f'{TEMP_PATH}/selected_edges.pickle', 'rb'))
+def read_edge_frompickle(session_id):
+    return pickle.load(open(f'{__SESSIONS_FOLDER}/selected_edges_{session_id}.pickle', 'rb'))
 
 def write_session_pickle(dct, path):
     with open(path, 'wb') as f:
@@ -202,6 +202,22 @@ def generate_league_table(df, outcome2=False):
 def generate_funnel_data(df):
     funnel = apply_r_func(func=funnel_plot_r, df=df)
     return funnel
+
+
+def create_sessions_folders():
+    for dir in [__TEMP_LOGS_AND_GLOBALS, __SESSIONS_FOLDER, __TEMP_LOGS_AND_GLOBALS]:
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+        # os.makedirs(__TEMP_LOGS_AND_GLOBALS, exist_ok=True)
+
+
+def clean_sessions_folders():
+    """Deletes all folders in __temp_logs_and_globals (__TEMP_LOGS_AND_GLOBALS)
+    created more than 2 days ago."""
+    del_folders = [p for p in os.listdir(__TEMP_LOGS_AND_GLOBALS)
+                   if p[0]!='.' and p<YESTERDAY]
+    for dir in del_folders:
+        shutil.rmtree(f'{__TEMP_LOGS_AND_GLOBALS}/{dir}', ignore_errors=True)
 
 
 

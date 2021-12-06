@@ -3,12 +3,12 @@
 # Created by:  Silvia Metelli
 # Created on: 10/11/2020
 # --------------------------------------------------------------------------------------------------------------------#
-import os, io, base64, shutil
-from tools.PATHS import __SESSIONS_FOLDER, TEMP_PATH
+import io, base64
+from tools.utils import *
+from tools.PATHS import SESSION_PICKLE, get_session_pickle_path, TODAY, SESSION_TYPE, get_new_session_id
 
-TEMP_DIR = "./__temp_logs_and_globals"
-for dir in [TEMP_DIR, __SESSIONS_FOLDER, TEMP_PATH]:
-    if not os.path.exists(dir): os.makedirs(dir)
+create_sessions_folders()
+clean_sessions_folders()
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -16,8 +16,6 @@ warnings.filterwarnings("ignore")
 import dash
 from dash.dependencies import Input, Output, State, ALL
 from tools.layouts import *
-from tools.utils import *
-
 from tools.functions_ranking_plots import __ranking_plot
 from tools.functions_funnel_plot import __Tap_funnelplot
 from tools.functions_nmaforest_plot import __TapNodeData_fig, __TapNodeData_fig_bidim
@@ -25,14 +23,6 @@ from tools.functions_pairwise_plots import __update_forest_pairwise
 from tools.functions_boxplots import __update_boxplot
 
 # --------------------------------------------------------------------------------------------------------------------#
-
-shutil.rmtree(TEMP_PATH, ignore_errors=True)
-os.makedirs(TEMP_PATH, exist_ok=True)
-
-EMPTY_SELECTION_NODES = {'active': {'ids': dict()}}
-EMPTY_SELECTION_EDGES = {'id': None}
-write_node_topickle(EMPTY_SELECTION_NODES)
-write_edge_topickle(EMPTY_SELECTION_EDGES)
 
 
 # Load extra layouts
@@ -51,11 +41,32 @@ app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=devi
                 suppress_callback_exceptions=True)
 # app.config.suppress_callback_exceptions = True
 
+SESSION_ID = get_new_session_id()
 
+def get_new_layout():
+    SESSION_PICKLE_PATH = get_session_pickle_path(session_id=SESSION_ID)
+    write_session_pickle(dct=SESSION_PICKLE, path=SESSION_PICKLE_PATH)
+
+    EMPTY_SELECTION_NODES = {'active': {'ids': dict()}}
+    EMPTY_SELECTION_EDGES = {'id': None}
+    write_node_topickle(store_node=EMPTY_SELECTION_NODES, session_id=SESSION_ID)
+    write_edge_topickle(store_edge=EMPTY_SELECTION_EDGES, session_id=SESSION_ID)
+
+    print(SESSION_PICKLE_PATH)
+
+    return html.Div([dcc.Location(id='url', refresh=False),
+                     html.Div(id='page-content'),
+                     dcc.Store(id='consts_STORAGE',
+                               data={'dwnld_bttn_calls': 0,
+                                     'today': TODAY,
+                                     'session_ID': SESSION_ID,
+                                     'session_pickle_path': SESSION_PICKLE_PATH},
+                               storage_type=SESSION_TYPE,
+                               )
+                     ])
 
 server = app.server
-app.layout = html.Div([dcc.Location(id='url', refresh=False),
-                       html.Div(id='page-content')])
+app.layout = get_new_layout()
 
 
 # ------------------------------ app interactivity ----------------------------------#
@@ -1555,5 +1566,5 @@ def generate_xlsx(n_clicks, leaguedata):
 if __name__ == '__main__':
     app._favicon = ("assets/favicon.ico")
     app.title = 'NMAstudio'
-    app.run_server(debug=False)
+    app.run_server(debug=True)
 

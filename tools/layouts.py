@@ -1,5 +1,6 @@
 from assets.dropdowns_values import *
 from tools.navbar import Navbar
+import dash_bootstrap_components as dbc, dash_html_components as html
 from assets.Tabs.tabdata import tab_data
 from assets.Tabs.tabtransitivity import tab_trstvty
 from assets.Tabs.tabforests import tab_forests
@@ -17,7 +18,6 @@ def Homepage():
 
 def home_layout():
     return html.Div(className="app__container", children=STORAGE+[
-                        html.Div(id='img_div', style={'display': 'none'}),
                         html.Div(alert_data_type, style={'vertical-align':"top"}),
                         html.Div(alert_outcome_type, style={'vertical-align': "top"}),
                         html.Div(alert_data_type, style={'vertical-align': "top"}),
@@ -204,19 +204,47 @@ dcc.Markdown('G. Rücker, G. Schwarzer, U. Krahn, and J. König. netmeta: Networ
 
 ############################################  NEWS PAGE  #######################################################
 
-news_layout = html.Div([Navbar(), html.Br(),  html.Br(), html.Br(),
+list_forthcmg_features=['Flexible column data selection', 'R console printed for debugging', 'Sensitivity analyses'
+                        'Fully connected network', 'More options for node size', 'More options for edge size']
 
-    html.H1("Upcoming new features", style={'font-size':'20px', 'color':'white', 'padding-left':'3%',
-                                          'padding-right':'3%', 'font-family':'sans-serif'}),  html.Br(),
+list_future_features=['Option for Bayesian analysis', 'Option to upload a file containing NMA results']
 
-       dcc.Markdown('Upcoming features',
-             className="markdown_style"),
-       html.Br(),
-    dcc.Markdown('',
+news_layout = html.Div([
+
+    Navbar(),
+
+    html.Br(),html.Br(),
+
+
+    html.H1("Forthcoming features", style={'font-size':'20px', 'color':'#76c0cf', 'padding-left':'3%',
+                                          'padding-right':'3%', 'font-family':'sans-serif'}),
+
+        html.Div(
+           className="list-features",
+           children=[
+               html.Ul(id='my-list', children=[html.Li(i) for i in list_forthcmg_features])
+                ],
+            ),
+
+    html.Br(),
+
+    html.H1("Future features", style={'font-size': '20px', 'color': '#76c0cf', 'padding-left': '3%',
+                                               'padding-right': '3%', 'font-family': 'sans-serif'}),
+
+       # html.Div(
+       #     className="list-features",
+       #     children=[
+       #         html.Ul(id='my-list2', children=[html.Li(i) for i in list_future_features])],
+       #     style={ "content":"\f138"}
+       # ),
+
+    html.Div(html.Ul([html.Li(i) for i in list_future_features])),
+
+
+    html.Div([dcc.Markdown('',
                  className="markdown_style"),
-                        html.Br(),
-                        html.Br(),
-                        html.Br(),
+                        html.Br(),html.Br(),
+
 
                         dcc.Markdown('Do you have any questions or suggestions for features you would like to see implemented in the next update of NMAstudio?'
                             , className="markdown_style"),
@@ -225,3 +253,5 @@ news_layout = html.Div([Navbar(), html.Br(),  html.Br(), html.Br(),
                         dcc.Markdown('Get in touch at silvia.metelli@u-paris.fr'
                             , className="markdown_style"),
     ])
+
+])

@@ -69,12 +69,15 @@ app.layout = get_new_layout()
 HOMEPAGE = Homepage()
 
 # Update the index
-@app.callback(Output('page-content', 'children'), [Input('url', 'pathname')])
+@app.callback(Output('page-content', 'children'),
+              [Input('url', 'pathname')])
 def display_page(pathname):
     if pathname == '/home':  return HOMEPAGE
     elif pathname == '/doc': return doc_layout
     elif pathname == '/news': return news_layout
     else:  return HOMEPAGE
+
+
 
 # Update which link is active in the navbar
 @app.callback(Output('homepage-link', 'active'),

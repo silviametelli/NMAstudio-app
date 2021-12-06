@@ -561,6 +561,11 @@ img:hover {
 }
 
 
+
+
+
+
+
 /* FOR NAVBAR */
 @media (min-width:1200px){
     .container,.container-lg,.container-md,.container-sm,
@@ -594,31 +599,36 @@ img:hover {
 
 ul {
   list-style-type: none;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  text-align: right;
+  padding: 30px;
+    min-width: 100px;
+    color:white;
+     white-space: nowrap;
+  text-align: left;
 }
-
 
 li {
-  width: 130px !important;
-  float: end !important;
-    background-position: 100% .4em;
-    padding-right: .6em;
-    padding-top: .4em;
-    text-align:center;
-    /*text-wrap: avoid;*/
-    /*margin-left: auto !important;*/
-}
+    font-size: 14px;
+      width: 130px !important;
+    margin-left: 20px;
+ }
 
-ul li { display: inline }
+/*li {*/
+/*  width: 130px !important;*/
+/*  float: end !important;*/
+/*    background-position: 100% .4em;*/
+/*    padding-right: .6em;*/
+/*    padding-top: .4em;*/
+/*    text-align:center;*/
+/*    !*text-wrap: avoid;*!*/
+/*    !*margin-left: auto !important;*!*/
+/*}*/
+
 
 li a {
-  display: block !important;
+  /*display: block !important;*/
   color: white;
   text-align: center;
-  padding: 0px 0px;
+  padding: 10px 10px;
   padding-top: .4em;
   text-decoration: none;
 }

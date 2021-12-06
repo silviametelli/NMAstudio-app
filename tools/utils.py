@@ -33,6 +33,8 @@ def apply_r_func(func, df):
         df_result = r_result.reset_index(drop=True)  # Convert back to a pandas.DataFrame.
         return df_result
 
+
+
 def apply_r_func_twooutcomes(func, df):
     with localconverter(ro.default_converter + pandas2ri.converter):
         df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
@@ -124,15 +126,16 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
 
     if value_format=='long':
 
-        if value_outcome2:
-            data['effect_size2'] = dataselectors[1]
-
-        if data['rob'].dtype == np.object:
+        if data['rob'].dtype == object:
             data['rob'] = (data['rob'].str.lower()
                            .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
                            .replace({'l': 1, 'm': 2, 'h': 3}))
 
-        data = apply_r_func(func=run_pairwise_data_r, df=data)
+        if value_outcome2:
+            data['effect_size2'] = dataselectors[1]
+            data = apply_r_func_twooutcomes(func=run_pairwise_data_r, df=data)
+
+        else: data = apply_r_func(func=run_pairwise_data_r, df=data)
 
 
     if value_format=='contrast':
@@ -141,7 +144,7 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
             data['effect_size2'] = dataselectors[1]
             get_effect_size2 = effect_sizes[value_outcome2][dataselectors[1]]
             data['TE2'], data['seTE2'] = get_effect_size2(data, effect=2)
-    if data['rob'].dtype == np.object:
+    if data['rob'].dtype == object:
         data['rob'] = (data['rob'].str.lower()
                       .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
                       .replace({'l': 1, 'm': 2, 'h': 3}))

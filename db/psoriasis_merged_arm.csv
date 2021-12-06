@@ -1,4 +1,4 @@
-﻿id,unique_id,studlab,naif,bias,treat,treatdose,n1,n_completers,r1,rPASI75,rPGA,rAE,rSAE,r2,n2,age,male
+﻿id,unique_id,studlab,naif,rob,treat,treatdose,n1,n_completers,r1,rPASI75,rPGA,rAE,rSAE,r2,n2,age,male
 2,1,Griffith_2010_ACCEPT,,H,ETA,ETA_AMM,347,347,80,197,170,243,4,4,347,45,613
 3,1,Griffith_2010_ACCEPT,,H,USK,USK_45,209,209,76,141,136,138,4,4,209,45,126
 4,2,Igarashi_2012,,M,PBO,PBO,32,31,1,2,3,21,2,,32,45,222
@@ -309,9 +309,3 @@
 311,157,"Warren IMMerge, 2020",,M,SECU,SECU_AMM,163,163,107,130,119,116,6,,163,40.5,412
 312,158,"NCT03482011 OASIS-1, 2020",,L,MIRI,MIRI,423,423,272,349,293,199,5,5,423,46,707
 312,158,"NCT03482011 OASIS-1, 2020",,L,PBO,PBO,107,107,7,10,7,51,2,2,107,42.5,71
-,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,

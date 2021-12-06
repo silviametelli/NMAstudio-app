@@ -1073,14 +1073,15 @@ def data_modal(open_modal_data, upload, submit,
     if open_modal_data:
 
         if upload and button_id=='upload_modal_data':
-            data = parse_contents(contents, filename)
+            data_user = parse_contents(contents, filename)
             try:
-                data = adjust_data(data, dataselectors, value_format ,value_outcome1, value_outcome2)
+            try:
+                data = adjust_data(data_user, dataselectors, value_format ,value_outcome1, value_outcome2)
                 TEMP_net_data_STORAGE = data.to_json(orient='split')
+
             except:
                  TEMP_net_data_STORAGE = {}
                  raise ValueError('data conversion failed')
-
 
             return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE
 
@@ -1205,6 +1206,8 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE, TE
             NMA_data = run_network_meta_analysis(net_data)
             TEMP_forest_data_STORAGE = NMA_data.to_json( orient='split')
             TEMP_user_elements_STORAGE = get_network(df=net_data)
+            TEMP_user_elements_out2_STORAGE = []
+
             if "TE2" in net_data.columns:
                 net_data_out2 = net_data.drop(["TE", "seTE",  "n1",  "n2"], axis=1)
                 net_data_out2 = net_data_out2.rename(columns={"TE2": "TE", "seTE2": "seTE", "n2.1": "n1", "n2.2": "n2"})

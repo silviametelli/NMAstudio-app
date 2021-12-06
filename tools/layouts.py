@@ -174,6 +174,9 @@ doc_layout = html.Div(id='docpage-link', children = [Navbar(), html.Br(),  html.
 html.H1("NMAstudio (version 0.1)", style={'font-size':'20px', 'color':'white', 'padding-left':'3%',
                                           'padding-right':'3%', 'font-family':'sans-serif'}),  html.Br(),
 
+dcc.Markdown('Please cite us as:       ',
+             className="markdown_style"),   html.Br(),   html.Br(),
+
 dcc.Markdown('NMAstudio is a web application to produce and visualise interactive outputs from network meta-analyses',
              className="markdown_style"),
     html.Br(),
@@ -187,7 +190,7 @@ dcc.Markdown('G. Rücker, G. Schwarzer, U. Krahn, and J. König. netmeta: Networ
 # dcc.Markdown('The methods are described in',className="markdown_style"),
 #                        html.Br(), html.Br(),
 
-                       html.Div([dcc.Markdown("Please click the button beside to download a pdf copy of the NMAstudio User Guide:", className="markdown_style",
+                       html.Div([dcc.Markdown("Click the button beside to download a pdf copy of NMAstudio User Guide:", className="markdown_style",
                                style={'margin-right':'5px', 'display':'inline-block'}),
                        html.Button('Download documentation', id='full-docu-pdf', style={'color':'white', 'display':'inline-block','padding':'4px'})
                     ]),

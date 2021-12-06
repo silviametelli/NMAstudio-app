@@ -154,7 +154,7 @@ league_rank <- function(dat, outcome2=FALSE){
 }
 
 ## comparison adjusted funnel plots
-funnel_funct <- function(dat, outcome2=FALSE){
+funnel_funct <- function(dat){
   ALL_DFs <- list()
   sm <- dat$effect_size1[1]
   dat <- dat %>% filter_at(vars(TE,seTE),all_vars(!is.na(.))) %>% filter(seTE!=0)
@@ -303,6 +303,16 @@ get_pairwise_data <- function(dat, outcome2=FALSE){
                                        incr=0.5,
                                        sm=sm2)
     pairwise_dat <- full_join(pairwise_dat1, pairwise_dat2, by = c("studlab","treat1","treat2"))
+
+    names(pairwise_dat)[names(pairwise_dat) == 'TE.x'] <- 'TE'
+    names(pairwise_dat)[names(pairwise_dat) == 'seTE.x'] <- 'seTE'
+    names(pairwise_dat)[names(pairwise_dat) == 'n1.x'] <- 'n1'
+    names(pairwise_dat)[names(pairwise_dat) == 'n2.x'] <- 'n2'
+    names(pairwise_dat)[names(pairwise_dat) == 'TE.y'] <- 'TE2'
+    names(pairwise_dat)[names(pairwise_dat) == 'seTE.y'] <- 'seTE2'
+    names(pairwise_dat)[names(pairwise_dat) == 'n1.y'] <- 'n2.1'
+    names(pairwise_dat)[names(pairwise_dat) == 'n2.y'] <- 'n2.2'
+
     }else{sm1 <- dat$effect_size1[1]
           pairwise_dat1 <- netmeta::pairwise(data=dat,
                                              event=r1,

@@ -10,7 +10,7 @@ def tab_data(years=YEARS_DEFAULT):
     return html.Div([
                     html.Button('Upload your data', 'upload_your_data', n_clicks=0,
                         style={'margin-left': '5px', 'padding': '4px 4px 4px 4px',
-                               'margin-top': '15px', 'color': "#adc5e7", 'fontSize': 12,
+                               'margin-top': '15px', 'color': "#a1c5f6", 'fontSize': 12,
                                'font-weight': '900', 'font-family': 'sans-serif',
                                 'display': 'inline-block','vertical-align': 'middle'}),
                     html.A(html.Img(src="/assets/icons/expand.png",

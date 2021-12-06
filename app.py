@@ -24,11 +24,8 @@ from tools.functions_boxplots import __update_boxplot
 
 # --------------------------------------------------------------------------------------------------------------------#
 
-
 # Load extra layouts
 cyto.load_extra_layouts()
-
-GLOBAL_DATA = dict()
 
 options_effect_size_cont = [{'label':'MD',  'value':'MD'}, {'label':'SMD',     'value':'SMD'}]
 options_effect_size_bin = [{'label':'OR',  'value':'OR'}, {'label':'RR',     'value':'RR'}]
@@ -51,8 +48,6 @@ def get_new_layout():
     EMPTY_SELECTION_EDGES = {'id': None}
     write_node_topickle(store_node=EMPTY_SELECTION_NODES, session_id=SESSION_ID)
     write_edge_topickle(store_edge=EMPTY_SELECTION_EDGES, session_id=SESSION_ID)
-
-    print(SESSION_PICKLE_PATH)
 
     return html.Div([dcc.Location(id='url', refresh=False),
                      html.Div(id='page-content'),
@@ -460,7 +455,6 @@ def update_layour_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_c
         net_data2 =  net_data.drop(["TE", "seTE", "n1", "n2"], axis=1)
         net_data2 = net_data2.rename(columns={"TE2": "TE", "seTE2": "seTE", "n2.1": "n1", "n2.2": "n2"})
         net_data = pd.DataFrame(net_data2)
-        print(net_data)
 
         net_data = net_data[net_data.year <= slider_year]
         elements = get_network(df=net_data)
@@ -485,7 +479,8 @@ def update_layour_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_c
                Output('rob_vs_cinema_modal', 'value'),
                Output('slider-year', 'min'),
                Output('slider-year', 'max'),
-               Output('slider-year', 'marks')],
+               Output('slider-year', 'marks'),
+               Output('data_and_league_table_DATA', 'data')],
               [Input('cytoscape', 'selectedNodeData'),
                Input('net_data_STORAGE', 'data'),
                Input('cytoscape', 'selectedEdgeData'),
@@ -496,12 +491,13 @@ def update_layour_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_c
                Input('league_table_data_STORAGE', 'data'),
                Input('cinema_net_data1_STORAGE', 'data'),
                Input('cinema_net_data2_STORAGE', 'data'),
+               Input('data_and_league_table_DATA', 'data'),
                 ],
               [State('net_data_STORAGE', 'modified_timestamp'),
                State('league_table_data_STORAGE', 'modified_timestamp')],
               prevent_initial_call=True)
 def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
-                  league_table_data, cinema_net_data1, cinema_net_data2,
+                  league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
                   net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP):
 
     # ctx = dash.callback_context
@@ -527,12 +523,12 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
         toggle_cinema = toggle_cinema_modal
 
     if 'slider-year.value' in triggered:
-        _data = GLOBAL_DATA["data_and_league_table_callback_FULL_DATA"]
+        _data = pd.read_json(data_and_league_table_DATA['FULL_DATA'], orient='split').round(3)
         data_output = _data[_data.year <= slider_value].to_dict('records')
-        _OUTPUT0 = GLOBAL_DATA["data_and_league_table_callback_OUTPUT"]
+        _OUTPUT0 = data_and_league_table_DATA['OUTPUT']
         _output = [data_output]+[_OUTPUT0[1]]+[data_output] + _OUTPUT0[3:]
 
-        return _output + _out_slider
+        return _output + _out_slider + [data_and_league_table_DATA]
 
     leaguetable = pd.read_json(league_table_data, orient='split')
     confidence_map = {k: n for n, k in enumerate(['low', 'medium', 'high'])}
@@ -630,10 +626,11 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
     data_output = net_data[net_data.year <= slider_value].to_dict('records')
     league_table = build_league_table(leaguetable, leaguetable_cols, league_table_styles, tooltip_values)
     league_table_modal = build_league_table(leaguetable, leaguetable_cols, league_table_styles, tooltip_values, modal=True)
-    GLOBAL_DATA["data_and_league_table_callback_FULL_DATA"] = net_data
     _output = [data_output, data_cols] * 2 + [league_table, league_table_modal] + [legend] * 2 + [toggle_cinema, toggle_cinema_modal]
-    GLOBAL_DATA["data_and_league_table_callback_OUTPUT"] =   _output
-    return _output + _out_slider
+
+    data_and_league_table_DATA['FULL_DATA'] = net_data.to_json( orient='split')
+    data_and_league_table_DATA['OUTPUT'] = _output
+    return _output + _out_slider + [data_and_league_table_DATA]
 
 def build_league_table(data, columns, style_data_conditional, tooltip_values, modal=False):
 
@@ -1502,7 +1499,6 @@ def generate_xlsx(n_nlicks, consistencydata):
                State("league_table", "children")],
                prevent_initial_call=True)
 def generate_xlsx(n_clicks, leaguedata):
-    print(n_clicks)
     df = pd.DataFrame(leaguedata['props']['data'])
     style_data_conditional = leaguedata['props']['style_data_conditional']
 
@@ -1566,5 +1562,5 @@ def generate_xlsx(n_clicks, leaguedata):
 if __name__ == '__main__':
     app._favicon = ("assets/favicon.ico")
     app.title = 'NMAstudio'
-    app.run_server(debug=True)
+    app.run_server(debug=False)
 

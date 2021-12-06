@@ -48,7 +48,7 @@ def get_new_layout():
     return html.Div([dcc.Location(id='url', refresh=False),
                      html.Div(id='page-content'),
                      dcc.Store(id='consts_STORAGE',
-                               data={'dwnld_bttn_calls': 0,
+                               data={'dwnld_bttn_calls': 0, # TODO: remove it
                                      'today': TODAY,
                                      'session_ID': SESSION_ID,
                                      'session_pickle_path': SESSION_PICKLE_PATH},
@@ -215,39 +215,42 @@ def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                          {"selector": 'node[id = "{}"]'.format(id),
                           "style": {"opacity": 1}}
                          for id in all_nodes_id if id not in slct_nodesdata and id in all_slct_src_trgt]
-    if slct_edgedata and False:  #TODO: Not doing much at the moment
-        for edge in edgedata:
-            if edge['source'] in selected_nodes_id:
-                stylesheet.append({
-                    "selector": 'node[id = "{}"]'.format(edge['target']),
-                    "style": {'background-color': FOLLOWING_COLOR, 'opacity': 0.9}})
-                stylesheet.append({"selector": 'edge[id= "{}"]'.format(edge['id']),
-                                   "style": {'opacity': 0.9,
-                                             # "line-color": FOLLOWING_COLOR,
-                                             # "mid-target-arrow-color": FOLLOWING_COLOR,
-                                             # "mid-target-arrow-shape": "vee",
-                                             'z-index': 5000}})
-            if edge['target'] in selected_nodes_id:
-                stylesheet.append({"selector": 'node[id = "{}"]'.format(edge['source']),
-                                   "style": {'background-color': FOLLOWER_COLOR,
-                                             'opacity': 0.9,
-                                             'z-index': 9999}})
-                stylesheet.append({"selector": 'edge[id= "{}"]'.format(edge['id']),
-                                   "style": {'opacity': 1,
-                                             "line-color": FOLLOWER_COLOR,
-                                             "mid-target-arrow-color": FOLLOWER_COLOR,
-                                             "mid-target-arrow-shape": "vee",
-                                             'z-index': 5000}})
+    # if slct_edgedata and False:  #TODO: Not doing much at the moment
+    #     for edge in edgedata:
+    #         if edge['source'] in selected_nodes_id:
+    #             stylesheet.append({
+    #                 "selector": 'node[id = "{}"]'.format(edge['target']),
+    #                 "style": {'background-color': FOLLOWING_COLOR, 'opacity': 0.9}})
+    #             stylesheet.append({"selector": 'edge[id= "{}"]'.format(edge['id']),
+    #                                "style": {'opacity': 0.9,
+    #                                          # "line-color": FOLLOWING_COLOR,
+    #                                          # "mid-target-arrow-color": FOLLOWING_COLOR,
+    #                                          # "mid-target-arrow-shape": "vee",
+    #                                          'z-index': 5000}})
+    #         if edge['target'] in selected_nodes_id:
+    #             stylesheet.append({"selector": 'node[id = "{}"]'.format(edge['source']),
+    #                                "style": {'background-color': FOLLOWER_COLOR,
+    #                                          'opacity': 0.9,
+    #                                          'z-index': 9999}})
+    #             stylesheet.append({"selector": 'edge[id= "{}"]'.format(edge['id']),
+    #                                "style": {'opacity': 1,
+    #                                          "line-color": FOLLOWER_COLOR,
+    #                                          "mid-target-arrow-color": FOLLOWER_COLOR,
+    #                                          "mid-target-arrow-shape": "vee",
+    #                                          'z-index': 5000}})
 
-    if dwld_button and dwld_button > constants['dwnld_bttn_calls']:
-        constants['dwnld_bttn_calls'] += 1
+    dwld_button_trigger = dwld_button_modal_trigger = False
+    triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
+    if 'btn-get-png.n_clicks' in triggered: dwld_button_trigger = True
+    # if 'btn-get-png-modal.n_clicks' in triggered: dwld_button_modal_trigger = True
+
+    if dwld_button_trigger:
         stylesheet[0]['style']['color'] = 'black'
         time.sleep(0.05)
 
-    if dwld_button_modal and dwld_button_modal > constants['dwnld_bttn_calls']:
-        constants['dwnld_bttn_calls'] += 1
-        stylesheet[0]['style']['color'] = 'black'
-        time.sleep(0.05)
+    # if dwld_button_modal_trigger:
+    #     stylesheet[0]['style']['color'] = 'black'
+    #     time.sleep(0.05)
 
     sess_pickle = read_session_pickle(constants['session_pickle_path'])
     sess_pickle['wait'] = False
@@ -279,9 +282,7 @@ def get_image(button, button_modal, export, constants):
     return {'type': 'jpeg' if export_selection=='as jpeg' else ('png' if export_selection=='as png' else 'svg'), 'action': action,
             'options': {  # 'bg':'#40515e',
                 'scale': 3}}
-    # return {'type': 'jpeg' , 'action': action,
-    #         'options': {  # 'bg':'#40515e',
-    #             'scale': 3}}
+
 
 ### ----- update node info on NMA forest plot  ------ ###
 @app.callback(Output('tapNodeData-info', 'children'),

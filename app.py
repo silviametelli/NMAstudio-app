@@ -1075,7 +1075,6 @@ def data_modal(open_modal_data, upload, submit,
         if upload and button_id=='upload_modal_data':
             data_user = parse_contents(contents, filename)
             try:
-            try:
                 data = adjust_data(data_user, dataselectors, value_format ,value_outcome1, value_outcome2)
                 TEMP_net_data_STORAGE = data.to_json(orient='split')
 

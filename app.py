@@ -1058,7 +1058,6 @@ def toggle_modal_edge(open_t, close):
                State('datatable-upload', 'filename'),
                State({'type': 'dataselectors', 'index': ALL}, 'value'),
                State("TEMP_net_data_STORAGE", "data"),
-
                ]
               )
 def data_modal(open_modal_data, upload, submit,
@@ -1076,6 +1075,7 @@ def data_modal(open_modal_data, upload, submit,
             data_user = parse_contents(contents, filename)
             try:
                 data = adjust_data(data_user, dataselectors, value_format ,value_outcome1, value_outcome2)
+
                 TEMP_net_data_STORAGE = data.to_json(orient='split')
 
             except:
@@ -1198,7 +1198,8 @@ def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, TEMP_net_data_STOR
               State("TEMP_forest_data_STORAGE", "data"),
               State("TEMP_forest_data_out2_STORAGE", "data"),
               )
-def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE, TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE):
+def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
+                            TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE):
     if modal_data_checks_is_open:
         try:
             net_data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
@@ -1592,5 +1593,5 @@ def generate_xlsx(n_clicks, leaguedata):
 if __name__ == '__main__':
     app._favicon = ("assets/favicon.ico")
     app.title = 'NMAstudio'
-    app.run_server(debug=False)
+    app.run_server(debug=True)
 

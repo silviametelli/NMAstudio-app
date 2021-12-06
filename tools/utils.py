@@ -3,6 +3,7 @@ from tools.PATHS import __TEMP_LOGS_AND_GLOBALS, __SESSIONS_FOLDER, YESTERDAY
 from assets.effect_sizes import *
 # ---------R2Py Resources --------------------------------------------------------------------------------------------#
 from rpy2.robjects import pandas2ri  # Define the R script and loads the instance in Python
+#pandas2ri.activate()
 import rpy2.robjects as ro
 from rpy2.robjects.conversion import localconverter
 
@@ -35,13 +36,11 @@ def apply_r_func(func, df):
 
 
 
-def apply_r_func_twooutcomes(func, df):
+def apply_r_func_two_outcomes(func, df):
     with localconverter(ro.default_converter + pandas2ri.converter):
         df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
     func_r_res = func(dat=df_r, outcome2=True)
     r_result = pandas2ri.rpy2py(func_r_res)
-
-    print(ro.vectors.ListVector)
 
     if isinstance(r_result, ro.vectors.ListVector):
         with localconverter(ro.default_converter + pandas2ri.converter):
@@ -121,6 +120,11 @@ def get_network(df):
 
 def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome2):
 
+    if data['rob'].dtype == object:
+        data['rob'] = (data['rob'].str.lower()
+                      .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
+                      .replace({'l': 1, 'm': 2, 'h': 3}))
+
     effect_sizes = {'continuous': {'MD': get_MD, 'SMD': get_SMD},
                     'binary': {'OR': get_OR, 'RR': get_RR}}
 
@@ -129,16 +133,11 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
 
     if value_format=='long':
 
-        if data['rob'].dtype == object:
-            data['rob'] = (data['rob'].str.lower()
-                           .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
-                           .replace({'l': 1, 'm': 2, 'h': 3}))
-
         if value_outcome2:
             data['effect_size2'] = dataselectors[1]
-            data = apply_r_func_twooutcomes(func=run_pairwise_data_r, df=data)
-
-        else: data = apply_r_func(func=run_pairwise_data_r, df=data)
+            data = apply_r_func_two_outcomes(func=run_pairwise_data_r, df=data)
+        else:
+            data = apply_r_func(func=run_pairwise_data_r, df=data)
 
 
     if value_format=='contrast':
@@ -147,10 +146,6 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
             data['effect_size2'] = dataselectors[1]
             get_effect_size2 = effect_sizes[value_outcome2][dataselectors[1]]
             data['TE2'], data['seTE2'] = get_effect_size2(data, effect=2)
-    if data['rob'].dtype == object:
-        data['rob'] = (data['rob'].str.lower()
-                      .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
-                      .replace({'l': 1, 'm': 2, 'h': 3}))
 
 
     if value_format == 'iv':
@@ -186,7 +181,7 @@ def run_pairwise_MA(df):
 ## run netmeta for league table, consistency tables and ranking plots
 def generate_league_table(df, outcome2=False):
 
-    if outcome2: leaguetable, pscores, consist, netsplit, netsplit2, netsplit_all, netsplit_all2  = apply_r_func_twooutcomes(func=league_table_r, df=df)
+    if outcome2: leaguetable, pscores, consist, netsplit, netsplit2, netsplit_all, netsplit_all2  = apply_r_func_two_outcomes(func=league_table_r, df=df)
     else:        leaguetable, pscores, consist, netsplit, netsplit_all = apply_r_func(func=league_table_r, df=df)
 
     replace_and_strip = lambda x: x.replace(' (', '\n(').strip()

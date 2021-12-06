@@ -308,10 +308,13 @@ get_pairwise_data <- function(dat, outcome2=FALSE){
     names(pairwise_dat)[names(pairwise_dat) == 'seTE.x'] <- 'seTE'
     names(pairwise_dat)[names(pairwise_dat) == 'n1.x'] <- 'n1'
     names(pairwise_dat)[names(pairwise_dat) == 'n2.x'] <- 'n2'
+    names(pairwise_dat)[names(pairwise_dat) == 'effect_size1.x'] <- 'effect_size1'
     names(pairwise_dat)[names(pairwise_dat) == 'TE.y'] <- 'TE2'
     names(pairwise_dat)[names(pairwise_dat) == 'seTE.y'] <- 'seTE2'
     names(pairwise_dat)[names(pairwise_dat) == 'n1.y'] <- 'n2.1'
     names(pairwise_dat)[names(pairwise_dat) == 'n2.y'] <- 'n2.2'
+    names(pairwise_dat)[names(pairwise_dat) == 'effect_size2.x'] <- 'effect_size2'
+    names(pairwise_dat)[names(pairwise_dat) == 'rob.x'] <- 'rob'
 
     }else{sm1 <- dat$effect_size1[1]
           pairwise_dat1 <- netmeta::pairwise(data=dat,

@@ -40,6 +40,9 @@ def apply_r_func_twooutcomes(func, df):
         df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
     func_r_res = func(dat=df_r, outcome2=True)
     r_result = pandas2ri.rpy2py(func_r_res)
+
+    print(ro.vectors.ListVector)
+
     if isinstance(r_result, ro.vectors.ListVector):
         with localconverter(ro.default_converter + pandas2ri.converter):
             leaguetable, pscores, consist, netsplit, netsplit2, netsplit_all, netsplit_all2 = (ro.conversion.rpy2py(rf) for rf in r_result)

@@ -1592,5 +1592,5 @@ def generate_xlsx(n_clicks, leaguedata):
 if __name__ == '__main__':
     app._favicon = ("assets/favicon.ico")
     app.title = 'NMAstudio'
-    app.run_server(debug=True)
+    app.run_server(debug=False)
 

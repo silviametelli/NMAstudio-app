@@ -442,9 +442,17 @@ def get_new_data_cinema2(contents, cinema_net_data2, filename):
                Input('toggle_forest_outcome', 'value'),
                Input('toggle_forest_pair_outcome', 'value'),
                Input('toggle_consistency_direction', 'value'),
-               Input('toggle_funnel_direction', 'value')
+               Input('toggle_funnel_direction', 'value'),
+               Input('reset_project', 'n_clicks'),
                ])
-def update_layour_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_cons, out2_fun):
+def update_layour_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_cons, out2_fun, reset_btn):
+    YEARS_DEFAULT = np.array([1963, 1990, 1997, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010,
+                              2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020])
+    years_dft_max = YEARS_DEFAULT.max()
+
+    reset_btn_triggered = False
+    triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
+    if 'reset_project.n_clicks' in triggered: reset_btn_triggered = True
 
     net_data = pd.read_json(net_data, orient='split')
 
@@ -453,10 +461,10 @@ def update_layour_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_c
         net_data2 = net_data2.rename(columns={"TE2": "TE", "seTE2": "seTE", "n2.1": "n1", "n2.2": "n2"})
         net_data = pd.DataFrame(net_data2)
 
-        net_data = net_data[net_data.year <= slider_year]
+        net_data = net_data[net_data.year <= slider_year] if not reset_btn_triggered else  net_data[net_data.year <= years_dft_max]
         elements = get_network(df=net_data)
     else:
-        net_data = net_data[net_data.year <= slider_year]
+        net_data = net_data[net_data.year <= slider_year] if not reset_btn_triggered else  net_data[net_data.year <= years_dft_max]
         elements = get_network(df=net_data)
     return elements, elements
 
@@ -489,13 +497,14 @@ def update_layour_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_c
                Input('cinema_net_data1_STORAGE', 'data'),
                Input('cinema_net_data2_STORAGE', 'data'),
                Input('data_and_league_table_DATA', 'data'),
+               Input('reset_project', 'n_clicks'),
                 ],
               [State('net_data_STORAGE', 'modified_timestamp'),
                State('league_table_data_STORAGE', 'modified_timestamp')],
               prevent_initial_call=True)
 def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
                   league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
-                  net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP):
+                  reset_btn, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP):
 
     # ctx = dash.callback_context
     # print(net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP,
@@ -507,11 +516,19 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
     # if ctx.triggered:
     #     print(ctx.triggered[0]['prop_id'].split('.')[0])
 
+    YEARS_DEFAULT = np.array([1963, 1990, 1997, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010,
+                              2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020])
+
+    reset_btn_triggered = False
+    triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
+    if 'reset_project.n_clicks' in triggered: reset_btn_triggered = True
+
     net_data = pd.read_json(net_data, orient='split').round(3)
-    years = net_data.year
+    years = net_data.year if not reset_btn_triggered else YEARS_DEFAULT
     slider_min, slider_max = years.min(), years.max()
     slider_marks = set_slider_marks(slider_min, slider_max, years)
     _out_slider = [slider_min, slider_max, slider_marks]
+
 
     triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
     if 'rob_vs_cinema.value' in triggered:

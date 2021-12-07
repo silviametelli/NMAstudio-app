@@ -72,6 +72,9 @@ league_rank <- function(dat, outcome2=FALSE){
                                seq = sortedseq,
                                bracket="(",
                                backtransf = TRUE, ci = TRUE, separator=',')
+  lt <- netleague_table$random
+  colnames(lt)<- sortedseq
+  rownames(lt)<- sortedseq
   #p-scores
   rank1 <- netrank(nma_primary, small.values = "good")
   rank <- data.frame(names(rank1$Pscore.random), as.numeric(round(rank1$Pscore.random,2)))
@@ -109,14 +112,12 @@ league_rank <- function(dat, outcome2=FALSE){
                              reference.group = dat2$treat2[1])
 
     # - network estimates of first outcome in lower triangle, second outcome in upper triangle
-    if(length(sort(nma_primary$trts))>length(sort(nma_secondary$trts))){sortedseq <- sort(nma_primary$trts)}else{sortedseq <- sort(nma_secondary$trts)}
+    #if(length(sort(nma_primary$trts))>length(sort(nma_secondary$trts))){sortedseq <- sort(nma_primary$trts)}else{sortedseq <- sort(nma_secondary$trts)}
 
     netleague_table1 <- netleague(nma_primary, digits = 2,
-                             #seq = sortedseq,
                              bracket="(",  direct = FALSE,
                              backtransf = TRUE, ci = TRUE, separator=',')
     netleague_table2 <- netleague(nma_secondary, digits = 2,
-                             #seq = sortedseq,
                              bracket="(", direct = FALSE,
                              backtransf = TRUE, ci = TRUE, separator=',')
 
@@ -137,10 +138,11 @@ league_rank <- function(dat, outcome2=FALSE){
       df_2 <- df_2 %>% add_row( .before = as.numeric(rownames(df_2)[which_trts] ))
       for(x in which_trts){
         df_2[x, colnames[which_trts]] <- l1_treats[x]}
-      netleague_table <- matrix(NA, nrow = length(df_1), ncol = length(df_1))
-      netleague_table[upper.tri(netleague_table, diag=T)] <- df_2[upper.tri(df_2, diag=T)]
-      league_table[lower.tri(netleague_table, diag=T)] <- df_1[lower.tri(df_1, diag=T)]
-      netleague_table <- data.frame(netleague_table)
+      lt <- matrix(NA, nrow = length(df_1), ncol = length(df_1))
+      lt[upper.tri(lt, diag=T)] <- df_2[upper.tri(df_2, diag=T)]
+      lt[lower.tri(lt, diag=T)] <- df_1[lower.tri(df_1, diag=T)]
+      lt <- data.frame(lt)
+      sortedseq <-l1_treats
     }else{
       which_trts <- which(!(l2_treats %in% l1_treats))
       df_1 <- df_1 %>% add_column(NA,  .before = colnames(df_1)[which_trts], .name_repair = "universal")
@@ -150,12 +152,15 @@ league_rank <- function(dat, outcome2=FALSE){
       df_1[x, colnames[which_trts]] <- l2_treats[x]
       for(x in which_trts){
         df_1[x, colnames[which_trts]] <- l2_treats[x]}
-      netleague_table <- matrix(NA, nrow = length(df_2), ncol = length(df_2))
-      netleague_table[upper.tri(netleague_table, diag=T)] <- df_2[upper.tri(df_2, diag=T)]
-      netleague_table[lower.tri(netleague_table, diag=T)] <- df_1[lower.tri(df_1, diag=T)]
-      netleague_table <- data.frame(netleague_table)
-    }
+      lt <- matrix(NA, nrow = length(df_2), ncol = length(df_2))
+      lt[upper.tri(lt, diag=T)] <- df_2[upper.tri(df_2, diag=T)]
+      lt[lower.tri(lt, diag=T)] <- df_1[lower.tri(df_1, diag=T)]
+      lt <- data.frame(lt)
+      sortedseq <-l2_treats
 
+    }
+      colnames(lt)<- sortedseq
+      rownames(lt)<- sortedseq
     #p-scores
     # outcomes <- c("Outcome1", "Outcome2")
     rank1 <- netrank(nma_primary, small.values = "good")
@@ -187,9 +192,7 @@ league_rank <- function(dat, outcome2=FALSE){
     netsplit_all2 <- data.frame(comp_all2, k_all2, direct_all2, nma_all2, indirect_all2, p_all2)
     colnames(netsplit_all2) <- c("comparison", "k", "direct", "nma", "indirect", "p-value")
   }
-  lt <- netleague_table$random
-  colnames(lt)<- sortedseq
-  rownames(lt)<- sortedseq
+
   if(outcome2==TRUE){return(list(lt, rank, consistency, df_cons, df_cons2, netsplit_all, netsplit_all2))}else{
     return(list(lt, rank, consistency, df_cons, netsplit_all))
   }

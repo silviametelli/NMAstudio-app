@@ -1305,7 +1305,7 @@ def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
         except:
             return (True, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
                     '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, netsplit_all) if "TE2" not in data.columns else \
-                                    (False, html.P(u"\u274C" + "An error occurred when computing analyses in R: check your data", style={"color":"green"}),
+                                    (False, html.P(u"\u274C" + "An error occurred when computing analyses in R: check your data", style={"color":"red"}),
                     '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2)
     else:
         #net_split_data2 = {}

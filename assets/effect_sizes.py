@@ -43,9 +43,6 @@ def get_MD(df, effect=1):
     if effect==2: cols = ('y2.1', 'sd1.2', 'y2.2', 'sd2.2', 'n2.1', 'n2.2')
     for c in cols:
         df[c] = pd.to_numeric(df[c], errors='coerce')
-    #N =  df.n1 + df.n2
-    #sigma2_pooled = ((df.n1 - 1) * pow(df.sd1,2) + (df.n2 - 1) * pow(df.sd2,2)) / (N - 2)
-    #seTE =  sqrt(sigma2_pooled.pooled * (1 / df.n1 + 1 / df.n2)))
     TE =  df.y1 - df.y2
     seTE =  np.sqrt( df.sd1**2 / df.n1 + df.sd2**2 / df.n2)
     seTE[np.isnan(TE)] = np.nan
@@ -57,7 +54,7 @@ def cmicalc(mi) :
         return np.nan
     else: return np.exp(loggamma(mi/2) - np.log(np.sqrt(mi/2)) - loggamma((mi-1)/2))
 
-#### SMD #TODO: seTE adjusted for multiarm?
+#### SMD #TODO: seTE adjusted for multiarm? use Hedges's
 def get_SMD(df, effect=1):
     cols = ('y1', 'sd1', 'y2', 'sd2', 'n1', 'n2')
     if effect==2:

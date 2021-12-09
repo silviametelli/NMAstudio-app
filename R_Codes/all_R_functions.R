@@ -11,8 +11,8 @@ suppressMessages(library(tidyverse))
 
 iswhole <- function(x, tol = .Machine$double.eps^0.5) abs(x - round(x)) < tol
 
-#--------------------------------------- NMA forest plots -------------------------------------------------#
 
+#--------------------------------------- NMA forest plots -------------------------------------------------#
 run_NetMeta <- function(dat){
   ALL_DFs <- list()
   sm <- dat$effect_size1[1]
@@ -142,7 +142,7 @@ league_rank <- function(dat, outcome2=FALSE){
       lt[upper.tri(lt, diag=T)] <- df_2[upper.tri(df_2, diag=T)]
       lt[lower.tri(lt, diag=T)] <- df_1[lower.tri(df_1, diag=T)]
       lt <- data.frame(lt)
-      sortedseq <-l1_treats
+      sortedseq <- l1_treats
     }else{
       which_trts <- which(!(l2_treats %in% l1_treats))
       df_1 <- df_1 %>% add_column(NA,  .before = colnames(df_1)[which_trts], .name_repair = "universal")
@@ -156,11 +156,11 @@ league_rank <- function(dat, outcome2=FALSE){
       lt[upper.tri(lt, diag=T)] <- df_2[upper.tri(df_2, diag=T)]
       lt[lower.tri(lt, diag=T)] <- df_1[lower.tri(df_1, diag=T)]
       lt <- data.frame(lt)
-      sortedseq <-l2_treats
+      sortedseq <- l2_treats
 
     }
-      colnames(lt)<- sortedseq
-      rownames(lt)<- sortedseq
+    colnames(lt) <- sortedseq
+    rownames(lt) <- sortedseq
     #p-scores
     # outcomes <- c("Outcome1", "Outcome2")
     rank1 <- netrank(nma_primary, small.values = "good")

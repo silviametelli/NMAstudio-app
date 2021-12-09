@@ -4,7 +4,11 @@
 # Created on: 10/11/2020
 # --------------------------------------------------------------------------------------------------------------------#
 import io, base64
+
+import numpy as np
+
 from tools.utils import *
+from tools.utils import set_slider_marks
 from tools.PATHS import SESSION_PICKLE, get_session_pickle_path, TODAY, SESSION_TYPE, get_new_session_id
 
 create_sessions_folders()
@@ -15,6 +19,7 @@ warnings.filterwarnings("ignore")
 # --------------------------------------------------------------------------------------------------------------------#
 import dash
 from dash.dependencies import Input, Output, State, ALL
+import dash_table
 from tools.layouts import *
 from tools.functions_ranking_plots import __ranking_plot
 from tools.functions_funnel_plot import __Tap_funnelplot
@@ -572,8 +577,21 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
     if store_node:
         slctd_trmnts = [nd['id'] for nd in store_node]
         if len(slctd_trmnts) > 0:
+
+
+            tril_order = pd.DataFrame(np.tril(np.ones(leaguetable.shape)),
+                                      columns=leaguetable.columns,
+                                      index=leaguetable.columns)
+            tril_order = tril_order.loc[slctd_trmnts, slctd_trmnts]
+            filter = np.tril(tril_order==0)
+            filter += filter.T # Rubbish inverting of rows and columns common in meta-analysis visualization
+
             leaguetable = leaguetable.loc[slctd_trmnts, slctd_trmnts]
+            leaguetable[filter] = leaguetable.T[filter]
+
             robs = robs.loc[slctd_trmnts, slctd_trmnts]
+            robs[filter] = robs.T[filter]
+
             treatments = slctd_trmnts
 
     #####   Add style colouring and legend
@@ -1156,7 +1174,7 @@ def modal_SUBMIT_button(submit,  reset_btn,
 def update_dropdown_effect_mod(new_data):
     new_data = pd.read_json(new_data, orient='split')
     OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col}
-                   for col in new_data.select_dtypes(['number']).columns]
+                   for col in new_data.columns] #new_data.select_dtypes(['number']).columns
     return OPTIONS_VAR
 
 

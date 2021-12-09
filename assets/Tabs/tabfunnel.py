@@ -41,7 +41,7 @@ tab_funnel = html.Div([dbc.Row([dbc.Col(html.P("Click treatment sequentially to 
                            dcc.Graph(
                                id='funnel-fig',
                                style={'height': '99%',
-                                      'max-height': 'calc(49vw)',
+                                      'max-height': 'calc(50vw)',
                                       'width': '98%',
                                       'margin-top': '1%',
                                       'max-width': 'calc(52vw)'},

@@ -16,9 +16,10 @@ def __ranking_plot(outcome_direction_1, outcome_direction_2,
 
     # True=harmful
     df1 = df.copy(deep=True)
+
     if "pscore2" in df1.columns:
-        if outcome_direction_1: df1.pscore1 = 1 - df1.pscore1.values
-        if outcome_direction_2: df1.pscore2 = 1 - df1.pscore2.values
+        if not outcome_direction_1: df1.pscore1 = 1 - df1.pscore1.values
+        if not outcome_direction_2: df1.pscore2 = 1 - df1.pscore2.values
         df1.sort_values(by=["pscore1", "pscore2"],
                         ascending=[False, False], inplace=True)
         z_text = (tuple(df1.pscore1.round(2).astype(str).values),
@@ -26,7 +27,7 @@ def __ranking_plot(outcome_direction_1, outcome_direction_2,
         pscores = (tuple(df1.pscore1), tuple(df1.pscore2))
     else:
         outcomes = ("Outcome",)
-        pscore = 1 - df1.pscore if outcome_direction_1 else df1.pscore
+        pscore = 1 - df1.pscore if not outcome_direction_1 else df1.pscore
         pscore = pscore.sort_values(ascending=False)
         z_text = (tuple(pscore.round(2).astype(str).values),)
         pscores = (tuple(pscore),)
@@ -72,8 +73,8 @@ def __ranking_scatter(df, net_data, outcome_direction_11, outcome_direction_22):
     net_data = pd.read_json(net_data, orient='split')
 
     if 'pscore2' in df.columns:
-        if outcome_direction_11: df.pscore1 = 1 - df.pscore1
-        if outcome_direction_22: df.pscore2 = 1 - df.pscore2
+        if not outcome_direction_11: df.pscore1 = 1 - df.pscore1
+        if not outcome_direction_22: df.pscore2 = 1 - df.pscore2
 
         kmeans = KMeans(n_clusters=int(round(len(df.treatment) / float(5.0), 0)),
                         init='k-means++', max_iter=300, n_init=10, random_state=0)

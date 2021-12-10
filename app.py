@@ -573,7 +573,7 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
         comprs_conf_ut['Confidence'] = confidence2
         comprs_conf = pd.concat([comprs_conf_ut, comprs_conf_lt])
         comprs_conf = comprs_conf.pivot_table(index=0, columns=1, values='Confidence')
-        robs = comprs_conf
+        robs = comprs_conf+1
     # Filter according to cytoscape selection
     if store_node:
         slctd_trmnts = [nd['id'] for nd in store_node]
@@ -613,7 +613,7 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
     leaguetable_colr = leaguetable_colr.astype(np.float64)
 
     # cmap = [clrs.to_hex(plt.get_cmap('RdYlGn_r', N_BINS)(n)) for n in range(N_BINS)]
-    cmap = [CINEMA_g, CINEMA_y, CINEMA_r] if not toggle_cinema else [CINEMA_r, CINEMA_y, CINEMA_lb, CINEMA_g]
+    cmap = [CINEMA_g, CINEMA_y,CINEMA_r] if not toggle_cinema else [CINEMA_r, CINEMA_y, CINEMA_lb, CINEMA_g]
     legend_height = '4px'
     legend = [html.Div(style={'display': 'inline-block', 'width': '100px'},
                        children=[html.Div(),
@@ -631,6 +631,7 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
     df_max, df_min = max(confidence_map.values()), min(confidence_map.values())
     ranges = (df_max - df_min) * bounds + df_min
     ranges[-1] *= 1.001
+    ranges = ranges + 1
     league_table_styles = []
     for treat_c in treatments:
         for treat_r in treatments:

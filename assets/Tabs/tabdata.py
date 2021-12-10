@@ -61,8 +61,8 @@ def tab_data(years=YEARS_DEFAULT):
                          style_header={'backgroundColor': 'rgb(26, 36, 43)',
                                       'fontWeight': 'bold',
                                       'border': '1px solid #5d6d95'},
-                         style_table={'overflowX': 'scroll',
-                                     'overflowY': 'scroll',
+                         style_table={'overflowX': 'auto',
+                                     'overflowY': 'auto',
                                      'height': '99%',
                                      'max-height': '420px',
                                      'minWidth':'100%',
@@ -74,4 +74,4 @@ def tab_data(years=YEARS_DEFAULT):
                              'rule': 'background-color: rgba(0, 0, 0, 0);'},
                             {'selector': 'td:hover',
                              'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}])
-                     ])
+                     ], style={'overflowX': 'scroll', 'overflowY': 'scroll'})

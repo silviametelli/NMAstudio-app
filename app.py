@@ -6,6 +6,7 @@
 import io, base64
 
 import numpy as np
+import pandas as pd
 
 from tools.utils import *
 from tools.utils import set_slider_marks
@@ -578,19 +579,28 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
         slctd_trmnts = [nd['id'] for nd in store_node]
         if len(slctd_trmnts) > 0:
 
+            # leaguetable = LEAGUE_TABLE_DATA.copy(deep=True)
 
             tril_order = pd.DataFrame(np.tril(np.ones(leaguetable.shape)),
                                       columns=leaguetable.columns,
                                       index=leaguetable.columns)
             tril_order = tril_order.loc[slctd_trmnts, slctd_trmnts]
             filter = np.tril(tril_order==0)
-            filter += filter.T # Rubbish inverting of rows and columns common in meta-analysis visualization
+            filter += filter.T #  inverting of rows and columns common in meta-analysis visualization
 
             leaguetable = leaguetable.loc[slctd_trmnts, slctd_trmnts]
-            leaguetable[filter] = leaguetable.T[filter]
+            leaguetable_values = leaguetable.values
+            leaguetable_values[filter] = leaguetable_values.T[filter]
+            leaguetable = pd.DataFrame(leaguetable_values,
+                                       columns=leaguetable.columns,
+                                       index=leaguetable.columns)
 
             robs = robs.loc[slctd_trmnts, slctd_trmnts]
-            robs[filter] = robs.T[filter]
+            robs_values = robs.values
+            robs_values[filter] = robs_values.T[filter]
+            robs = pd.DataFrame(robs_values,
+                                columns=robs.columns,
+                                index=robs.columns)
 
             treatments = slctd_trmnts
 

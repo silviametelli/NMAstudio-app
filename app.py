@@ -1629,6 +1629,8 @@ if __name__ == '__main__':
     app._favicon = ("assets/favicon.ico")
     app.title = 'NMAstudio'
     context = ('cert.pem', 'key.pem')
+    from flask_talisman import Talisman
+    Talisman(app.server, content_security_policy=None)
     app.run_server(debug=False, ssl_context=context)
 
 

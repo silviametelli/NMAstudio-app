@@ -579,8 +579,6 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
         slctd_trmnts = [nd['id'] for nd in store_node]
         if len(slctd_trmnts) > 0:
 
-            # leaguetable = LEAGUE_TABLE_DATA.copy(deep=True)
-
             tril_order = pd.DataFrame(np.tril(np.ones(leaguetable.shape)),
                                       columns=leaguetable.columns,
                                       index=leaguetable.columns)
@@ -1322,8 +1320,8 @@ def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
     if modal_data_checks_is_open:
         data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
         try:
+            print(data)
             LEAGUETABLE_OUTS =  generate_league_table(data, outcome2=False) if "TE2" not in data.columns else generate_league_table(data, outcome2=True)
-
             if "TE2" not in data.columns: (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, netsplit_all) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
             else:                         (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
 
@@ -1622,5 +1620,15 @@ def generate_xlsx(n_clicks, leaguedata):
 if __name__ == '__main__':
     app._favicon = ("assets/favicon.ico")
     app.title = 'NMAstudio'
-    app.run_server(debug=True)
+    context = ('cert.pem', 'key.pem')
+    app.run_server(debug=False, ssl_context=context)
 
+
+# openssl req -newkey rsa:4096 \
+#             -x509 \
+#             -sha256 \
+#             -days 3650 \
+#             -nodes \
+#             -out cert.pem \
+#             -keyout key.pem \
+#             -subj "/C=FR/ST=Paris/L=Paris/O=Security/OU=CRRESS/CN=www.nmastudioapp.com"

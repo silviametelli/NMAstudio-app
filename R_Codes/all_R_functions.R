@@ -149,7 +149,6 @@ league_rank <- function(dat, outcome2=FALSE){
       colnames <- paste0("V", 1:dim(df_1)[1])
       colnames(df_1) <- colnames
       df_1 <- df_1 %>% add_row( .before = as.numeric(rownames(df_1)[which_trts] ))
-      df_1[x, colnames[which_trts]] <- l2_treats[x]
       for(x in which_trts){
         df_1[x, colnames[which_trts]] <- l2_treats[x]}
       lt <- matrix(NA, nrow = length(df_2), ncol = length(df_2))

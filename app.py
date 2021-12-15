@@ -1618,17 +1618,17 @@ def generate_xlsx(n_clicks, leaguedata):
 
 
 if __name__ == '__main__':
+    os.system("""openssl req -newkey rsa:4096 \
+                             -x509 \
+                             -sha256 \
+                             -days 3650 \
+                             -nodes \
+                             -out cert.pem \
+                             -keyout key.pem \
+                             -subj '/C=FR/ST=Paris/L=Paris/O=Security/OU=CRRESS/CN=www.nmastudioapp.com'""")
     app._favicon = ("assets/favicon.ico")
     app.title = 'NMAstudio'
     context = ('cert.pem', 'key.pem')
     app.run_server(debug=False, ssl_context=context)
 
 
-# openssl req -newkey rsa:4096 \
-#             -x509 \
-#             -sha256 \
-#             -days 3650 \
-#             -nodes \
-#             -out cert.pem \
-#             -keyout key.pem \
-#             -subj "/C=FR/ST=Paris/L=Paris/O=Security/OU=CRRESS/CN=www.nmastudioapp.com"

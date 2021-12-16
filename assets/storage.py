@@ -59,6 +59,7 @@ STORAGE = [dcc.Store(id=label, data=(data.to_json(orient='split')
            for label, data in DEFAULT_DATA.items()] + [
             dcc.Store(id='TEMP_'+new_id, storage_type=SESSION_TYPE) for new_id in DEFAULT_DATA.keys()
 ] +[
-dcc.Store(id='data_and_league_table_DATA', data=dict(), storage_type=SESSION_TYPE)
+dcc.Store(id='data_and_league_table_DATA', data=dict(), storage_type=SESSION_TYPE),
+dcc.Store(id='net_download_activation', data=False, storage_type=SESSION_TYPE)
 ]
 

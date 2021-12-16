@@ -168,7 +168,8 @@ def update_cytoscape_layout(layout):
 ### ----- update graph layout on node click ------ ###
 @app.callback([Output('cytoscape', 'stylesheet'),
                Output('modal-cytoscape', 'stylesheet'),
-               Output("consts_STORAGE", "data")],
+               Output("net_download_activation", "data")
+               ],
               [Input('cytoscape', 'tapNode'),
                Input('cytoscape', 'selectedNodeData'),
                Input('cytoscape', 'elements'),
@@ -180,12 +181,12 @@ def update_cytoscape_layout(layout):
                Input('dd_nds', 'children'),
                Input('dd_egs', 'children'),
                Input("btn-get-png", "n_clicks"),
-               Input("btn-get-png-modal", "n_clicks"),],
-               State("consts_STORAGE", "data"),
+               Input("net_download_activation", "data")
+               ]
               )
 def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                         dd_nclr, dd_eclr, custom_nd_clr, custom_edg_clr, dd_nds, dd_egs,
-                        dwld_button, dwld_button_modal, constants):
+                        dwld_button, net_download_activation):
 
     nodes_color = (custom_nd_clr or DFLT_ND_CLR) if dd_nclr != 'Default' else DFLT_ND_CLR
     edges_color = (custom_edg_clr or None) if dd_eclr != 'Default' else None
@@ -248,49 +249,34 @@ def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
     #                                          "mid-target-arrow-shape": "vee",
     #                                          'z-index': 5000}})
 
-    dwld_button_trigger = dwld_button_modal_trigger = False
+
     triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
-    if 'btn-get-png.n_clicks' in triggered: dwld_button_trigger = True
-    # if 'btn-get-png-modal.n_clicks' in triggered: dwld_button_modal_trigger = True
-
-    if dwld_button_trigger:
+    if 'btn-get-png.n_clicks' in triggered:
         stylesheet[0]['style']['color'] = 'black'
-        time.sleep(0.05)
+        net_download_activation = True
+    else:
+        net_download_activation = False
 
-    # if dwld_button_modal_trigger:
-    #     stylesheet[0]['style']['color'] = 'black'
-    #     time.sleep(0.05)
 
-    sess_pickle = read_session_pickle(constants['session_pickle_path'])
-    sess_pickle['wait'] = False
-    write_session_pickle(dct=sess_pickle, path=constants['session_pickle_path'])
     stylesheet_modal  = stylesheet
-    return stylesheet, stylesheet_modal, constants
+    return stylesheet, stylesheet_modal, net_download_activation
 
 
 
 ### ----- save network plot as png ------ ###
 @app.callback(Output("cytoscape", "generateImage"),
-              [Input("btn-get-png", "n_clicks"),
-               Input("btn-get-png-modal", "n_clicks"),
-               Input('exp-options', 'children'),],
-              State('consts_STORAGE','data'),
+              Input("net_download_activation", "data"),
+              State('exp-options', 'children'),
               prevent_initial_call=True)
-def get_image(button, button_modal, export, constants):
-    sess_pickle = read_session_pickle(constants['session_pickle_path'])
-    sess_pickle['wait'] = True
-    write_session_pickle(dct=sess_pickle, path=constants['session_pickle_path'])
-    while read_session_pickle(constants['session_pickle_path'])['wait']:
-        time.sleep(0.05)
+def get_image(net_download_activation, export):
     action = 'store'
-    ctx = dash.callback_context
-    if ctx.triggered:
-        input_id = ctx.triggered[0]["prop_id"].split(".")[0]
-        if input_id != "tabs": action = "download"
-    export_selection = export or 'as jpeg'
-    return {'type': 'jpeg' if export_selection=='as jpeg' else ('png' if export_selection=='as png' else 'svg'), 'action': action,
+    export_selection = export or 'as png'
+    if net_download_activation:
+        action = "download"
+    return {'type': 'jpeg' if export_selection=='as jpeg' else ('png' if export_selection=='as png' else 'svg'),
+            'action': action,
             'options': {  # 'bg':'#40515e',
-                'scale': 3}}
+            'scale': 3}}
 
 
 ### ----- update node info on NMA forest plot  ------ ###
@@ -1632,5 +1618,6 @@ if __name__ == '__main__':
     from flask_talisman import Talisman
     Talisman(app.server, content_security_policy=None)
     app.run_server(debug=False, ssl_context=context)
+    # app.run_server(debug=True)
 
 

@@ -1598,12 +1598,12 @@ def generate_xlsx(n_clicks, leaguedata):
 
 
 if __name__ == '__main__':
-    context = generate_ssl_perm_and_key(cert_name='cert.pem', key_name='key.pem')
     app._favicon = ("assets/favicon.ico")
     app.title = 'NMAstudio'
-    from flask_talisman import Talisman
-    Talisman(app.server, content_security_policy=None)
-    app.run_server(debug=False, ssl_context=context)
-    # app.run_server(debug=True)
+    # from flask_talisman import Talisman
+    # Talisman(app.server, content_security_policy=None)
+    # context = generate_ssl_perm_and_key(cert_name='cert.pem', key_name='key.pem')
+    # app.run_server(debug=False, ssl_context=context)
+    app.run_server(debug=True)
 
 

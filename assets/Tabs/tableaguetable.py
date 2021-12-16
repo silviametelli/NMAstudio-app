@@ -57,4 +57,5 @@ tab_league = html.Div([
              style={'float': 'right',
                     'padding': '5px 5px 5px 5px'}),
     html.Div(id='league_table'),
+    html.Div(id='img_div')
 ]) #className="data__container")

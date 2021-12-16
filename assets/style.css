@@ -599,7 +599,9 @@ img:hover {
 
 ul {
   list-style-type: none;
-  padding: 30px;
+
+    padding-left: 40px;
+
     min-width: 100px;
     color:white;
      white-space: nowrap;

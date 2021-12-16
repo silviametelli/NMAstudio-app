@@ -5,8 +5,7 @@
 # --------------------------------------------------------------------------------------------------------------------#
 import io, base64
 
-import numpy as np
-import pandas as pd
+import numpy as np, pandas as pd
 
 from tools.utils import *
 from tools.utils import set_slider_marks
@@ -47,17 +46,12 @@ app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=devi
 
 def get_new_layout():
     SESSION_ID = get_new_session_id()
-    SESSION_PICKLE_PATH = get_session_pickle_path(session_id=SESSION_ID)
-    write_session_pickle(dct=SESSION_PICKLE, path=SESSION_PICKLE_PATH)
-
 
     return html.Div([dcc.Location(id='url', refresh=False),
                      html.Div(id='page-content'),
                      dcc.Store(id='consts_STORAGE',
-                               data={'dwnld_bttn_calls': 0, # TODO: remove it
-                                     'today': TODAY,
-                                     'session_ID': SESSION_ID,
-                                     'session_pickle_path': SESSION_PICKLE_PATH},
+                               data={'today': TODAY,
+                                     'session_ID': SESSION_ID},
                                storage_type='memory',
                                )
                      ])
@@ -1604,17 +1598,9 @@ def generate_xlsx(n_clicks, leaguedata):
 
 
 if __name__ == '__main__':
-    os.system("""openssl req -newkey rsa:4096 \
-                             -x509 \
-                             -sha256 \
-                             -days 3650 \
-                             -nodes \
-                             -out cert.pem \
-                             -keyout key.pem \
-                             -subj '/C=FR/ST=Paris/L=Paris/O=Security/OU=CRRESS/CN=www.nmastudioapp.com'""")
+    context = generate_ssl_perm_and_key(cert_name='cert.pem', key_name='key.pem')
     app._favicon = ("assets/favicon.ico")
     app.title = 'NMAstudio'
-    context = ('cert.pem', 'key.pem')
     from flask_talisman import Talisman
     Talisman(app.server, content_security_policy=None)
     app.run_server(debug=False, ssl_context=context)

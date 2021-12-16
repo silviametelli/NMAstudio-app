@@ -53,13 +53,22 @@ def apply_r_func_two_outcomes(func, df):
 # ----------------------------------------------------------------------------------
 ## -------------------------------------------------------------------------------- ##
 
+def generate_ssl_perm_and_key(cert_name, key_name):
+    os.system(f"""openssl req -newkey rsa:4096 \
+                                 -x509 \
+                                 -sha256 \
+                                 -days 3650 \
+                                 -nodes \
+                                 -out {cert_name} \
+                                 -keyout {key_name} \
+                                 -subj '/C=FR/ST=Paris/L=Paris/O=Security/OU=CRRESS/CN=www.nmastudioapp.com'""")
+    return cert_name, key_name
 
-def write_session_pickle(dct, path):
-    with open(path, 'wb') as f:
-        pickle.dump(dct, f, protocol=pickle.HIGHEST_PROTOCOL)
-
-def read_session_pickle(path):
-    return pickle.load(open(path, 'rb'))
+# def write_session_pickle(dct, path):
+#     with open(path, 'wb') as f:
+#         pickle.dump(dct, f, protocol=pickle.HIGHEST_PROTOCOL)
+# def read_session_pickle(path):
+#     return pickle.load(open(path, 'rb'))
 
 
 

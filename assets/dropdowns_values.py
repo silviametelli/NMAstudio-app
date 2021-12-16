@@ -3,7 +3,7 @@ from assets.modal_values import *
 
 
 Dropdown_nodesize = dbc.DropdownMenu(
-    label="Node size", direction="right",bs_size="sm",
+    label="Node size", direction="right", bs_size="sm",
     children=[dbc.DropdownMenuItem("Default", id='dd_nds_default'),
               dbc.DropdownMenuItem("Tot randomized", id='dd_nds_tot_rnd'),
               html.Div(id='dd_nds', style={'display': 'none'}),

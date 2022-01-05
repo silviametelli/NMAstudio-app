@@ -4,11 +4,7 @@
 # Created on: 10/11/2020
 # --------------------------------------------------------------------------------------------------------------------#
 import io, base64
-
-import numpy as np, pandas as pd
-
 from tools.utils import *
-from tools.utils import set_slider_marks
 from tools.PATHS import SESSION_PICKLE, get_session_pickle_path, TODAY, SESSION_TYPE, get_new_session_id
 
 create_sessions_folders()
@@ -19,21 +15,21 @@ warnings.filterwarnings("ignore")
 # --------------------------------------------------------------------------------------------------------------------#
 import dash
 from dash.dependencies import Input, Output, State, ALL
-import dash_table
 from tools.layouts import *
 from tools.functions_ranking_plots import __ranking_plot
 from tools.functions_funnel_plot import __Tap_funnelplot
 from tools.functions_nmaforest_plot import __TapNodeData_fig, __TapNodeData_fig_bidim
 from tools.functions_pairwise_plots import __update_forest_pairwise
 from tools.functions_boxplots import __update_boxplot
+from tools.functions_project_setup import __update_options
+from tools.functions_netsplit import __netsplit
+from tools.functions_build_league_data_table import __update_output
+from tools.functions_generate_stylesheet import __generate_stylesheet
 
 # --------------------------------------------------------------------------------------------------------------------#
 
 # Load extra layouts
 cyto.load_extra_layouts()
-
-options_effect_size_cont = [{'label':'MD',  'value':'MD'}, {'label':'SMD',     'value':'SMD'}]
-options_effect_size_bin = [{'label':'OR',  'value':'OR'}, {'label':'RR',     'value':'RR'}]
 
 GRAPH_INTERVAL = os.environ.get("GRAPH_INTERVAL", 5000)
 
@@ -55,7 +51,6 @@ def get_new_layout():
                                storage_type='memory',
                                )
                      ])
-
 server = app.server
 app.layout = get_new_layout()
 
@@ -99,39 +94,13 @@ def set_docpage_active(pathname):
 #####################################################################################
 #####################################################################################
 
-
 ### ---------------- PROJECT SETUP --------------- ###
 @app.callback(Output("second-selection", "children"),
               [Input("dropdown-format", "value"),
                Input("dropdown-outcome1", "value"),
                Input("dropdown-outcome2", "value")])
 def update_options(search_value_format, search_value_outcome1, search_value_outcome2):
-
-    if search_value_format is None: return None
-    if search_value_outcome1 is None: return None
-
-    name_outcomes = ['1st outcome*', '2nd outcome'] if search_value_outcome2 is not None else ['1st outcome']
-    search_values = [search_value_outcome1, search_value_outcome2] if search_value_outcome2 is not None else [search_value_outcome1]
-    selectors_ef = html.Div([html.Div(
-        [dbc.Row([html.P("Select effect size", style={'color': 'white', 'vertical-align': 'middle'})])] +
-         [dbc.Row([dbc.Col(dbc.Row(
-                  [html.P(f"{name}", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
-                                                                   'margin-left': '0px', 'font-size': '12px'}),
-                  dcc.Dropdown(id={'type': 'dataselectors', 'index': f'dropdown-{name_outcomes}'},
-                               options=options_effect_size_cont if val=='continuous' else options_effect_size_bin,
-                               searchable=True, placeholder="...",
-                               clearable=False, style={'width': '60px', "height":'20px',
-                                                       'vertical-align': 'middle',
-                                                       "font-size": "1em",
-                                                       "font-family": "sans-serif",
-                                                       'margin-bottom': '10px',
-                                                       'display': 'inline-block',
-                                                       'color': CLR_BCKGRND_old, 'font-size': '10px',
-                                                       'background-color': CLR_BCKGRND_old} )]
-          ),  style={'margin-left': '55px', 'margin-right': '5px'}) for name, val in zip(name_outcomes, search_values)]
-        )],
-     )])
-    return selectors_ef
+    return __update_options(search_value_format, search_value_outcome1, search_value_outcome2)
 
 
 @app.callback([Output("dropdowns-DIV", "style"),
@@ -181,81 +150,9 @@ def update_cytoscape_layout(layout):
 def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                         dd_nclr, dd_eclr, custom_nd_clr, custom_edg_clr, dd_nds, dd_egs,
                         dwld_button, net_download_activation):
-
-    nodes_color = (custom_nd_clr or DFLT_ND_CLR) if dd_nclr != 'Default' else DFLT_ND_CLR
-    edges_color = (custom_edg_clr or None) if dd_eclr != 'Default' else None
-
-    node_size = dd_nds or 'Default'
-    node_size = node_size == 'Tot randomized'
-    edge_size = dd_egs or 'Number of studies'
-    edge_size = edge_size == 'No size'
-    pie = dd_nclr == 'Risk of Bias'
-    cls = dd_nclr == 'By class'
-    edg_lbl = dd_eclr == 'Add label'
-    FOLLOWER_COLOR, FOLLOWING_COLOR = DFLT_ND_CLR, DFLT_ND_CLR
-    n_cls = elements[-1]["data"]['n_class'] if "n_class" in elements[-1]["data"] and cls else 1
-    stylesheet = get_stylesheet(pie=pie, classes=cls, n_class=n_cls, edg_lbl=edg_lbl, edg_col=edges_color,
-                                nd_col=nodes_color, node_size=node_size, edge_size=edge_size)
-    edgedata = [el['data'] for el in elements if 'target' in el['data'].keys()]
-    all_nodes_id = [el['data']['id'] for el in elements if 'target' not in el['data'].keys()]
-
-    if slct_nodesdata:
-        selected_nodes_id = [d['id'] for d in slct_nodesdata]
-        all_slct_src_trgt = list({e['source'] for e in edgedata if e['source'] in selected_nodes_id
-                                  or e['target'] in selected_nodes_id}
-                                 | {e['target'] for e in edgedata if e['source'] in selected_nodes_id
-                                    or e['target'] in selected_nodes_id})
-
-        stylesheet = get_stylesheet(pie=pie,  classes=cls,  n_class=n_cls, edg_lbl=edg_lbl, edg_col=edges_color, nd_col=nodes_color, node_size=node_size,
-                                    nodes_opacity=0.2, edges_opacity=0.1) + [
-                         {"selector": 'node[id = "{}"]'.format(id),
-                          "style": {"border-color": "#751225", "border-width": 5, "border-opacity": 1,
-                                    "opacity": 1}}
-                         for id in selected_nodes_id] + [
-                         {"selector": 'edge[id= "{}"]'.format(edge['id']),
-                          "style": {'opacity': 1,  # "line-color": 'pink',
-                                    'z-index': 5000}} for edge in edgedata if edge['source'] in selected_nodes_id
-                                                                              or edge['target'] in selected_nodes_id] + [
-                         {"selector": 'node[id = "{}"]'.format(id),
-                          "style": {"opacity": 1}}
-                         for id in all_nodes_id if id not in slct_nodesdata and id in all_slct_src_trgt]
-    # if slct_edgedata and False:  #TODO: Not doing much at the moment
-    #     for edge in edgedata:
-    #         if edge['source'] in selected_nodes_id:
-    #             stylesheet.append({
-    #                 "selector": 'node[id = "{}"]'.format(edge['target']),
-    #                 "style": {'background-color': FOLLOWING_COLOR, 'opacity': 0.9}})
-    #             stylesheet.append({"selector": 'edge[id= "{}"]'.format(edge['id']),
-    #                                "style": {'opacity': 0.9,
-    #                                          # "line-color": FOLLOWING_COLOR,
-    #                                          # "mid-target-arrow-color": FOLLOWING_COLOR,
-    #                                          # "mid-target-arrow-shape": "vee",
-    #                                          'z-index': 5000}})
-    #         if edge['target'] in selected_nodes_id:
-    #             stylesheet.append({"selector": 'node[id = "{}"]'.format(edge['source']),
-    #                                "style": {'background-color': FOLLOWER_COLOR,
-    #                                          'opacity': 0.9,
-    #                                          'z-index': 9999}})
-    #             stylesheet.append({"selector": 'edge[id= "{}"]'.format(edge['id']),
-    #                                "style": {'opacity': 1,
-    #                                          "line-color": FOLLOWER_COLOR,
-    #                                          "mid-target-arrow-color": FOLLOWER_COLOR,
-    #                                          "mid-target-arrow-shape": "vee",
-    #                                          'z-index': 5000}})
-
-
-    triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
-    if 'btn-get-png.n_clicks' in triggered:
-        stylesheet[0]['style']['color'] = 'black'
-        net_download_activation = True
-    else:
-        net_download_activation = False
-
-
-    stylesheet_modal  = stylesheet
-    return stylesheet, stylesheet_modal, net_download_activation
-
-
+    return __generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
+                        dd_nclr, dd_eclr, custom_nd_clr, custom_edg_clr, dd_nds, dd_egs,
+                        dwld_button, net_download_activation)
 
 ### ----- save network plot as png ------ ###
 @app.callback(Output("cytoscape", "generateImage"),
@@ -335,8 +232,6 @@ def TapEdgeData(edge):
         return "Click on an edge to get information."
 
 
-
-
 def parse_contents(contents, filename):
     content_type, content_string = contents.split(',')
     decoded = base64.b64decode(content_string)
@@ -345,7 +240,6 @@ def parse_contents(contents, filename):
             io.StringIO(decoded.decode('utf-8')))
     elif 'xls' in filename:  # Assume that the user uploaded an excel file
         return pd.read_excel(io.BytesIO(decoded))
-
 
 
 #### ---------------------- consistency table and netsplit table ------------------------ ####
@@ -360,33 +254,7 @@ def parse_contents(contents, filename):
                Input('consistency_data_STORAGE', 'data'),]
               )
 def netsplit(edges, outcome, net_split_data, net_split_data_out2, consistency_data):
-
-    df = (pd.read_json(net_split_data, orient='split') if not outcome
-          else  pd.read_json(net_split_data_out2, orient='split') if net_split_data_out2 else None)
-    consistency_data = pd.read_json(consistency_data, orient='split')
-    if df is not None:
-        comparisons = df.comparison.str.split(':', expand=True)
-        df['Comparison'] = comparisons[0] + ' vs ' + comparisons[1]
-        df = df.loc[:, ~df.columns.str.contains("comparison")]
-        df = df.sort_values(by='Comparison').reset_index()
-        df = df[['Comparison', "direct", "indirect", "p-value"]].round(decimals=4)
-
-    slctd_comps = []
-    for edge in edges or []:
-        src, trgt = edge['source'], edge['target']
-        slctd_comps += [f'{src} vs {trgt}']
-    if edges and df is not None:
-        df = df[df.Comparison.isin(slctd_comps)]
-
-    data_cols = [{"name": c, "id": c} for c in df.columns]
-    data_output = df.to_dict('records') if df is not None else dict()
-    _out_net_split_table = [data_output, data_cols]
-
-    data_consistency = consistency_data.round(decimals=4).to_dict('records')
-    consistency_tbl_cols = [{"name": i, "id": i} for i in consistency_data.columns]
-    _out_consistency_table = [data_consistency, consistency_tbl_cols]
-
-    return _out_net_split_table + _out_consistency_table
+   return __netsplit(edges, outcome, net_split_data, net_split_data_out2, consistency_data)
 
 ### ----- upload CINeMA data file 1 ------ ###
 @app.callback([Output("cinema_net_data1_STORAGE", "data"),
@@ -411,7 +279,6 @@ def get_new_data_cinema1(contents, cinema_net_data1, filename):
                Input('cinema_net_data2_STORAGE', 'data'),],
               [State('datatable-secondfile-upload-2', 'filename')])
 def get_new_data_cinema2(contents, cinema_net_data2, filename):
-
     if contents is None:
         cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
     else:
@@ -494,215 +361,9 @@ def update_layour_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_c
 def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
                   league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
                   reset_btn, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP):
-
-    # ctx = dash.callback_context
-    # print(net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP,
-    #       net_data_STORAGE_TIMESTAMP - league_table_data_STORAGE_TIMESTAMP)
-    # if ((abs(net_data_STORAGE_TIMESTAMP - league_table_data_STORAGE_TIMESTAMP)>150_000) and
-    #     (net_data_STORAGE_TIMESTAMP < league_table_data_STORAGE_TIMESTAMP)):
-    #     print('preventing update')
-    #     raise PreventUpdate
-    # if ctx.triggered:
-    #     print(ctx.triggered[0]['prop_id'].split('.')[0])
-
-    YEARS_DEFAULT = np.array([1963, 1990, 1997, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010,
-                              2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020])
-
-    reset_btn_triggered = False
-    triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
-    if 'reset_project.n_clicks' in triggered: reset_btn_triggered = True
-
-    net_data = pd.read_json(net_data, orient='split').round(3)
-    years = net_data.year if not reset_btn_triggered else YEARS_DEFAULT
-    slider_min, slider_max = years.min(), years.max()
-    slider_marks = set_slider_marks(slider_min, slider_max, years)
-    _out_slider = [slider_min, slider_max, slider_marks]
-
-
-    triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
-    if 'rob_vs_cinema.value' in triggered:
-        toggle_cinema_modal = toggle_cinema
-    elif 'rob_vs_cinema_modal.value' in triggered:
-        toggle_cinema = toggle_cinema_modal
-
-    if 'slider-year.value' in triggered:
-        _data = pd.read_json(data_and_league_table_DATA['FULL_DATA'], orient='split').round(3)
-        data_output = _data[_data.year <= slider_value].to_dict('records')
-        _OUTPUT0 = data_and_league_table_DATA['OUTPUT']
-        _output = [data_output]+[_OUTPUT0[1]]+[data_output] + _OUTPUT0[3:]
-
-        return _output + _out_slider + [data_and_league_table_DATA]
-
-    leaguetable = pd.read_json(league_table_data, orient='split')
-    confidence_map = {k: n for n, k in enumerate(['low', 'medium', 'high'])}
-    treatments = np.unique(net_data[['treat1', 'treat2']].dropna().values.flatten())
-    robs = (net_data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
-            .pivot_table(index='treat2', columns='treat1', values='rob')
-            .reindex(index=treatments, columns=treatments, fill_value=np.nan))
-    if toggle_cinema:
-        cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
-        cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
-        confidence_map = {k: n for n, k in enumerate(['very low', 'low', 'moderate', 'high'])}
-        comparisons = cinema_net_data1.Comparison.str.split(':', expand=True)
-        confidence1 = cinema_net_data1['Confidence rating'].str.lower().map(confidence_map)
-        confidence2 = cinema_net_data2['Confidence rating'].str.lower().map(confidence_map) #if content2 is not None else confidence1
-        comprs_conf_ut = comparisons.copy()  # Upper triangle
-        comparisons.columns = [1, 0]  # To get lower triangle
-        comprs_conf_lt = comparisons[[0, 1]]  # Lower triangle
-        comprs_conf_lt['Confidence'] = confidence1
-        comprs_conf_ut['Confidence'] = confidence2
-        comprs_conf = pd.concat([comprs_conf_ut, comprs_conf_lt])
-        comprs_conf = comprs_conf.pivot_table(index=0, columns=1, values='Confidence')
-        robs = comprs_conf+1
-    # Filter according to cytoscape selection
-    if store_node:
-        slctd_trmnts = [nd['id'] for nd in store_node]
-        if len(slctd_trmnts) > 0:
-
-            tril_order = pd.DataFrame(np.tril(np.ones(leaguetable.shape)),
-                                      columns=leaguetable.columns,
-                                      index=leaguetable.columns)
-            tril_order = tril_order.loc[slctd_trmnts, slctd_trmnts]
-            filter = np.tril(tril_order==0)
-            filter += filter.T #  inverting of rows and columns common in meta-analysis visualization
-
-            leaguetable = leaguetable.loc[slctd_trmnts, slctd_trmnts]
-            leaguetable_values = leaguetable.values
-            leaguetable_values[filter] = leaguetable_values.T[filter]
-            leaguetable = pd.DataFrame(leaguetable_values,
-                                       columns=leaguetable.columns,
-                                       index=leaguetable.columns)
-
-            robs = robs.loc[slctd_trmnts, slctd_trmnts]
-            robs_values = robs.values
-            robs_values[filter] = robs_values.T[filter]
-            robs = pd.DataFrame(robs_values,
-                                columns=robs.columns,
-                                index=robs.columns)
-
-            treatments = slctd_trmnts
-
-    #####   Add style colouring and legend
-    N_BINS = 3 if not toggle_cinema else 4
-    bounds = np.arange(N_BINS + 1) / N_BINS
-
-    leaguetable_colr = robs.copy(deep=True)
-    np.fill_diagonal(leaguetable_colr.values, np.nan)
-    leaguetable_colr = leaguetable_colr.astype(np.float64)
-
-    # cmap = [clrs.to_hex(plt.get_cmap('RdYlGn_r', N_BINS)(n)) for n in range(N_BINS)]
-    cmap = [CINEMA_g, CINEMA_y,CINEMA_r] if not toggle_cinema else [CINEMA_r, CINEMA_y, CINEMA_lb, CINEMA_g]
-    legend_height = '4px'
-    legend = [html.Div(style={'display': 'inline-block', 'width': '100px'},
-                       children=[html.Div(),
-                                 html.Small('Risk of bias: ' if not toggle_cinema else 'CINeMA rating: ',
-                                            style={'color': 'white'})])]
-    legend += [html.Div(style={'display': 'inline-block', 'width': '60px'},
-                        children=[html.Div(style={'backgroundColor': cmap[n],
-                                                  # 'borderLeft': f'1px {BORDER_LEFT_CLR} solid',
-                                                  'height': legend_height}), html.Small(
-                            ('Very Low' if toggle_cinema else 'Low') if n == 0 else 'High' if n == N_BINS - 1 else None,
-                            style={'paddingLeft': '2px', 'color': 'white'})])
-               for n in range(N_BINS)]
-
-    #df_max, df_min = leaguetable_colr.max().max(), leaguetable_colr.min().min()
-    df_max, df_min = max(confidence_map.values()), min(confidence_map.values())
-    ranges = (df_max - df_min) * bounds + df_min
-    ranges[-1] *= 1.001
-    ranges = ranges + 1
-    league_table_styles = []
-    for treat_c in treatments:
-        for treat_r in treatments:
-            rob = robs.loc[treat_r, treat_c]
-            indxs = np.where(rob < ranges)[0] if rob == rob else [0]
-            clr_indx = indxs[0] - 1 if len(indxs) else 0
-            diag, empty = treat_r == treat_c, rob != rob
-            league_table_styles.append({'if': {'filter_query': f'{{Treatment}} = {{{treat_r}}}',
-                                               'column_id': treat_c},
-                                        'backgroundColor': cmap[clr_indx] if not empty else CLR_BCKGRND2,
-                                        'color': CX1 if not empty else CX2 if diag else 'white'})
-    league_table_styles.append({'if': {'column_id': 'Treatment'},
-                                'backgroundColor': CX1})
-
-    # Prepare for output
-    tips = robs
-    leaguetable = leaguetable.reset_index().rename(columns={'index': 'Treatment'})
-
-    leaguetable_cols = [{"name": c, "id": c} for c in leaguetable.columns]
-    leaguetable = leaguetable.to_dict('records')
-
-    tooltip_values = [{col['id']: {'value': f"**Average ROB:** {tip[col['id']]}",
-                                   'type': 'markdown'} if col['id'] != 'Treatment' else None
-                           for col in leaguetable_cols} for rn, (_, tip) in enumerate(tips.iterrows())]
-    if toggle_cinema:
-        tooltip_values = [{col['id']: {'value': f"**Average ROB:** {tip[col['id']]}\n\n**Reason for Downgrading:**",
-                                       'type': 'markdown'} if col['id'] != 'Treatment' else None
-                       for col in leaguetable_cols} for rn, (_, tip) in enumerate(tips.iterrows())]
-
-
-    if store_edge or store_node:
-        slctd_nods = {n['id'] for n in store_node} if store_node else set()
-        slctd_edgs = [e['source'] + e['target'] for e in store_edge] if store_edge else []
-        net_data = net_data[net_data.treat1.isin(slctd_nods) | net_data.treat2.isin(slctd_nods)
-                    | (net_data.treat1 + net_data.treat2).isin(slctd_edgs) | (net_data.treat2 + net_data.treat1).isin(slctd_edgs)]
-
-    data_cols = [{"name": c, "id": c} for c in net_data.columns]
-    data_output = net_data[net_data.year <= slider_value].to_dict('records')
-    league_table = build_league_table(leaguetable, leaguetable_cols, league_table_styles, tooltip_values)
-    league_table_modal = build_league_table(leaguetable, leaguetable_cols, league_table_styles, tooltip_values, modal=True)
-    _output = [data_output, data_cols] * 2 + [league_table, league_table_modal] + [legend] * 2 + [toggle_cinema, toggle_cinema_modal]
-
-    data_and_league_table_DATA['FULL_DATA'] = net_data.to_json( orient='split')
-    data_and_league_table_DATA['OUTPUT'] = _output
-    return _output + _out_slider + [data_and_league_table_DATA]
-
-def build_league_table(data, columns, style_data_conditional, tooltip_values, modal=False):
-
-    return dash_table.DataTable(style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
-                                            'color': 'white',
-                                            'border': '1px solid #5d6d95',
-                                            'font-family': 'sans-serif',
-                                            'fontSize': 11,
-                                            'minWidth': '55px',
-                                            'textAlign': 'center',
-                                            'whiteSpace': 'pre-line',  # 'inherit', nowrap
-                                            'textOverflow': 'string'},  # 'ellipsis'
-                                fixed_rows={'headers': True, 'data': 0},
-                                data=data,
-                                columns=columns,
-                                # export_format="csv", #xlsx
-                                # state='active',
-                                tooltip_data= tooltip_values,
-                                tooltip_delay=200,
-                                tooltip_duration=None,
-                                style_data_conditional=style_data_conditional,
-                                # fixed_rows={'headers': True, 'data': 0},    # DOES NOT WORK / LEADS TO BUG
-                                # fixed_columns={'headers': True, 'data': 1}, # DOES NOT WORK / LEADS TO BUG
-                                style_header={'backgroundColor': 'rgb(26, 36, 43)',
-                                              'border': '1px solid #5d6d95'},
-                                style_header_conditional=[{'if': {'column_id': 'Treatment',
-                                                                  'header_index': 0},
-                                                           'fontWeight': 'bold'}],
-                                style_table={'overflow': 'auto', 'width': '100%',
-                                             'max-height': 'calc(50vh)',
-                                             'max-width': 'calc(52vw)'} if not modal else {
-                                    'overflowX': 'scroll',
-                                    'overflowY': 'scroll',
-                                    'height': '99%',
-                                    'minWidth': '100%',
-                                    'max-height': 'calc(85vh)',
-                                    'width': '99%',
-                                    'margin-top': '10px',
-                                    'padding': '5px 5px 5px 5px'
-                                },
-                                css=[{"selector": '.dash-cell div.dash-cell-value',  # "table",
-                                      "rule": "width: 100%; "},
-                                     {'selector': 'tr:hover',
-                                      'rule': 'background-color: rgba(0, 0, 0, 0);'},
-                                     {'selector': 'td:hover',
-                                      'rule': 'background-color: rgba(0, 116, 217, 0.3) !important;'}])
-
-
+    return __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
+                        league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
+                        reset_btn, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP)
 #######################################################################################
 ########################## ALL plots calling tools.function ###########################
 #######################################################################################
@@ -783,154 +444,6 @@ def ranking_plot(outcome_direction_1, outcome_direction_2,
     return __ranking_plot(outcome_direction_1, outcome_direction_2,
                           outcome_direction_11, outcome_direction_22,
                           net_data, ranking_data)
-
-
-#############################################################################
-############################# TOGGLE SECTION ################################
-#############################################################################
-
-### -------------- toggle switch forest beneficial/harm ---------------- ###
-@app.callback([Output("forestswitchlabel1", "style"),
-               Output("forestswitchlabel2", "style")],
-              [Input("toggle_forest_direction", "value")])
-def color_forest_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
-              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
-              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', }
-    return style1, style2
-
-### -------------- toggle switch forest outcome1/outcome2 ---------------- ###
-@app.callback([Output("forestswitchlabel_outcome1", "style"),
-               Output("forestswitchlabel_outcome2", "style")],
-              [Input("toggle_forest_outcome", "value")])
-def color_funnel_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
-              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
-              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
-    return style1, style2
-
-### -------------- toggle switch forest pairwise outcome1/outcome2 ---------------- ###
-@app.callback([Output("forest_pair_switchlabel_outcome1", "style"),
-               Output("forest_pair_switchlabel_outcome2", "style")],
-              [Input("toggle_forest_pair_outcome", "value")])
-def color_funnel_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
-              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
-              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
-    return style1, style2
-
-### -------------- toggle switch rank  ---------------- ###
-### heatmap
-@app.callback([Output("rankswitchlabel1", "style"),
-               Output("rankswitchlabel2", "style")],
-              [Input("toggle_rank_direction", "value")])
-def color_rank1_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
-              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
-              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
-    return style1, style2
-
-@app.callback([Output("rank2switchlabel1", "style"),
-               Output("rank2switchlabel2", "style")],
-              [Input("toggle_rank2_direction", "value")])
-def color_rank2_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
-              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
-              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
-    return style1, style2
-
-#### scatter plot
-@app.callback([Output("rank2switchlabel11", "style"),
-               Output("rank2switchlabel22", "style")],
-              [Input("toggle_rank2_direction_outcome1", "value")])
-def color_rank1_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
-              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
-              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
-    return style1, style2
-
-@app.callback([Output("rankswitchlabel11", "style"),
-               Output("rankswitchlabel22", "style")],
-              [Input("toggle_rank2_direction_outcome2", "value")])
-def color_rank2_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
-              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
-              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
-    return style1, style2
-
-### -------------- toggle switch league table ---------------- ###
-@app.callback([Output("cinemaswitchlabel1", "style"),
-               Output("cinemaswitchlabel2", "style")],
-              [Input("rob_vs_cinema", "value")])
-def color_leaguetable_toggle(toggle_value):
-    style1 = {'color': '#808484' if toggle_value else '#b6e1f8', 'font-size': '12px',
-              'display': 'inline-block', 'margin': 'auto', 'padding-left': '10px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else '#808484', 'font-size': '12px',
-              'display': 'inline-block', 'margin': 'auto', 'padding-right': '0px', }
-    return style1, style2
-
-### -------------- toggle switch funnel plot ---------------- ###
-@app.callback([Output("funnelswitchlabel1", "style"),
-               Output("funnelswitchlabel2", "style")],
-              [Input("toggle_funnel_direction", "value")])
-def color_funnel_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
-              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
-              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
-    return style1, style2
-
-### -------------- toggle switch consistency ---------------- ###
-@app.callback([Output("consistencyswitchlabel1", "style"),
-               Output("consistencyswitchlabel2", "style")],
-              [Input("toggle_consistency_direction", "value")])
-def color_funnel_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
-              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
-              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
-    return style1, style2
-
-
-
-#############################################################################
-######################### DISABLE TOGGLE SWITCHES ###########################
-#############################################################################
-
-## disable outcome 2 toggle if no outcome 2 is given in data
-@app.callback([Output('toggle_funnel_direction', 'disabled'),
-              Output('toggle_forest_outcome', 'disabled'),
-              Output('toggle_forest_pair_outcome', 'disabled'),
-              Output('toggle_rank2_direction', 'disabled'),
-              Output('toggle_rank2_direction_outcome1', 'disabled'),
-              Output('toggle_rank2_direction_outcome2', 'disabled'),
-              Output('toggle_consistency_direction', 'disabled'),
-               ],
-              Input('ranking_data_STORAGE','data')
-              )
-def disable_out2_toggle(ranking_data):
-    df_ranking = pd.read_json(ranking_data, orient='split')
-    df_ranking = df_ranking.loc[:, ~df_ranking.columns.str.contains('^Unnamed')]  # Remove unnamed columns
-    if "pscore2" not in df_ranking.columns:
-        return True, True, True, True, True, True, True
-    else: return False, False, False, False, False, False, False
-
-
-@app.callback(Output('rob_vs_cinema', 'disabled'),
-              Input('datatable-secondfile-upload', 'filename'),
-              Input('uploaded_datafile', 'filename')
-
-              )
-def disable_cinema_toggle(filename,filename_data):
-    if filename is None and filename_data is not None: return True
-    else: return False
 
 
 ###############################################################################
@@ -1045,8 +558,9 @@ def toggle_modal_edge(open_t, close):
     if close: return False
     return False
 
-
-# ----- data selector modal -------#
+#--------------------------------------------------------------------------------#
+# ------------------------------ data selector modal ----------------------------#
+#--------------------------------------------------------------------------------#
 
 @app.callback([Output("modal_data", "is_open"),
                Output("modal_data_checks", "is_open"),
@@ -1167,7 +681,6 @@ def update_dropdown_effect_mod(new_data):
     return OPTIONS_VAR
 
 
-import time
 @app.callback([Output("para-check-data", "children"),
                Output('para-check-data', 'data')],
               Input("modal_data_checks", "is_open"),
@@ -1587,6 +1100,153 @@ def generate_xlsx(n_clicks, leaguedata):
     return dash.dcc.send_bytes(to_xlsx, filename="League_Table.xlsx")
 
     ######### return dash.dcc.send_data_frame(writer.save(), filename="league_table.xlsx")
+
+
+#############################################################################
+############################# TOGGLE SECTION ################################
+#############################################################################
+
+### -------------- toggle switch forest beneficial/harm ---------------- ###
+@app.callback([Output("forestswitchlabel1", "style"),
+               Output("forestswitchlabel2", "style")],
+              [Input("toggle_forest_direction", "value")])
+def color_forest_toggle(toggle_value):
+    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px'}
+    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', }
+    return style1, style2
+
+### -------------- toggle switch forest outcome1/outcome2 ---------------- ###
+@app.callback([Output("forestswitchlabel_outcome1", "style"),
+               Output("forestswitchlabel_outcome2", "style")],
+              [Input("toggle_forest_outcome", "value")])
+def color_funnel_toggle(toggle_value):
+    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
+    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
+    return style1, style2
+
+### -------------- toggle switch forest pairwise outcome1/outcome2 ---------------- ###
+@app.callback([Output("forest_pair_switchlabel_outcome1", "style"),
+               Output("forest_pair_switchlabel_outcome2", "style")],
+              [Input("toggle_forest_pair_outcome", "value")])
+def color_funnel_toggle(toggle_value):
+    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
+    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
+    return style1, style2
+
+### -------------- toggle switch rank  ---------------- ###
+### heatmap
+@app.callback([Output("rankswitchlabel1", "style"),
+               Output("rankswitchlabel2", "style")],
+              [Input("toggle_rank_direction", "value")])
+def color_rank1_toggle(toggle_value):
+    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
+    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
+    return style1, style2
+
+@app.callback([Output("rank2switchlabel1", "style"),
+               Output("rank2switchlabel2", "style")],
+              [Input("toggle_rank2_direction", "value")])
+def color_rank2_toggle(toggle_value):
+    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
+    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
+    return style1, style2
+
+#### scatter plot
+@app.callback([Output("rank2switchlabel11", "style"),
+               Output("rank2switchlabel22", "style")],
+              [Input("toggle_rank2_direction_outcome1", "value")])
+def color_rank1_toggle(toggle_value):
+    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
+    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
+    return style1, style2
+
+@app.callback([Output("rankswitchlabel11", "style"),
+               Output("rankswitchlabel22", "style")],
+              [Input("toggle_rank2_direction_outcome2", "value")])
+def color_rank2_toggle(toggle_value):
+    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
+    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
+    return style1, style2
+
+### -------------- toggle switch league table ---------------- ###
+@app.callback([Output("cinemaswitchlabel1", "style"),
+               Output("cinemaswitchlabel2", "style")],
+              [Input("rob_vs_cinema", "value")])
+def color_leaguetable_toggle(toggle_value):
+    style1 = {'color': '#808484' if toggle_value else '#b6e1f8', 'font-size': '12px',
+              'display': 'inline-block', 'margin': 'auto', 'padding-left': '10px'}
+    style2 = {'color': '#b6e1f8' if toggle_value else '#808484', 'font-size': '12px',
+              'display': 'inline-block', 'margin': 'auto', 'padding-right': '0px', }
+    return style1, style2
+
+### -------------- toggle switch funnel plot ---------------- ###
+@app.callback([Output("funnelswitchlabel1", "style"),
+               Output("funnelswitchlabel2", "style")],
+              [Input("toggle_funnel_direction", "value")])
+def color_funnel_toggle(toggle_value):
+    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
+    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
+    return style1, style2
+
+### -------------- toggle switch consistency ---------------- ###
+@app.callback([Output("consistencyswitchlabel1", "style"),
+               Output("consistencyswitchlabel2", "style")],
+              [Input("toggle_consistency_direction", "value")])
+def color_funnel_toggle(toggle_value):
+    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
+    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
+    return style1, style2
+
+
+
+#############################################################################
+######################### DISABLE TOGGLE SWITCHES ###########################
+#############################################################################
+
+@app.callback(Output('rob_vs_cinema', 'disabled'),
+              Input('datatable-secondfile-upload', 'filename'),
+              Input('uploaded_datafile', 'filename')
+
+              )
+def disable_cinema_toggle(filename,filename_data):
+    if filename is None and filename_data is not None: return True
+    else: return False
+
+## disable outcome 2 toggle if no outcome 2 is given in data
+@app.callback([Output('toggle_funnel_direction', 'disabled'),
+              Output('toggle_forest_outcome', 'disabled'),
+              Output('toggle_forest_pair_outcome', 'disabled'),
+              Output('toggle_rank2_direction', 'disabled'),
+              Output('toggle_rank2_direction_outcome1', 'disabled'),
+              Output('toggle_rank2_direction_outcome2', 'disabled'),
+              Output('toggle_consistency_direction', 'disabled'),
+               ],
+              Input('ranking_data_STORAGE','data')
+              )
+def disable_out2_toggle(ranking_data):
+    df_ranking = pd.read_json(ranking_data, orient='split')
+    df_ranking = df_ranking.loc[:, ~df_ranking.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+    if "pscore2" not in df_ranking.columns:
+        return True, True, True, True, True, True, True
+    else: return False, False, False, False, False, False, False
 
 
 

@@ -1,4 +1,4 @@
-import os, shutil, pickle
+import os, shutil, pickle, base64, io
 from tools.PATHS import __TEMP_LOGS_AND_GLOBALS, __SESSIONS_FOLDER, YESTERDAY
 from assets.effect_sizes import *
 # ---------R2Py Resources --------------------------------------------------------------------------------------------#
@@ -79,6 +79,15 @@ def set_slider_marks(y_min, y_max, years):
                                'opacity':1 if x in (y_min,y_max) else 0}}
             for x in np.unique(years).astype('int')
             }
+
+def parse_contents(contents, filename):
+    content_type, content_string = contents.split(',')
+    decoded = base64.b64decode(content_string)
+    if 'csv' in filename:  # Assume that the user uploaded a CSV file
+        return pd.read_csv(
+            io.StringIO(decoded.decode('utf-8')))
+    elif 'xls' in filename:  # Assume that the user uploaded an excel file
+        return pd.read_excel(io.BytesIO(decoded))
 
 ## ----------------------------  NETWORK FUNCTION --------------------------------- ##
 CMAP = ['purple', 'green', 'blue', 'red', 'black', 'yellow', 'orange', 'pink', 'brown', 'grey']

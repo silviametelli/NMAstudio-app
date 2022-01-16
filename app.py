@@ -1,5 +1,5 @@
 # Title     :  Dash NMA app
-# Objective :  visualization tabs based on network interactivity
+# Objective :  visualization of network meta-analysis based on network interactivity
 # Created by:  Silvia Metelli
 # Created on: 10/11/2020
 # --------------------------------------------------------------------------------------------------------------------#
@@ -30,9 +30,7 @@ from tools.functions_generate_stylesheet import __generate_stylesheet
 
 # Load extra layouts
 cyto.load_extra_layouts()
-
 GRAPH_INTERVAL = os.environ.get("GRAPH_INTERVAL", 5000)
-
 
 app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}],
                 #external_stylesheets=[dbc.themes.BOOTSTRAP],
@@ -73,7 +71,6 @@ def display_page(pathname):
     else:  return HOMEPAGE
 
 
-
 # Update which link is active in the navbar
 @app.callback(Output('homepage-link', 'active'),
               [Input('url', 'pathname')])
@@ -98,9 +95,12 @@ def set_docpage_active(pathname):
 @app.callback(Output("second-selection", "children"),
               [Input("dropdown-format", "value"),
                Input("dropdown-outcome1", "value"),
-               Input("dropdown-outcome2", "value")])
-def update_options(search_value_format, search_value_outcome1, search_value_outcome2):
-    return __update_options(search_value_format, search_value_outcome1, search_value_outcome2)
+               Input("dropdown-outcome2", "value")],
+              [State('datatable-upload', 'contents'),
+              State('datatable-upload', 'filename')]
+             )
+def update_options(search_value_format, search_value_outcome1, search_value_outcome2, contents, filename):
+    return __update_options(search_value_format, search_value_outcome1, search_value_outcome2, contents, filename)
 
 
 @app.callback([Output("dropdowns-DIV", "style"),
@@ -232,16 +232,6 @@ def TapEdgeData(edge):
         return "Click on an edge to get information."
 
 
-def parse_contents(contents, filename):
-    content_type, content_string = contents.split(',')
-    decoded = base64.b64decode(content_string)
-    if 'csv' in filename:  # Assume that the user uploaded a CSV file
-        return pd.read_csv(
-            io.StringIO(decoded.decode('utf-8')))
-    elif 'xls' in filename:  # Assume that the user uploaded an excel file
-        return pd.read_excel(io.BytesIO(decoded))
-
-
 #### ---------------------- consistency table and netsplit table ------------------------ ####
 @app.callback([Output('netsplit_table-container', 'data'),
               Output('netsplit_table-container', 'columns'),
@@ -364,10 +354,11 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
     return __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
                         league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
                         reset_btn, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP)
+
+
 #######################################################################################
 ########################## ALL plots calling tools.function ###########################
 #######################################################################################
-
 
 ### - figures on edge click: transitivity boxplots  - ###
 @app.callback(Output('tapEdgeData-fig', 'figure'),
@@ -376,7 +367,6 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
                Input('net_data_STORAGE','data')])
 def update_boxplot(value, edges, net_data):
     return __update_boxplot(value, edges, net_data)
-
 
 
 ### - figures on edge click: pairwise forest plots  - ###
@@ -388,7 +378,6 @@ def update_boxplot(value, edges, net_data):
 
 def  update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2):
     return __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2)
-
 
 
 ### ----- display forest plot on node click ------ ###
@@ -403,7 +392,6 @@ def TapNodeData_fig(data, outcome_direction, outcome, forest_data, forest_data_o
     return __TapNodeData_fig(data, outcome_direction, outcome, forest_data, forest_data_out2)
 
 
-
 ### ----- display dibim forest plot on node click ------ ###
 @app.callback(Output('tapNodeData-fig-bidim', 'figure'),
               [Input('cytoscape', 'selectedNodeData'),
@@ -413,7 +401,6 @@ def TapNodeData_fig(data, outcome_direction, outcome, forest_data, forest_data_o
               )
 def TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
     return __TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data)
-
 
 
 ############ - Funnel plot  - ###############
@@ -426,7 +413,6 @@ def TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
                )
 def Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):
     return __Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2)
-
 
 
 ############ - ranking plots  - ###############
@@ -444,7 +430,6 @@ def ranking_plot(outcome_direction_1, outcome_direction_2,
     return __ranking_plot(outcome_direction_1, outcome_direction_2,
                           outcome_direction_11, outcome_direction_22,
                           net_data, ranking_data)
-
 
 ###############################################################################
 ################### Bootstrap Dropdowns callbacks #############################
@@ -497,7 +482,6 @@ def which_dd_nds(default_t, default_v, rob_t, rob_v, class_t, class_v, closing_m
     return values[which] if not closing_modal else None, None, None
 
 
-
 @app.callback([Output('dd_eclr', 'children'), Output('close_modal_dd_eclr_input', 'n_clicks'),
                Output("open_modal_dd_eclr_input", "n_clicks")],
               [Input('dd_edge_default', 'n_clicks_timestamp'), Input('dd_edge_default', 'children'),
@@ -512,7 +496,6 @@ def which_dd_edges(default_t, default_v, eclr_t, eclr_v, closing_modal):
     return values[which] if not closing_modal else None, None, None
 
 flatten = lambda t: [item for sublist in t for item in sublist]
-
 
 
 @app.callback([Output('graph-layout-dropdown', 'children')],
@@ -944,7 +927,6 @@ def display_confirm(filename, data, modal_data_open, value_format, value_outcome
     else: return False
 
 
-
 ###############################################################################
 ################### EXPORT TO  CSV ON CLICK BUTTON ############################
 ###############################################################################
@@ -1216,7 +1198,6 @@ def color_funnel_toggle(toggle_value):
     return style1, style2
 
 
-
 #############################################################################
 ######################### DISABLE TOGGLE SWITCHES ###########################
 #############################################################################
@@ -1247,7 +1228,6 @@ def disable_out2_toggle(ranking_data):
     if "pscore2" not in df_ranking.columns:
         return True, True, True, True, True, True, True
     else: return False, False, False, False, False, False, False
-
 
 
 ####################################################################

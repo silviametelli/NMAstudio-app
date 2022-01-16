@@ -169,6 +169,9 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     data_and_league_table_DATA['OUTPUT'] = _output
     return _output + _out_slider + [data_and_league_table_DATA]
 
+
+
+
 def build_league_table(data, columns, style_data_conditional, tooltip_values, modal=False):
 
     return dash_table.DataTable(style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',

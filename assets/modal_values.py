@@ -75,7 +75,8 @@ file_upload_controls=[html.Br(),
 
 
 modal_data = dbc.Modal([dbc.ModalHeader("Data selection"),
-                        dbc.ModalBody([dbc.Row([dbc.Col([html.Br(),
+                        dbc.ModalBody([
+                            dbc.Row([dbc.Col([html.Br(),
                                                          html.Div(dcc.Upload(['Drag and Drop or ', html.A('Select a File')],
                                                                 id='datatable-upload', multiple=False,
                                                                 className='control-upload',
@@ -96,6 +97,7 @@ modal_data = dbc.Modal([dbc.ModalHeader("Data selection"),
                                           style={'display': 'none'},
                                           id='dropdowns-DIV'),
                                   html.Div(id='second-selection'),
+                                  html.Div(id='third-selection'),
                                   ]),
     dbc.ModalFooter([dbc.Button("Upload", id="upload_modal_data", className="ml-auto", disabled=True)])
                   ], id="modal_data", centered=False, style={'background-color':'#40515e',"max-width": "none", "width": "50%"})

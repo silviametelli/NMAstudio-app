@@ -143,6 +143,18 @@ league_rank <- function(dat, outcome2=FALSE){
       lt[lower.tri(lt, diag=T)] <- df_1[lower.tri(df_1, diag=T)]
       lt <- data.frame(lt)
       sortedseq <- l1_treats
+    }else if (length(lt1)==length(lt2)){
+      lt1 <- netleague_table1$random
+      lt2 <- netleague_table2$random
+      l1_treats <- sort(nma_primary$trts)
+      l2_treats <- sort(nma_secondary$trts)
+      df_1 <-  as_tibble(lt1)
+      df_2 <-  as_tibble(t(lt2))
+      lt <- matrix(NA, nrow = length(df_1), ncol = length(df_1))
+      lt[upper.tri(lt, diag=T)] <- df_2[upper.tri(df_2, diag=T)]
+      lt[lower.tri(lt, diag=T)] <- df_1[lower.tri(df_1, diag=T)]
+      lt <- data.frame(lt)
+      sortedseq <- l1_treats
     }else{
       which_trts <- which(!(l2_treats %in% l1_treats))
       df_1 <- df_1 %>% add_column(NA,  .before = colnames(df_1)[which_trts], .name_repair = "universal")

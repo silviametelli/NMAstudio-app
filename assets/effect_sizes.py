@@ -50,9 +50,7 @@ def get_MD(df, effect=1):
 
 ##correction factor for Cohen's d
 def cmicalc(mi) :
-    if mi <= 1:
-        return np.nan
-    else: return np.exp(loggamma(mi/2) - np.log(np.sqrt(mi/2)) - loggamma((mi-1)/2))
+    return np.where(mi<=1, np.nan, np.exp(loggamma(mi/2) - np.log(np.sqrt(mi/2)) - loggamma((mi-1)/2)))
 
 #### SMD #TODO: seTE adjusted for multiarm? use Hedges's
 def get_SMD(df, effect=1):

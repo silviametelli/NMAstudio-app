@@ -248,7 +248,8 @@ def netsplit(edges, outcome, net_split_data, net_split_data_out2, consistency_da
 
 ### ----- upload CINeMA data file 1 ------ ###
 @app.callback([Output("cinema_net_data1_STORAGE", "data"),
-               Output("file2-list", "children")],
+               Output("file2-list", "children"),
+               ],
               [Input('datatable-secondfile-upload', 'contents'),
                Input('cinema_net_data1_STORAGE', 'data')],
               [State('datatable-secondfile-upload', 'filename')])
@@ -409,7 +410,6 @@ def TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
                Input("toggle_funnel_direction", "value"),
                Input("funnel_data_STORAGE", "data"),
                Input("funnel_data_out2_STORAGE", "data")],
-               #State({'type': 'dataselectors', 'index': ALL}, 'value')
                )
 def Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):
     return __Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2)
@@ -548,11 +548,12 @@ def toggle_modal_edge(open_t, close):
 @app.callback([Output("modal_data", "is_open"),
                Output("modal_data_checks", "is_open"),
                Output("TEMP_net_data_STORAGE", "data"),
+               Output("uploaded_datafile_to_disable_cinema", "data")
                ],
               [Input("upload_your_data", "n_clicks_timestamp"),
                Input("upload_modal_data", "n_clicks_timestamp"),
                Input("submit_modal_data", "n_clicks_timestamp"),
-               ],
+               Input("uploaded_datafile_to_disable_cinema", "data")],
               [State("dropdown-format","value"),
                State("dropdown-outcome1","value"),
                State("dropdown-outcome2","value"),
@@ -564,7 +565,7 @@ def toggle_modal_edge(open_t, close):
                State("TEMP_net_data_STORAGE", "data"),
                ]
               )
-def data_modal(open_modal_data, upload, submit,
+def data_modal(open_modal_data, upload, submit, filename_exists,
                value_format, value_outcome1, value_outcome2,
                modal_data_is_open, modal_data_checks_is_open,
                contents, filename, dataselectors, TEMP_net_data_STORAGE,
@@ -574,26 +575,26 @@ def data_modal(open_modal_data, upload, submit,
     else:                 button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
     if open_modal_data:
-
         if upload and button_id=='upload_modal_data':
+            filename_exists = True if filename is not None else False
+
             data_user = parse_contents(contents, filename)
             try:
                 data = adjust_data(data_user, dataselectors, value_format ,value_outcome1, value_outcome2)
-
                 TEMP_net_data_STORAGE = data.to_json(orient='split')
 
             except:
                  TEMP_net_data_STORAGE = {}
                  raise ValueError('data conversion failed')
 
-            return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE
+            return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE,  filename_exists
 
         if submit and button_id == 'submit_modal_data':
-                return modal_data_is_open, not modal_data_checks_is_open and (not modal_data_is_open), TEMP_net_data_STORAGE
+                return modal_data_is_open, not modal_data_checks_is_open and (not modal_data_is_open), TEMP_net_data_STORAGE, filename_exists
 
-        return not modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE
+        return not modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE, filename_exists
     else:
-        return modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE
+        return modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE, filename_exists
 
 
 
@@ -707,6 +708,7 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
         try:
             net_data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
             NMA_data = run_network_meta_analysis(net_data)
+
             TEMP_forest_data_STORAGE = NMA_data.to_json( orient='split')
             TEMP_user_elements_STORAGE = get_network(df=net_data)
             TEMP_user_elements_out2_STORAGE = []
@@ -786,24 +788,24 @@ def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, TEMP_ne
                State('TEMP_net_split_data_STORAGE', 'data'),
                State('TEMP_net_split_data_out2_STORAGE', 'data'),
                State('TEMP_net_split_ALL_data_STORAGE', 'data'),
-               State('TEMP_net_split_ALL_data_out2_STORAGE', 'data')
+               State('TEMP_net_split_ALL_data_out2_STORAGE', 'data'),
+               State({'type': 'dataselectors', 'index': ALL}, 'value')
               )
 def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
                            TEMP_net_data_STORAGE, LEAGUETABLE_data,
                            ranking_data, consistency_data, net_split_data, net_split_data2,
-                           netsplit_all, netsplit_all2):
+                           netsplit_all, netsplit_all2, dataselectors):
     """ produce new league table from R """
     if modal_data_checks_is_open:
         data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
         try:
-            print(data)
-            LEAGUETABLE_OUTS =  generate_league_table(data, outcome2=False) if "TE2" not in data.columns else generate_league_table(data, outcome2=True)
-            if "TE2" not in data.columns: (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, netsplit_all) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
+            LEAGUETABLE_OUTS =  generate_league_table(data, outcome2=False) if "TE2" not in data.columns or dataselectors[1] not in ['MD','SMD','OR','RR'] or len(dataselectors)==1 else generate_league_table(data, outcome2=True)
+            if "TE2" not in data.columns or dataselectors[1] not in  ['MD','SMD','OR','RR'] or len(dataselectors)==1: (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, netsplit_all) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
             else:                         (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
 
-            return (False, html.P(u"\u2713" + " Successfully generated league table.", style={"color":"green"}),
+            return (False, html.P(u"\u2713" + " Successfully generated league table, consistency tables, ranking data.", style={"color":"green"}),
                     '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, netsplit_all) if "TE2" not in data.columns else \
-                                    (False, html.P(u"\u2713" + " Successfully generated league table.", style={"color":"green"}),
+                                    (False, html.P(u"\u2713" + " Successfully generated league table, consistency tables, ranking datamod.", style={"color":"green"}),
                     '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2)
         except:
             return (True, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
@@ -1202,14 +1204,18 @@ def color_funnel_toggle(toggle_value):
 ######################### DISABLE TOGGLE SWITCHES ###########################
 #############################################################################
 
-@app.callback(Output('rob_vs_cinema', 'disabled'),
-              Input('datatable-secondfile-upload', 'filename'),
-              Input('uploaded_datafile', 'filename')
-
+## disable cinema coloring toggle if no cinema files are passed
+@app.callback([Output('rob_vs_cinema', 'disabled'),
+              Output('rob_vs_cinema_modal', 'disabled')],
+              [Input('datatable-secondfile-upload', 'filename'),
+               Input("uploaded_datafile_to_disable_cinema", "data")]
               )
-def disable_cinema_toggle(filename,filename_data):
-    if filename is None and filename_data is not None: return True
-    else: return False
+def disable_cinema_toggle(filename_cinema1, filename_data):
+
+    if filename_cinema1 is None and filename_data: return True, True
+    else: return False, False
+
+
 
 ## disable outcome 2 toggle if no outcome 2 is given in data
 @app.callback([Output('toggle_funnel_direction', 'disabled'),

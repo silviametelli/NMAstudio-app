@@ -14,7 +14,6 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
     if search_value_outcome1 is None: return None
 
     data_user = parse_contents(contents, filename)
-
     name_outcomes = ['1st outcome*', '2nd outcome'] if search_value_outcome2 is not None else ['1st outcome']
     search_values = [search_value_outcome1, search_value_outcome2] if search_value_outcome2 is not None else [search_value_outcome1]
     options_var = [{'label': '{}'.format(col, col), 'value': col} for col in data_user.columns]
@@ -84,28 +83,28 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
      ),
 
     html.Div([html.Div(
-        [dbc.Row([html.P("Select effect size", style={'color': 'white', 'vertical-align': 'middle'})])]
-    ),
-        html.Div(
-            [dbc.Row([html.P("Select your variables", style={'color': 'white', 'vertical-align': 'middle'})])] +
-            [dbc.Row([dbc.Col(dbc.Row(
-                [html.P(f"{name}:", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
-                                                                  'margin-left': '0px', 'font-size': '12px'}),
-                 dcc.Dropdown(id={'type': 'dataselectors', 'index': f'dropdown-{var_name}'},
-                              options=options_var, searchable=True, placeholder="...", className="box",
-                              clearable=False, style={'width': '80px',  # 'height': '30px',
-                                                      'vertical-align': 'middle',
-                                                      'margin-bottom': '10px',
-                                                      # 'padding-bottom':'10px',
-                                                      'display': 'inline-block',
-                                                      'color': CLR_BCKGRND_old, 'font-size': '10px',
-                                                      'background-color': CLR_BCKGRND_old})]),
-                style={'margin-bottom': '0px'})
-                for var_name, name in zip(var_names, col_var)],
-                style={'display': 'inline-block'})
-                for var_names, col_var in zip(vars_names, col_vars)],
 
-        )
+    ),
+        # html.Div(
+        #     [dbc.Row([html.P("Select your variables", style={'color': 'white', 'vertical-align': 'middle'})])] +
+        #     [dbc.Row([dbc.Col(dbc.Row(
+        #         [html.P(f"{name}:", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
+        #                                                           'margin-left': '0px', 'font-size': '12px'}),
+        #          dcc.Dropdown(id={'type': 'dataselectors', 'index': f'dropdown-{var_name}'},
+        #                       options=options_var, searchable=True, placeholder="...", className="box",
+        #                       clearable=False, style={'width': '80px',  # 'height': '30px',
+        #                                               'vertical-align': 'middle',
+        #                                               'margin-bottom': '10px',
+        #                                               # 'padding-bottom':'10px',
+        #                                               'display': 'inline-block',
+        #                                               'color': CLR_BCKGRND_old, 'font-size': '10px',
+        #                                               'background-color': CLR_BCKGRND_old})]),
+        #         style={'margin-bottom': '0px'})
+        #         for var_name, name in zip(var_names, col_var)],
+        #         style={'display': 'inline-block'})
+        #         for var_names, col_var in zip(vars_names, col_vars)],
+        #
+        # )
     ])
         ])
 

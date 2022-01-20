@@ -903,30 +903,30 @@ def toggle_modal(open, close, is_open):
 #####################################################################
 
 
-@app.callback(Output('data-type-danger', 'displayed'),
-              [Input('datatable-upload', 'filename'),
-              Input("net_data_STORAGE", "data"),
-              Input("modal_data", "is_open"),
-              Input("dropdown-format", "value"),
-              Input("dropdown-outcome1", "value"),
-              Input("dropdown-outcome2", "value")],
-              )
-def display_confirm(filename, data, modal_data_open, value_format, value_outcome1, value_outcome2):
-    data_ = pd.read_json(data, orient='split')
-    if modal_data_open and filename is not None and value_outcome1 is not None:
-        if value_format == 'contrast':
-            if value_outcome2 is None:
-                return True if ('y1' in data_.columns and value_outcome1=="continuous") or ('r1' in data_.columns and value_outcome1=="binary") else False
-            else:
-                return True if ('y1' in data_.columns and value_outcome1=="continuous") or ('r1' in data_.columns and value_outcome1=="binary") or \
-                               ('y2' in data_.columns and value_outcome2=="continuous") or ('r2' in data_.columns and value_outcome2=="binary") else False
-        elif value_format == 'long':
-            if value_outcome2 is None:
-                return True if ('y1' in data_.columns and value_outcome1=="binary") or ('r1' in data_.columns and value_outcome1=="continuous") else False
-            else:
-                return True if ('y1' in data_.columns and value_outcome1=="binary") or ('r1' in data_.columns and value_outcome1=="continuous") or \
-                               ('y2' in data_.columns and value_outcome2=="binary") or ('r2' in data_.columns and value_outcome2=="continuous") else False
-    else: return False
+# @app.callback(Output('data-type-danger', 'displayed'),
+#               [Input('datatable-upload', 'filename'),
+#               Input("net_data_STORAGE", "data"),
+#               Input("modal_data", "is_open"),
+#               Input("dropdown-format", "value"),
+#               Input("dropdown-outcome1", "value"),
+#               Input("dropdown-outcome2", "value")],
+#               )
+# def display_confirm(filename, data, modal_data_open, value_format, value_outcome1, value_outcome2):
+#     data_ = pd.read_json(data, orient='split')
+#     if modal_data_open and filename is not None and value_outcome1 is not None:
+#         if value_format == 'contrast':
+#             if value_outcome2 is None:
+#                 return True if ('y1' in data_.columns and value_outcome1=="continuous") or ('r1' in data_.columns and value_outcome1=="binary") else False
+#             else:
+#                 return True if ('y1' in data_.columns and value_outcome1=="continuous") or ('r1' in data_.columns and value_outcome1=="binary") or \
+#                                ('y2' in data_.columns and value_outcome2=="continuous") or ('r2' in data_.columns and value_outcome2=="binary") else False
+#         elif value_format == 'long':
+#             if value_outcome2 is None:
+#                 return True if ('y1' in data_.columns and value_outcome1=="binary") or ('r1' in data_.columns and value_outcome1=="continuous") else False
+#             else:
+#                 return True if ('y1' in data_.columns and value_outcome1=="binary") or ('r1' in data_.columns and value_outcome1=="continuous") or \
+#                                ('y2' in data_.columns and value_outcome2=="binary") or ('r2' in data_.columns and value_outcome2=="continuous") else False
+#     else: return False
 
 
 ###############################################################################

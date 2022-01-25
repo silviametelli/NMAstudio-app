@@ -14,6 +14,7 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
     if search_value_outcome1 is None: return None
 
     data_user = parse_contents(contents, filename)
+
     name_outcomes = ['1st outcome*', '2nd outcome'] if search_value_outcome2 is not None else ['1st outcome']
     search_values = [search_value_outcome1, search_value_outcome2] if search_value_outcome2 is not None else [search_value_outcome1]
     options_var = [{'label': '{}'.format(col, col), 'value': col} for col in data_user.columns]
@@ -21,7 +22,7 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
     if search_value_format is None: return None
     col_vars = [[]] * 3
     if search_value_format == 'long':
-        col_vars[0] = ['study id', 'treat', 'rob']
+        col_vars[0] = ['study id', 'treat', 'rob', 'year']
         if search_value_outcome1 == 'continuous':
             col_vars[1] = ['y', 'sd', 'n']
             if search_value_outcome2 == 'continuous':
@@ -38,12 +39,12 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
         else:
             return None
     elif search_value_format == 'contrast':
-        col_vars[0] = ['studlab', 'treat 1', 'treat 2', 'rob']
+        col_vars[0] = ['studlab', 'treat 1', 'treat 2', 'rob', 'year']
         if search_value_outcome1 == 'continuous':
-            col_vars[0] += ['n1', 'n2']
             col_vars[1] = ['y1', 'sd1', 'y2', 'sd2']
+            col_vars[1] += ['n1', 'n2']
             if search_value_outcome2 == 'continuous':
-                col_vars[2] = ['y2.1', 'sd1.2', 'y2.2', 'sd2.2']
+                col_vars[2] = ['y2.1', 'sd1.2', 'y2.2', 'sd2.2', 'n2.1', 'n2.2']
             elif search_value_outcome2 == 'binary':
                 col_vars[2] = ['z1', 'n1.z', 'z2.z', 'n2.z']
         elif search_value_outcome1 == 'binary':
@@ -51,10 +52,15 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
             if search_value_outcome2 == 'binary':
                 col_vars[2] = ['z1', 'n1.z', 'z2', 'n2.z']
             elif search_value_outcome2 == 'continuous':
-                col_vars[2] = ['y2.1', 'sd1.2', 'y2.2', 'sd2.2']
+                col_vars[2] = ['y2.1', 'sd1.2', 'y2.2', 'sd2.2', 'n2.1', 'n2.2']
 
         else:
             return None
+    elif search_value_format == 'iv':
+        col_vars[0] = ['studlab', 'treat 1', 'treat 2', 'rob', 'year']
+        col_vars[1] = ['TE', 'seTE', 'n1', 'n2']
+        if search_value_outcome2 is not None:
+            col_vars[2] = ['TE2', 'seTE2', 'n2.1', 'n2.2']
 
 
     vars_names = [[f'{search_value_format}.{c}' for c in col_vars[0]],
@@ -66,15 +72,15 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
         [dbc.Row([html.P("Select effect size", style={'color': 'white', 'vertical-align': 'middle'})])] +
          [dbc.Row([dbc.Col(dbc.Row(
                   [html.P(f"{name}", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
-                                                                   'margin-left': '0px', 'font-size': '12px'}),
+                                                                   'margin-left': '5px', 'font-size': '12px', 'color':'blue'}),
                   dcc.Dropdown(id={'type': 'dataselectors', 'index': f'dropdown-{name_outcomes}'},
                                options=options_effect_size_cont if val=='continuous' else options_effect_size_bin,
                                searchable=True, placeholder="...",
-                               clearable=False, style={'width': '60px', "height":'20px',
+                               clearable=False, style={'width': '60px', "height":'30px',
                                                        'vertical-align': 'middle',
                                                        "font-size": "1em",
                                                        "font-family": "sans-serif",
-                                                       'margin-bottom': '10px',
+                                                       'margin-bottom': '2px',
                                                        'display': 'inline-block',
                                                        'color': CLR_BCKGRND_old, 'font-size': '10px',
                                                        'background-color': CLR_BCKGRND_old} )]
@@ -85,26 +91,28 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
     html.Div([html.Div(
 
     ),
-        # html.Div(
-        #     [dbc.Row([html.P("Select your variables", style={'color': 'white', 'vertical-align': 'middle'})])] +
-        #     [dbc.Row([dbc.Col(dbc.Row(
-        #         [html.P(f"{name}:", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
-        #                                                           'margin-left': '0px', 'font-size': '12px'}),
-        #          dcc.Dropdown(id={'type': 'dataselectors', 'index': f'dropdown-{var_name}'},
-        #                       options=options_var, searchable=True, placeholder="...", className="box",
-        #                       clearable=False, style={'width': '80px',  # 'height': '30px',
-        #                                               'vertical-align': 'middle',
-        #                                               'margin-bottom': '10px',
-        #                                               # 'padding-bottom':'10px',
-        #                                               'display': 'inline-block',
-        #                                               'color': CLR_BCKGRND_old, 'font-size': '10px',
-        #                                               'background-color': CLR_BCKGRND_old})]),
-        #         style={'margin-bottom': '0px'})
-        #         for var_name, name in zip(var_names, col_var)],
-        #         style={'display': 'inline-block'})
-        #         for var_names, col_var in zip(vars_names, col_vars)],
-        #
-        # )
+        html.Div(
+            [dbc.Row([html.P("Select variables", style={'color': 'white', 'vertical-align': 'top'})])] +
+            [dbc.Row([dbc.Col(dbc.Row(
+                [html.P(f"{name}:", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
+                                                                  'margin-left': '0px', 'font-size': '12px'}),
+                 dcc.Dropdown(id={'type': 'dataselectors', 'index': f'dropdown-{var_name}'},
+                              options=options_var, searchable=True, placeholder="...", className="box",
+                              clearable=False, style={'width': '80px',  # 'height': '30px',
+                                                      "height": '30px',
+                                                      'vertical-align': 'middle',
+                                                      "font-size": "1em",
+                                                      "font-family": "sans-serif",
+                                                      'margin-bottom': '2px',
+                                                      'display': 'inline-block',
+                                                      'color': CLR_BCKGRND_old, 'font-size': '10px',
+                                                      'background-color': CLR_BCKGRND_old})]),
+                style={'margin-bottom': '0px'})
+                for var_name, name in zip(var_names, col_var)],
+                style={'display': 'inline-block'})
+                for var_names, col_var in zip(vars_names, col_vars)],
+
+        )
     ])
         ])
 

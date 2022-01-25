@@ -553,7 +553,8 @@ def toggle_modal_edge(open_t, close):
               [Input("upload_your_data", "n_clicks_timestamp"),
                Input("upload_modal_data", "n_clicks_timestamp"),
                Input("submit_modal_data", "n_clicks_timestamp"),
-               Input("uploaded_datafile_to_disable_cinema", "data")],
+               Input("uploaded_datafile_to_disable_cinema", "data"),
+               ],
               [State("dropdown-format","value"),
                State("dropdown-outcome1","value"),
                State("dropdown-outcome2","value"),
@@ -566,7 +567,7 @@ def toggle_modal_edge(open_t, close):
                ]
               )
 def data_modal(open_modal_data, upload, submit, filename_exists,
-               value_format, value_outcome1, value_outcome2,
+               search_value_format, search_value_outcome1, search_value_outcome2,
                modal_data_is_open, modal_data_checks_is_open,
                contents, filename, dataselectors, TEMP_net_data_STORAGE,
                ):
@@ -579,8 +580,82 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
             filename_exists = True if filename is not None else False
 
             data_user = parse_contents(contents, filename)
+
+            var_dict = dict()
+
+            if search_value_format == 'iv':
+                if search_value_outcome2 is None:
+                    studlab, treat1, treat2, rob, year, TE, seTE, n1, n2 = dataselectors[1: ] # first dataselector is the effect size
+                    var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2',  rob: 'rob', year: 'year',
+                                TE: 'TE', seTE: 'seTE', n1: 'n1', n2:'n2'}
+                else:
+                    studlab, treat1, treat2, rob, year, TE, seTE, n1, n2, TE2, seTE2, n21, n22 = dataselectors[2: ]
+                    var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2',  rob: 'rob', year: 'year',
+                                TE: 'TE', seTE: 'seTE', n1: 'n1', n2:'n2',
+                                TE2: 'TE2', seTE2: 'seTE2', n21: 'n2.1', n22:  'n2.2'}
+            elif search_value_format == 'contrast':
+                if search_value_outcome1 == 'continuous':
+                    if search_value_outcome2 is None:
+                        studlab, treat1, treat2, rob, year, y1, sd1, y2, sd2, n1, n2 = dataselectors[1: ]  # first dataselector is the effect size
+                        var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
+                                    y1: 'y1', sd1: 'sd1',
+                                    y2: 'y2', sd2: 'sd2', n1: 'n1', n2: 'n2'}
+                    elif search_value_outcome2 == 'continuous':
+                        studlab, treat1, treat2, rob, year, y1, sd1, y2, sd2, n1, n2, y21, sd12, y22, sd22, n21, n22 = dataselectors[2: ]
+                        var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
+                                    y1: 'y1', sd1: 'sd1', y2: 'y2', sd2: 'sd2', n1: 'n1', n2: 'n2', y21: 'y2.1', sd12: 'sd1.2', y22: 'y2.2', sd22: 'sd2.2',
+                                    n21: 'n2.1', n22: 'n2.2'}
+                    else:
+                        studlab, treat1, treat2, rob, year, y1, sd1, y2, sd2, n1, n2, z1, z2, n21, n22 = dataselectors[2: ]
+                        var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
+                                    y1: 'y1', sd1: 'sd1', y2: 'y2', sd2: 'sd2', n1: 'n1', n2: 'n2', z1: 'z1', z2: 'z2',
+                                    n21: 'n2.1', n22: 'n2.2'}
+
+                if search_value_outcome1 == 'binary':
+                    if search_value_outcome2 is None:
+                        studlab, treat1, treat2, rob, year, r1, r2, n1, n2 = dataselectors[1: ]  # first dataselector is the effect size
+                        var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
+                                    r1: 'r1', r2: 'r2', n1: 'n1', n2: 'n2'}
+                    elif search_value_outcome2 == 'continuous':
+                        studlab, treat1, treat2, rob, year, r1, r2, n1, n2, y21, sd12, y22, sd22, n21, n22 = dataselectors[2: ]  # first dataselector is the effect size
+                        var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
+                                    r1: 'r1', r2: 'r2', n1: 'n1', n2: 'n2',  y21: 'y2.1', sd12: 'sd1.2', y22: 'y2.2', sd22: 'sd2.2', n21: 'n2.1', n22: 'n2.2'}
+                    else:
+                        studlab, treat1, treat2, rob, year, r1, r2, n1, n2, z1, z2, n21, n22 = dataselectors[2: ]  # first dataselector is the effect size
+                        var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
+                                    r1: 'r1', r2: 'r2', n1: 'n1', n2: 'n2',
+                                    z1: 'z1', z2: 'z2', n21: 'n2.1', n22: 'n2.2',
+                                    }
+            else:  #long format
+                if search_value_outcome1 == 'continuous':
+                    if search_value_outcome2 is None:
+                        studlab, treat, rob, year, y, sd, n = dataselectors[1: ]
+                        var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
+                                    y: 'y', sd: 'sd', n: 'n'}
+                    elif search_value_outcome2 == 'continuous':
+                        studlab, treat, rob, year, y, sd, n, y2, sd2, n2 = dataselectors[2: ]
+                        var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
+                                    y: 'y', sd: 'sd', n: 'n', y2: 'y2', sd2: 'sd2', n2: 'n2'}
+                    else:
+                        studlab, treat, rob, year, y, sd, n, z1, nz = dataselectors[2: ]
+                        var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
+                                    y: 'y', sd: 'sd', n: 'n', z1: 'z1', nz: 'nz'}
+                if search_value_outcome1 == 'binary':
+                    if search_value_outcome2 is None:
+                        studlab, treat1, treat2, rob, year, r, n = dataselectors[1: ]
+                        var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
+                                    r: 'r', n: 'n'}
+                    elif search_value_outcome2 == 'continuous':
+                        studlab, treat, rob, year, r, n, y2, sd2, n2 = dataselectors[2: ]
+                        var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
+                                    r: 'r', n: 'n', y2: 'y2', sd2: 'sd2', n2:'n2'}
+
+
+            data_user.rename(columns=var_dict, inplace=True)
+
             try:
-                data = adjust_data(data_user, dataselectors, value_format ,value_outcome1, value_outcome2)
+                data = adjust_data(data_user, dataselectors, search_value_format ,search_value_outcome1, search_value_outcome2)
+
                 TEMP_net_data_STORAGE = data.to_json(orient='split')
 
             except:
@@ -712,6 +787,7 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
             TEMP_forest_data_STORAGE = NMA_data.to_json( orient='split')
             TEMP_user_elements_STORAGE = get_network(df=net_data)
             TEMP_user_elements_out2_STORAGE = []
+            error = ' '
 
             if "TE2" in net_data.columns:
                 net_data_out2 = net_data.drop(["TE", "seTE",  "n1",  "n2"], axis=1)
@@ -719,12 +795,12 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
                 NMA_data2 = run_network_meta_analysis(net_data_out2)
                 TEMP_forest_data_out2_STORAGE = NMA_data2.to_json(orient='split')
                 TEMP_user_elements_out2_STORAGE = get_network(df=net_data_out2)
-                error = ' '
+
 
             return (False, error, html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
                     '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE, TEMP_user_elements_out2_STORAGE)
         except:
-            error = ' here should go the error printed in R[write to console]: Error: '
+            error = ' Error printed in R[write to console]:  '
             return (True, error, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
                     '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE, TEMP_user_elements_out2_STORAGE)
 
@@ -752,13 +828,15 @@ def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, TEMP_ne
         try:
             PAIRWISE_data = run_pairwise_MA(data)
             TEMP_forest_data_prws_STORAGE = PAIRWISE_data.to_json( orient='split')
+            TEMP_forest_data_prws_out2 = []
+
             if "TE2" in data.columns:
                 pair_data_out2 = data.drop(["TE", "seTE",  "n1",  "n2"], axis=1)
                 pair_data_out2 = pair_data_out2.rename(columns={"TE2": "TE", "seTE2": "seTE", "n2.1": "n1", "n2.2": "n2"})
                 PAIRWISE_data2 = run_pairwise_MA(pair_data_out2)
                 TEMP_forest_data_prws_out2 = PAIRWISE_data2.to_json(orient='split')
 
-                return (False, html.P(u"\u2713" + " Pairwise meta-analysis run successfully.", style={"color":"green"}),
+            return (False, html.P(u"\u2713" + " Pairwise meta-analysis run successfully.", style={"color":"green"}),
                                '__Para_Done__', TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2)
         except:
                 return (True, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
@@ -799,21 +877,25 @@ def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
     if modal_data_checks_is_open:
         data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
         try:
-            LEAGUETABLE_OUTS =  generate_league_table(data, outcome2=False) if "TE2" not in data.columns or dataselectors[1] not in ['MD','SMD','OR','RR'] or len(dataselectors)==1 else generate_league_table(data, outcome2=True)
-            if "TE2" not in data.columns or dataselectors[1] not in  ['MD','SMD','OR','RR'] or len(dataselectors)==1: (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, netsplit_all) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
-            else:                         (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
+            LEAGUETABLE_OUTS =  generate_league_table(data, outcome2=False) if "TE2" not in data.columns or dataselectors[1] not in ['MD','SMD','OR','RR'] else generate_league_table(data, outcome2=True)
+
+            if "TE2" not in data.columns or dataselectors[1] not in ['MD','SMD','OR','RR']:
+                (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, netsplit_all) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
+                net_split_data2 = {}
+                netsplit_all2 = {}
+            else:
+                (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
 
             return (False, html.P(u"\u2713" + " Successfully generated league table, consistency tables, ranking data.", style={"color":"green"}),
-                    '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, netsplit_all) if "TE2" not in data.columns else \
-                                    (False, html.P(u"\u2713" + " Successfully generated league table, consistency tables, ranking datamod.", style={"color":"green"}),
-                    '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2)
+                         '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2)
         except:
             return (True, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
                     '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, netsplit_all) if "TE2" not in data.columns else \
                                     (False, html.P(u"\u274C" + "An error occurred when computing analyses in R: check your data", style={"color":"red"}),
                     '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2)
     else:
-        #net_split_data2 = {}
+        net_split_data2 = {}
+        netsplit_all2 = {}
         return False, None, '', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2
 
 

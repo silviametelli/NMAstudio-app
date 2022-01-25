@@ -84,8 +84,13 @@ def parse_contents(contents, filename):
     content_type, content_string = contents.split(',')
     decoded = base64.b64decode(content_string)
     if 'csv' in filename:  # Assume that the user uploaded a CSV file
-        return pd.read_csv(
-            io.StringIO(decoded.decode('utf-8')))
+        try:
+            df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+        except Exception:
+            df = pd.read_csv(io.StringIO(decoded.decode('cp1252')))
+        except Exception:
+            df = pd.read_csv(io.StringIO(decoded.decode('ISO-8859-1')))
+        return df
     elif 'xls' in filename:  # Assume that the user uploaded an excel file
         return pd.read_excel(io.BytesIO(decoded))
 
@@ -202,6 +207,7 @@ def generate_league_table(df, outcome2=False):
                                columns=leaguetable.columns,
                                index=leaguetable.index)
     leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
+
     if outcome2:
         return leaguetable, pscores, consist, netsplit, netsplit2, netsplit_all, netsplit_all2
     else:

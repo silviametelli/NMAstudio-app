@@ -1,5 +1,4 @@
-pip list --format=freeze > requirements.txt
-
+w
 
 heroku plugins:install heroku-builds
 

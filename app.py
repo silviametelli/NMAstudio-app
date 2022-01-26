@@ -575,6 +575,9 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
     if not ctx.triggered: button_id = 'No clicks yet'
     else:                 button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
+    filename_exists = True if filename is not None else False
+
+
     if open_modal_data:
         if upload and button_id=='upload_modal_data':
             filename_exists = True if filename is not None else False

@@ -1,6 +1,7 @@
 ####### contains all lists of values for the app modals #######
 
-import dash_core_components as dcc
+#import dash_core_components as dcc
+from dash import dcc
 import dash_bootstrap_components as dbc, dash_html_components as html
 import dash_table, dash_daq as daq
 from assets.COLORS import *

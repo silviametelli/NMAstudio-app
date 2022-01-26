@@ -86,8 +86,10 @@ def __update_boxplot(value, edges, net_data):
                               "font": {"size": 15, "color": "white", 'family': 'sans-serif'},
                               "xref": "paper",
                               "yref": "y",
+                              "xshift": -400,
                               #"y" : 3,
-                              "xanchor": "center",
+
+                              "xanchor": "left",
                               "showarrow": False},
                                      ]
                           ),

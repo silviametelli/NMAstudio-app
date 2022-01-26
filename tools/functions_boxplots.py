@@ -79,17 +79,15 @@ def __update_boxplot(value, edges, net_data):
                           modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'),
                           yaxis=dict(showgrid=False, tick0=0, title=''),
                           annotations=[{
-                              "text": """Check whether transitivity holds in the network: compare the distributions  <br>
-                                      of your potential effect modifiers across the different comparisons <br>
-                                       by visual inspection of the effect modifiers box plots <br> <br>
-                                      Effect modifiers should be similarly distributed across comparisons""",
+                              "text": "Check whether transitivity holds in the network: compare the distributions <br>"
+                                      "of your potential effect modifiers across the different comparisons <br>"
+                                       "by visual inspection of the effect modifiers box plots <br> <br>"
+                                      "Effect modifiers should be similarly distributed across comparisons",
                               "font": {"size": 15, "color": "white", 'family': 'sans-serif'},
                               "xref": "paper",
                               "yref": "y",
-                              "xshift": -400,
-                              #"y" : 3,
-
-                              "xanchor": "left",
+                              #"xshift": -400,
+                              "xanchor": "center",
                               "showarrow": False},
                                      ]
                           ),

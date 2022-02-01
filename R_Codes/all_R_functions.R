@@ -342,15 +342,14 @@ pairwise_forest <- function(dat){
 }
 
 
-
 #----------------------------------- pairwise function to convert data -----------------------------------------#
 
 get_pairwise_data <- function(dat, outcome2=FALSE){
     sm1 <- dat$effect_size1[1]
     if(sm1 %in% c('RR','OR')){
     pairwise_dat1 <- netmeta::pairwise(data=dat,
-                                       event=r1,
-                                       n=n1,
+                                       event=r,
+                                       n=n,
                                        studlab=studlab,
                                        treat=treat,
                                        incr=0.5,
@@ -365,7 +364,11 @@ get_pairwise_data <- function(dat, outcome2=FALSE){
                                          incr=0.5,
                                          sm=sm1)}
     pairwise_dat <- pairwise_dat1
-    if(outcome2==TRUE){
+
+    names(pairwise_dat)[names(pairwise_dat) == 'rob1'] <- 'rob'
+    names(pairwise_dat)[names(pairwise_dat) == 'year1'] <- 'year'
+
+  if(outcome2==TRUE){
       sm2 <- dat$effect_size2[1]
       if(sm2 %in% c('RR','OR')){
         pairwise_dat1 <- netmeta::pairwise(data=dat,
@@ -386,18 +389,18 @@ get_pairwise_data <- function(dat, outcome2=FALSE){
                                            sm=sm2)
       }
       pairwise_dat <- full_join(pairwise_dat1, pairwise_dat2, by = c("studlab","treat1","treat2"))
-      names(pairwise_dat)[names(pairwise_dat) == 'TE.x'] <- 'TE'
-      names(pairwise_dat)[names(pairwise_dat) == 'seTE.x'] <- 'seTE'
-      names(pairwise_dat)[names(pairwise_dat) == 'n1.x'] <- 'n1'
-      names(pairwise_dat)[names(pairwise_dat) == 'n2.x'] <- 'n2'
-      names(pairwise_dat)[names(pairwise_dat) == 'effect_size1.x'] <- 'effect_size1'
-      names(pairwise_dat)[names(pairwise_dat) == 'TE.y'] <- 'TE2'
-      names(pairwise_dat)[names(pairwise_dat) == 'seTE.y'] <- 'seTE2'
-      names(pairwise_dat)[names(pairwise_dat) == 'n1.y'] <- 'n2.1'
-      names(pairwise_dat)[names(pairwise_dat) == 'n2.y'] <- 'n2.2'
-      names(pairwise_dat)[names(pairwise_dat) == 'effect_size2.x'] <- 'effect_size2'
-      names(pairwise_dat)[names(pairwise_dat) == 'rob.x'] <- 'rob'
-      names(pairwise_dat)[names(pairwise_dat) == 'year.x'] <- 'year'
+     names(pairwise_dat)[names(pairwise_dat) == 'TE.x'] <- 'TE'
+     names(pairwise_dat)[names(pairwise_dat) == 'seTE.x'] <- 'seTE'
+     names(pairwise_dat)[names(pairwise_dat) == 'n1.x'] <- 'n1'
+     names(pairwise_dat)[names(pairwise_dat) == 'n2.x'] <- 'n2'
+     names(pairwise_dat)[names(pairwise_dat) == 'effect_size1.x'] <- 'effect_size1'
+     names(pairwise_dat)[names(pairwise_dat) == 'TE.y'] <- 'TE2'
+     names(pairwise_dat)[names(pairwise_dat) == 'seTE.y'] <- 'seTE2'
+     names(pairwise_dat)[names(pairwise_dat) == 'n1.y'] <- 'n2.1'
+     names(pairwise_dat)[names(pairwise_dat) == 'n2.y'] <- 'n2.2'
+     names(pairwise_dat)[names(pairwise_dat) == 'effect_size2.x'] <- 'effect_size2'
+     names(pairwise_dat)[names(pairwise_dat) == 'rob.x'] <- 'rob'
+     names(pairwise_dat)[names(pairwise_dat) == 'year.x'] <- 'year'
 
   }
   return (pairwise_dat)

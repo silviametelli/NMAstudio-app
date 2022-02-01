@@ -72,7 +72,7 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
         [dbc.Row([html.P("Select effect size", style={'color': 'white', 'vertical-align': 'middle'})])] +
          [dbc.Row([dbc.Col(dbc.Row(
                   [html.P(f"{name}", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
-                                                                   'margin-left': '5px', 'font-size': '12px', 'color':'blue'}),
+                                                                   'margin-left': '5px', 'font-size': '12px', 'color':'#b2e1ec'}),
                   dcc.Dropdown(id={'type': 'dataselectors', 'index': f'dropdown-{name_outcomes}'},
                                options=options_effect_size_cont if val=='continuous' else options_effect_size_bin,
                                searchable=True, placeholder="...",

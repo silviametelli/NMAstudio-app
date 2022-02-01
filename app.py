@@ -577,7 +577,6 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
 
     filename_exists = True if filename is not None else False
 
-
     if open_modal_data:
         if upload and button_id=='upload_modal_data':
             filename_exists = True if filename is not None else False
@@ -632,6 +631,7 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
             else:  #long format
                 if search_value_outcome1 == 'continuous':
                     if search_value_outcome2 is None:
+
                         studlab, treat, rob, year, y, sd, n = dataselectors[1: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     y: 'y', sd: 'sd', n: 'n'}
@@ -645,9 +645,11 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
                                     y: 'y', sd: 'sd', n: 'n', z1: 'z1', nz: 'nz'}
                 if search_value_outcome1 == 'binary':
                     if search_value_outcome2 is None:
-                        studlab, treat1, treat2, rob, year, r, n = dataselectors[1: ]
+
+                        studlab, treat, rob, year, r, n = dataselectors[1: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     r: 'r', n: 'n'}
+
                     elif search_value_outcome2 == 'continuous':
                         studlab, treat, rob, year, r, n, y2, sd2, n2 = dataselectors[2: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
@@ -655,6 +657,9 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
 
 
             data_user.rename(columns=var_dict, inplace=True)
+
+            print(data_user.columns)
+
 
             try:
                 data = adjust_data(data_user, dataselectors, search_value_format ,search_value_outcome1, search_value_outcome2)
@@ -759,7 +764,7 @@ def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, TEMP_net_data_STOR
         if all(passed_checks.values()):
                 return html.P(u"\u2713" + " All data checks passed.", style={"color":"green"}), '__Para_Done__'
         else:
-            return (html.P(["WARNING - some data checks failed:"]+sum([[html.Br(), f'Failed on {k}']
+            return (html.P(["WARNING - some data checks failed:"]+sum([[html.Br(), f'{k}']
                                                                         for k,v in passed_checks.items()
                                                                             if not v], []), style={"color": "orange"}),
                                 '__Para_Done__')

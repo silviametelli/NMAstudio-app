@@ -12,7 +12,7 @@ Dropdown_nodesize = dbc.DropdownMenu(
 
 
 Dropdown_nodecolor = dbc.DropdownMenu(
-    label="Node color", direction="right",bs_size="sm",
+    label="Node colour", direction="right",bs_size="sm",
     children=[dbc.DropdownMenuItem("Default", id='dd_nclr_default'),
               dbc.DropdownMenuItem("Risk of Bias", id='dd_nclr_rob'),
               dbc.DropdownMenuItem("By class", id='dd_nclr_class'),
@@ -23,7 +23,7 @@ Dropdown_nodecolor = dbc.DropdownMenu(
 
 
 Dropdown_edgecolor = dbc.DropdownMenu(
-    label="Edge color", direction="right", bs_size="sm",
+    label="Edge colour", direction="right", bs_size="sm",
     children=[dbc.DropdownMenuItem("Default", id='dd_edge_default'),
               dbc.DropdownMenuItem("Custom selection", id='open_modal_dd_eclr_input'), # Calls up Modal
               dbc.DropdownMenuItem("Add label", id='dd_edge_label'),

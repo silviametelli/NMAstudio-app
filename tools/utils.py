@@ -71,7 +71,6 @@ def generate_ssl_perm_and_key(cert_name, key_name):
 #     return pickle.load(open(path, 'rb'))
 
 
-
 ## --------------------------------MISC-------------------------------------------- ##
 def set_slider_marks(y_min, y_max, years):
     return {int(x): {'label': str(x),
@@ -179,7 +178,7 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
 def data_checks(df):
     return {'Conversion to wide format failed': True,
             'Some variables are a mix of numerical and string values': all(df.applymap(type).nunique() >1),
-            'Missing values': df.isnull().sum().sum() < 1,
+            'Missing values present': df.isnull().sum().sum() < 1,
             'Non-negative variances': (any(df.seTE>0) if ("seTE2" not in df.columns) else (any(df.seTE > 0) or any(df.seTE2 > 0)))
             }
 

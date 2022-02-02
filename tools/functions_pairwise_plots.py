@@ -12,7 +12,7 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
         df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
         df = df[df.Comparison.isin(slctd_comps)]
 
-        #df['studlab'] = str(df['studlab'])
+        df['studlab'] = df['studlab'].astype('str')
         df['studlab'] += ' ' * 10
         effect_size = df.columns[0]
         tau2 = round(df['tau2'].iloc[0], 2) if len(df['tau2'])>0 and df['tau2'].iloc[0] and ~np.isnan(df['tau2'].iloc[0]) else np.nan

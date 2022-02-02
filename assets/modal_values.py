@@ -45,6 +45,10 @@ modal_edges = dbc.Modal([dbc.ModalHeader("Edge color selection"),
             id="modal_edge",style={'background-color':'#40515e','margin-left':'-px', 'font-size':'10.5px', 'padding-left':'-2px'})
 
 file_upload_controls=[html.Br(),
+                      dbc.Col([html.P("Note: before uploading your data, read our tutorial for details on variable requirements", className="graph__title2",
+                               style={'display': 'inline-block', 'margin-left': '5px',
+                                      'paddingLeft': '5px','font-size': '11px','vertical-alignment':'middle'})]),
+                      html.Br(),
                       dbc.Col([html.P("Format*:", className="graph__title2",
                                style={'display': 'inline-block', 'margin-left': '5px',
                                       'paddingLeft': '5px','font-size': '11px','vertical-alignment':'middle'}),

@@ -175,7 +175,11 @@ html.H1("NMAstudio (version 0.1)", style={'font-size':'20px', 'color':'white', '
                                           'padding-right':'3%', 'font-family':'sans-serif'}),  html.Br(),
 
 dcc.Markdown('Please cite us as: Metelli S, Chaimani A. NMAstudio: a fully interactive web-application for producing and visualising network meta-analyses. *SRSM Annual Meeting 2021, Bern, Switzerland.*',
-             className="markdown_style"),   html.Br(),   html.Br(),
+             className="markdown_style"),   html.Br(),
+dcc.Markdown("Demonstration data: Sbidian E, Chaimani A, Garcia-Doval I, Doney L, Dressler C, Hua C, et al. Systemic pharmacological treatments for chronic plaque psoriasis: a network meta-analysis. *Cochrane Database Syst Rev*. 2021 Apr 19;4:CD011535. https://www.cochranelibrary.com/cdsr/doi/10.1002/14651858.CD011535.pub4/full ",
+             className="markdown_style"),
+
+html.Br(),
 
 dcc.Markdown('NMAstudio is a web application to produce and visualise interactive outputs from network meta-analyses',
              className="markdown_style"),

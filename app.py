@@ -658,8 +658,6 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
 
             data_user.rename(columns=var_dict, inplace=True)
 
-            print(data_user.columns)
-
 
             try:
                 data = adjust_data(data_user, dataselectors, search_value_format ,search_value_outcome1, search_value_outcome2)

@@ -1,4 +1,5 @@
 import os, shutil, pickle, base64, io
+from pandas.api.types import is_numeric_dtype
 from tools.PATHS import __TEMP_LOGS_AND_GLOBALS, __SESSIONS_FOLDER, YESTERDAY
 from assets.effect_sizes import *
 # ---------R2Py Resources --------------------------------------------------------------------------------------------#
@@ -6,6 +7,7 @@ from rpy2.robjects import pandas2ri  # Define the R script and loads the instanc
 #pandas2ri.activate()
 import rpy2.robjects as ro
 from rpy2.robjects.conversion import localconverter
+#import plotly.express as px
 
 r = ro.r
 r['source']('R_Codes/all_R_functions.R')  # Loading the function we have defined in R.
@@ -89,12 +91,16 @@ def parse_contents(contents, filename):
             df = pd.read_csv(io.StringIO(decoded.decode('cp1252')))
         except Exception:
             df = pd.read_csv(io.StringIO(decoded.decode('ISO-8859-1')))
+        except Exception:
+            df = pd.read_csv(io.StringIO(decoded.decode('unicode-escape')))
         return df
-    elif 'xls' in filename:  # Assume that the user uploaded an excel file
+    elif 'xls' in filename:  # Assume that the user uploaded an excel file: TODO: fix
         return pd.read_excel(io.BytesIO(decoded))
 
 ## ----------------------------  NETWORK FUNCTION --------------------------------- ##
-CMAP = ['purple', 'green', 'blue', 'red', 'black', 'yellow', 'orange', 'pink', 'brown', 'grey']
+CMAP = ['bisque', 'gold', 'light blue', 'tomato', 'orange', 'olivedrab', 'darkslategray', 'orchid', 'brown', 'navy', 'palegreen']
+#CMAP = px.colors.qualitative.Light24
+
 def get_network(df):
     df = df.dropna(subset=['TE', 'seTE'])
     if "treat1_class" and "treat2_class" in df.columns:
@@ -102,7 +108,11 @@ def get_network(df):
         df_class = df.treat1_class.dropna().append(df.treat2_class.dropna()).reset_index(drop=True)
         long_df_class = pd.concat([df_treat,df_class], axis=1).reset_index(drop=True)
         long_df_class = long_df_class.rename({long_df_class.columns[0]: 'treat', long_df_class.columns[1]: 'class'}, axis='columns')
-        long_df_class['class'].replace(dict(zip(long_df_class['class'], [int(x-1) for x in long_df_class['class']])), inplace=True)
+        if not is_numeric_dtype(long_df_class.columns[1]):
+            long_df_class["class_codes"] = long_df_class['class'].astype("category").cat.codes
+            long_df_class = long_df_class.rename({long_df_class.columns[0]: 'treat', long_df_class.columns[1]: 'class_names', long_df_class.columns[2]: 'class'},
+                                                 axis='columns')
+        #long_df_class['class'].replace(dict(zip(long_df_class['class'], [int(x-1) for x in long_df_class['class']])), inplace=True)
         all_nodes_class = long_df_class.drop_duplicates().sort_values(by='treat').reset_index(drop=True)
         num_classes = all_nodes_class['class'].max()+1 #because all_nodes_class was shifted by minus 1
     sorted_edges = np.sort(df[['treat1', 'treat2']], axis=1)  ## removes directionality

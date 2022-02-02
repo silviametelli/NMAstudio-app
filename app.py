@@ -581,8 +581,10 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
         if upload and button_id=='upload_modal_data':
             filename_exists = True if filename is not None else False
 
-            data_user = parse_contents(contents, filename)
-
+            try:
+                data_user = parse_contents(contents, filename)
+            except:
+                raise ValueError('data upload failed: Likely UnicodeDecodeError, check your string variables unicode characters')
             var_dict = dict()
 
             if search_value_format == 'iv':

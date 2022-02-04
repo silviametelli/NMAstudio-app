@@ -180,6 +180,7 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
             data = apply_r_func(func=run_pairwise_data_r, df=data)
         data[data=='__NONE__'] = np.nan
 
+
     if value_format=='contrast':
         effect_sizes = {'continuous': {'MD': get_MD, 'SMD': get_SMD},
                         'binary': {'OR': get_OR, 'RR': get_RR}}

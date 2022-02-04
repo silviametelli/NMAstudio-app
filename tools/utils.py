@@ -167,18 +167,22 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
         data['rob'] = (data['rob'].str.lower()
                       .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
                       .replace({'l': 1, 'm': 2, 'h': 3}))
-    effect_sizes = {'continuous': {'MD': get_MD, 'SMD': get_SMD},
-                    'binary': {'OR': get_OR, 'RR': get_RR}}
     data['effect_size1'] = dataselectors[0]
 
     if value_format=='long':
+        for c in data.columns:
+            if data[c].dtype == object:
+                data[c].fillna('__NONE__', inplace=True)
         if value_outcome2:
             data['effect_size2'] = dataselectors[1]
             data = apply_r_func_two_outcomes(func=run_pairwise_data_r, df=data)
         else:
             data = apply_r_func(func=run_pairwise_data_r, df=data)
+        data[data=='__NONE__'] = np.nan
 
     if value_format=='contrast':
+        effect_sizes = {'continuous': {'MD': get_MD, 'SMD': get_SMD},
+                        'binary': {'OR': get_OR, 'RR': get_RR}}
         get_effect_size1 = effect_sizes[value_outcome1][dataselectors[0]]
         data['TE'], data['seTE'] = get_effect_size1(data, effect=1)
         if value_outcome2:

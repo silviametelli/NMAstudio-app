@@ -3,6 +3,10 @@ venv
 *.pickle
 db/forest_data/old_data
 db/SennXXX.csv
+db/GRIS_depression_long copy.csv
+db/GRIS_depression_long.csv
+db/GRISdataRESPmergeALL.csv
+db/psoriasis_wide_with_class.csvx
 *.ipynb
 .*
 !.gitignore

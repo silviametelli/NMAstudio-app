@@ -24,10 +24,15 @@ def  my_consoleread(promp: str) -> str:
 
 
 def apply_r_func(func, df):
+    # types = df.applymap(type).apply(set)
+    # var_multiple_class = types[types.apply(len) > 1]
+    # print(var_multiple_class)
+
     with localconverter(ro.default_converter + pandas2ri.converter):
         df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
     func_r_res = func(dat=df_r)
     r_result = pandas2ri.rpy2py(func_r_res)
+
     if isinstance(r_result, ro.vectors.ListVector):
         with localconverter(ro.default_converter + pandas2ri.converter):
             leaguetable, pscores, consist, netsplit, netsplit_all  = (ro.conversion.rpy2py(rf) for rf in r_result)
@@ -63,7 +68,7 @@ def generate_ssl_perm_and_key(cert_name, key_name):
                                  -nodes \
                                  -out {cert_name} \
                                  -keyout {key_name} \
-                                 -subj '/C=FR/ST=Paris/L=Paris/O=Security/OU=CRRESS/CN=www.nmastudioapp.com'""")
+                                 -subj '/C=FR/ST=Paris/L=Paris/O=Security/OU=CRESS/CN=www.nmastudioapp.com'""")
     return cert_name, key_name
 
 # def write_session_pickle(dct, path):
@@ -81,21 +86,6 @@ def set_slider_marks(y_min, y_max, years):
             for x in np.unique(years).astype('int')
             }
 
-def parse_contents(contents, filename):
-    content_type, content_string = contents.split(',')
-    decoded = base64.b64decode(content_string)
-    if 'csv' in filename:  # Assume that the user uploaded a CSV file
-        try:
-            df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
-        except Exception:
-            df = pd.read_csv(io.StringIO(decoded.decode('cp1252')))
-        except Exception:
-            df = pd.read_csv(io.StringIO(decoded.decode('ISO-8859-1')))
-        except Exception:
-            df = pd.read_csv(io.StringIO(decoded.decode('unicode-escape')))
-        return df
-    elif 'xls' in filename:  # Assume that the user uploaded an excel file: TODO: fix
-        return pd.read_excel(io.BytesIO(decoded))
 
 ## ----------------------------  NETWORK FUNCTION --------------------------------- ##
 CMAP = ['bisque', 'gold', 'light blue', 'tomato', 'orange', 'olivedrab', 'darkslategray', 'orchid', 'brown', 'navy', 'palegreen']
@@ -149,6 +139,26 @@ def get_network(df):
                           'pie3': r3/(r1+r2+r3)}} for target, size, r1, r2, r3 in all_nodes_sized.values]
     return cy_edges + cy_nodes
 
+
+## ---------------------------  Parse DATA  -------------------------------- ##
+
+def parse_contents(contents, filename):
+    content_type, content_string = contents.split(',')
+    decoded = base64.b64decode(content_string)
+    if 'csv' in filename:  # Assume that the user uploaded a CSV file
+        try:
+            df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+        except Exception:
+            df = pd.read_csv(io.StringIO(decoded.decode('cp1252')))
+        except Exception:
+            df = pd.read_csv(io.StringIO(decoded.decode('ISO-8859-1')))
+        except Exception:
+            df = pd.read_csv(io.StringIO(decoded.decode('unicode-escape')))
+        return df
+    elif 'xls' in filename:  # Assume that the user uploaded an excel file: TODO: fix
+        return pd.read_excel(io.BytesIO(decoded))
+
+
 ## ----------------------  Reshape pd data from long to wide  --------------------------- ##
 
 def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome2):
@@ -160,7 +170,6 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
     effect_sizes = {'continuous': {'MD': get_MD, 'SMD': get_SMD},
                     'binary': {'OR': get_OR, 'RR': get_RR}}
     data['effect_size1'] = dataselectors[0]
-    get_effect_size1 = effect_sizes[value_outcome1][dataselectors[0]]
 
     if value_format=='long':
         if value_outcome2:
@@ -170,6 +179,7 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
             data = apply_r_func(func=run_pairwise_data_r, df=data)
 
     if value_format=='contrast':
+        get_effect_size1 = effect_sizes[value_outcome1][dataselectors[0]]
         data['TE'], data['seTE'] = get_effect_size1(data, effect=1)
         if value_outcome2:
             data['effect_size2'] = dataselectors[1]

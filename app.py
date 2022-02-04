@@ -583,8 +583,9 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
 
             try:
                 data_user = parse_contents(contents, filename)
+
             except:
-                raise ValueError('data upload failed: Likely UnicodeDecodeError, check your string variables unicode characters')
+                raise ValueError('data upload failed: Likely UnicodeDecodeError or multiple type Error, check your variables characters and type')
             var_dict = dict()
 
             if search_value_format == 'iv':
@@ -659,7 +660,6 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
 
 
             data_user.rename(columns=var_dict, inplace=True)
-
 
             try:
                 data = adjust_data(data_user, dataselectors, search_value_format ,search_value_outcome1, search_value_outcome2)
@@ -830,6 +830,8 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
                State("TEMP_forest_data_prws_out2_STORAGE", "data"),
               )
 def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, TEMP_net_data_STORAGE, TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2):
+
+
     if modal_data_checks_is_open:
 
         data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
@@ -947,6 +949,7 @@ def modal_submit_checks_FUNNEL(lt_data_ts, modal_data_checks_is_open, TEMP_net_d
                                             'para-LT-data', 'para-FA-data']])
 def modal_submit_button(para_check_data_DATA, para_anls_data_DATA, para_prw_data_DATA, para_LT_data_DATA, para_FA_data_DATA):
     return not (para_check_data_DATA==para_anls_data_DATA==para_prw_data_DATA==para_LT_data_DATA==para_FA_data_DATA=='__Para_Done__')
+
 
 
 

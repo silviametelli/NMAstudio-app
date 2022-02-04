@@ -7,6 +7,7 @@ YEARS_DEFAULT = np.array([1963,1990,1997,2001,2003,2004,2005,2006,2007,2008,2010
 
 def tab_data(years=YEARS_DEFAULT):
     y_max, y_min = years.max(), years.min()
+
     return html.Div([
                     html.Button('Upload your data', 'upload_your_data', n_clicks=0,
                         style={'margin-left': '5px', 'padding': '4px 4px 4px 4px',

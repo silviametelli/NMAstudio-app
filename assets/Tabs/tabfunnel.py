@@ -1,7 +1,7 @@
 import dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
 import dash_daq as daq
 
-tab_funnel = html.Div([dbc.Row([dbc.Col(html.P("Click treatment sequentially to get desired ordering",
+tab_funnel = html.Div([dbc.Row([dbc.Col(html.P("Click on a node to choose reference", #Click treatment sequentially to get desired ordering",
                                          className="graph__title2",
                                          style={'display': 'inline-block',
                                                 'verticalAlign':"top",

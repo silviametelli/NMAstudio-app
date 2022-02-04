@@ -28,6 +28,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     net_data = pd.read_json(net_data, orient='split').round(3)
 
     years = net_data.year if not reset_btn_triggered else YEARS_DEFAULT
+
     slider_min, slider_max = years.min(), years.max()
     slider_marks = set_slider_marks(slider_min, slider_max, years)
     _out_slider = [slider_min, slider_max, slider_marks]
@@ -53,13 +54,13 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     robs = (net_data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
             .pivot_table(index='treat2', columns='treat1', values='rob')
             .reindex(index=treatments, columns=treatments, fill_value=np.nan))
+    cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
+    cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
     if toggle_cinema:
-        cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
-        cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
         confidence_map = {k: n for n, k in enumerate(['very low', 'low', 'moderate', 'high'])}
-        comparisons = cinema_net_data1.Comparison.str.split(':', expand=True)
+        comparisons = cinema_net_data1.Comparison.str.split(':', expand=True) if ':' in cinema_net_data1.Comparison else cinema_net_data1.Comparison.str.split(' vs ', expand=True)
         confidence1 = cinema_net_data1['Confidence rating'].str.lower().map(confidence_map)
-        confidence2 = cinema_net_data2['Confidence rating'].str.lower().map(confidence_map) #if content2 is not None else confidence1
+        confidence2 = cinema_net_data2['Confidence rating'].str.lower().map(confidence_map) if cinema_net_data2 is not None else confidence1
         comprs_conf_ut = comparisons.copy()  # Upper triangle
         comparisons.columns = [1, 0]  # To get lower triangle
         comprs_conf_lt = comparisons[[0, 1]]  # Lower triangle

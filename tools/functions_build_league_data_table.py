@@ -6,7 +6,7 @@ from assets.COLORS import *
 
 def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
                   league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
-                  reset_btn, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP):
+                  reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2):
 
     # ctx = dash.callback_context
     # print(net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP,
@@ -48,19 +48,32 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 
         return _output + _out_slider + [data_and_league_table_DATA]
 
+
     leaguetable = pd.read_json(league_table_data, orient='split')
     confidence_map = {k: n for n, k in enumerate(['low', 'medium', 'high'])}
     treatments = np.unique(net_data[['treat1', 'treat2']].dropna().values.flatten())
     robs = (net_data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
             .pivot_table(index='treat2', columns='treat1', values='rob')
             .reindex(index=treatments, columns=treatments, fill_value=np.nan))
-    cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
-    cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
+
+    # df_ranking = pd.read_json(ranking_data, orient='split')
+    # if filename_cinema1 is not None:
+    #     cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
+    #     cinema_net_data1 =  cinema_net_data1.loc[:, ~cinema_net_data1.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+    #     if "pscore2" not in df_ranking.columns:
+    #         cinema_net_data2 = None
+    #     else:
+    #         if filename_cinema2 is not None:
+    #             cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
+    #             cinema_net_data2 =  cinema_net_data2.loc[:, ~cinema_net_data2.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+
     if toggle_cinema:
+        cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
+        cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
         confidence_map = {k: n for n, k in enumerate(['very low', 'low', 'moderate', 'high'])}
-        comparisons = cinema_net_data1.Comparison.str.split(':', expand=True) if ':' in cinema_net_data1.Comparison else cinema_net_data1.Comparison.str.split(' vs ', expand=True)
+        comparisons = cinema_net_data1.Comparison.str.split(':', expand=True)
         confidence1 = cinema_net_data1['Confidence rating'].str.lower().map(confidence_map)
-        confidence2 = cinema_net_data2['Confidence rating'].str.lower().map(confidence_map) if cinema_net_data2 is not None else confidence1
+        confidence2 = cinema_net_data2['Confidence rating'].str.lower().map(confidence_map) #if content2 is not None else confidence1
         comprs_conf_ut = comparisons.copy()  # Upper triangle
         comparisons.columns = [1, 0]  # To get lower triangle
         comprs_conf_lt = comparisons[[0, 1]]  # Lower triangle
@@ -68,7 +81,11 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
         comprs_conf_ut['Confidence'] = confidence2
         comprs_conf = pd.concat([comprs_conf_ut, comprs_conf_lt])
         comprs_conf = comprs_conf.pivot_table(index=0, columns=1, values='Confidence')
+        if filename_cinema2 is None:
+            ut = np.triu(np.ones(comprs_conf.shape), 1).astype(bool)
+            comprs_conf = comprs_conf.where(ut == False, np.nan)
         robs = comprs_conf+1
+
     # Filter according to cytoscape selection
     if store_node:
         slctd_trmnts = [nd['id'] for nd in store_node]
@@ -100,7 +117,6 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     #####   Add style colouring and legend
     N_BINS = 3 if not toggle_cinema else 4
     bounds = np.arange(N_BINS + 1) / N_BINS
-
     leaguetable_colr = robs.copy(deep=True)
     np.fill_diagonal(leaguetable_colr.values, np.nan)
     leaguetable_colr = leaguetable_colr.astype(np.float64)
@@ -126,6 +142,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     ranges[-1] *= 1.001
     ranges = ranges + 1
     league_table_styles = []
+
     for treat_c in treatments:
         for treat_r in treatments:
             rob = robs.loc[treat_r, treat_c]
@@ -140,11 +157,13 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
                                 'backgroundColor': CX1})
 
     # Prepare for output
+
     tips = robs
     leaguetable = leaguetable.reset_index().rename(columns={'index': 'Treatment'})
 
     leaguetable_cols = [{"name": c, "id": c} for c in leaguetable.columns]
     leaguetable = leaguetable.to_dict('records')
+
 
     tooltip_values = [{col['id']: {'value': f"**Average ROB:** {tip[col['id']]}",
                                    'type': 'markdown'} if col['id'] != 'Treatment' else None

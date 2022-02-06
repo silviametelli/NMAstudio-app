@@ -62,6 +62,5 @@ STORAGE = [dcc.Store(id=label, data=(data.to_json(orient='split')
 dcc.Store(id='data_and_league_table_DATA', data=dict(), storage_type=SESSION_TYPE),
 dcc.Store(id='net_download_activation', data=False, storage_type=SESSION_TYPE),
 dcc.Store(id='uploaded_datafile_to_disable_cinema', data=False, storage_type=SESSION_TYPE),
-
 ]
 

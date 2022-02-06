@@ -105,7 +105,7 @@ def update_options(search_value_format, search_value_outcome1, search_value_outc
 
 @app.callback([Output("dropdowns-DIV", "style"),
                Output("uploaded_datafile", "children")],
-              Input('datatable-upload', 'filename'))
+               Input('datatable-upload', 'filename'))
 def is_data_file_uploaded(filename):
     show_DIV_style = {'display': 'inline-block', 'margin-bottom': '0px'}
     donot_show_DIV_style = {'display': 'none', 'margin-bottom': '0px'}
@@ -265,7 +265,7 @@ def get_new_data_cinema1(contents, cinema_net_data1, filename):
 
 ### ----- upload CINeMA data file 2 ------ ###
 @app.callback([Output("cinema_net_data2_STORAGE", "data"),
-               Output("file2-list-2", "children"),],
+               Output("file2-list-2", "children")],
               [Input('datatable-secondfile-upload-2', 'contents'),
                Input('cinema_net_data2_STORAGE', 'data'),],
               [State('datatable-secondfile-upload-2', 'filename')])
@@ -345,16 +345,20 @@ def update_layour_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_c
                Input('cinema_net_data2_STORAGE', 'data'),
                Input('data_and_league_table_DATA', 'data'),
                Input('reset_project', 'n_clicks'),
+               Input('ranking_data_STORAGE','data')
                 ],
               [State('net_data_STORAGE', 'modified_timestamp'),
-               State('league_table_data_STORAGE', 'modified_timestamp')],
+               State('league_table_data_STORAGE', 'modified_timestamp'),
+               State('datatable-secondfile-upload', 'filename'),
+               State('datatable-secondfile-upload-2', 'filename')],
               prevent_initial_call=True)
 def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
                   league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
-                  reset_btn, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP):
+                  reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2):
     return __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
                         league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
-                        reset_btn, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP)
+                        reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP,  filename_cinema1, filename_cinema2)
+
 
 
 #######################################################################################
@@ -1301,13 +1305,12 @@ def color_funnel_toggle(toggle_value):
 @app.callback([Output('rob_vs_cinema', 'disabled'),
               Output('rob_vs_cinema_modal', 'disabled')],
               [Input('datatable-secondfile-upload', 'filename'),
-               Input("uploaded_datafile_to_disable_cinema", "data")]
+               Input("uploaded_datafile_to_disable_cinema", "data"),
+               ]
               )
 def disable_cinema_toggle(filename_cinema1, filename_data):
-
     if filename_cinema1 is None and filename_data: return True, True
     else: return False, False
-
 
 
 ## disable outcome 2 toggle if no outcome 2 is given in data
@@ -1318,6 +1321,7 @@ def disable_cinema_toggle(filename_cinema1, filename_data):
               Output('toggle_rank2_direction_outcome1', 'disabled'),
               Output('toggle_rank2_direction_outcome2', 'disabled'),
               Output('toggle_consistency_direction', 'disabled'),
+              Output('datatable-secondfile-upload-2','disabled')
                ],
               Input('ranking_data_STORAGE','data')
               )
@@ -1325,8 +1329,8 @@ def disable_out2_toggle(ranking_data):
     df_ranking = pd.read_json(ranking_data, orient='split')
     df_ranking = df_ranking.loc[:, ~df_ranking.columns.str.contains('^Unnamed')]  # Remove unnamed columns
     if "pscore2" not in df_ranking.columns:
-        return True, True, True, True, True, True, True
-    else: return False, False, False, False, False, False, False
+        return True, True, True, True, True, True, True, True
+    else: return False, False, False, False, False, False, False, False
 
 
 ####################################################################

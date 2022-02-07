@@ -350,14 +350,17 @@ def update_layour_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_c
               [State('net_data_STORAGE', 'modified_timestamp'),
                State('league_table_data_STORAGE', 'modified_timestamp'),
                State('datatable-secondfile-upload', 'filename'),
-               State('datatable-secondfile-upload-2', 'filename')],
+               State('datatable-secondfile-upload-2', 'filename'),
+               State('datatable-secondfile-upload-2','disabled')],
               prevent_initial_call=True)
 def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
                   league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
-                  reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2):
+                  reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP,
+                  filename_cinema1, filename_cinema2, filename_cinema2_disabled):
     return __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
                         league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
-                        reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP,  filename_cinema1, filename_cinema2)
+                        reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP,
+                        filename_cinema1, filename_cinema2, filename_cinema2_disabled)
 
 
 

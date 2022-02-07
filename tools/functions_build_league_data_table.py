@@ -6,7 +6,8 @@ from assets.COLORS import *
 
 def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
                   league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
-                  reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2):
+                  reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP,
+                  filename_cinema1, filename_cinema2, filename_cinema2_disabled):
 
     # ctx = dash.callback_context
     # print(net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP,
@@ -81,7 +82,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
         comprs_conf_ut['Confidence'] = confidence2
         comprs_conf = pd.concat([comprs_conf_ut, comprs_conf_lt])
         comprs_conf = comprs_conf.pivot_table(index=0, columns=1, values='Confidence')
-        if filename_cinema2 is None:
+        if filename_cinema2_disabled:
             ut = np.triu(np.ones(comprs_conf.shape), 1).astype(bool)
             comprs_conf = comprs_conf.where(ut == False, np.nan)
         robs = comprs_conf+1

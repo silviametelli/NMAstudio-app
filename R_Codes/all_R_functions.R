@@ -76,7 +76,7 @@ league_rank <- function(dat, outcome2=FALSE){
   colnames(lt)<- sortedseq
   rownames(lt)<- sortedseq
   #p-scores
-  rank1 <- netrank(nma_primary, small.values = "good")
+  rank1 <- netrank(nma_primary, small.values = "bad")
   rank <- data.frame(names(rank1$Pscore.random), as.numeric(round(rank1$Pscore.random,2)))
   colnames(rank)  <-  c("treatment", "pscore")
   #consistency
@@ -179,8 +179,8 @@ league_rank <- function(dat, outcome2=FALSE){
     rownames(lt) <- sortedseq
     #p-scores
     # outcomes <- c("Outcome1", "Outcome2")
-    rank1 <- netrank(nma_primary, small.values = "good")
-    rank2 <- netrank(nma_secondary, small.values = "good")
+    rank1 <- netrank(nma_primary, small.values = "bad")
+    rank2 <- netrank(nma_secondary, small.values = "bad")
     r1 <- data.frame(names(rank1$Pscore.random), round(as.numeric(rank1$Pscore.random),2))
     colnames(r1)  <-  c("treatment", "pscore")
     r2 <- data.frame(names(rank2$Pscore.random), round(as.numeric(rank2$Pscore.random),2))

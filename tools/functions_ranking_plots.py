@@ -11,28 +11,38 @@ def __ranking_plot(outcome_direction_1, outcome_direction_2,
                    outcome_direction_11, outcome_direction_22,
                    net_data, ranking_data):
     df = pd.read_json(ranking_data, orient='split')
+
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
     outcomes = ("Outcome 1", "Outcome 2")
 
     # True=harmful
     df1 = df.copy(deep=True)
 
+    print(df)
+
     if "pscore2" in df1.columns:
-        if not outcome_direction_1: df1.pscore1 = 1 - df1.pscore1.values
-        if not outcome_direction_2: df1.pscore2 = 1 - df1.pscore2.values
-        df1.sort_values(by=["pscore1", "pscore2"],
-                        ascending=[False, False], inplace=True)
+
+        print(outcome_direction_1,outcome_direction_2)
+
+        if outcome_direction_1: df1.pscore1 = 1 - df1.pscore1.values
+        if outcome_direction_2: df1.pscore2 = 1 - df1.pscore2.values
+        df1 = df1.sort_values(by=["pscore1", "pscore2"], ascending=[False, False])
         z_text = (tuple(df1.pscore1.round(2).astype(str).values),
                   tuple(df1.pscore2.round(2).astype(str).values))
         pscores = (tuple(df1.pscore1), tuple(df1.pscore2))
+        treatments = tuple(df1.treatment)
     else:
         outcomes = ("Outcome",)
-        pscore = 1 - df1.pscore if not outcome_direction_1 else df1.pscore
+        pscore = 1 - df1.pscore if outcome_direction_1 else df1.pscore
         pscore = pscore.sort_values(ascending=False)
-        z_text = (tuple(pscore.round(2).astype(str).values),)
-        pscores = (tuple(pscore),)
+        elements = pd.DataFrame({"pscore":pscore,"treat":df1.treatment})
+        sorted_elements = elements.sort_values(by="pscore", ascending=False)
+        strd_pscore = sorted_elements['pscore']
+        strd_trt = sorted_elements['treat']
+        z_text = (tuple(strd_pscore.round(2).astype(str).values),)
+        pscores = (tuple(strd_pscore),)
+        treatments = tuple(strd_trt)
 
-    treatments = tuple(df1.treatment)
 
     #################### heatmap ####################
     fig = __ranking_heatmap(treatments, pscores, outcomes, z_text)

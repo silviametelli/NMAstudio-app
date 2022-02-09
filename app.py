@@ -15,6 +15,7 @@ warnings.filterwarnings("ignore")
 # --------------------------------------------------------------------------------------------------------------------#
 import dash
 from dash.dependencies import Input, Output, State, ALL
+from dash_extensions.snippets import send_file
 from tools.layouts import *
 from tools.functions_ranking_plots import __ranking_plot
 from tools.functions_funnel_plot import __Tap_funnelplot
@@ -1334,6 +1335,24 @@ def disable_out2_toggle(ranking_data):
     if "pscore2" not in df_ranking.columns:
         return True, True, True, True, True, True, True, True
     else: return False, False, False, False, False, False, False, False
+
+
+
+#### download pdfs ####
+
+@app.callback(Output("download-tuto", "data"),
+              Input("full-tuto-pdf", "n_clicks"),
+              prevent_initial_call=True
+              )
+def func(n_clicks):
+     return send_file("Documentation/NMAstudio_tutorial.pdf")
+
+@app.callback(Output("download-guide", "data"),
+              Input("full-docu-pdf", "n_clicks"),
+              prevent_initial_call=True
+              )
+def func(n_clicks):
+     return send_file("Documentation/NMAstudio_tutorial.pdf")
 
 
 ####################################################################

@@ -18,11 +18,7 @@ def __ranking_plot(outcome_direction_1, outcome_direction_2,
     # True=harmful
     df1 = df.copy(deep=True)
 
-    print(df)
-
     if "pscore2" in df1.columns:
-
-        print(outcome_direction_1,outcome_direction_2)
 
         if outcome_direction_1: df1.pscore1 = 1 - df1.pscore1.values
         if outcome_direction_2: df1.pscore2 = 1 - df1.pscore2.values

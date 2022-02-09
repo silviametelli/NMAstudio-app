@@ -11,6 +11,7 @@ from assets.Tabs.tabconsistency import tab_consistency
 from assets.COLORS import *
 from assets.storage import STORAGE
 from assets.alerts import alert_outcome_type, alert_data_type, R_errors_nma, R_errors_pair, R_errors_league, R_errors_funnel
+from dash_extensions import Download
 
 def Homepage():
     return html.Div([Navbar(), home_layout()])
@@ -186,18 +187,27 @@ dcc.Markdown('NMAstudio is a web application to produce and visualise interactiv
     html.Br(),
     dcc.Markdown('NMAstudio is a Plotly Dash app written in Python, and linked to the  R-package netmeta for performing analysis of the data',
                  className="markdown_style"),
-dcc.Markdown('G. Rücker, G. Schwarzer, U. Krahn, and J. König. netmeta: Network Meta-Analysis using Frequentist Methods, 2017'
+dcc.Markdown('G. Rücker, U. Krahn, J. König, O. Efthimiou, A. Davies, T. Papakonstantinou & G. Schwarzer. netmeta: Network Meta-Analysis using Frequentist Methods, 	2021.'
              ,className="markdown_style"),
-    dcc.Markdown('R package version 6.6.6. https://CRAN.R-project.org/package=netmeta', className="markdown_style"),
+    dcc.Markdown('R package version 2.0-1. https://CRAN.R-project.org/package=netmeta.', className="markdown_style"),
                        html.Br(), html.Br(),
 
 # dcc.Markdown('The methods are described in',className="markdown_style"),
 #                        html.Br(), html.Br(),
 
-                       html.Div([dcc.Markdown("Click the button beside to download a pdf copy of NMAstudio User Guide:", className="markdown_style",
+                       html.Div([dcc.Markdown("Click beside to download a pdf copy of the Tutorial and NMAstudio User Guide:", className="markdown_style",
                                style={'margin-right':'5px', 'display':'inline-block'}),
-                       html.Button('Download documentation', id='full-docu-pdf', style={'color':'white', 'display':'inline-block','padding':'4px'})
+
+                      html.Button('Download Tutorial', id='full-tuto-pdf',
+                                             style={'color': 'white',
+                                                    'display': 'inline-block',
+                                                    'padding': '4px'}),
+                                 Download(id="download-tuto"),
+                       html.Button('Download documentation', id='full-docu-pdf',
+                                   style={'color':'white', 'margin-left':'10px', 'display':'inline-block','padding':'4px'}),
+                                 Download(id="download-guide")
                     ]),
+
 
     html.Br(), html.Br(), html.Br(), html.Br(),
     dcc.Markdown(

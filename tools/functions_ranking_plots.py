@@ -79,8 +79,8 @@ def __ranking_scatter(df, net_data, outcome_direction_11, outcome_direction_22):
     net_data = pd.read_json(net_data, orient='split')
 
     if 'pscore2' in df.columns:
-        if not outcome_direction_11: df.pscore1 = 1 - df.pscore1
-        if not outcome_direction_22: df.pscore2 = 1 - df.pscore2
+        if outcome_direction_11: df.pscore1 = 1 - df.pscore1
+        if outcome_direction_22: df.pscore2 = 1 - df.pscore2
 
         kmeans = KMeans(n_clusters=int(round(len(df.treatment) / float(5.0), 0)),
                         init='k-means++', max_iter=300, n_init=10, random_state=0)

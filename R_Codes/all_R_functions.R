@@ -90,14 +90,18 @@ league_rank <- function(dat, outcome2=FALSE){
   p <- ne$compare.random$p[!is.na(ne$compare.random$p)]
   df_cons <- data.frame(comparison, direct, indirect, p)
   colnames(df_cons) <- c("comparison", "direct", "indirect", "p-value")
-    comp_all <- ne$compare.random$comparison
-    k_all <- ne$k
-    direct_all <- exp(ne$direct.random$TE)
-    nma_all <- exp(ne$random$TE)
-    indirect_all <- exp(ne$indirect.random$TE)
-    p_all <- ne$compare.random$p
-    netsplit_all <- data.frame(comp_all, k_all, direct_all, nma_all, indirect_all, p_all)
-    colnames(netsplit_all) <- c("comparison", "k", "direct", "nma", "indirect", "p-value")
+  comp_all <- ne$compare.random$comparison
+  k_all <- ne$k
+  direct_all <- exp(ne$direct.random$TE)
+  nma_all <- exp(ne$random$TE)
+  indirect_all <- exp(ne$indirect.random$TE)
+  p_all <- ne$compare.random$p
+  netsplit_all <- data.frame(comp_all, k_all, direct_all, nma_all, indirect_all, p_all)
+  colnames(netsplit_all) <- c("comparison", "k", "direct", "nma", "indirect", "p-value")
+  if (all(is.na(ne$compare.random$p))==TRUE){
+      df_cons <- data.frame(comp_all, direct_all, indirect_all, p_all)
+      colnames(df_cons) <- c("comparison", "direct", "indirect", "p-value")
+    }
   if(outcome2==TRUE){
     dat2 <- dat[, c("studlab", "treat1", "treat2", "TE2", "seTE2")]
     dat2 <- dat2 %>% filter_at(vars(TE2,seTE2),all_vars(!is.na(.))) %>% filter(seTE2!=0)
@@ -207,6 +211,10 @@ league_rank <- function(dat, outcome2=FALSE){
     p_all2 <- ne2$compare.random$p
     netsplit_all2 <- data.frame(comp_all2, k_all2, direct_all2, nma_all2, indirect_all2, p_all2)
     colnames(netsplit_all2) <- c("comparison", "k", "direct", "nma", "indirect", "p-value")
+    if (all(is.na(ne2$compare.random$p))==TRUE){
+      df_cons <- data.frame(comp_all2, direct_all2, indirect_all2, p_all2)
+      colnames(df_cons) <- c("comparison", "direct", "indirect", "p-value")
+    }
   }
 
   if(outcome2==TRUE){return(list(lt, rank, consistency, df_cons, df_cons2, netsplit_all, netsplit_all2))}else{

@@ -27,4 +27,5 @@ def __netsplit(edges, outcome, net_split_data, net_split_data_out2, consistency_
     consistency_tbl_cols = [{"name": i, "id": i} for i in consistency_data.columns]
     _out_consistency_table = [data_consistency, consistency_tbl_cols]
 
+
     return _out_net_split_table + _out_consistency_table

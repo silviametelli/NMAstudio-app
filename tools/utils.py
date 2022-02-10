@@ -115,6 +115,11 @@ def get_network(df):
     df_n1, df_n2 = df_n1g.rob.value_counts(), df_n2g.rob.value_counts()
     all_nodes_robs = df_n1.add(df_n2, fill_value=0).rename(('count')).unstack('rob', fill_value=0)
     all_nodes_sized = pd.concat([all_nodes_sized, all_nodes_robs], axis=1).reset_index()
+
+    for x in [1,2,3]:
+        if x not in all_nodes_sized.columns:
+            all_nodes_sized[f'{x}'] = [float(0)]*len(all_nodes_sized)
+
     if "treat1_class" and "treat2_class" in df.columns: all_nodes_sized = pd.concat([all_nodes_sized, all_nodes_class['class']], axis=1).reset_index(drop=True)
     for c in {1,2,3}.difference(all_nodes_sized): all_nodes_sized[c] = 0
     cy_edges = [{'data': {'source': source,  'target': target,
@@ -122,6 +127,7 @@ def get_network(df):
                           'weight_lab': weight}}
                 for source, target, weight in edges.values]
     max_trsfrmd_size_nodes = np.sqrt(all_nodes_sized.iloc[:,1].max()) / 70
+
     if "treat1_class" and "treat2_class" in df.columns:
         cy_nodes = [{"data": {"id": target,
                           "label": target,

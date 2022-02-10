@@ -626,7 +626,7 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
 
                 if search_value_outcome1 == 'binary':
                     if search_value_outcome2 is None:
-                        studlab, treat1, treat2, rob, year, r1, r2, n1, n2 = dataselectors[1: ]  # first dataselector is the effect size
+                        studlab, treat1, treat2, rob, year, r1, n1, r2, n2 = dataselectors[1: ]  # first dataselector is the effect size
                         var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
                                     r1: 'r1', r2: 'r2', n1: 'n1', n2: 'n2'}
                     elif search_value_outcome2 == 'continuous':
@@ -798,10 +798,12 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
     if modal_data_checks_is_open:
         try:
             net_data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
-            NMA_data = run_network_meta_analysis(net_data)
 
+            NMA_data = run_network_meta_analysis(net_data)
             TEMP_forest_data_STORAGE = NMA_data.to_json( orient='split')
             TEMP_user_elements_STORAGE = get_network(df=net_data)
+
+
             TEMP_user_elements_out2_STORAGE = []
             error = ' '
 
@@ -1369,6 +1371,6 @@ if __name__ == '__main__':
     # Talisman(app.server, content_security_policy=None)
     # context = generate_ssl_perm_and_key(cert_name='cert.pem', key_name='key.pem')
     # app.run_server(debug=False, ssl_context=context)
-    app.run_server(debug=True)
+    app.run_server(debug=False)
 
 

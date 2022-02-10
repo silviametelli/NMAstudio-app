@@ -352,7 +352,7 @@ pairwise_forest <- function(dat){
 
 #----------------------------------- pairwise function to convert data -----------------------------------------#
 
-get_pairwise_data <- function(dat, outcome2=FALSE){
+get_pairwise_data_long <- function(dat, outcome2=FALSE){
     sm1 <- dat$effect_size1[1]
     if(sm1 %in% c('RR','OR')){
     pairwise_dat1 <- netmeta::pairwise(data=dat,
@@ -393,6 +393,70 @@ get_pairwise_data <- function(dat, outcome2=FALSE){
                                            n=n2,
                                            studlab=studlab,
                                            treat=treat,
+                                           incr=0.5,
+                                           sm=sm2)
+      }
+      pairwise_dat <- full_join(pairwise_dat1, pairwise_dat2, by = c("studlab","treat1","treat2"))
+     names(pairwise_dat)[names(pairwise_dat) == 'TE.x'] <- 'TE'
+     names(pairwise_dat)[names(pairwise_dat) == 'seTE.x'] <- 'seTE'
+     names(pairwise_dat)[names(pairwise_dat) == 'n1.x'] <- 'n1'
+     names(pairwise_dat)[names(pairwise_dat) == 'n2.x'] <- 'n2'
+     names(pairwise_dat)[names(pairwise_dat) == 'effect_size1.x'] <- 'effect_size1'
+     names(pairwise_dat)[names(pairwise_dat) == 'TE.y'] <- 'TE2'
+     names(pairwise_dat)[names(pairwise_dat) == 'seTE.y'] <- 'seTE2'
+     names(pairwise_dat)[names(pairwise_dat) == 'n1.y'] <- 'n2.1'
+     names(pairwise_dat)[names(pairwise_dat) == 'n2.y'] <- 'n2.2'
+     names(pairwise_dat)[names(pairwise_dat) == 'effect_size2.x'] <- 'effect_size2'
+     names(pairwise_dat)[names(pairwise_dat) == 'rob.x'] <- 'rob'
+     names(pairwise_dat)[names(pairwise_dat) == 'year.x'] <- 'year'
+
+  }
+  return (pairwise_dat)
+}
+
+
+
+get_pairwise_data_contrast <- function(dat, outcome2=FALSE){
+    sm1 <- dat$effect_size1[1]
+    if(sm1 %in% c('RR','OR')){
+    pairwise_dat1 <- netmeta::pairwise(data=dat,
+                                       event=list(r1,r2),
+                                       n=list(n1,n2),
+                                       studlab=studlab,
+                                       treat=list(treat1,treat2),
+                                       incr=0.5,
+                                       sm=sm1)
+    }else{
+      pairwise_dat1 <- netmeta::pairwise(data=dat,
+                                         mean=list(y1,y2),
+                                         sd=list(sd1,sd2),
+                                         n=list(n1,n2),
+                                         studlab=studlab,
+                                         treat=list(treat1,treat2),
+                                         incr=0.5,
+                                         sm=sm1)}
+    pairwise_dat <- pairwise_dat1
+
+    names(pairwise_dat)[names(pairwise_dat) == 'rob1'] <- 'rob'
+    names(pairwise_dat)[names(pairwise_dat) == 'year1'] <- 'year'
+
+  if(outcome2==TRUE){
+      sm2 <- dat$effect_size2[1]
+      if(sm2 %in% c('RR','OR')){
+        pairwise_dat1 <- netmeta::pairwise(data=dat,
+                                           event=list(z1,z2.z),
+                                           n=list(n1.z,n2.z),
+                                           studlab=studlab,
+                                           treat=list(treat1,treat2),
+                                           incr=0.5,
+                                           sm=sm2)
+      }else{
+        pairwise_dat2 <- netmeta::pairwise(data=dat,
+                                           mean=list(y2.1,y2.2),
+                                           sd=list(sd1.2,sd2.2),
+                                           n=list(n2.1, n2.2),
+                                           studlab=studlab,
+                                           treat=list(treat1,treat2),
                                            incr=0.5,
                                            sm=sm2)
       }

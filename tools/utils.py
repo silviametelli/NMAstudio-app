@@ -15,7 +15,9 @@ run_NetMeta_r = ro.globalenv['run_NetMeta']  # Get run_NetMeta from R
 league_table_r = ro.globalenv['league_rank']  # Get league_table from R
 pairwise_forest_r = ro.globalenv['pairwise_forest']  # Get pairwise_forest from R
 funnel_plot_r = ro.globalenv['funnel_funct']  # Get pairwise_forest from R
-run_pairwise_data_r = ro.globalenv['get_pairwise_data']  # Get pairwise data from long format from R
+run_pairwise_data_long_r = ro.globalenv['get_pairwise_data_long']  # Get pairwise data from long format from R
+run_pairwise_data_contrast_r = ro.globalenv['get_pairwise_data_contrast']  # Get pairwise data from contrast format from R
+
 
 ## read R console for printing errors
 def  my_consoleread(promp: str) -> str:
@@ -40,7 +42,6 @@ def apply_r_func(func, df):
     else:
         df_result = r_result.reset_index(drop=True)  # Convert back to a pandas.DataFrame.
         return df_result
-
 
 
 def apply_r_func_two_outcomes(func, df):
@@ -116,9 +117,9 @@ def get_network(df):
     all_nodes_robs = df_n1.add(df_n2, fill_value=0).rename(('count')).unstack('rob', fill_value=0)
     all_nodes_sized = pd.concat([all_nodes_sized, all_nodes_robs], axis=1).reset_index()
 
-    for x in [1,2,3]:
-        if x not in all_nodes_sized.columns:
-            all_nodes_sized[f'{x}'] = [float(0)]*len(all_nodes_sized)
+    # for x in [1,2,3]:
+    #     if x not in all_nodes_sized.columns:
+    #         all_nodes_sized[f'{x}'] = [float(0)]*len(all_nodes_sized)
 
     if "treat1_class" and "treat2_class" in df.columns: all_nodes_sized = pd.concat([all_nodes_sized, all_nodes_class['class']], axis=1).reset_index(drop=True)
     for c in {1,2,3}.difference(all_nodes_sized): all_nodes_sized[c] = 0
@@ -141,7 +142,7 @@ def get_network(df):
                           'classes':'genesis',
                           'size': np.sqrt(size)/max_trsfrmd_size_nodes,
                           'pie1': r1/(r1+r2+r3),
-                          'pie2':r2/(r1+r2+r3),
+                          'pie2': r2/(r1+r2+r3),
                           'pie3': r3/(r1+r2+r3)}} for target, size, r1, r2, r3 in all_nodes_sized.values]
     return cy_edges + cy_nodes
 
@@ -181,21 +182,28 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
                 data[c].fillna('__NONE__', inplace=True)
         if value_outcome2:
             data['effect_size2'] = dataselectors[1]
-            data = apply_r_func_two_outcomes(func=run_pairwise_data_r, df=data)
+            data = apply_r_func_two_outcomes(func=run_pairwise_data_long_r, df=data)
         else:
-            data = apply_r_func(func=run_pairwise_data_r, df=data)
+            data = apply_r_func(func=run_pairwise_data_long_r, df=data)
         data[data=='__NONE__'] = np.nan
 
 
     if value_format=='contrast':
-        effect_sizes = {'continuous': {'MD': get_MD, 'SMD': get_SMD},
-                        'binary': {'OR': get_OR, 'RR': get_RR}}
-        get_effect_size1 = effect_sizes[value_outcome1][dataselectors[0]]
-        data['TE'], data['seTE'] = get_effect_size1(data, effect=1)
+        for c in data.columns:
+            if data[c].dtype == object:
+                data[c].fillna('__NONE__', inplace=True)
+        #effect_sizes = {'continuous': {'MD': get_MD, 'SMD': get_SMD}, 'binary': {'OR': get_OR, 'RR': get_RR}}
+        #get_effect_size1 = effect_sizes[value_outcome1][dataselectors[0]]
+        #data['TE'], data['seTE'] = get_effect_size1(data, effect=1)
         if value_outcome2:
             data['effect_size2'] = dataselectors[1]
-            get_effect_size2 = effect_sizes[value_outcome2][dataselectors[1]]
-            data['TE2'], data['seTE2'] = get_effect_size2(data, effect=2)
+            data = apply_r_func_two_outcomes(func=run_pairwise_data_contrast_r, df=data)
+            #get_effect_size2 = effect_sizes[value_outcome2][dataselectors[1]]
+            #data['TE2'], data['seTE2'] = get_effect_size2(data, effect=2)
+        else:
+            data = apply_r_func(func=run_pairwise_data_contrast_r, df=data)
+        data[data=='__NONE__'] = np.nan
+
 
     if value_format == 'iv':
         data['effect_size1'] = dataselectors[0]

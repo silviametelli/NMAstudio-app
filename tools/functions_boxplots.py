@@ -9,7 +9,7 @@ def __update_boxplot(value, edges, net_data):
         df = df.dropna(subset=[value])
         df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
         df = df.sort_values(by='Comparison').reset_index()
-        df[value] = pd.to_numeric(df[value], errors='coerce')
+        if isinstance(df[value], str): df[value] = pd.to_numeric(df[value], errors='coerce')
         margin = (df[value].max() - df[value].min()) * .1  # 10%
         range1 = df[value].min() - margin
         range2 = df[value].max() + margin

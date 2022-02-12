@@ -71,6 +71,8 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     if toggle_cinema:
         cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
         cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
+
+        print(cinema_net_data1.columns)
         confidence_map = {k: n for n, k in enumerate(['very low', 'low', 'moderate', 'high'])}
         comparisons = cinema_net_data1.Comparison.str.split(':', expand=True)
         confidence1 = cinema_net_data1['Confidence rating'].str.lower().map(confidence_map)

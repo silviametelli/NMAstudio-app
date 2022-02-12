@@ -154,13 +154,13 @@ def parse_contents(contents, filename):
     decoded = base64.b64decode(content_string)
     if 'csv' in filename:  # Assume that the user uploaded a CSV file
         try:
-            df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+            df = pd.read_csv(io.StringIO(decoded.decode('unicode-escape')))
         except Exception:
             df = pd.read_csv(io.StringIO(decoded.decode('cp1252')))
         except Exception:
             df = pd.read_csv(io.StringIO(decoded.decode('ISO-8859-1')))
         except Exception:
-            df = pd.read_csv(io.StringIO(decoded.decode('unicode-escape')))
+            df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
         return df
     elif 'xls' in filename:  # Assume that the user uploaded an excel file: TODO: fix
         return pd.read_excel(io.BytesIO(decoded))

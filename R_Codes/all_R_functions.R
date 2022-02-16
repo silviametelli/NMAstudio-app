@@ -41,7 +41,7 @@ run_NetMeta <- function(dat){
       TEweights <- 1/nma_temp$seTE.random[, treatment] # Precision
       TEweights <- TEweights[which(TE_names!=treatment)]
       tau2 <- nma_temp$tau^2
-      if(sm=="MD"){df <- data.frame(treatment_list, TE,  ci_lo, ci_up, TEweights, tau2)
+      if(sm=="MD" | sm=="SMD"){df <- data.frame(treatment_list, TE,  ci_lo, ci_up, TEweights, tau2)
       }else{df <- data.frame(treatment_list, exp(TE),  exp(ci_lo),  exp(ci_up), TEweights, tau2)}
       colnames(df) <- c("Treatment", sm, "CI_lower", "CI_upper", "WEIGHT", "tau2")
       df['Reference'] <- treatment

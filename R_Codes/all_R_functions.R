@@ -311,7 +311,7 @@ pairwise_forest <- function(dat){
   sm <- dat$effect_size1[1]
   DFs_pairwise <- list()
   dat <- dat %>% filter_at(vars(TE, seTE), all_vars(!is.na(.))) %>% filter(seTE!=0)
-  dat %>% arrange(dat, treat1, treat2)
+  dat <- dat %>% arrange(dat, treat1, treat2)
   dat$ID <- dat %>% group_indices(treat1, treat2)
 
   for (id in dat$ID){

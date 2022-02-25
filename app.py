@@ -1099,7 +1099,7 @@ def generate_xlsx(n_nlicks, consistencydata):
                                              options={'type': 'cell',
                                                       'format': workbook.add_format({
                                                           'bg_color': 'white',
-                                                          'font_color': 'orange',
+                                                          'font_color': 'blue',
                                                           'text_wrap': True
                                                            }),
                                                       'criteria': 'between',
@@ -1111,11 +1111,23 @@ def generate_xlsx(n_nlicks, consistencydata):
                                              options={'type': 'cell',
                                                       'format': workbook.add_format({
                                                           'bg_color': 'white',
+                                                          'font_color': 'orange',
+                                                          'text_wrap': True
+                                                           }),
+                                                      'criteria': 'between',
+                                                      'minimum': 0.05001,
+                                                      'maximum': 0.10,
+                                                      })
+        worksheet.conditional_format(first_row=0, first_col=col_pval,
+                                             last_row=end_row, last_col=col_pval,
+                                             options={'type': 'cell',
+                                                      'format': workbook.add_format({
+                                                          'bg_color': 'white',
                                                           'font_color': 'red',
                                                           'text_wrap': True
                                                            }),
                                                       'criteria': '<=',
-                                                      'value': 0.10
+                                                      'value': 0.05
                                                       })
         worksheet.set_default_row(30)  # Set the default height of Rows to 20.
         for idx, col in enumerate(df):  # loop through all columns

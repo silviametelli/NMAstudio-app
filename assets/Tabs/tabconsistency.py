@@ -125,15 +125,20 @@ def tab_consistency(consistency_data=CONSISTENCY_DATA):
                 'font-family': 'sans-serif',
                 'fontSize': 11},
              style_data_conditional=[
-            {'if': {'filter_query': '{p-value} <= 0.10',
+            {'if': {'filter_query': '{p-value} <= 0.05',
                 'column_id': 'p-value'},
             'color': 'tomato',
             'fontWeight': 'bold'
             },
-            {'if': {'filter_query': '{p-value} > 0.10 && {p-value} <= 0.15',
+            {'if': {'filter_query': '{p-value} > 0.05 && {p-value} <= 0.10',
             'column_id': 'p-value'},
-             'color': 'yellow',
+             'color': 'orange',
              'fontWeight': 'bold'
+             },
+             {'if': {'filter_query': '{p-value} > 0.10 && {p-value} <= 0.15',
+                         'column_id': 'p-value'},
+                  'color': 'blue',
+                  'fontWeight': 'bold'
              },
             {'if': {'row_index': 'odd'},
             'backgroundColor': 'rgba(0,0,0,0.2)'},

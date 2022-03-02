@@ -671,7 +671,7 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
 
             try:
                 data = adjust_data(data_user, dataselectors, search_value_format ,search_value_outcome1, search_value_outcome2)
-
+                print(data)
                 TEMP_net_data_STORAGE = data.to_json(orient='split')
 
             except:

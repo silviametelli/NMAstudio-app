@@ -11,10 +11,9 @@ alert_data_type = dcc.ConfirmDialog(id='data-missing-n-danger',
                                     message='sample size for each outcome missing')
 
 
-
 R_errors_nma = dbc.Modal([
         dbc.ModalHeader("Error"),
-        dbc.ModalBody([html.P("R function failed: see error below and check your data"),
+        dbc.ModalBody([html.P("R function netmeta failed: see error below and check your data",  style={"color":"white"}),
                        html.P(id="R_errors_nma_console", style={"color":"white"})])],
         id="R-alert-nma",
         size="lg",
@@ -22,7 +21,7 @@ R_errors_nma = dbc.Modal([
 
 R_errors_pair = dbc.Modal([
         dbc.ModalHeader("Error"),
-        dbc.ModalBody([html.P("R function failed: see error below and check your data"),
+        dbc.ModalBody([html.P("R function meta failed: see error below and check your data", style={"color":"white"}),
                        html.P(id="R_errors_nma_console", style={"color":"white"})])],
         id="R-alert-pair",
         size="lg",
@@ -30,7 +29,7 @@ R_errors_pair = dbc.Modal([
 
 R_errors_league = dbc.Modal([
     dbc.ModalHeader("Error"),
-    dbc.ModalBody([html.P("R function failed: see error below and check your data"),
+    dbc.ModalBody([html.P("League table generation failed: see error below and check your data", style={"color":"white"}),
                    html.P(id="R_errors_nma_console", style={"color": "white"})])],
     id="R-alert-league",
     size="lg",
@@ -39,7 +38,7 @@ R_errors_league = dbc.Modal([
 
 R_errors_funnel= dbc.Modal([
     dbc.ModalHeader("Error"),
-    dbc.ModalBody([html.P("R function failed: see error below and check your data"),
+    dbc.ModalBody([html.P("Funnel plot data generation failed: see error below and check your data", style={"color":"white"}),
                    html.P(id="R_errors_nma_console", style={"color": "white"})])],
     id="R-alert-funnel",
     size="lg",

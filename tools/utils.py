@@ -3,9 +3,11 @@ from pandas.api.types import is_numeric_dtype
 from tools.PATHS import __TEMP_LOGS_AND_GLOBALS, __SESSIONS_FOLDER, YESTERDAY
 from assets.effect_sizes import *
 # ---------R2Py Resources --------------------------------------------------------------------------------------------#
+import rpy2
 from rpy2.robjects import pandas2ri  # Define the R script and loads the instance in Python
 #pandas2ri.activate()
 import rpy2.robjects as ro
+import rpy2.rinterface_lib as rlib
 from rpy2.robjects.conversion import localconverter
 #import plotly.express as px
 
@@ -24,6 +26,8 @@ def  my_consoleread(promp: str) -> str:
     custom_prompt = f'R is asking this: {promp}'
     return input(custom_prompt)
 
+def print_console_error():
+    rlib.callbacks.consoleread = my_consoleread
 
 def apply_r_func(func, df):
     # types = df.applymap(type).apply(set)
@@ -155,14 +159,14 @@ def parse_contents(contents, filename):
     if 'csv' in filename:  # Assume that the user uploaded a CSV file
         try:
             df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
-        except Exception:
-            df = pd.read_csv(io.StringIO(decoded.decode('cp1252')))
-        except Exception:
-            df = pd.read_csv(io.StringIO(decoded.decode('ISO-8859-1')))
-        except Exception:
+        except :
             df = pd.read_csv(io.StringIO(decoded.decode('unicode-escape')))
+        # except Exception:
+        #     df = pd.read_csv(io.StringIO(decoded.decode('ISO-8859-1')))
+        # except Exception:
+        #     df = pd.read_csv(io.StringIO(decoded.decode('cp1252')))
         return df
-    elif 'xls' in filename:  # Assume that the user uploaded an excel file: TODO: fix
+    elif 'xls' in filename:  # Assume that the user uploaded an excel file: TODO: add xls options: so far this is not working
         return pd.read_excel(io.BytesIO(decoded))
 
 

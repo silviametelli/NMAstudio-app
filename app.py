@@ -676,7 +676,7 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
 
             except:
                  TEMP_net_data_STORAGE = {}
-                 raise ValueError('data conversion failed')
+                 raise ValueError('Data conversion failed')
 
             return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE,  filename_exists
 
@@ -796,15 +796,12 @@ def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, TEMP_net_data_STOR
 def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
                             TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE):
     if modal_data_checks_is_open:
+        net_data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
         try:
-            net_data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
-
+            TEMP_user_elements_STORAGE = get_network(df=net_data)
+            TEMP_user_elements_out2_STORAGE = []
             NMA_data = run_network_meta_analysis(net_data)
             TEMP_forest_data_STORAGE = NMA_data.to_json( orient='split')
-            TEMP_user_elements_STORAGE = get_network(df=net_data)
-
-
-            TEMP_user_elements_out2_STORAGE = []
             error = ' '
 
             if "TE2" in net_data.columns:
@@ -818,7 +815,7 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
             return (False, error, html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
                     '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE, TEMP_user_elements_out2_STORAGE)
         except:
-            error = ' Error printed in R[write to console]:  '
+            error = print_console_error()
             return (True, error, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
                     '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE, TEMP_user_elements_out2_STORAGE)
 

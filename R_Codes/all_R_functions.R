@@ -443,7 +443,7 @@ get_pairwise_data_contrast <- function(dat, outcome2=FALSE){
   if(outcome2==TRUE){
       sm2 <- dat$effect_size2[1]
       if(sm2 %in% c('RR','OR')){
-        pairwise_dat1 <- netmeta::pairwise(data=dat,
+        pairwise_dat2 <- netmeta::pairwise(data=dat,
                                            event=list(z1,z2.z),
                                            n=list(n1.z,n2.z),
                                            studlab=studlab,

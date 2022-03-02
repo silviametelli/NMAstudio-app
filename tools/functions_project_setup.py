@@ -46,11 +46,11 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
             if search_value_outcome2 == 'continuous':
                 col_vars[2] = ['y2.1', 'sd1.2', 'y2.2', 'sd2.2', 'n2.1', 'n2.2']
             elif search_value_outcome2 == 'binary':
-                col_vars[2] = ['z1', 'n1.z', 'z2.z', 'n2.z']
+                col_vars[2] = ['z1', 'n2.1', 'z2', 'n2.2']
         elif search_value_outcome1 == 'binary':
             col_vars[1] = ['r1', 'n1', 'r2', 'n2']
             if search_value_outcome2 == 'binary':
-                col_vars[2] = ['z1', 'n1.z', 'z2', 'n2.z']
+                col_vars[2] = ['z1', 'n2.1', 'z2', 'n2.2']
             elif search_value_outcome2 == 'continuous':
                 col_vars[2] = ['y2.1', 'sd1.2', 'y2.2', 'sd2.2', 'n2.1', 'n2.2']
 

@@ -13,24 +13,24 @@ alert_data_type = dcc.ConfirmDialog(id='data-missing-n-danger',
 
 R_errors_nma = dbc.Modal([
         dbc.ModalHeader("Error"),
-        dbc.ModalBody([html.P("R function netmeta failed: see error below and check your data",  style={"color":"white"}),
-                       html.P(id="R_errors_nma_console", style={"color":"white"})])],
+        dbc.ModalBody([html.P("R function netmeta failed: see error below and check your data",  style={"color":"red"}),
+                       html.P(id="Rconsole-error-nma", style={"color":"white"})])],
         id="R-alert-nma",
         size="lg",
         is_open=False)
 
 R_errors_pair = dbc.Modal([
         dbc.ModalHeader("Error"),
-        dbc.ModalBody([html.P("R function meta failed: see error below and check your data", style={"color":"white"}),
-                       html.P(id="R_errors_nma_console", style={"color":"white"})])],
+        dbc.ModalBody([html.P("R function meta failed: see error below and check your data", style={"color":"red"}),
+                       html.P(id="Rconsole-error-pw", style={"color":"white"})])],
         id="R-alert-pair",
         size="lg",
         is_open=False)
 
 R_errors_league = dbc.Modal([
     dbc.ModalHeader("Error"),
-    dbc.ModalBody([html.P("League table generation failed: see error below and check your data", style={"color":"white"}),
-                   html.P(id="R_errors_nma_console", style={"color": "white"})])],
+    dbc.ModalBody([html.P("League table generation failed: see error below and check your data", style={"color":"red"}),
+                   html.P(id="Rconsole-error-league", style={"color": "white"})])],
     id="R-alert-league",
     size="lg",
     is_open=False)
@@ -38,8 +38,8 @@ R_errors_league = dbc.Modal([
 
 R_errors_funnel= dbc.Modal([
     dbc.ModalHeader("Error"),
-    dbc.ModalBody([html.P("Funnel plot data generation failed: see error below and check your data", style={"color":"white"}),
-                   html.P(id="R_errors_nma_console", style={"color": "white"})])],
+    dbc.ModalBody([html.P("Funnel plot data generation failed: see error below and check your data", style={"color":"red"}),
+                   html.P(id="Rconsole-error-funnel", style={"color": "white"})])],
     id="R-alert-funnel",
     size="lg",
     is_open=False)

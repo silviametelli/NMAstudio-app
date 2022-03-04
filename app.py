@@ -9,7 +9,6 @@ from tools.PATHS import SESSION_PICKLE, get_session_pickle_path, TODAY, SESSION_
 
 create_sessions_folders()
 clean_sessions_folders()
-
 import warnings
 warnings.filterwarnings("ignore")
 # --------------------------------------------------------------------------------------------------------------------#
@@ -32,6 +31,7 @@ from tools.functions_generate_stylesheet import __generate_stylesheet
 # Load extra layouts
 cyto.load_extra_layouts()
 GRAPH_INTERVAL = os.environ.get("GRAPH_INTERVAL", 5000)
+
 
 app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}],
                 #external_stylesheets=[dbc.themes.BOOTSTRAP],
@@ -671,7 +671,6 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
 
             try:
                 data = adjust_data(data_user, dataselectors, search_value_format ,search_value_outcome1, search_value_outcome2)
-                print(data)
                 TEMP_net_data_STORAGE = data.to_json(orient='split')
 
             except:
@@ -781,7 +780,7 @@ def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, TEMP_net_data_STOR
 
 
 @app.callback([Output('R-alert-nma', 'is_open'),
-               Output('R_errors_nma_console', 'children'),
+               Output('Rconsole-error-nma', 'children'),
                Output("para-anls-data", "children"),
                Output('para-anls-data', 'data'),
                Output("TEMP_forest_data_STORAGE", "data"),
@@ -802,7 +801,6 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
             TEMP_user_elements_out2_STORAGE = []
             NMA_data = run_network_meta_analysis(net_data)
             TEMP_forest_data_STORAGE = NMA_data.to_json( orient='split')
-            error = ' '
 
             if "TE2" in net_data.columns:
                 net_data_out2 = net_data.drop(["TE", "seTE",  "n1",  "n2"], axis=1)
@@ -812,20 +810,19 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
                 TEMP_user_elements_out2_STORAGE = get_network(df=net_data_out2)
 
 
-            return (False, error, html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
+            return (False, html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
                     '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE, TEMP_user_elements_out2_STORAGE)
-        except:
-            error = print_console_error()
-            return (True, error, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
-                    '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE, TEMP_user_elements_out2_STORAGE)
+        except Exception as Rconsole_error_nma:
+            return (True, str(Rconsole_error_nma), html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
+                        '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE, TEMP_user_elements_out2_STORAGE)
 
     else:
-        error = ''
-        return False, error, None, '', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, None, None
+        return False, '', None, '', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, None, None
 
 
 
-@app.callback([Output('R-alert-pair', 'displayed'),
+@app.callback([Output('R-alert-pair', 'is_open'),
+               Output('Rconsole-error-pw', 'children'),
                Output("para-pairwise-data", "children"),
                Output('para-pairwise-data', 'data'),
                Output("TEMP_forest_data_prws_STORAGE", "data"),
@@ -855,15 +852,16 @@ def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, TEMP_ne
 
             return (False, html.P(u"\u2713" + " Pairwise meta-analysis run successfully.", style={"color":"green"}),
                                '__Para_Done__', TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2)
-        except:
-                return (True, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
+        except Exception as Rconsole_error_pw:
+                return (True, str(Rconsole_error_pw), html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
                               '__Para_Done__', TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2)
 
     else:
-        return False, None, '', TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2
+        return False, '', None, '', TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2
 
 
-@app.callback([Output('R-alert-league', 'displayed'),
+@app.callback([Output('R-alert-league', 'is_open'),
+               Output('Rconsole-error-league', 'children'),
                Output("para-LT-data", "children"),
                Output('para-LT-data', 'data'),
                Output('TEMP_league_table_data_STORAGE', 'data'),
@@ -905,18 +903,19 @@ def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
 
             return (False, html.P(u"\u2713" + " Successfully generated league table, consistency tables, ranking data.", style={"color":"green"}),
                          '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2)
-        except:
-            return (True, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
+        except Exception as Rconsole_error_league:
+            return (True, str(Rconsole_error_league), html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
                     '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, netsplit_all) if "TE2" not in data.columns else \
                                     (False, html.P(u"\u274C" + "An error occurred when computing analyses in R: check your data", style={"color":"red"}),
-                    '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2)
+                    '__Para_Done__', Rconsole_error_league, LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2)
     else:
         net_split_data2 = {}
         netsplit_all2 = {}
-        return False, None, '', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2
+        return False, '', None, '', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2
 
 
-@app.callback([Output('R-alert-funnel', 'displayed'),
+@app.callback([Output('R-alert-funnel', 'is_open'),
+               Output('Rconsole-error-funnel', 'children'),
                Output("para-FA-data", "children"),
                Output('para-FA-data', 'data'),
                Output('TEMP_funnel_data_STORAGE', 'data'),
@@ -943,12 +942,12 @@ def modal_submit_checks_FUNNEL(lt_data_ts, modal_data_checks_is_open, TEMP_net_d
 
             return (False, html.P(u"\u2713" + " Successfully generated funnel plot data.", style={"color": "green"}),
             '__Para_Done__', FUNNEL_data, FUNNEL_data2)
-        except:
-            return (True, html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color": "red"}),
+        except Exception as Rconsole_error_funnel:
+            return (True, str(Rconsole_error_funnel), html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color": "red"}),
                     '__Para_Done__', FUNNEL_data, FUNNEL_data2)
 
     else:
-        return False, None, '', FUNNEL_data, FUNNEL_data2
+        return False, '', None, '', FUNNEL_data, FUNNEL_data2
 
 
 @app.callback(Output("submit_modal_data", "disabled"),
@@ -1380,6 +1379,6 @@ if __name__ == '__main__':
     # Talisman(app.server, content_security_policy=None)
     # context = generate_ssl_perm_and_key(cert_name='cert.pem', key_name='key.pem')
     # app.run_server(debug=False, ssl_context=context)
-    app.run_server(debug=True)
+    app.run_server(debug=False)
 
 

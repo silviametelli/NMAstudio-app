@@ -810,7 +810,7 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
                 TEMP_user_elements_out2_STORAGE = get_network(df=net_data_out2)
 
 
-            return (False, html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
+            return (False,  '', html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
                     '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE, TEMP_user_elements_out2_STORAGE)
         except Exception as Rconsole_error_nma:
             return (True, str(Rconsole_error_nma), html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
@@ -850,7 +850,7 @@ def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, TEMP_ne
                 PAIRWISE_data2 = run_pairwise_MA(pair_data_out2)
                 TEMP_forest_data_prws_out2 = PAIRWISE_data2.to_json(orient='split')
 
-            return (False, html.P(u"\u2713" + " Pairwise meta-analysis run successfully.", style={"color":"green"}),
+            return (False, '', html.P(u"\u2713" + " Pairwise meta-analysis run successfully.", style={"color":"green"}),
                                '__Para_Done__', TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2)
         except Exception as Rconsole_error_pw:
                 return (True, str(Rconsole_error_pw), html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
@@ -901,7 +901,7 @@ def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
             else:
                 (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
 
-            return (False, html.P(u"\u2713" + " Successfully generated league table, consistency tables, ranking data.", style={"color":"green"}),
+            return (False, '', html.P(u"\u2713" + " Successfully generated league table, consistency tables, ranking data.", style={"color":"green"}),
                          '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2)
         except Exception as Rconsole_error_league:
             return (True, str(Rconsole_error_league), html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
@@ -940,7 +940,7 @@ def modal_submit_checks_FUNNEL(lt_data_ts, modal_data_checks_is_open, TEMP_net_d
                 FUNNEL_data2 = generate_funnel_data(data_out2)
                 FUNNEL_data2 = FUNNEL_data2.to_json(orient='split')
 
-            return (False, html.P(u"\u2713" + " Successfully generated funnel plot data.", style={"color": "green"}),
+            return (False, '', html.P(u"\u2713" + " Successfully generated funnel plot data.", style={"color": "green"}),
             '__Para_Done__', FUNNEL_data, FUNNEL_data2)
         except Exception as Rconsole_error_funnel:
             return (True, str(Rconsole_error_funnel), html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color": "red"}),

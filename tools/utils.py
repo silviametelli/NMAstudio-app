@@ -246,9 +246,13 @@ def generate_league_table(df, outcome2=False):
     else:        leaguetable, pscores, consist, netsplit, netsplit_all = apply_r_func(func=league_table_r, df=df)
 
     replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
+
+    leaguetable = leaguetable.fillna('')
+
     leaguetable = pd.DataFrame([[replace_and_strip(col) for col in list(row)] for idx, row in leaguetable.iterrows()],
                                columns=leaguetable.columns,
                                index=leaguetable.index)
+
     leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
 
     if outcome2:

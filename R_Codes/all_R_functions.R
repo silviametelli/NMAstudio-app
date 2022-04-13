@@ -163,8 +163,8 @@ league_rank <- function(dat, outcome2=FALSE){
      is.empty <- function(x, mode = NULL){
         if (is.null(mode)) mode <- class(x)
         identical(vector(mode, 1), c(x, vector(class(x), 1)))}
-      if(!is.empty(which_trts,"integer")){
         which_trts <- which(!(l2_treats %in% l1_treats))
+      if(!is.empty(which_trts,"integer")){
         df_1 <- df_1 %>% add_column(NA,  .before = colnames(df_1)[which_trts], .name_repair = "universal")
         colnames <- paste0("V", 1:dim(df_1)[1])
         colnames(df_1) <- colnames

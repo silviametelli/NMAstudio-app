@@ -4,6 +4,9 @@
 # Created on: 10/11/2020
 # --------------------------------------------------------------------------------------------------------------------#
 import io, base64
+
+import numpy as np
+
 from tools.utils import *
 from tools.PATHS import SESSION_PICKLE, get_session_pickle_path, TODAY, SESSION_TYPE, get_new_session_id
 
@@ -293,7 +296,7 @@ def get_new_data_cinema2(contents, cinema_net_data2, filename):
                Input('toggle_funnel_direction', 'value'),
                Input('reset_project', 'n_clicks'),
                ])
-def update_layour_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_cons, out2_fun, reset_btn):
+def update_layout_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_cons, out2_fun, reset_btn):
     YEARS_DEFAULT = np.array([1963, 1990, 1997, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010,
                               2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020])
     years_dft_max = YEARS_DEFAULT.max()
@@ -308,12 +311,15 @@ def update_layour_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_c
         net_data2 =  net_data.drop(["TE", "seTE", "n1", "n2"], axis=1)
         net_data2 = net_data2.rename(columns={"TE2": "TE", "seTE2": "seTE", "n2.1": "n1", "n2.2": "n2"})
         net_data = pd.DataFrame(net_data2)
-
+        net_data = net_data.dropna(subset=['TE', 'seTE'])
         net_data = net_data[net_data.year <= slider_year] if not reset_btn_triggered else  net_data[net_data.year <= years_dft_max]
         elements = get_network(df=net_data)
     else:
+        net_data = net_data.dropna(subset=['TE', 'seTE'])
+
         net_data = net_data[net_data.year <= slider_year] if not reset_btn_triggered else  net_data[net_data.year <= years_dft_max]
         elements = get_network(df=net_data)
+
     return elements, elements
 
 
@@ -591,7 +597,6 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
 
             try:
                 data_user = parse_contents(contents, filename)
-
             except:
                 raise ValueError('data upload failed: Likely UnicodeDecodeError or multiple type Error, check your variables characters and type')
             var_dict = dict()

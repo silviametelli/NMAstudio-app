@@ -149,6 +149,7 @@ def get_network(df):
                           'pie2': r2/(r1+r2+r3),
                           'pie3': r3/(r1+r2+r3)}} for target, size, r1, r2, r3 in all_nodes_sized.values]
 
+
     return cy_edges + cy_nodes
 
 

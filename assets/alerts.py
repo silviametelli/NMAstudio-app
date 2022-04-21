@@ -13,7 +13,7 @@ alert_data_type = dcc.ConfirmDialog(id='data-missing-n-danger',
 
 R_errors_nma = dbc.Modal([
         dbc.ModalHeader("Error"),
-        dbc.ModalBody([html.P("R function netmeta failed: see error below and check your data",  style={"color":"red"}),
+        dbc.ModalBody([html.P("NMA estimation and/or network generation failed: see error below and check your data",  style={"color":"red"}),
                        html.P(id="Rconsole-error-nma", style={"color":"white"})])],
         id="R-alert-nma",
         size="lg",
@@ -21,7 +21,7 @@ R_errors_nma = dbc.Modal([
 
 R_errors_pair = dbc.Modal([
         dbc.ModalHeader("Error"),
-        dbc.ModalBody([html.P("R function meta failed: see error below and check your data", style={"color":"red"}),
+        dbc.ModalBody([html.P("Pairwise meta-analysis failed: see error below and check your data", style={"color":"red"}),
                        html.P(id="Rconsole-error-pw", style={"color":"white"})])],
         id="R-alert-pair",
         size="lg",

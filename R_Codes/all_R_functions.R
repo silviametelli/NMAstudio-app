@@ -350,7 +350,7 @@ pairwise_forest <- function(dat){
 }
 
 
-#----------------------------------- pairwise function to convert data -----------------------------------------#
+#----------------------------------- pairwise function to convert long data -----------------------------------------#
 
 get_pairwise_data_long <- function(dat, outcome2=FALSE){
     sm1 <- dat$effect_size1[1]
@@ -379,9 +379,9 @@ get_pairwise_data_long <- function(dat, outcome2=FALSE){
   if(outcome2==TRUE){
       sm2 <- dat$effect_size2[1]
       if(sm2 %in% c('RR','OR')){
-        pairwise_dat1 <- netmeta::pairwise(data=dat,
-                                     event=r2,
-                                     n=n2,
+        pairwise_dat2 <- netmeta::pairwise(data=dat,
+                                     event=z1,
+                                     n=nz,
                                      studlab=studlab,
                                      treat=treat,
                                      incr=0.5,
@@ -397,15 +397,16 @@ get_pairwise_data_long <- function(dat, outcome2=FALSE){
                                            sm=sm2)
       }
       pairwise_dat <- full_join(pairwise_dat1, pairwise_dat2, by = c("studlab","treat1","treat2"))
-     names(pairwise_dat)[names(pairwise_dat) == 'TE.x'] <- 'TE'
+
+    names(pairwise_dat)[names(pairwise_dat) == 'TE.x'] <- 'TE'
      names(pairwise_dat)[names(pairwise_dat) == 'seTE.x'] <- 'seTE'
      names(pairwise_dat)[names(pairwise_dat) == 'n1.x'] <- 'n1'
      names(pairwise_dat)[names(pairwise_dat) == 'n2.x'] <- 'n2'
      names(pairwise_dat)[names(pairwise_dat) == 'effect_size1.x'] <- 'effect_size1'
      names(pairwise_dat)[names(pairwise_dat) == 'TE.y'] <- 'TE2'
      names(pairwise_dat)[names(pairwise_dat) == 'seTE.y'] <- 'seTE2'
-     names(pairwise_dat)[names(pairwise_dat) == 'n1.y'] <- 'n2.1'
-     names(pairwise_dat)[names(pairwise_dat) == 'n2.y'] <- 'n2.2'
+     names(pairwise_dat)[names(pairwise_dat) == 'nz1.y'] <- 'n2.1'
+     names(pairwise_dat)[names(pairwise_dat) == 'nz2.y'] <- 'n2.2'
      names(pairwise_dat)[names(pairwise_dat) == 'effect_size2.x'] <- 'effect_size2'
      names(pairwise_dat)[names(pairwise_dat) == 'rob.x'] <- 'rob'
      names(pairwise_dat)[names(pairwise_dat) == 'year.x'] <- 'year'
@@ -414,6 +415,9 @@ get_pairwise_data_long <- function(dat, outcome2=FALSE){
   return (pairwise_dat)
 }
 
+
+
+#----------------------------------- pairwise function to convert contrast data -----------------------------------------#
 
 
 get_pairwise_data_contrast <- function(dat, outcome2=FALSE){

@@ -107,7 +107,6 @@ def get_network(df):
             long_df_class["class_codes"] = long_df_class['class'].astype("category").cat.codes
             long_df_class = long_df_class.rename({long_df_class.columns[0]: 'treat', long_df_class.columns[1]: 'class_names', long_df_class.columns[2]: 'class'},
                                                  axis='columns')
-        #long_df_class['class'].replace(dict(zip(long_df_class['class'], [int(x-1) for x in long_df_class['class']])), inplace=True)
         all_nodes_class = long_df_class.drop_duplicates().sort_values(by='treat').reset_index(drop=True)
         num_classes = all_nodes_class['class'].max()+1 #because all_nodes_class was shifted by minus 1
     sorted_edges = np.sort(df[['treat1', 'treat2']], axis=1)  ## removes directionality
@@ -121,12 +120,13 @@ def get_network(df):
     all_nodes_robs = df_n1.add(df_n2, fill_value=0).rename(('count')).unstack('rob', fill_value=0)
     all_nodes_sized = pd.concat([all_nodes_sized, all_nodes_robs], axis=1).reset_index()
 
-    # for x in [1,2,3]:
-    #     if x not in all_nodes_sized.columns:
-    #         all_nodes_sized[f'{x}'] = [float(0)]*len(all_nodes_sized)
-
     if "treat1_class" and "treat2_class" in df.columns: all_nodes_sized = pd.concat([all_nodes_sized, all_nodes_class['class']], axis=1).reset_index(drop=True)
+
     for c in {1,2,3}.difference(all_nodes_sized): all_nodes_sized[c] = 0
+    for c in {1.0, 2.0, 3.0}.difference(all_nodes_sized): all_nodes_sized[c] = 0
+
+    all_nodes_sized.drop(columns=[col for col in all_nodes_sized if col not in ['treat', 'n', 'class', 1.0, 2.0, 3.0, 1, 2, 3]], inplace=True)
+
     cy_edges = [{'data': {'source': source,  'target': target,
                           'weight':  weight * 1 if len(edges)<100 else weight * 0.7,
                           'weight_lab': weight}}
@@ -148,6 +148,7 @@ def get_network(df):
                           'pie1': r1/(r1+r2+r3),
                           'pie2': r2/(r1+r2+r3),
                           'pie3': r3/(r1+r2+r3)}} for target, size, r1, r2, r3 in all_nodes_sized.values]
+
     return cy_edges + cy_nodes
 
 
@@ -174,16 +175,20 @@ def parse_contents(contents, filename):
 
 def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome2):
 
-    if data['rob'].dtype == object:
-        data['rob'] = (data['rob'].str.lower()
+    #if data['rob'].dtype == object or any(data.rob.str.isalpha()) or data.rob.str.lower().str.contains('mel').any():
+    data['rob'] = data['rob'].astype("string")
+    data['rob'] = (data['rob'].str.lower()
                       .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
                       .replace({'l': 1, 'm': 2, 'h': 3}))
     data['effect_size1'] = dataselectors[0]
 
     if value_format=='long':
-        for c in data.columns:
-            if data[c].dtype == object:
-                data[c].fillna('__NONE__', inplace=True)
+        try:
+            for c in data.columns:
+                if data[c].dtype == object:
+                    data[c].fillna('__NONE__', inplace=True)
+        except:
+            pass
         if value_outcome2:
             data['effect_size2'] = dataselectors[1]
             data = apply_r_func_two_outcomes(func=run_pairwise_data_long_r, df=data)

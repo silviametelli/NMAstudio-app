@@ -22,7 +22,7 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
     if search_value_format is None: return None
     col_vars = [[]] * 3
     if search_value_format == 'long':
-        col_vars[0] = ['study id', 'treat', 'rob', 'year']
+        col_vars[0] = ['studlab', 'treat', 'rob', 'year']
         if search_value_outcome1 == 'continuous':
             col_vars[1] = ['y', 'sd', 'n']
             if search_value_outcome2 == 'continuous':
@@ -78,11 +78,11 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
                                searchable=True, placeholder="...",
                                clearable=False, style={'width': '60px', "height":'30px',
                                                        'vertical-align': 'middle',
-                                                       "font-size": "1em",
                                                        "font-family": "sans-serif",
                                                        'margin-bottom': '2px',
                                                        'display': 'inline-block',
-                                                       'color': CLR_BCKGRND_old, 'font-size': '10px',
+                                                       'color': CLR_BCKGRND_old,
+                                                       'font-size': '10px',
                                                        'background-color': CLR_BCKGRND_old} )]
           ),  style={'margin-left': '55px', 'margin-right': '5px'}) for name, val in zip(name_outcomes, search_values)]
         )],

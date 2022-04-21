@@ -666,6 +666,11 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     r: 'r', n: 'n', y2: 'y2', sd2: 'sd2', n2:'n2'}
 
+                    else:
+                        studlab, treat, rob, year, r, n, z1, nz = dataselectors[2: ]
+                        var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
+                                    r: 'r', n: 'n', z1:'z1', nz: 'nz'}
+
 
             data_user.rename(columns=var_dict, inplace=True)
 
@@ -799,19 +804,23 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
         try:
             TEMP_user_elements_STORAGE = get_network(df=net_data)
             TEMP_user_elements_out2_STORAGE = []
-            NMA_data = run_network_meta_analysis(net_data)
+
+            NMA_data= run_network_meta_analysis(net_data)
             TEMP_forest_data_STORAGE = NMA_data.to_json( orient='split')
 
             if "TE2" in net_data.columns:
-                net_data_out2 = net_data.drop(["TE", "seTE",  "n1",  "n2"], axis=1)
-                net_data_out2 = net_data_out2.rename(columns={"TE2": "TE", "seTE2": "seTE", "n2.1": "n1", "n2.2": "n2"})
+                net_data_out2 = net_data.drop(["TE", "seTE",  "n1",  "n2", "effect_size1"], axis=1)
+                net_data_out2 = net_data_out2.rename(columns={"TE2": "TE", "seTE2": "seTE", "effect_size2": 'effect_size1',
+                                                              "n2.1": "n1", "n2.2": "n2"})
+
+                TEMP_user_elements_out2_STORAGE = get_network(df=net_data_out2)
                 NMA_data2 = run_network_meta_analysis(net_data_out2)
                 TEMP_forest_data_out2_STORAGE = NMA_data2.to_json(orient='split')
-                TEMP_user_elements_out2_STORAGE = get_network(df=net_data_out2)
-
 
             return (False,  '', html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
                     '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE, TEMP_user_elements_out2_STORAGE)
+
+
         except Exception as Rconsole_error_nma:
             return (True, str(Rconsole_error_nma), html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
                         '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE, TEMP_user_elements_out2_STORAGE)

@@ -148,10 +148,7 @@ league_rank <- function(dat, outcome2=FALSE){
       lt <- data.frame(lt)
       sortedseq <- l1_treats
     }else if (length(lt1)==length(lt2)){
-      lt1 <- netleague_table1$random
-      lt2 <- netleague_table2$random
       l1_treats <- sort(nma_primary$trts)
-      l2_treats <- sort(nma_secondary$trts)
       df_1 <-  as_tibble(lt1)
       df_2 <-  as_tibble(t(lt2))
       lt <- matrix(NA, nrow = length(df_1), ncol = length(df_1))

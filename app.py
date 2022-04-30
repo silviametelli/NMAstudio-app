@@ -1,12 +1,10 @@
 # Title     :  Dash NMA app
-# Objective :  visualization of network meta-analysis based on network interactivity
+# Objective :  visualisation of network meta-analysis based on network interactivity
 # Created by:  Silvia Metelli
 # Created on: 10/11/2020
 # --------------------------------------------------------------------------------------------------------------------#
 import io, base64
-
 import numpy as np
-
 from tools.utils import *
 from tools.PATHS import SESSION_PICKLE, get_session_pickle_path, TODAY, SESSION_TYPE, get_new_session_id
 
@@ -44,12 +42,9 @@ app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=devi
 
 def get_new_layout():
     SESSION_ID = get_new_session_id()
-
     return html.Div([dcc.Location(id='url', refresh=False),
                      html.Div(id='page-content'),
-                     dcc.Store(id='consts_STORAGE',
-                               data={'today': TODAY,
-                                     'session_ID': SESSION_ID},
+                     dcc.Store(id='consts_STORAGE',  data={'today': TODAY, 'session_ID': SESSION_ID},
                                storage_type='memory',
                                )
                      ])
@@ -351,6 +346,8 @@ def update_layout_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_c
                Input('cinema_net_data1_STORAGE', 'data'),
                Input('cinema_net_data2_STORAGE', 'data'),
                Input('data_and_league_table_DATA', 'data'),
+               Input("forest_data_STORAGE", "data"),
+               Input("forest_data_out2_STORAGE", "data"),
                Input('reset_project', 'n_clicks'),
                Input('ranking_data_STORAGE','data')
                 ],
@@ -362,18 +359,18 @@ def update_layout_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_c
               prevent_initial_call=True)
 def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
                   league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
-                  reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP,
-                  filename_cinema1, filename_cinema2, filename_cinema2_disabled):
+                  forest_data, forest_data_out2, reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP,
+                  league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2, filename_cinema2_disabled):
     return __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
-                        league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
-                        reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP,
-                        filename_cinema1, filename_cinema2, filename_cinema2_disabled)
-
+                          league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
+                          forest_data, forest_data_out2, reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP,
+                          league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2, filename_cinema2_disabled)
 
 
 #######################################################################################
 ########################## ALL plots calling tools.function ###########################
 #######################################################################################
+
 
 ### - figures on edge click: transitivity boxplots  - ###
 @app.callback(Output('tapEdgeData-fig', 'figure'),
@@ -517,17 +514,14 @@ flatten = lambda t: [item for sublist in t for item in sublist]
                         Input(f'dd_ngl_{item.lower()}', 'children')]
                        for item in ['Circle', 'Breadthfirst', 'Grid', 'Spread', 'Cose', 'Cola',
                                     'Dagre', 'Klay']
-                       ]),
-              prevent_initial_call=True)
+                       ]), prevent_initial_call=True)
 def which_dd_nds(circle_t, circle_v, breadthfirst_t, breadthfirst_v,
                  grid_t, grid_v, spread_t, spread_v, cose_t, cose_v,
                  cola_t, cola_v, dagre_t, dagre_v, klay_t, klay_v):
-    values = [circle_v, breadthfirst_v, grid_v, spread_v, cose_v, cola_v,
-              dagre_v, klay_v]
-    times = [circle_t, breadthfirst_t, grid_t, spread_t, cose_t, cola_t,
-             dagre_t, klay_t]
-    dd_ngl = [t or 0 for t in times]
-    which = dd_ngl.index(max(dd_ngl))
+    values =  [circle_v, breadthfirst_v, grid_v, spread_v, cose_v, cola_v, dagre_v, klay_v]
+    times  =  [circle_t, breadthfirst_t, grid_t, spread_t, cose_t, cola_t, dagre_t, klay_t]
+    dd_ngl =  [t or 0 for t in times]
+    which  =  dd_ngl.index(max(dd_ngl))
     return [values[which]]
 
 
@@ -849,7 +843,6 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
               )
 def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, TEMP_net_data_STORAGE, TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2):
 
-
     if modal_data_checks_is_open:
 
         data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
@@ -1010,36 +1003,6 @@ def toggle_modal(open, close, is_open):
     if open or close:
         return not is_open
     return is_open
-
-#####################################################################
-######################## ALERTS/ERRORS ##############################
-#####################################################################
-
-
-# @app.callback(Output('data-type-danger', 'displayed'),
-#               [Input('datatable-upload', 'filename'),
-#               Input("net_data_STORAGE", "data"),
-#               Input("modal_data", "is_open"),
-#               Input("dropdown-format", "value"),
-#               Input("dropdown-outcome1", "value"),
-#               Input("dropdown-outcome2", "value")],
-#               )
-# def display_confirm(filename, data, modal_data_open, value_format, value_outcome1, value_outcome2):
-#     data_ = pd.read_json(data, orient='split')
-#     if modal_data_open and filename is not None and value_outcome1 is not None:
-#         if value_format == 'contrast':
-#             if value_outcome2 is None:
-#                 return True if ('y1' in data_.columns and value_outcome1=="continuous") or ('r1' in data_.columns and value_outcome1=="binary") else False
-#             else:
-#                 return True if ('y1' in data_.columns and value_outcome1=="continuous") or ('r1' in data_.columns and value_outcome1=="binary") or \
-#                                ('y2' in data_.columns and value_outcome2=="continuous") or ('r2' in data_.columns and value_outcome2=="binary") else False
-#         elif value_format == 'long':
-#             if value_outcome2 is None:
-#                 return True if ('y1' in data_.columns and value_outcome1=="binary") or ('r1' in data_.columns and value_outcome1=="continuous") else False
-#             else:
-#                 return True if ('y1' in data_.columns and value_outcome1=="binary") or ('r1' in data_.columns and value_outcome1=="continuous") or \
-#                                ('y2' in data_.columns and value_outcome2=="binary") or ('r2' in data_.columns and value_outcome2=="continuous") else False
-#     else: return False
 
 
 ###############################################################################

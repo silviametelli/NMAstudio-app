@@ -5,9 +5,9 @@ from tools.utils import set_slider_marks
 from assets.COLORS import *
 
 def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
-                  league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
-                  reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP,
-                  filename_cinema1, filename_cinema2, filename_cinema2_disabled):
+                   league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
+                   forest_data, forest_data_out2, reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP,
+                   league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2, filename_cinema2_disabled):
 
     # ctx = dash.callback_context
     # print(net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP,
@@ -27,9 +27,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     if 'reset_project.n_clicks' in triggered: reset_btn_triggered = True
 
     net_data = pd.read_json(net_data, orient='split').round(3)
-
     years = net_data.year if not reset_btn_triggered else YEARS_DEFAULT
-
     slider_min, slider_max = years.min(), years.max()
     slider_marks = set_slider_marks(slider_min, slider_max, years)
     _out_slider = [slider_min, slider_max, slider_marks]
@@ -56,6 +54,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     robs = (net_data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
             .pivot_table(index='treat2', columns='treat1', values='rob')
             .reindex(index=treatments, columns=treatments, fill_value=np.nan))
+    robs_slct = robs
 
     # df_ranking = pd.read_json(ranking_data, orient='split')
     # if filename_cinema1 is not None:
@@ -68,49 +67,83 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     #             cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
     #             cinema_net_data2 =  cinema_net_data2.loc[:, ~cinema_net_data2.columns.str.contains('^Unnamed')]  # Remove unnamed columns
 
+
     if toggle_cinema:
         cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
         cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
-
-        print(cinema_net_data1.columns)
         confidence_map = {k: n for n, k in enumerate(['very low', 'low', 'moderate', 'high'])}
-        comparisons = cinema_net_data1.Comparison.str.split(':', expand=True)
+        comparisons1 = cinema_net_data1.Comparison.str.split(':', expand=True)
         confidence1 = cinema_net_data1['Confidence rating'].str.lower().map(confidence_map)
-        confidence2 = cinema_net_data2['Confidence rating'].str.lower().map(confidence_map) #if content2 is not None else confidence1
-        comprs_conf_ut = comparisons.copy()  # Upper triangle
-        comparisons.columns = [1, 0]  # To get lower triangle
-        comprs_conf_lt = comparisons[[0, 1]]  # Lower triangle
+        confidence2 = cinema_net_data2['Confidence rating'].str.lower().map(confidence_map) if filename_cinema2 is not None else confidence1
+        comparisons2 = cinema_net_data2.Comparison.str.split(':', expand=True) if filename_cinema2 is not None else confidence1
+        # comparisons = comparisons1 if len(comparisons1)>=len(comparisons2) else comparisons2
+        comprs_conf_ut = comparisons2.copy()  # Upper triangle
+        comparisons1.columns = [1, 0]  # To get lower triangle
+        comprs_conf_lt = comparisons1  # Lower triangle
         comprs_conf_lt['Confidence'] = confidence1
         comprs_conf_ut['Confidence'] = confidence2
         comprs_conf = pd.concat([comprs_conf_ut, comprs_conf_lt])
         comprs_conf = comprs_conf.pivot_table(index=0, columns=1, values='Confidence')
-        if filename_cinema2_disabled:
+
+        if filename_cinema2 is None:
             ut = np.triu(np.ones(comprs_conf.shape), 1).astype(bool)
             comprs_conf = comprs_conf.where(ut == False, np.nan)
-        robs = comprs_conf+1
 
+        robs = comprs_conf
     # Filter according to cytoscape selection
+
     if store_node:
         slctd_trmnts = [nd['id'] for nd in store_node]
         if len(slctd_trmnts) > 0:
+            forest_data = pd.read_json(forest_data, orient='split')
+            forest_data_out2 = pd.read_json(forest_data_out2, orient='split')
+            ranking_data = pd.read_json(ranking_data, orient='split')
+            dataselectors = []
+            dataselectors += [forest_data.columns[1]]
+            if 'pscore2' in ranking_data.columns:
+                dataselectors += [forest_data_out2.columns[1]]
+            leaguetable = leaguetable.loc[slctd_trmnts, slctd_trmnts]
+            robs_slct = robs.loc[slctd_trmnts, slctd_trmnts]
+            leaguetable_bool = pd.DataFrame(np.triu(np.ones(leaguetable.shape)).astype(bool),
+                                            columns=slctd_trmnts,
+                                            index=slctd_trmnts) #define upper and lower triangle
+
+            ### pick correct comparison from FOREST_DATA and FOREST_DATA_OUT2
+            for treat_c in slctd_trmnts:
+                for treat_r in slctd_trmnts:
+                    if treat_c != treat_r:
+                        if not leaguetable_bool.loc[treat_r][treat_c]:
+                            effcsze = round(forest_data[dataselectors[0]][(forest_data.Treatment == treat_c) & (forest_data.Reference == treat_r)].values[0], 2)
+                            ci_lower = round(forest_data['CI_lower'][(forest_data.Treatment == treat_c) & (forest_data.Reference == treat_r)].values[0], 2)
+                            ci_upper = round(forest_data['CI_upper'][(forest_data.Treatment == treat_c) & (forest_data.Reference == treat_r)].values[0], 2)
+                            leaguetable.loc[treat_r][treat_c] = f'{effcsze}\n{ci_lower, ci_upper}'
+
+                            # leaguetable = pd.DataFrame(np.tril(leaguetable), columns=slctd_trmnts, index=slctd_trmnts)
+                        if 'pscore2' in ranking_data.columns:
+                            effcsze2 = round(forest_data_out2[dataselectors[1]][(forest_data_out2.Treatment == treat_r) & (forest_data_out2.Reference == treat_c)].values[0], 2)
+                            ci_lower2 = round(forest_data_out2['CI_lower'][(forest_data_out2.Treatment == treat_r) & (forest_data_out2.Reference == treat_c)].values[0], 2)
+                            ci_upper2 = round(forest_data_out2['CI_upper'][(forest_data_out2.Treatment == treat_r) & (forest_data_out2.Reference == treat_c)].values[0], 2)
+                            if leaguetable_bool.loc[treat_r][treat_c]:
+                                leaguetable.loc[treat_r][treat_c] = f'{effcsze2}\n{ci_lower2, ci_upper2}'
+                                robs_slct.loc[treat_r][treat_c] = comprs_conf_ut['Confidence'][(comprs_conf_ut[0] == treat_c) & (comprs_conf_ut[1] == treat_r) |
+                                                                                               (comprs_conf_ut[0] == treat_r) & (comprs_conf_ut[1] == treat_c)].values[0]
+
+                            else:
+                                robs_slct.loc[treat_r][treat_c] = comprs_conf_lt['Confidence'][(comprs_conf_lt[0] == treat_c) & (comprs_conf_lt[1] == treat_r) |
+                                                                                               (comprs_conf_lt[0] == treat_r) & (comprs_conf_lt[1] == treat_c)].values[0]
+
+            leaguetable.replace(0, np.nan) #inplace
 
             tril_order = pd.DataFrame(np.tril(np.ones(leaguetable.shape)),
                                       columns=leaguetable.columns,
                                       index=leaguetable.columns)
             tril_order = tril_order.loc[slctd_trmnts, slctd_trmnts]
-            filter = np.tril(tril_order==0)
-            filter += filter.T #  inverting of rows and columns common in meta-analysis visualization
-
-            leaguetable = leaguetable.loc[slctd_trmnts, slctd_trmnts]
-            leaguetable_values = leaguetable.values
-            leaguetable_values[filter] = leaguetable_values.T[filter]
-            leaguetable = pd.DataFrame(leaguetable_values,
-                                       columns=leaguetable.columns,
-                                       index=leaguetable.columns)
+            filter = np.tril(tril_order == 0)
+            filter += filter.T  # inverting of rows and columns common in meta-analysis visualization
 
             robs = robs.loc[slctd_trmnts, slctd_trmnts]
             robs_values = robs.values
-            robs_values[filter] = robs_values.T[filter]
+            #robs_values[filter] = robs_values.T[filter]
             robs = pd.DataFrame(robs_values,
                                 columns=robs.columns,
                                 index=robs.columns)
@@ -124,7 +157,6 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     np.fill_diagonal(leaguetable_colr.values, np.nan)
     leaguetable_colr = leaguetable_colr.astype(np.float64)
 
-    # cmap = [clrs.to_hex(plt.get_cmap('RdYlGn_r', N_BINS)(n)) for n in range(N_BINS)]
     cmap = [CINEMA_g, CINEMA_y,CINEMA_r] if not toggle_cinema else [CINEMA_r, CINEMA_y, CINEMA_lb, CINEMA_g]
     legend_height = '4px'
     legend = [html.Div(style={'display': 'inline-block', 'width': '100px'},
@@ -133,31 +165,32 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
                                             style={'color': 'white'})])]
     legend += [html.Div(style={'display': 'inline-block', 'width': '60px'},
                         children=[html.Div(style={'backgroundColor': cmap[n],
-                                                  # 'borderLeft': f'1px {BORDER_LEFT_CLR} solid',
                                                   'height': legend_height}), html.Small(
                             ('Very Low' if toggle_cinema else 'Low') if n == 0 else 'High' if n == N_BINS - 1 else None,
                             style={'paddingLeft': '2px', 'color': 'white'})])
                for n in range(N_BINS)]
 
-    #df_max, df_min = leaguetable_colr.max().max(), leaguetable_colr.min().min()
     df_max, df_min = max(confidence_map.values()), min(confidence_map.values())
     ranges = (df_max - df_min) * bounds + df_min
     ranges[-1] *= 1.001
-    ranges = ranges + 1
+    ranges = ranges #+ 1
     league_table_styles = []
+
 
     for treat_c in treatments:
         for treat_r in treatments:
-            rob = robs.loc[treat_r, treat_c]
-            indxs = np.where(rob < ranges)[0] if rob == rob else [0]
-            clr_indx = indxs[0] - 1 if len(indxs) else 0
-            diag, empty = treat_r == treat_c, rob != rob
-            league_table_styles.append({'if': {'filter_query': f'{{Treatment}} = {{{treat_r}}}',
-                                               'column_id': treat_c},
-                                        'backgroundColor': cmap[clr_indx] if not empty else CLR_BCKGRND2,
-                                        'color': CX1 if not empty else CX2 if diag else 'white'})
-    league_table_styles.append({'if': {'column_id': 'Treatment'},
-                                'backgroundColor': CX1})
+            if treat_r!=treat_c:
+                rob = robs.loc[treat_r, treat_c] if not store_node else robs_slct.loc[treat_r, treat_c]
+                indxs = np.where(rob < ranges)[0] if rob == rob else [0]
+                clr_indx = indxs[0] - 1 if len(indxs) else 0
+                diag, empty = treat_r == treat_c, rob != rob
+                league_table_styles.append({'if': {'filter_query': f'{{Treatment}} = {{{treat_r}}}',
+                                                'column_id': treat_c},
+                                                'backgroundColor': cmap[clr_indx] if not empty else CLR_BCKGRND2,
+                                                'color': CX1 if not empty else CX2 if diag else 'white'})
+    league_table_styles.append({'if': {'column_id': 'Treatment'}, 'backgroundColor': CX1})
+
+
 
     # Prepare for output
 

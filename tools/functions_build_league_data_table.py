@@ -67,7 +67,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     #             cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
     #             cinema_net_data2 =  cinema_net_data2.loc[:, ~cinema_net_data2.columns.str.contains('^Unnamed')]  # Remove unnamed columns
 
-
+    comprs_conf_lt = comprs_conf_ut = None
     if toggle_cinema:
         cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
         cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
@@ -125,11 +125,11 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
                             ci_upper2 = round(forest_data_out2['CI_upper'][(forest_data_out2.Treatment == treat_r) & (forest_data_out2.Reference == treat_c)].values[0], 2)
                             if leaguetable_bool.loc[treat_r][treat_c]:
                                 leaguetable.loc[treat_r][treat_c] = f'{effcsze2}\n{ci_lower2, ci_upper2}'
-                                robs_slct.loc[treat_r][treat_c] = comprs_conf_ut['Confidence'][(comprs_conf_ut[0] == treat_c) & (comprs_conf_ut[1] == treat_r) |
+                                if toggle_cinema: robs_slct.loc[treat_r][treat_c] = comprs_conf_ut['Confidence'][(comprs_conf_ut[0] == treat_c) & (comprs_conf_ut[1] == treat_r) |
                                                                                                (comprs_conf_ut[0] == treat_r) & (comprs_conf_ut[1] == treat_c)].values[0]
 
                             else:
-                                robs_slct.loc[treat_r][treat_c] = comprs_conf_lt['Confidence'][(comprs_conf_lt[0] == treat_c) & (comprs_conf_lt[1] == treat_r) |
+                                if toggle_cinema: robs_slct.loc[treat_r][treat_c] = comprs_conf_lt['Confidence'][(comprs_conf_lt[0] == treat_c) & (comprs_conf_lt[1] == treat_r) |
                                                                                                (comprs_conf_lt[0] == treat_r) & (comprs_conf_lt[1] == treat_c)].values[0]
 
             leaguetable.replace(0, np.nan) #inplace
@@ -208,6 +208,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
         tooltip_values = [{col['id']: {'value': "**Reason for Downgrading:**",
                                        'type': 'markdown'} if col['id'] != 'Treatment' else None
                        for col in leaguetable_cols} for rn, (_, tip) in enumerate(tips.iterrows())]
+
 
 
     if store_edge or store_node:

@@ -9,15 +9,6 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
                    forest_data, forest_data_out2, reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP,
                    league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2, filename_cinema2_disabled):
 
-    # ctx = dash.callback_context
-    # print(net_data_STORAGE_TIMESTAMP, league_table_data_STORAGE_TIMESTAMP,
-    #       net_data_STORAGE_TIMESTAMP - league_table_data_STORAGE_TIMESTAMP)
-    # if ((abs(net_data_STORAGE_TIMESTAMP - league_table_data_STORAGE_TIMESTAMP)>150_000) and
-    #     (net_data_STORAGE_TIMESTAMP < league_table_data_STORAGE_TIMESTAMP)):
-    #     print('preventing update')
-    #     raise PreventUpdate
-    # if ctx.triggered:
-    #     print(ctx.triggered[0]['prop_id'].split('.')[0])
 
     YEARS_DEFAULT = np.array([1963, 1990, 1997, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010,
                               2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020])

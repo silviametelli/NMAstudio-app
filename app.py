@@ -3,11 +3,10 @@
 # Created by:  Silvia Metelli
 # Created on: 10/11/2020
 # --------------------------------------------------------------------------------------------------------------------#
-import io, base64
+import io
+import base64
 import numpy as np
-from tools.utils import *
-from tools.PATHS import SESSION_PICKLE, get_session_pickle_path, TODAY, SESSION_TYPE, get_new_session_id
-
+# --------------------------------------------------------------------------------------------------------------------#
 create_sessions_folders()
 clean_sessions_folders()
 import warnings
@@ -16,6 +15,8 @@ warnings.filterwarnings("ignore")
 import dash
 from dash.dependencies import Input, Output, State, ALL
 from dash_extensions.snippets import send_file
+from tools.utils import *
+from tools.PATHS import SESSION_PICKLE, get_session_pickle_path, TODAY, SESSION_TYPE, get_new_session_id
 from tools.layouts import *
 from tools.functions_ranking_plots import __ranking_plot
 from tools.functions_funnel_plot import __Tap_funnelplot
@@ -26,7 +27,6 @@ from tools.functions_project_setup import __update_options
 from tools.functions_netsplit import __netsplit
 from tools.functions_build_league_data_table import __update_output
 from tools.functions_generate_stylesheet import __generate_stylesheet
-
 # --------------------------------------------------------------------------------------------------------------------#
 
 # Load extra layouts
@@ -220,7 +220,7 @@ def TapNodeData_info(data):
 def TapEdgeData(edge):
     if edge:
         #     store_edge = read_edge_frompickle()
-        #     if edge['id']==store_edge['id']: # You clicked it before: unselect it TODO: not working
+        #     if edge['id']==store_edge['id']: # TODO: not working: unselects after clicking
         #         write_edge_topickle(EMPTY_SELECTION_EDGES)
         #     else:                            # New click: reset layout on nodes and select layout on edge
         #         write_edge_topickle(edge)
@@ -461,9 +461,7 @@ def which_dd_nds(default_t, default_v, tot_rnd_t, tot_rnd_v):
                Input('png-option', 'n_clicks_timestamp'), Input('png-option', 'children'),
                Input('svg-option', 'n_clicks_timestamp'), Input('svg-option', 'children'),],
               prevent_initial_call=True)
-def which_dd_export(default_t, default_v, png_t, png_v, svg_t, svg_v): #TODO: for some reason, default is svg
-    values = [default_v, png_v, svg_v]
-    dd_nds = [default_t or 0, png_t or 0, svg_t or 0]
+def which_dd_export(default_t, default_v, png_t, png_v, svg_t, svg_v): 
     which = dd_nds.index(max(dd_nds))
     return [values[which]]
 
@@ -1351,7 +1349,7 @@ def func(n_clicks):
 
 if __name__ == '__main__':
     app._favicon = ("assets/favicon.ico")
-    app.title = 'NMAstudio'
+    app.title = 'NMAstudio' #TODO: works fine locally, does not in Heroku
     # from flask_talisman import Talisman
     # Talisman(app.server, content_security_policy=None)
     # context = generate_ssl_perm_and_key(cert_name='cert.pem', key_name='key.pem')

@@ -97,6 +97,7 @@ CMAP = ['bisque', 'gold', 'light blue', 'tomato', 'orange', 'olivedrab', 'darksl
 #CMAP = px.colors.qualitative.Light24
 
 def get_network(df):
+    num_classes = None
     df = df.dropna(subset=['TE', 'seTE'])
     if "treat1_class" and "treat2_class" in df.columns:
         df_treat = df.treat1.dropna().append(df.treat2.dropna()).reset_index(drop=True)

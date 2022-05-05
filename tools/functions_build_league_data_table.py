@@ -7,7 +7,7 @@ from assets.COLORS import *
 def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
                    league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
                    forest_data, forest_data_out2, reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP,
-                   league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2, filename_cinema2_disabled):
+                   data_filename, league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2, filename_cinema2_disabled):
 
 
     YEARS_DEFAULT = np.array([1963, 1990, 1997, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010,
@@ -59,14 +59,15 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     #             cinema_net_data2 =  cinema_net_data2.loc[:, ~cinema_net_data2.columns.str.contains('^Unnamed')]  # Remove unnamed columns
 
     comprs_conf_lt = comprs_conf_ut = None
+
     if toggle_cinema:
         cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
         cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
         confidence_map = {k: n for n, k in enumerate(['very low', 'low', 'moderate', 'high'])}
         comparisons1 = cinema_net_data1.Comparison.str.split(':', expand=True)
         confidence1 = cinema_net_data1['Confidence rating'].str.lower().map(confidence_map)
-        confidence2 = cinema_net_data2['Confidence rating'].str.lower().map(confidence_map) if filename_cinema2 is not None else confidence1
-        comparisons2 = cinema_net_data2.Comparison.str.split(':', expand=True) if filename_cinema2 is not None else confidence1
+        confidence2 = cinema_net_data2['Confidence rating'].str.lower().map(confidence_map) if filename_cinema2 is not None or (filename_cinema2 is None and data_filename is None) else confidence1
+        comparisons2 = cinema_net_data2.Comparison.str.split(':', expand=True) if filename_cinema2 is not None or (filename_cinema2 is None and data_filename is None) else confidence1
         # comparisons = comparisons1 if len(comparisons1)>=len(comparisons2) else comparisons2
         comprs_conf_ut = comparisons2.copy()  # Upper triangle
         comparisons1.columns = [1, 0]  # To get lower triangle

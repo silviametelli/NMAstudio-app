@@ -1,8 +1,9 @@
-# Dash Network Meta Analysis
+# NMAstudio web-application
 
 ## About this app
 
 This is an interactive app to produce and perform network meta-analysis. 
+
 The app is currently deployed here: www.nmastudioapp.com
 
 ## How to run this app locally

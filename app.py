@@ -7,8 +7,6 @@ import io
 import base64
 import numpy as np
 # --------------------------------------------------------------------------------------------------------------------#
-create_sessions_folders()
-clean_sessions_folders()
 import warnings
 warnings.filterwarnings("ignore")
 # --------------------------------------------------------------------------------------------------------------------#
@@ -28,6 +26,8 @@ from tools.functions_netsplit import __netsplit
 from tools.functions_build_league_data_table import __update_output
 from tools.functions_generate_stylesheet import __generate_stylesheet
 # --------------------------------------------------------------------------------------------------------------------#
+create_sessions_folders()
+clean_sessions_folders()
 
 # Load extra layouts
 cyto.load_extra_layouts()
@@ -352,6 +352,7 @@ def update_layout_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_c
                Input('ranking_data_STORAGE','data')
                 ],
               [State('net_data_STORAGE', 'modified_timestamp'),
+               State('datatable-upload', 'filename'),
                State('league_table_data_STORAGE', 'modified_timestamp'),
                State('datatable-secondfile-upload', 'filename'),
                State('datatable-secondfile-upload-2', 'filename'),
@@ -360,11 +361,11 @@ def update_layout_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_c
 def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
                   league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
                   forest_data, forest_data_out2, reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP,
-                  league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2, filename_cinema2_disabled):
+                  data_filename, league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2, filename_cinema2_disabled):
     return __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
                           league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
                           forest_data, forest_data_out2, reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP,
-                          league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2, filename_cinema2_disabled)
+                          data_filename, league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2, filename_cinema2_disabled)
 
 
 #######################################################################################

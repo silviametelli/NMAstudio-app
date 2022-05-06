@@ -77,7 +77,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
         comprs_conf = pd.concat([comprs_conf_ut, comprs_conf_lt])
         comprs_conf = comprs_conf.pivot_table(index=0, columns=1, values='Confidence')
 
-        if filename_cinema2 is None:
+        if filename_cinema2 is None and data_filename is not None:
             ut = np.triu(np.ones(comprs_conf.shape), 1).astype(bool)
             comprs_conf = comprs_conf.where(ut == False, np.nan)
 
@@ -172,6 +172,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     for treat_c in treatments:
         for treat_r in treatments:
             if treat_r!=treat_c:
+
                 rob = robs.loc[treat_r, treat_c] if not store_node else robs_slct.loc[treat_r, treat_c]
                 indxs = np.where(rob < ranges)[0] if rob == rob else [0]
                 clr_indx = indxs[0] - 1 if len(indxs) else 0

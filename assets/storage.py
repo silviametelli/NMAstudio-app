@@ -50,10 +50,10 @@ DEFAULT_DATA = OrderedDict(net_data_STORAGE=NET_DATA,
 
 OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col} for col in NET_DATA.select_dtypes(['number']).columns]
 N_CLASSES = USER_ELEMENTS[-1]["data"]['n_class'] if "n_class" in USER_ELEMENTS[-1]["data"] else 1
-
+filename = None
 
 STORAGE = [dcc.Store(id=label, data=(data.to_json(orient='split')
-                                     if label not in ['user_elements_STORAGE', 'user_elements_out2_STORAGE']
+                                     if label not in ['user_elements_STORAGE', 'user_elements_out2_STORAGE', 'filename_data_STORAGE']
                                      else data),
                      storage_type=SESSION_TYPE)
            for label, data in DEFAULT_DATA.items()] + [
@@ -61,6 +61,8 @@ STORAGE = [dcc.Store(id=label, data=(data.to_json(orient='split')
 ] + [
 dcc.Store(id='data_and_league_table_DATA', data=dict(), storage_type=SESSION_TYPE),
 dcc.Store(id='net_download_activation', data=False, storage_type=SESSION_TYPE),
+dcc.Store(id='datatable-filename-upload', data=None, storage_type=SESSION_TYPE),
 dcc.Store(id='uploaded_datafile_to_disable_cinema', data=False, storage_type=SESSION_TYPE),
+
 ]
 

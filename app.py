@@ -102,16 +102,18 @@ def update_options(search_value_format, search_value_outcome1, search_value_outc
     return __update_options(search_value_format, search_value_outcome1, search_value_outcome2, contents, filename)
 
 
+#update filename DIV and Store filename in Session
 @app.callback([Output("dropdowns-DIV", "style"),
-               Output("uploaded_datafile", "children")],
+               Output("uploaded_datafile", "children"),
+               Output("datatable-filename-upload","data")],
                Input('datatable-upload', 'filename'))
 def is_data_file_uploaded(filename):
     show_DIV_style = {'display': 'inline-block', 'margin-bottom': '0px'}
     donot_show_DIV_style = {'display': 'none', 'margin-bottom': '0px'}
     if filename:
-        return show_DIV_style, filename or ''
+        return show_DIV_style, filename or '', filename
     else:
-        return donot_show_DIV_style, ''
+        return donot_show_DIV_style, '', filename
 
 
 ### --- update graph layout with dropdown: graph layout --- ###
@@ -462,7 +464,9 @@ def which_dd_nds(default_t, default_v, tot_rnd_t, tot_rnd_v):
                Input('png-option', 'n_clicks_timestamp'), Input('png-option', 'children'),
                Input('svg-option', 'n_clicks_timestamp'), Input('svg-option', 'children'),],
               prevent_initial_call=True)
-def which_dd_export(default_t, default_v, png_t, png_v, svg_t, svg_v): 
+def which_dd_export(default_t, default_v, png_t, png_v, svg_t, svg_v):
+    values = [default_v, png_v, svg_v]
+    dd_nds = [default_t or 0, png_t or 0, svg_t or 0]
     which = dd_nds.index(max(dd_nds))
     return [values[which]]
 
@@ -560,7 +564,7 @@ def toggle_modal_edge(open_t, close):
               [Input("upload_your_data", "n_clicks_timestamp"),
                Input("upload_modal_data", "n_clicks_timestamp"),
                Input("submit_modal_data", "n_clicks_timestamp"),
-               Input("uploaded_datafile_to_disable_cinema", "data"),
+               Input('datatable-filename-upload','data')
                ],
               [State("dropdown-format","value"),
                State("dropdown-outcome1","value"),
@@ -570,10 +574,10 @@ def toggle_modal_edge(open_t, close):
                State('datatable-upload', 'contents'),
                State('datatable-upload', 'filename'),
                State({'type': 'dataselectors', 'index': ALL}, 'value'),
-               State("TEMP_net_data_STORAGE", "data"),
+               State("TEMP_net_data_STORAGE", "data")
                ]
               )
-def data_modal(open_modal_data, upload, submit, filename_exists,
+def data_modal(open_modal_data, upload, submit, filename2,
                search_value_format, search_value_outcome1, search_value_outcome2,
                modal_data_is_open, modal_data_checks_is_open,
                contents, filename, dataselectors, TEMP_net_data_STORAGE,
@@ -582,7 +586,8 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
     if not ctx.triggered: button_id = 'No clicks yet'
     else:                 button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
-    filename_exists = True if filename is not None else False
+    filename_storage = filename if filename is not None else ''
+    filename_exists = True if filename is not None or filename_storage =='' else False
 
     if open_modal_data:
         if upload and button_id=='upload_modal_data':
@@ -591,7 +596,7 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
             try:
                 data_user = parse_contents(contents, filename)
             except:
-                raise ValueError('data upload failed: Likely UnicodeDecodeError or multiple type Error, check your variables characters and type')
+                raise ValueError('Data upload failed: likely UnicodeDecodeError or MultipleTypeError, check variable characters and type')
             var_dict = dict()
 
             if search_value_format == 'iv':
@@ -658,17 +663,14 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
                         studlab, treat, rob, year, r, n = dataselectors[1: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     r: 'r', n: 'n'}
-
                     elif search_value_outcome2 == 'continuous':
                         studlab, treat, rob, year, r, n, y2, sd2, n2 = dataselectors[2: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     r: 'r', n: 'n', y2: 'y2', sd2: 'sd2', n2:'n2'}
-
                     else:
                         studlab, treat, rob, year, r, n, z1, nz = dataselectors[2: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     r: 'r', n: 'n', z1:'z1', nz: 'nz'}
-
 
             data_user.rename(columns=var_dict, inplace=True)
 
@@ -680,7 +682,7 @@ def data_modal(open_modal_data, upload, submit, filename_exists,
                  TEMP_net_data_STORAGE = {}
                  raise ValueError('Data conversion failed')
 
-            return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE,  filename_exists
+            return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists
 
         if submit and button_id == 'submit_modal_data':
                 return modal_data_is_open, not modal_data_checks_is_open and (not modal_data_is_open), TEMP_net_data_STORAGE, filename_exists
@@ -739,6 +741,7 @@ def modal_SUBMIT_button(submit,  reset_btn,
                     TEMP_forest_data_prws_out2_STORAGE, TEMP_ranking_data_STORAGE, TEMP_funnel_data_STORAGE, TEMP_funnel_data_out2_STORAGE,
                     TEMP_league_table_data_STORAGE, TEMP_net_split_data_STORAGE, TEMP_net_split_data_out2_STORAGE,TEMP_net_split_ALL_data_STORAGE,
                     TEMP_net_split_ALL_data_out2_STORAGE]
+
         return OUT_DATA
     else:  # Must be triggered by reset_project.n_clicks
         return [data.to_json(orient='split')
@@ -756,6 +759,7 @@ def update_dropdown_effect_mod(new_data):
     OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col}
                    for col in new_data.columns] #new_data.select_dtypes(['number']).columns
     return OPTIONS_VAR
+
 
 
 @app.callback([Output("para-check-data", "children"),
@@ -1299,6 +1303,7 @@ def color_funnel_toggle(toggle_value):
                ]
               )
 def disable_cinema_toggle(filename_cinema1, filename_data):
+
     if filename_cinema1 is None and filename_data: return True, True
     else: return False, False
 

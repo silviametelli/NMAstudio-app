@@ -559,12 +559,12 @@ def toggle_modal_edge(open_t, close):
 @app.callback([Output("modal_data", "is_open"),
                Output("modal_data_checks", "is_open"),
                Output("TEMP_net_data_STORAGE", "data"),
-               Output("uploaded_datafile_to_disable_cinema", "data")
+               Output("uploaded_datafile_to_disable_cinema", "data"),
                ],
               [Input("upload_your_data", "n_clicks_timestamp"),
                Input("upload_modal_data", "n_clicks_timestamp"),
                Input("submit_modal_data", "n_clicks_timestamp"),
-               Input('datatable-filename-upload','data')
+               Input('uploaded_datafile_to_disable_cinema','data') #uploaded_datafile_to_disable_cinema
                ],
               [State("dropdown-format","value"),
                State("dropdown-outcome1","value"),
@@ -586,15 +586,18 @@ def data_modal(open_modal_data, upload, submit, filename2,
     if not ctx.triggered: button_id = 'No clicks yet'
     else:                 button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
-    filename_storage = filename if filename is not None else ''
-    filename_exists = True if filename is not None or filename_storage =='' else False
+    #filename_storage = filename if filename is not None else ''
+    #filename_exists = True if filename is not None or filename_storage =='' else False
+    filename_exists = True if filename is not None else False
 
     if open_modal_data:
         if upload and button_id=='upload_modal_data':
+            #filename_exists = True if filename is not None else False
             filename_exists = True if filename is not None else False
 
             try:
                 data_user = parse_contents(contents, filename)
+
             except:
                 raise ValueError('Data upload failed: likely UnicodeDecodeError or MultipleTypeError, check variable characters and type')
             var_dict = dict()
@@ -1360,7 +1363,7 @@ if __name__ == '__main__':
     # Talisman(app.server, content_security_policy=None)
     # context = generate_ssl_perm_and_key(cert_name='cert.pem', key_name='key.pem')
     # app.run_server(debug=False, ssl_context=context)
-    app.run_server(debug=True)
+    app.run_server(debug=False)
 
 
 

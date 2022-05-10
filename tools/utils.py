@@ -159,17 +159,17 @@ def get_network(df):
 def parse_contents(contents, filename):
     content_type, content_string = contents.split(',')
     decoded = base64.b64decode(content_string)
+    missing_values = ["n/a", "na", "--", '.', 'missing', 'NA', 'NAN', 'None', '']
     if 'csv' in filename:  # Assume that the user uploaded a CSV file
         try:
-            df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
-        except :
-            df = pd.read_csv(io.StringIO(decoded.decode('unicode-escape')))
-        # except Exception:
-        #     df = pd.read_csv(io.StringIO(decoded.decode('ISO-8859-1')))
-        # except Exception:
-        #     df = pd.read_csv(io.StringIO(decoded.decode('cp1252')))
+            df = pd.read_csv(io.StringIO(decoded.decode('utf-8', errors = 'ignore')), na_values = missing_values)
+        except:
+            try:
+                df = pd.read_csv(io.StringIO(decoded.decode('unicode-escape',errors ='ignore')), na_values = missing_values) #unicode-escape
+            except:
+                df = pd.read_csv(io.StringIO(decoded.decode('ISO-8859-1')))
         return df
-    elif 'xls' in filename:  # Assume that the user uploaded an excel file: TODO: add xls options: so far this is not working
+    elif 'xls' in filename:  # TODO: add xls options: so far this is not working
         return pd.read_excel(io.BytesIO(decoded))
 
 
@@ -193,6 +193,7 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
             pass
         if value_outcome2:
             data['effect_size2'] = dataselectors[1]
+
             data = apply_r_func_two_outcomes(func=run_pairwise_data_long_r, df=data)
         else:
             data = apply_r_func(func=run_pairwise_data_long_r, df=data)

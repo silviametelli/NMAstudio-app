@@ -11,6 +11,14 @@ alert_data_type = dcc.ConfirmDialog(id='data-missing-n-danger',
                                     message='sample size for each outcome missing')
 
 
+dataupload_error= dbc.Modal([
+        dbc.ModalHeader("Error"),
+        dbc.ModalBody([html.P("NMA estimation and/or network generation failed: see error below and check your data",  style={"color":"red"}),
+                       html.P(id="dataupload-error", style={"color":"white"})])],
+        id="Alert-data",
+        size="lg",
+        is_open=False)
+
 R_errors_nma = dbc.Modal([
         dbc.ModalHeader("Error"),
         dbc.ModalBody([html.P("NMA estimation and/or network generation failed: see error below and check your data",  style={"color":"red"}),

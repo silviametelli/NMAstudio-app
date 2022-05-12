@@ -30,7 +30,7 @@ def get_stylesheet(node_size=False, classes=False, n_class=N_CLASSES, edg_col= F
            default_stylesheet.append(x)
     if node_size: default_stylesheet[0]['style'].update({"width": "data(size)", "height": "data(size)"})
     if edge_size: default_stylesheet[1]['style'].update({"width": None})
-    if edg_lbl:   default_stylesheet[1]['style'].update({'label': 'data(weight)'})
+    if edg_lbl:   default_stylesheet[1]['style'].update({'label': 'data(weight_lab)'})
     if pie:       default_stylesheet[0]['style'].update({
                                                'pie-1-background-color': '#E8747C',
                                                'pie-1-background-size': 'mapData(pie3, 0, 1, 0, 100)',

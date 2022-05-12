@@ -127,9 +127,8 @@ def get_network(df):
     for c in {1.0, 2.0, 3.0}.difference(all_nodes_sized): all_nodes_sized[c] = 0
 
     all_nodes_sized.drop(columns=[col for col in all_nodes_sized if col not in ['treat', 'n', 'class', 1.0, 2.0, 3.0, 1, 2, 3]], inplace=True)
-
     cy_edges = [{'data': {'source': source,  'target': target,
-                          'weight':  weight * 1 if len(edges)<100 else weight * 0.7,
+                          'weight':  weight * 1 if (len(edges)<100 and len(edges)>13) else weight * 0.75 if len(edges)<13  else weight * 0.7,
                           'weight_lab': weight}}
                 for source, target, weight in edges.values]
     max_trsfrmd_size_nodes = np.sqrt(all_nodes_sized.iloc[:,1].max()) / 70

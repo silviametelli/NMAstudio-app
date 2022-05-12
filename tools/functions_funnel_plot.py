@@ -10,10 +10,16 @@ def __Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):
         treatment = node[0]['label']
         funnel_data = pd.read_json(funnel_data, orient='split')
         funnel_data_out2 = pd.read_json(funnel_data_out2, orient='split') if outcome2 else None #TODO: change when include dataselectors for var names
-        df = (funnel_data_out2[funnel_data_out2.treat2 == treatment].copy() if outcome2 else funnel_data[funnel_data.treat2 == treatment].copy())
+        df = funnel_data_out2[funnel_data_out2.treat2 == treatment].copy() if outcome2 else funnel_data[funnel_data.treat2 == treatment].copy()
         df['Comparison'] = (df['treat1'] + ' vs ' + df['treat2']).astype(str)
+
+        #remove comparisons with one study only
+        df = df[df['Comparison'].map(df['Comparison'].value_counts()) > 1]
         effect_size = df.columns[3]
         df = df.sort_values(by='seTE', ascending=False)
+
+        print(df)
+
     else:
         effect_size = ''
         df = EMPTY_DF

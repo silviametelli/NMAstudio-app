@@ -1358,12 +1358,12 @@ def func(n_clicks):
 
 if __name__ == '__main__':
     app._favicon = ("assets/favicon.ico")
-    app.title = 'NMAstudio' #TODO: works fine locally, does not in Heroku
+    app.title = 'NMAstudio' #TODO: title works fine locally, does not on Heroku
     # from flask_talisman import Talisman
     # Talisman(app.server, content_security_policy=None)
     # context = generate_ssl_perm_and_key(cert_name='cert.pem', key_name='key.pem')
     # app.run_server(debug=False, ssl_context=context)
-    app.run_server(debug=False)
+    app.run_server(debug=True)
 
 
 

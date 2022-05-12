@@ -25,6 +25,7 @@ def __netsplit(edges, outcome, net_split_data, net_split_data_out2, consistency_
 
     data_consistency = consistency_data.round(decimals=4).to_dict('records')
     consistency_tbl_cols = [{"name": i, "id": i} for i in consistency_data.columns]
+    if data_consistency[0]['p-value'] == 0.0: data_consistency[0]['p-value'] = '<0.0001'
     _out_consistency_table = [data_consistency, consistency_tbl_cols]
 
 

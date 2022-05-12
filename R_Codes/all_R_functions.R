@@ -81,7 +81,7 @@ league_rank <- function(dat, outcome2=FALSE){
   colnames(rank)  <-  c("treatment", "pscore")
   #consistency
   consistency <- data.frame(nma_primary$Q.inconsistency, nma_primary$df.Q.inconsistency, nma_primary$pval.Q.inconsistency)
-  colnames(consistency)  <-  c("Q1", "df_Q1", "p_Q1")
+  colnames(consistency)  <-  c("Q", "df(Q)", "p-value")
   #consistency node-split
   ne <- netsplit(nma_primary)
   comparison <- ne$compare.random$comparison[!is.na(ne$compare.random$p)]
@@ -213,7 +213,6 @@ league_rank <- function(dat, outcome2=FALSE){
       colnames(df_cons) <- c("comparison", "direct", "indirect", "p-value")
     }
   }
-
   if(outcome2==TRUE){return(list(lt, rank, consistency, df_cons, df_cons2, netsplit_all, netsplit_all2))}else{
     return(list(lt, rank, consistency, df_cons, netsplit_all))
   }

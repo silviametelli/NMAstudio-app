@@ -58,6 +58,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     #             cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
     #             cinema_net_data2 =  cinema_net_data2.loc[:, ~cinema_net_data2.columns.str.contains('^Unnamed')]  # Remove unnamed columns
 
+    comprs_downgrade  = pd.DataFrame()
     comprs_conf_lt = comprs_conf_ut = None
 
     if toggle_cinema:
@@ -66,18 +67,33 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
         confidence_map = {k: n for n, k in enumerate(['very low', 'low', 'moderate', 'high'])}
         comparisons1 = cinema_net_data1.Comparison.str.split(':', expand=True)
         confidence1 = cinema_net_data1['Confidence rating'].str.lower().map(confidence_map)
-        confidence2 = cinema_net_data2['Confidence rating'].str.lower().map(confidence_map) if filename_cinema2 is not None or (filename_cinema2 is None and data_filename is None) else confidence1
-        comparisons2 = cinema_net_data2.Comparison.str.split(':', expand=True) if filename_cinema2 is not None or (filename_cinema2 is None and data_filename is None) else confidence1
-        # comparisons = comparisons1 if len(comparisons1)>=len(comparisons2) else comparisons2
+        confidence2 = cinema_net_data2['Confidence rating'].str.lower().map(confidence_map) if filename_cinema2 is not None or (filename_cinema2 is None and "Default_data" in cinema_net_data2.columns) else confidence1
+        comparisons2 = cinema_net_data2.Comparison.str.split(':', expand=True) if filename_cinema2 is not None or (filename_cinema2 is None and "Default_data" in cinema_net_data2.columns) else comparisons1
+
         comprs_conf_ut = comparisons2.copy()  # Upper triangle
         comparisons1.columns = [1, 0]  # To get lower triangle
         comprs_conf_lt = comparisons1  # Lower triangle
+        comprs_downgrade_lt = comprs_conf_lt
+        comprs_downgrade_ut = comprs_conf_ut
+
+        if "Reason(s) for downgrading" in cinema_net_data1.columns:
+            downgrading1 = cinema_net_data1["Reason(s) for downgrading"]
+            comprs_downgrade_lt['Downgrading'] = downgrading1
+            if (filename_cinema2 is not None and "Reason(s) for downgrading" in cinema_net_data2.columns) or (filename_cinema2 is None and "Default_data" in cinema_net_data2.columns):
+                downgrading2 = cinema_net_data2["Reason(s) for downgrading"]
+                comprs_downgrade_lt['Downgrading'] = downgrading2
+            else:
+                downgrading2 = downgrading1
+                comprs_downgrade_lt['Downgrading'] = downgrading2
+            comprs_downgrade = pd.concat([comprs_downgrade_ut, comprs_downgrade_lt])
+            comprs_downgrade = comprs_downgrade.pivot(index=0, columns=1, values='Downgrading')
+
         comprs_conf_lt['Confidence'] = confidence1
         comprs_conf_ut['Confidence'] = confidence2
         comprs_conf = pd.concat([comprs_conf_ut, comprs_conf_lt])
         comprs_conf = comprs_conf.pivot_table(index=0, columns=1, values='Confidence')
 
-        if filename_cinema2 is None and data_filename is not None:
+        if filename_cinema2 is None and "Default_data" not in cinema_net_data2.columns:
             ut = np.triu(np.ones(comprs_conf.shape), 1).astype(bool)
             comprs_conf = comprs_conf.where(ut == False, np.nan)
 
@@ -149,7 +165,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     np.fill_diagonal(leaguetable_colr.values, np.nan)
     leaguetable_colr = leaguetable_colr.astype(np.float64)
 
-    cmap = [CINEMA_g, CINEMA_y,CINEMA_r] if not toggle_cinema else [CINEMA_r, CINEMA_y, CINEMA_lb, CINEMA_g]
+    cmap = [CINEMA_g, CINEMA_y, CINEMA_r] if not toggle_cinema else [CINEMA_r, CINEMA_y, CINEMA_lb, CINEMA_g]
     legend_height = '4px'
     legend = [html.Div(style={'display': 'inline-block', 'width': '100px'},
                        children=[html.Div(),
@@ -162,10 +178,12 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
                             style={'paddingLeft': '2px', 'color': 'white'})])
                for n in range(N_BINS)]
 
+    cmap = [CINEMA_g, CINEMA_y, CINEMA_r] if not toggle_cinema else [CINEMA_r, CINEMA_y, CINEMA_lb, CINEMA_g]
+
     df_max, df_min = max(confidence_map.values()), min(confidence_map.values())
     ranges = (df_max - df_min) * bounds + df_min
     ranges[-1] *= 1.001
-    ranges = ranges #+ 1
+    ranges = ranges + 1 if not toggle_cinema else ranges
     league_table_styles = []
 
 
@@ -186,6 +204,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 
 
     # Prepare for output
+    print(comprs_downgrade)
 
     tips = robs
     leaguetable = leaguetable.reset_index().rename(columns={'index': 'Treatment'})
@@ -198,9 +217,9 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
                                    'type': 'markdown'} if col['id'] != 'Treatment' else None
                            for col in leaguetable_cols} for rn, (_, tip) in enumerate(tips.iterrows())]
     if toggle_cinema:
-        tooltip_values = [{col['id']: {'value': "**Reason for Downgrading:**",
+        tooltip_values = [{col['id']: {'value': f"**Reason for Downgrading:**{tip[col['id']]}" if not comprs_downgrade.empty else f"**Reason for Downgrading:**",
                                        'type': 'markdown'} if col['id'] != 'Treatment' else None
-                       for col in leaguetable_cols} for rn, (_, tip) in enumerate(tips.iterrows())]
+                       for col in leaguetable_cols} for rn, (_, tip) in enumerate(comprs_downgrade.iterrows())]
 
 
 

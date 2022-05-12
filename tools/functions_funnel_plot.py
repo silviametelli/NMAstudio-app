@@ -18,8 +18,6 @@ def __Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):
         effect_size = df.columns[3]
         df = df.sort_values(by='seTE', ascending=False)
 
-        print(df)
-
     else:
         effect_size = ''
         df = EMPTY_DF

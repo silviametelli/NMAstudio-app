@@ -1,153 +1,153 @@
-﻿Comparison,Confidence rating
-agom:amit,Moderate
-agom:bupr,Moderate
-agom:cita,Moderate
-agom:clom,Moderate
-agom:dulo,Low
-agom:esci,Moderate
-agom:fluo,Low
-agom:fluv,Low
-agom:miln,Moderate
-agom:mirt,Moderate
-agom:nefa,Moderate
-agom:paro,Moderate
-agom:rebo,Moderate
-agom:sert,Moderate
-agom:traz,Moderate
-agom:venl,Low
-agom:vort,Low
-amit:bupr,Very Low
-amit:cita,Moderate
-amit:clom,Low
-amit:dulo,Low
-amit:esci,Moderate
-amit:fluo,Low
-amit:fluv,Low
-amit:miln,Low
-amit:mirt,Moderate
-amit:nefa,Very Low
-amit:paro,Low
-amit:rebo,Low
-amit:sert,Moderate
-amit:traz,Very Low
-amit:venl,Low
-amit:vort,Low
-bupr:cita,Very Low
-bupr:clom,Low
-bupr:dulo,Low
-bupr:esci,Moderate
-bupr:fluo,Very Low
-bupr:fluv,Very Low
-bupr:miln,Very Low
-bupr:mirt,Low
-bupr:nefa,Very Low
-bupr:paro,Very Low
-bupr:rebo,Low
-bupr:sert,Very Low
-bupr:traz,Very Low
-bupr:venl,Very Low
-bupr:vort,Low
-cita:clom,Low
-cita:dulo,Moderate
-cita:esci,Moderate
-cita:fluo,Moderate
-cita:fluv,Moderate
-cita:miln,Moderate
-cita:mirt,Low
-cita:nefa,Very Low
-cita:paro,Moderate
-cita:rebo,Low
-cita:sert,Very Low
-cita:traz,Moderate
-cita:venl,Low
-cita:vort,Low
-clom:dulo,Low
-clom:esci,Moderate
-clom:fluo,Low
-clom:fluv,Low
-clom:miln,Low
-clom:mirt,Moderate
-clom:nefa,Very Low
-clom:paro,Low
-clom:rebo,Very Low
-clom:sert,Low
-clom:traz,Low
-clom:venl,Low
-clom:vort,Low
-dulo:esci,Moderate
-dulo:fluo,Moderate
-dulo:fluv,Low
-dulo:miln,Low
-dulo:mirt,Moderate
-dulo:nefa,Very Low
-dulo:paro,Low
-dulo:rebo,Very Low
-dulo:sert,Low
-dulo:traz,Low
-dulo:venl,Very Low
-dulo:vort,Low
-esci:fluo,Moderate
-esci:fluv,Moderate
-esci:miln,Moderate
-esci:mirt,Moderate
-esci:nefa,Low
-esci:paro,Moderate
-esci:rebo,Moderate
-esci:sert,Moderate
-esci:traz,Moderate
-esci:venl,Moderate
-esci:vort,Very Low
-fluo:fluv,Moderate
-fluo:miln,Moderate
-fluo:mirt,Moderate
-fluo:nefa,Low
-fluo:paro,Moderate
-fluo:rebo,Low
-fluo:sert,Low
-fluo:traz,Moderate
-fluo:venl,Low
-fluo:vort,Low
-fluv:miln,Low
-fluv:mirt,Moderate
-fluv:nefa,Very Low
-fluv:paro,Moderate
-fluv:rebo,Low
-fluv:sert,Moderate
-fluv:venl,Very Low
-fluv:vort,Moderate
-miln:mirt,Low
-miln:nefa,Low
-miln:paro,Very Low
-miln:rebo,Very Low
-miln:sert,Low 
-miln:traz,Moderate
-miln:venl,Moderate
-miln:vort,Moderate
-mirt:nefa,Low
-mirt:paro,Low
-mirt:rebo,Moderate
-mirt:sert,Moderate
-mirt:traz,Moderate
-mirt:venl,Moderate
-mirt:vort,Moderate
-nefa:paro,Very Low
-nefa:rebo,Very Low
-nefa:sert,Low
-nefa:traz,Very Low
-nefa:venl,Very Low
-nefa:vort,Low
-paro:rebo,Low
-paro:sert,Moderate
-paro:traz,Moderate
-paro:venl,Moderate
-paro:vort,Low
-rebo:sert,Low
-rebo:traz,Low
-rebo:venl,Low
-rebo:vort,Low
-sert:traz,Moderate
-sert:venl,Moderate
-sert:vort,Low
-traz:venl,Very Low
-traz:vort,Low
-venl:vort,Low
+﻿Comparison,Confidence rating,Reason(s) for downgrading
+agom:amit,Moderate,[]
+agom:bupr,Moderate,[]
+agom:cita,Moderate,[]
+agom:clom,Moderate,[]
+agom:dulo,Low,[]
+agom:esci,Moderate,[]
+agom:fluo,Low,[]
+agom:fluv,Low,[]
+agom:miln,Moderate,[]
+agom:mirt,Moderate,[]
+agom:nefa,Moderate,[]
+agom:paro,Moderate,"[""Imprecision, ""Heterogeneity""]"
+agom:rebo,Moderate,"[""Imprecision, ""Heterogeneity""]"
+agom:sert,Moderate,"[""Imprecision, ""Heterogeneity""]"
+agom:traz,Moderate,"[""Imprecision, ""Heterogeneity""]"
+agom:venl,Low,"[""Imprecision, ""Heterogeneity""]"
+agom:vort,Low,"[""Imprecision, ""Heterogeneity""]"
+amit:bupr,Very Low,"[""Imprecision, ""Heterogeneity""]"
+amit:cita,Moderate,"[""Imprecision, ""Heterogeneity""]"
+amit:clom,Low,"[""Imprecision, ""Heterogeneity""]"
+amit:dulo,Low,"[""Imprecision, ""Heterogeneity""]"
+amit:esci,Moderate,"[""Imprecision, ""Heterogeneity""]"
+amit:fluo,Low,"[""Imprecision, ""Heterogeneity""]"
+amit:fluv,Low,"[""Imprecision, ""Heterogeneity""]"
+amit:miln,Low,"[""Imprecision, ""Heterogeneity""]"
+amit:mirt,Moderate,"[""Imprecision, ""Heterogeneity""]"
+amit:nefa,Very Low,"[""Imprecision, ""Heterogeneity""]"
+amit:paro,Low,"[""Imprecision, ""Heterogeneity""]"
+amit:rebo,Low,"[""Imprecision, ""Heterogeneity""]"
+amit:sert,Moderate,"[""Imprecision, ""Heterogeneity""]"
+amit:traz,Very Low,"[""Imprecision, ""Heterogeneity""]"
+amit:venl,Low,"[""Imprecision, ""Heterogeneity""]"
+amit:vort,Low,"[""Imprecision, ""Heterogeneity""]"
+bupr:cita,Very Low,"[""Imprecision, ""Heterogeneity""]"
+bupr:clom,Low,"[""Imprecision, ""Heterogeneity""]"
+bupr:dulo,Low,"[""Imprecision, ""Heterogeneity""]"
+bupr:esci,Moderate,"[""Imprecision, ""Heterogeneity""]"
+bupr:fluo,Very Low,"[""Imprecision, ""Heterogeneity""]"
+bupr:fluv,Very Low,"[""Imprecision""]"
+bupr:miln,Very Low,"[""Imprecision""]"
+bupr:mirt,Low,"[""Imprecision""]"
+bupr:nefa,Very Low,"[""Imprecision""]"
+bupr:paro,Very Low,"[""Imprecision""]"
+bupr:rebo,Low,"[""Imprecision""]"
+bupr:sert,Very Low,"[""Imprecision""]"
+bupr:traz,Very Low,"[""Imprecision""]"
+bupr:venl,Very Low,"[""Imprecision""]"
+bupr:vort,Low,"[""Imprecision""]"
+cita:clom,Low,"[""Imprecision""]"
+cita:dulo,Moderate,"[""Imprecision""]"
+cita:esci,Moderate,"[""Imprecision""]"
+cita:fluo,Moderate,"[""Imprecision""]"
+cita:fluv,Moderate,"[""Imprecision""]"
+cita:miln,Moderate,"[""Imprecision""]"
+cita:mirt,Low,"[""Imprecision""]"
+cita:nefa,Very Low,"[""Imprecision""]"
+cita:paro,Moderate,"[""Imprecision""]"
+cita:rebo,Low,"[""Imprecision""]"
+cita:sert,Very Low,"[""Imprecision""]"
+cita:traz,Moderate,"[""Imprecision""]"
+cita:venl,Low,"[""Imprecision""]"
+cita:vort,Low,"[""Imprecision""]"
+clom:dulo,Low,"[""Imprecision""]"
+clom:esci,Moderate,"[""Imprecision""]"
+clom:fluo,Low,"[""Imprecision""]"
+clom:fluv,Low,"[""Imprecision""]"
+clom:miln,Low,"[""Imprecision""]"
+clom:mirt,Moderate,"[""Imprecision""]"
+clom:nefa,Very Low,"[""Imprecision""]"
+clom:paro,Low,"[""Imprecision""]"
+clom:rebo,Very Low,"[""Imprecision""]"
+clom:sert,Low,"[""Imprecision""]"
+clom:traz,Low,"[""Imprecision""]"
+clom:venl,Low,"[""Imprecision""]"
+clom:vort,Low,"[""Imprecision""]"
+dulo:esci,Moderate,"[""Imprecision""]"
+dulo:fluo,Moderate,"[""Imprecision""]"
+dulo:fluv,Low,"[""Imprecision""]"
+dulo:miln,Low,"[""Imprecision""]"
+dulo:mirt,Moderate,"[""Imprecision""]"
+dulo:nefa,Very Low,"[""Imprecision""]"
+dulo:paro,Low,"[""Imprecision""]"
+dulo:rebo,Very Low,"[""Imprecision""]"
+dulo:sert,Low,"[""Imprecision""]"
+dulo:traz,Low,"[""Imprecision""]"
+dulo:venl,Very Low,"[""Imprecision""]"
+dulo:vort,Low,"[""Imprecision""]"
+esci:fluo,Moderate,"[""Imprecision""]"
+esci:fluv,Moderate,"[""Imprecision""]"
+esci:miln,Moderate,"[""Imprecision""]"
+esci:mirt,Moderate,"[""Imprecision""]"
+esci:nefa,Low,"[""Imprecision""]"
+esci:paro,Moderate,"[""Imprecision""]"
+esci:rebo,Moderate,"[""Imprecision""]"
+esci:sert,Moderate,"[""Imprecision""]"
+esci:traz,Moderate,"[""Imprecision""]"
+esci:venl,Moderate,"[""Imprecision""]"
+esci:vort,Very Low,"[""Imprecision""]"
+fluo:fluv,Moderate,"[""Imprecision""]"
+fluo:miln,Moderate,"[""Imprecision""]"
+fluo:mirt,Moderate,"[""Imprecision""]"
+fluo:nefa,Low,"[""Imprecision""]"
+fluo:paro,Moderate,"[""Imprecision""]"
+fluo:rebo,Low,"[""Imprecision""]"
+fluo:sert,Low,"[""Imprecision""]"
+fluo:traz,Moderate,"[""Imprecision""]"
+fluo:venl,Low,"[""Imprecision""]"
+fluo:vort,Low,"[""Imprecision""]"
+fluv:miln,Low,"[""Imprecision""]"
+fluv:mirt,Moderate,"[""Imprecision""]"
+fluv:nefa,Very Low,"[""Imprecision""]"
+fluv:paro,Moderate,"[""Imprecision""]"
+fluv:rebo,Low,"[""Imprecision""]"
+fluv:sert,Moderate,"[""Imprecision""]"
+fluv:venl,Very Low,"[""Imprecision""]"
+fluv:vort,Moderate,"[""Imprecision""]"
+miln:mirt,Low,"[""Imprecision""]"
+miln:nefa,Low,"[""Imprecision""]"
+miln:paro,Very Low,"[""Imprecision""]"
+miln:rebo,Very Low,"[""Imprecision""]"
+miln:sert,Low ,"[""Imprecision""]"
+miln:traz,Moderate,"[""Imprecision""]"
+miln:venl,Moderate,"[""Imprecision""]"
+miln:vort,Moderate,"[""Imprecision""]"
+mirt:nefa,Low,"[""Imprecision""]"
+mirt:paro,Low,"[""Imprecision""]"
+mirt:rebo,Moderate,"[""Imprecision""]"
+mirt:sert,Moderate,"[""Imprecision""]"
+mirt:traz,Moderate,"[""Imprecision""]"
+mirt:venl,Moderate,"[""Imprecision""]"
+mirt:vort,Moderate,"[""Imprecision""]"
+nefa:paro,Very Low,"[""Imprecision""]"
+nefa:rebo,Very Low,"[""Imprecision""]"
+nefa:sert,Low,"[""Imprecision""]"
+nefa:traz,Very Low,"[""Imprecision""]"
+nefa:venl,Very Low,"[""Imprecision""]"
+nefa:vort,Low,"[""Imprecision""]"
+paro:rebo,Low,"[""Imprecision""]"
+paro:sert,Moderate,"[""Imprecision""]"
+paro:traz,Moderate,"[""Imprecision""]"
+paro:venl,Moderate,"[""Imprecision""]"
+paro:vort,Low,"[""Imprecision""]"
+rebo:sert,Low,"[""Imprecision""]"
+rebo:traz,Low,"[""Imprecision""]"
+rebo:venl,Low,"[""Imprecision""]"
+rebo:vort,Low,"[""Imprecision""]"
+sert:traz,Moderate,"[""Imprecision""]"
+sert:venl,Moderate,"[""Imprecision""]"
+sert:vort,Low,"[""Imprecision""]"
+traz:venl,Very Low,"[""Imprecision""]"
+traz:vort,Low,"[""Imprecision""]"
+venl:vort,Low,"[""Imprecision""]"

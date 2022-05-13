@@ -7,16 +7,17 @@ from functools import lru_cache
 
 
 @lru_cache(maxsize=None)
-def __ranking_plot(net_data, ranking_data):
+def __ranking_plot(ranking_data, net_data):
     df = pd.read_json(ranking_data, orient='split')
-
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+
     outcomes = ("Outcome 1", "Outcome 2")
     net_storage = pd.read_json(net_data, orient='split')
+
     outcome_direction_data1 = net_storage['outcome1_direction'].iloc[1]
     outcome_direction_1 = False if outcome_direction_data1 == 'beneficial' else True
-    outcome_direction_2 = None
-    # True=harmful
+    outcome_direction_2 = False  # True=harmful
+
     df1 = df.copy(deep=True)
 
     if "pscore2" in df1.columns:

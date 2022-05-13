@@ -437,10 +437,10 @@ def Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):
 ############ - ranking plots  - ###############
 @app.callback([Output('tab-rank1', 'figure'),
                Output('tab-rank2', 'figure')],
-              [Input('net_data_STORAGE', 'data'),
-               Input('ranking_data_STORAGE', 'data')])
-def ranking_plot( net_data, ranking_data):
-    return __ranking_plot(net_data, ranking_data)
+              Input('ranking_data_STORAGE', 'data'),
+              State('net_data_STORAGE', 'data'))
+def ranking_plot(ranking_data, net_data):
+    return __ranking_plot(ranking_data, net_data)
 
 ###############################################################################
 ################### Bootstrap Dropdowns callbacks #############################
@@ -598,84 +598,134 @@ def data_modal(open_modal_data, upload, submit, filename2,
             except:
                 raise ValueError('Data upload failed: likely UnicodeDecodeError or MultipleTypeError, check variable characters and type')
             var_dict = dict()
-
+            var_outcomes = dict()
             if search_value_format == 'iv':
                 if search_value_outcome2 is None:
-                    studlab, treat1, treat2, rob, year, TE, seTE, n1, n2 = dataselectors[3: ] # first dataselector is the effect size
+                    out1_type, out1_direction = dataselectors[0:2]
+                    studlab, treat1, treat2, rob, year, TE, seTE, n1, n2 = dataselectors[2: ] # first dataselector is the effect size
                     var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2',  rob: 'rob', year: 'year',
                                 TE: 'TE', seTE: 'seTE', n1: 'n1', n2:'n2'}
+                    var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction}
                 else:
+                    out1_type, out1_direction, out2_type, out2_direction,  = dataselectors[2:4]
                     studlab, treat1, treat2, rob, year, TE, seTE, n1, n2, TE2, seTE2, n21, n22 = dataselectors[4: ]
                     var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2',  rob: 'rob', year: 'year',
                                 TE: 'TE', seTE: 'seTE', n1: 'n1', n2:'n2',
                                 TE2: 'TE2', seTE2: 'seTE2', n21: 'n2.1', n22:  'n2.2'}
+                    var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction,
+                                    'effect_size2': out2_type, 'outcome2_direction': out2_direction}
+
             elif search_value_format == 'contrast':
                 if search_value_outcome1 == 'continuous':
                     if search_value_outcome2 is None:
-                        studlab, treat1, treat2, rob, year, y1, sd1, y2, sd2, n1, n2 = dataselectors[3: ]  # first dataselector is the effect size
+                        out1_type, out1_direction = dataselectors[0:2]
+                        studlab, treat1, treat2, rob, year, y1, sd1, y2, sd2, n1, n2 = dataselectors[2: ]  # first dataselector is the effect size
                         var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
                                     y1: 'y1', sd1: 'sd1',
                                     y2: 'y2', sd2: 'sd2', n1: 'n1', n2: 'n2'}
+                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction}
+
                     elif search_value_outcome2 == 'continuous':
+                        out1_type, out1_direction, out2_type, out2_direction, = dataselectors[0:4]
                         studlab, treat1, treat2, rob, year, y1, sd1, y2, sd2, n1, n2, y21, sd12, y22, sd22, n21, n22 = dataselectors[4: ]
                         var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
                                     y1: 'y1', sd1: 'sd1', y2: 'y2', sd2: 'sd2', n1: 'n1', n2: 'n2', y21: 'y2.1', sd12: 'sd1.2', y22: 'y2.2', sd22: 'sd2.2',
                                     n21: 'n2.1', n22: 'n2.2'}
+                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction,
+                                        'effect_size2': out2_type, 'outcome2_direction': out2_direction}
                     else:
+                        out1_type, out1_direction, out2_type, out2_direction, = dataselectors[0:4]
                         studlab, treat1, treat2, rob, year, y1, sd1, y2, sd2, n1, n2, z1, z2, n21, n22 = dataselectors[4: ]
                         var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
                                     y1: 'y1', sd1: 'sd1', y2: 'y2', sd2: 'sd2', n1: 'n1', n2: 'n2', z1: 'z1', z2: 'z2',
                                     n21: 'n2.1', n22: 'n2.2'}
+                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction,
+                                        'effect_size2': out2_type, 'outcome2_direction': out2_direction}
 
                 if search_value_outcome1 == 'binary':
                     if search_value_outcome2 is None:
-                        studlab, treat1, treat2, rob, year, r1, n1, r2, n2 = dataselectors[3: ]  # first dataselector is the effect size
+                        out1_type, out1_direction = dataselectors[0:2]
+                        studlab, treat1, treat2, rob, year, r1, n1, r2, n2 = dataselectors[2: ]  # first dataselector is the effect size
                         var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
                                     r1: 'r1', r2: 'r2', n1: 'n1', n2: 'n2'}
+                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction}
+
                     elif search_value_outcome2 == 'continuous':
+                        out1_type, out2_type, out1_direction, out2_direction, = dataselectors[0:4]
                         studlab, treat1, treat2, rob, year, r1, r2, n1, n2, y21, sd12, y22, sd22, n21, n22 = dataselectors[4: ]  # first dataselector is the effect size
                         var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
                                     r1: 'r1', r2: 'r2', n1: 'n1', n2: 'n2',  y21: 'y2.1', sd12: 'sd1.2', y22: 'y2.2', sd22: 'sd2.2', n21: 'n2.1', n22: 'n2.2'}
+                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction,
+                                        'effect_size2': out2_type, 'outcome2_direction': out2_direction}
                     else:
+                        out1_type, out2_type, out1_direction, out2_direction, = dataselectors[0:4]
                         studlab, treat1, treat2, rob, year, r1, r2, n1, n2, z1, z2, n21, n22 = dataselectors[4: ]  # first dataselector is the effect size
                         var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
                                     r1: 'r1', r2: 'r2', n1: 'n1', n2: 'n2',
                                     z1: 'z1', z2: 'z2', n21: 'n2.1', n22: 'n2.2',
                                     }
+                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction,
+                                        'effect_size2': out2_type, 'outcome2_direction': out2_direction}
             else:  #long format
                 if search_value_outcome1 == 'continuous':
                     if search_value_outcome2 is None:
-
+                        out1_type, out1_direction = dataselectors[0:2]
                         studlab, treat, rob, year, y, sd, n = dataselectors[2: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     y: 'y', sd: 'sd', n: 'n'}
+                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction}
+
                     elif search_value_outcome2 == 'continuous':
+                        out1_type, out2_type, out1_direction, out2_direction, = dataselectors[0:4]
                         studlab, treat, rob, year, y, sd, n, y2, sd2, n2 = dataselectors[4: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     y: 'y', sd: 'sd', n: 'n', y2: 'y2', sd2: 'sd2', n2: 'n2'}
+                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction,
+                                        'effect_size2': out2_type, 'outcome2_direction': out2_direction}
                     else:
+                        out1_type, out2_type, out1_direction, out2_direction, = dataselectors[0:4]
                         studlab, treat, rob, year, y, sd, n, z1, nz = dataselectors[4: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     y: 'y', sd: 'sd', n: 'n', z1: 'z1', nz: 'nz'}
+                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction,
+                                        'effect_size2': out2_type, 'outcome2_direction': out2_direction}
                 if search_value_outcome1 == 'binary':
                     if search_value_outcome2 is None:
-
+                        out1_type, out1_direction = dataselectors[0:2]
                         studlab, treat, rob, year, r, n = dataselectors[2: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     r: 'r', n: 'n'}
+                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction}
+
                     elif search_value_outcome2 == 'continuous':
+                        out1_type, out2_type, out1_direction, out2_direction, = dataselectors[0:4]
                         studlab, treat, rob, year, r, n, y2, sd2, n2 = dataselectors[4: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     r: 'r', n: 'n', y2: 'y2', sd2: 'sd2', n2:'n2'}
+                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction,
+                                        'effect_size2': out2_type, 'outcome2_direction': out2_direction}
                     else:
+                        out1_type, out2_type, out1_direction, out2_direction, = dataselectors[0:4]
                         studlab, treat, rob, year, r, n, z1, nz = dataselectors[4: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     r: 'r', n: 'n', z1:'z1', nz: 'nz'}
+                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction,
+                                        'effect_size2': out2_type, 'outcome2_direction': out2_direction}
 
             data_user.rename(columns=var_dict, inplace=True)
+            var_outs = pd.Series(var_outcomes, index=var_outcomes.keys())
+
+            if len(var_outcomes.keys()) == 2:
+                data_user['effect_size1'] = var_outs['effect_size1']
+                data_user['outcome1_direction'] = var_outs['outcome1_direction']
+            if len(var_outcomes.keys()) == 4:
+                data_user['effect_size1'] = var_outs['effect_size1']
+                data_user['outcome1_direction'] = var_outs['outcome1_direction']
+                data_user['effect_size2'] = var_outs['effect_size2']
+                data_user['outcome2_direction'] = var_outs['outcome2_direction']
 
             try:
-                data = adjust_data(data_user, dataselectors, search_value_format ,search_value_outcome1, search_value_outcome2)
+                data = adjust_data(data_user, search_value_format, search_value_outcome1, search_value_outcome2)
                 TEMP_net_data_STORAGE = data.to_json(orient='split')
 
             except:
@@ -902,8 +952,11 @@ def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
                            netsplit_all, netsplit_all2, dataselectors):
     """ produce new league table from R """
     if modal_data_checks_is_open:
+
         data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
+
         try:
+            # TODO: when two outcomes are passed, second is not recognised here
             LEAGUETABLE_OUTS =  generate_league_table(data, outcome2=False) if "TE2" not in data.columns or dataselectors[1] not in ['MD','SMD','OR','RR'] else generate_league_table(data, outcome2=True)
 
             if "TE2" not in data.columns or dataselectors[1] not in ['MD','SMD','OR','RR']:

@@ -105,16 +105,14 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
         slctd_trmnts = [nd['id'] for nd in store_node]
         if len(slctd_trmnts) > 0:
             forest_data = pd.read_json(forest_data, orient='split')
-            forest_data_out2 = pd.read_json(forest_data_out2, orient='split')
             ranking_data = pd.read_json(ranking_data, orient='split')
             net_data = pd.read_json(net_storage, orient='split')
+            forest_data_out2 = pd.read_json(forest_data_out2, orient='split') if 'pscore2' in ranking_data.columns else None
             dataselectors = []
             dataselectors += [forest_data.columns[1], net_data["outcome1_direction"].iloc[1]]
             if 'pscore2' in ranking_data.columns:
                 dataselectors += [forest_data_out2.columns[1], net_data["outcome2_direction"].iloc[1]]
-                if dataselectors[1] not in ('OR','RR','MD','SMD'):  ## check that dataselectors have correct ordering
-                    dataselectors[1], dataselectors[2] = dataselectors[2], dataselectors[1]
-                    dataselectors[3], dataselectors[4] = dataselectors[4], dataselectors[3]
+
             leaguetable = leaguetable.loc[slctd_trmnts, slctd_trmnts]
             robs_slct = robs.loc[slctd_trmnts, slctd_trmnts]
             leaguetable_bool = pd.DataFrame(np.triu(np.ones(leaguetable.shape)).astype(bool),
@@ -133,9 +131,10 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 
                             # leaguetable = pd.DataFrame(np.tril(leaguetable), columns=slctd_trmnts, index=slctd_trmnts)
                         if 'pscore2' in ranking_data.columns:
-                            effcsze2 = round(forest_data_out2[dataselectors[1]][(forest_data_out2.Treatment == treat_r) & (forest_data_out2.Reference == treat_c)].values[0], 2)
+                            effcsze2 = round(forest_data_out2[dataselectors[2]][(forest_data_out2.Treatment == treat_r) & (forest_data_out2.Reference == treat_c)].values[0], 2)
                             ci_lower2 = round(forest_data_out2['CI_lower'][(forest_data_out2.Treatment == treat_r) & (forest_data_out2.Reference == treat_c)].values[0], 2)
                             ci_upper2 = round(forest_data_out2['CI_upper'][(forest_data_out2.Treatment == treat_r) & (forest_data_out2.Reference == treat_c)].values[0], 2)
+
                             if leaguetable_bool.loc[treat_r][treat_c]:
                                 leaguetable.loc[treat_r][treat_c] = f'{effcsze2}\n{ci_lower2, ci_upper2}'
                                 if toggle_cinema: robs_slct.loc[treat_r][treat_c] = comprs_conf_ut['Confidence'][(comprs_conf_ut[0] == treat_c) & (comprs_conf_ut[1] == treat_r) |

@@ -6,7 +6,7 @@ from assets.COLORS import *
 
 def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
                    league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
-                   forest_data, forest_data_out2, reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP,
+                   forest_data, forest_data_out2, reset_btn, ranking_data, net_storage, net_data_STORAGE_TIMESTAMP,
                    data_filename, league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2, filename_cinema2_disabled):
 
 
@@ -107,10 +107,14 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
             forest_data = pd.read_json(forest_data, orient='split')
             forest_data_out2 = pd.read_json(forest_data_out2, orient='split')
             ranking_data = pd.read_json(ranking_data, orient='split')
+            net_data = pd.read_json(net_storage, orient='split')
             dataselectors = []
-            dataselectors += [forest_data.columns[1]]
+            dataselectors += [forest_data.columns[1], net_data["outcome1_direction"].iloc[1]]
             if 'pscore2' in ranking_data.columns:
-                dataselectors += [forest_data_out2.columns[1]]
+                dataselectors += [forest_data_out2.columns[1], net_data["outcome2_direction"].iloc[1]]
+                if dataselectors[1] not in ('OR','RR','MD','SMD'):  ## check that dataselectors have correct ordering
+                    dataselectors[1], dataselectors[2] = dataselectors[2], dataselectors[1]
+                    dataselectors[3], dataselectors[4] = dataselectors[4], dataselectors[3]
             leaguetable = leaguetable.loc[slctd_trmnts, slctd_trmnts]
             robs_slct = robs.loc[slctd_trmnts, slctd_trmnts]
             leaguetable_bool = pd.DataFrame(np.triu(np.ones(leaguetable.shape)).astype(bool),

@@ -351,9 +351,10 @@ def update_layout_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_c
                Input("forest_data_STORAGE", "data"),
                Input("forest_data_out2_STORAGE", "data"),
                Input('reset_project', 'n_clicks'),
-               Input('ranking_data_STORAGE','data')
+               Input('ranking_data_STORAGE','data'),
                 ],
-              [State('net_data_STORAGE', 'modified_timestamp'),
+              [State('net_data_STORAGE', 'data'),
+               State('net_data_STORAGE', 'modified_timestamp'),
                State('datatable-upload', 'filename'),
                State('league_table_data_STORAGE', 'modified_timestamp'),
                State('datatable-secondfile-upload', 'filename'),
@@ -362,11 +363,11 @@ def update_layout_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_c
               prevent_initial_call=True)
 def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
                   league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
-                  forest_data, forest_data_out2, reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP,
+                  forest_data, forest_data_out2, reset_btn, ranking_data, net_storage, net_data_STORAGE_TIMESTAMP,
                   data_filename, league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2, filename_cinema2_disabled):
     return __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
                           league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
-                          forest_data, forest_data_out2, reset_btn, ranking_data, net_data_STORAGE_TIMESTAMP,
+                          forest_data, forest_data_out2, reset_btn, ranking_data, net_storage, net_data_STORAGE_TIMESTAMP,
                           data_filename, league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2, filename_cinema2_disabled)
 
 
@@ -645,7 +646,7 @@ def data_modal(open_modal_data, upload, submit, filename2,
                 if search_value_outcome1 == 'continuous':
                     if search_value_outcome2 is None:
 
-                        studlab, treat, rob, year, y, sd, n = dataselectors[3: ]
+                        studlab, treat, rob, year, y, sd, n = dataselectors[2: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     y: 'y', sd: 'sd', n: 'n'}
                     elif search_value_outcome2 == 'continuous':
@@ -659,7 +660,7 @@ def data_modal(open_modal_data, upload, submit, filename2,
                 if search_value_outcome1 == 'binary':
                     if search_value_outcome2 is None:
 
-                        studlab, treat, rob, year, r, n = dataselectors[3: ]
+                        studlab, treat, rob, year, r, n = dataselectors[2: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     r: 'r', n: 'n'}
                     elif search_value_outcome2 == 'continuous':
@@ -1285,18 +1286,21 @@ def disable_out2_toggle(ranking_data):
 
 
 #### download pdfs ####
+@app.callback(Output("download-demodata", "data"),
+              Input("demodata", "n_clicks"),
+              prevent_initial_call=True)
+def func(n_clicks):
+     return send_file("Documentation/psoriasis class data.csv")
 
 @app.callback(Output("download-tuto", "data"),
               Input("full-tuto-pdf", "n_clicks"),
-              prevent_initial_call=True
-              )
+              prevent_initial_call=True)
 def func(n_clicks):
      return send_file("Documentation/NMAstudio_tutorial.pdf")
 
 @app.callback(Output("download-guide", "data"),
               Input("full-docu-pdf", "n_clicks"),
-              prevent_initial_call=True
-              )
+              prevent_initial_call=True)
 def func(n_clicks):
      return send_file("Documentation/NMAstudio_tutorial.pdf")
 

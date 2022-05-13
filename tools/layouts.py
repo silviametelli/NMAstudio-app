@@ -156,14 +156,14 @@ def home_layout():
 
 
                         ],  colors={ "border": 'grey', "primary": "grey", "background": CLR_BCKGRND,
-                                   })
-                                     #change border to CLR_BCKGRND to remove tabs borders
+                                   }
+                        ) #change border to CLR_BCKGRND to remove tabs borders
                     ]),
 
                 ])
             ]),
          ],
-                           )
+    )
 
 
 ############################################  DOCUMENTATION PAGE  #######################################################
@@ -173,15 +173,21 @@ doc_layout = html.Div(id='docpage-link', children = [Navbar(), html.Br(),  html.
 html.H1("NMAstudio (version 0.1)", style={'font-size':'20px', 'color':'white', 'padding-left':'3%',
                                           'padding-right':'3%', 'font-family':'sans-serif'}),  html.Br(),
 
-dcc.Markdown('Please cite us as: Metelli S, Chaimani A. NMAstudio: a fully interactive web-application for producing and visualising network meta-analyses. *SRSM Annual Meeting 2021, Bern, Switzerland.*',
-             className="markdown_style"),   html.Br(),
-dcc.Markdown("Demonstration data: Sbidian E, Chaimani A, Garcia-Doval I, Doney L, Dressler C, Hua C, et al. Systemic pharmacological treatments for chronic plaque psoriasis: a network meta-analysis. *Cochrane Database Syst Rev*. 2021 Apr 19;4:CD011535. https://www.cochranelibrary.com/cdsr/doi/10.1002/14651858.CD011535.pub4/full ",
-             className="markdown_style"),
-
-html.Br(),
-
 dcc.Markdown('NMAstudio is a web application to produce and visualise interactive outputs from network meta-analyses',
              className="markdown_style"),
+
+dcc.Markdown('Please cite us as: Metelli S, Chaimani A. NMAstudio: a fully interactive web-application for producing and visualising network meta-analyses. *SRSM Annual Meeting 2021, Bern, Switzerland.*',
+             className="markdown_style"),   html.Br(),
+dcc.Markdown("Demonstration: Sbidian E, Chaimani A, Garcia-Doval I, Doney L, Dressler C, Hua C, et al. Systemic pharmacological treatments for chronic plaque psoriasis: a network meta-analysis. *Cochrane Database Syst Rev*. 2021 Apr 19;4:CD011535. https://www.cochranelibrary.com/cdsr/doi/10.1002/14651858.CD011535.pub4/full ",
+             className="markdown_style"),
+
+html.Div([dcc.Markdown("Demonstration data set (class level psoriasis treatments):",
+             className="markdown_style", style={'margin-right':'0px', 'display':'inline-block'}) ,
+    html.Button("Demo Data", id="demodata", style={"color":"green", 'display': 'inline-block', 'border':"0px solid black",
+                                                   'padding': '4px'}),
+                Download(id="download-demodata")]),
+
+
     html.Br(),
     dcc.Markdown('NMAstudio is a Plotly Dash app written in Python, and linked to the  R-package netmeta for performing analysis of the data',
                  className="markdown_style"),
@@ -201,7 +207,7 @@ dcc.Markdown('G. Rücker, U. Krahn, J. König, O. Efthimiou, A. Davies, T. Papak
                                                     'display': 'inline-block',
                                                     'padding': '4px'}),
                                  Download(id="download-tuto"),
-                       html.Button('Download documentation', id='full-docu-pdf',
+                       html.Button('Download User Guide', id='full-docu-pdf',
                                    style={'color':'white', 'margin-left':'10px', 'display':'inline-block','padding':'4px'}),
                                  Download(id="download-guide")
                     ]),
@@ -236,16 +242,14 @@ news_layout = html.Div([
     html.Br(),
         html.Div(
            className="list-features",
-           children=[
-               html.Ul(id='my-list', children=[html.Li(i) for i in list_forthcmg_features])
-                ],
+           children=[html.Ul(id='my-list', children=[html.Li(i) for i in list_forthcmg_features])],
             ),
 
-    html.Br(),    html.Br(),
+    html.Br(),  html.Br(),
 
 
     html.H1("Future features", style={'font-size': '20px', 'color': '#76c0cf', 'padding-left': '3%',
-                                               'padding-right': '3%', 'font-family': 'sans-serif'}),
+                                      'padding-right': '3%', 'font-family': 'sans-serif'}),
     html.Br(),
 
     # html.Div(
@@ -262,7 +266,6 @@ news_layout = html.Div([
     html.Div([dcc.Markdown('',
                  className="markdown_style"),
                         html.Br(),html.Br(),
-
 
                         dcc.Markdown('Do you have any questions or suggestions for features you would like to see implemented in the next update of NMAstudio?'
                             , className="markdown_style"),

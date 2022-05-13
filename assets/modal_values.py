@@ -44,12 +44,12 @@ modal_edges = dbc.Modal([dbc.ModalHeader("Edge color selection"),
                   ],
             id="modal_edge",style={'background-color':'#40515e','margin-left':'-px', 'font-size':'10.5px', 'padding-left':'-2px'})
 
-file_upload_controls=[html.Br(),
-                      dbc.Col([html.P("Note: before uploading your data, read our tutorial for details on variable requirements", className="graph__title2",
+file_upload_controls = [html.Br(),
+                       dbc.Col([html.P("Note: before uploading your data, read our tutorial for details on variable requirements", className="graph__title2",
                                style={'display': 'inline-block', 'margin-left': '5px',
                                       'paddingLeft': '5px','font-size': '11px','vertical-alignment':'middle'})]),
-                      html.Br(),
-                      dbc.Col([html.P("Format*:", className="graph__title2",
+                       html.Br(),
+                       dbc.Col([html.P("Format*:", className="graph__title2",
                                style={'display': 'inline-block', 'margin-left': '5px',
                                       'paddingLeft': '5px','font-size': '11px','vertical-alignment':'middle'}),
                                html.Div(dcc.RadioItems(id='dropdown-format', options=options_format,
@@ -59,7 +59,7 @@ file_upload_controls=[html.Br(),
                                         style={'display': 'inline-block', 'margin-bottom': '0px'})],
                               width="auto", style={'display': 'inline-block'}),
 
-                      dbc.Col([html.P(["1",html.Sup("st"), " outcome*:"], className="graph__title2",
+                       dbc.Col([html.P(["1",html.Sup("st"), " outcome*:"], className="graph__title2",
                                     style={'display': 'inline-block', 'paddingLeft': '10px','font-size': '11px'}),
                            html.Div(dcc.RadioItems(id='dropdown-outcome1', options=options_outcomes,
                                                   style={'width': '80px', 'margin-left': '-20px',
@@ -68,15 +68,15 @@ file_upload_controls=[html.Br(),
                                      style={'display': 'inline-block', 'margin-bottom': '0px'})],
                               width="auto", style={'display': 'inline-block'}),
 
-                      dbc.Col([html.P(["2",html.Sup("nd"), " outcome:"], className="graph__title2",
+                       dbc.Col([html.P(["2",html.Sup("nd"), " outcome:"], className="graph__title2",
                               style={'display': 'inline-block', 'paddingLeft': '10px','font-size': '11px'}),
-                      html.Div(dcc.RadioItems(id='dropdown-outcome2', options=options_outcomes,
+                       html.Div(dcc.RadioItems(id='dropdown-outcome2', options=options_outcomes,
                                             style={'width': '80px', 'margin-left': '-20px',
                                                    'color': 'white', 'font-size': '11px',
                                                    'background-color': CLR_BCKGRND}),
                                style={'display': 'inline-block', 'margin-bottom': '0px'})],
                               width="auto", style={'display': 'inline-block'})
-                      ]
+                       ]
 
 
 modal_data = dbc.Modal([dbc.ModalHeader("Data selection"),

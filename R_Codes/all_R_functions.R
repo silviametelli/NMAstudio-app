@@ -403,11 +403,12 @@ get_pairwise_data_long <- function(dat, outcome2=FALSE){
      names(pairwise_dat)[names(pairwise_dat) == 'n1.x'] <- 'n1'
      names(pairwise_dat)[names(pairwise_dat) == 'n2.x'] <- 'n2'
      names(pairwise_dat)[names(pairwise_dat) == 'effect_size1.x'] <- 'effect_size1'
-     names(pairwise_dat)[names(pairwise_dat) == 'outcome1_direction.x'] <- 'outcome1_direction'
+     names(pairwise_dat)[names(pairwise_dat) == 'effect_size2.x'] <- 'effect_size2'
      names(pairwise_dat)[names(pairwise_dat) == 'TE.y'] <- 'TE2'
      names(pairwise_dat)[names(pairwise_dat) == 'seTE.y'] <- 'seTE2'
      names(pairwise_dat)[names(pairwise_dat) == 'nz1.y'] <- 'n2.1'
      names(pairwise_dat)[names(pairwise_dat) == 'nz2.y'] <- 'n2.2'
+     names(pairwise_dat)[names(pairwise_dat) == 'outcome1_direction.x'] <- 'outcome1_direction'
      names(pairwise_dat)[names(pairwise_dat) == 'outcome2_direction.x'] <- 'outcome2_direction'
      #names(pairwise_dat)[names(pairwise_dat) == 'rob.x'] <- 'rob'
      #names(pairwise_dat)[names(pairwise_dat) == 'year.x'] <- 'year'
@@ -479,8 +480,8 @@ get_pairwise_data_contrast <- function(dat, outcome2=FALSE){
      names(pairwise_dat)[names(pairwise_dat) == 'n2.y'] <- 'n2.2'
      names(pairwise_dat)[names(pairwise_dat) == 'effect_size2.x'] <- 'effect_size2'
      names(pairwise_dat)[names(pairwise_dat) == 'outcome2_direction.x'] <- 'outcome2_direction'
-     names(pairwise_dat)[names(pairwise_dat) == 'rob.x'] <- 'rob'
-     names(pairwise_dat)[names(pairwise_dat) == 'year.x'] <- 'year'
+     pairwise_dat$year <- coalesce(pairwise_dat$year.x, pairwise_dat$year.y)
+     pairwise_dat$rob <- coalesce(pairwise_dat$rob.x, pairwise_dat$rob.y)
 
   }
   return (pairwise_dat)

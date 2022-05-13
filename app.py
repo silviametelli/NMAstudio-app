@@ -956,7 +956,6 @@ def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
         data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
 
         try:
-            # TODO: when two outcomes are passed, second is not recognised here
             LEAGUETABLE_OUTS =  generate_league_table(data, outcome2=False) if "TE2" not in data.columns or dataselectors[1] not in ['MD','SMD','OR','RR'] else generate_league_table(data, outcome2=True)
 
             if "TE2" not in data.columns or dataselectors[1] not in ['MD','SMD','OR','RR']:

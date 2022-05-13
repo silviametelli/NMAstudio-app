@@ -18,6 +18,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     if 'reset_project.n_clicks' in triggered: reset_btn_triggered = True
 
     net_data = pd.read_json(net_data, orient='split').round(3)
+
     years = net_data.year if not reset_btn_triggered else YEARS_DEFAULT
     slider_min, slider_max = years.min(), years.max()
     slider_marks = set_slider_marks(slider_min, slider_max, years)
@@ -202,13 +203,9 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     league_table_styles.append({'if': {'column_id': 'Treatment'}, 'backgroundColor': CX1})
 
 
-
     # Prepare for output
-    print(comprs_downgrade)
-
     tips = robs
     leaguetable = leaguetable.reset_index().rename(columns={'index': 'Treatment'})
-
     leaguetable_cols = [{"name": c, "id": c} for c in leaguetable.columns]
     leaguetable = leaguetable.to_dict('records')
 
@@ -220,7 +217,6 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
         tooltip_values = [{col['id']: {'value': f"**Reason for Downgrading:**{tip[col['id']]}" if not comprs_downgrade.empty else f"**Reason for Downgrading:**",
                                        'type': 'markdown'} if col['id'] != 'Treatment' else None
                        for col in leaguetable_cols} for rn, (_, tip) in enumerate(comprs_downgrade.iterrows())]
-
 
 
     if store_edge or store_node:

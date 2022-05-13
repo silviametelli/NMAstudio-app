@@ -2,7 +2,7 @@ import numpy as np, pandas as pd
 import plotly.express as px, plotly.graph_objects as go
 from pandas.api.types import is_numeric_dtype
 
-def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2):
+def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2, net_storage):
     _HEIGHT_ROMB = 0.3
     slctd_comps = []
     if edge:
@@ -10,9 +10,11 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
         slctd_comps += [f'{src} vs {trgt}']
         df = pd.read_json(forest_data_prws_out_2, orient='split') if outcome else pd.read_json(forest_data_prws, orient='split')
         df = df.reset_index(drop=True)
+        net_data = pd.read_json(net_storage, orient='split')
+        outcome_direction_data = net_data['outcome1_direction'].iloc[1] if not outcome else net_data['outcome2_direction'].iloc[1]
+        outcome_direction = False if outcome_direction_data == 'beneficial' else True
         df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
         df = df[df.Comparison.isin(slctd_comps)]
-
         if is_numeric_dtype(df['studlab']): df['studlab'] = df['studlab'].astype('str')
         df['studlab'] += ' ' * 10
         effect_size = df.columns[0]
@@ -47,6 +49,7 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
         LEN_FOREST_ANNOT = 0
         center = width = 0
         effect_size = ''
+        outcome_direction = False
         df = pd.DataFrame([[0] * 11],
                           columns=[effect_size, "TE_diamond", "id", "studlab", "treat1", "treat2", "CI_lower",
                                    "CI_upper", "CI_lower_diamond", "CI_upper_diamond", "WEIGHT"])
@@ -128,13 +131,13 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
                                            dict(x=np.floor(
                                                np.log10(min(low_rng, 0.1))) / 2 if xlog else df.CI_lower.min() / 2,
                                                 y=-0.22, xref='x', yref='paper', xanchor='auto',
-                                                text=f'Favours {df.treat1.iloc[0]}',
+                                                text=f'Favours {df.treat1.iloc[0]}' if outcome_direction else f'Favours {df.treat2.iloc[0]}',
                                                 showarrow=False),
                                            dict(x=np.floor(
                                                np.log10(max([up_rng, 10]))) / 2 if xlog else df.CI_upper.max() / 2,
                                                 y=-0.22,
                                                 xref='x', yref='paper', xanchor='auto',
-                                                text=f'Favours {df.treat2.iloc[0]}',
+                                                text=f'Favours {df.treat2.iloc[0]}' if outcome_direction else f'Favours {df.treat1.iloc[0]}',
                                                 showarrow=False),
                                            dict(x=0, y=1, xanchor='left',
                                                 xref='paper', yref='paper',

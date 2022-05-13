@@ -7,6 +7,7 @@ import dash_core_components as dcc
 
 options_effect_size_cont = [{'label':'MD', 'value':'MD'},  {'label':'SMD', 'value':'SMD'}]
 options_effect_size_bin  = [{'label':'OR',  'value':'OR'}, {'label':'RR',  'value':'RR'}]
+options_outcome_direction =[{'label':'beneficial',  'value':'beneficial'}, {'label':'harmful',  'value':'harmful'}]
 
 def __update_options(search_value_format, search_value_outcome1, search_value_outcome2, contents, filename):
 
@@ -15,7 +16,7 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
 
     data_user = parse_contents(contents, filename)
 
-    name_outcomes = ['1st outcome*', '2nd outcome'] if search_value_outcome2 is not None else ['1st outcome']
+    name_outcomes = ['1st outcome*', '2nd outcome'] if search_value_outcome2 is not None else ['1st outcome*']
     search_values = [search_value_outcome1, search_value_outcome2] if search_value_outcome2 is not None else [search_value_outcome1]
     options_var = [{'label': '{}'.format(col, col), 'value': col} for col in data_user.columns]
 
@@ -88,6 +89,27 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
         )],
      ),
 
+        html.Div(
+            [dbc.Row([html.P("Outcome direction", style={'color': 'white', 'vertical-align': 'middle'})])] +
+            [dbc.Row([dbc.Col(dbc.Row(
+                [html.P(f"{name}", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
+                                                                 'margin-left': '0px', 'font-size': '12px',
+                                                                 'color': '#b2e1ec'}),
+                 dcc.Dropdown(id={'type': 'dataselectors', 'index': f'dropdown-outcome-{name_outcomes}'},
+                              options=options_outcome_direction,
+                              searchable=True, placeholder="...",
+                              clearable=False, style={'width': '60px', "height": '30px',
+                                                      'vertical-align': 'middle',
+                                                      "font-family": "sans-serif",
+                                                      'margin-bottom': '2px',
+                                                      'display': 'inline-block',
+                                                      'color': CLR_BCKGRND_old,
+                                                      'font-size': '10px',
+                                                      'background-color': CLR_BCKGRND_old})]
+            ), style={'margin-left': '55px', 'margin-right': '5px'}) for name, val in zip(name_outcomes, search_values)]
+            )],
+        ),
+
     html.Div([html.Div(
 
     ),
@@ -101,11 +123,11 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
                               clearable=False, style={'width': '80px',  # 'height': '30px',
                                                       "height": '30px',
                                                       'vertical-align': 'middle',
-                                                      "font-size": "1em",
                                                       "font-family": "sans-serif",
                                                       'margin-bottom': '2px',
                                                       'display': 'inline-block',
-                                                      'color': CLR_BCKGRND_old, 'font-size': '10px',
+                                                      'color': CLR_BCKGRND_old,
+                                                      'font-size': '10px',
                                                       'background-color': CLR_BCKGRND_old})]),
                 style={'margin-bottom': '0px'})
                 for var_name, name in zip(var_names, col_var)],

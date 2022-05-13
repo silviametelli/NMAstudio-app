@@ -2,11 +2,16 @@ import numpy as np, pandas as pd
 import plotly.express as px, plotly.graph_objects as go
 
 
-def __TapNodeData_fig(data, outcome_direction, outcome, forest_data, forest_data_out2):
+def __TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage):
+
+
     if data:
         treatment = data[0]['label']
         forest_data = pd.read_json(forest_data_out2, orient='split') if outcome else pd.read_json(forest_data, orient='split')
         df = forest_data[forest_data.Reference == treatment]
+        net_data = pd.read_json(net_storage, orient='split')
+        outcome_direction_data = net_data['outcome1_direction'].iloc[1] if not outcome else net_data['outcome2_direction'].iloc[1]
+        outcome_direction = False if outcome_direction_data == 'beneficial' else True
         effect_size = df.columns[1]
         tau2 = round(df['tau2'].iloc[1], 2)
         df['Treatment'] += ' ' * 23
@@ -19,6 +24,7 @@ def __TapNodeData_fig(data, outcome_direction, outcome, forest_data, forest_data
         df = df.sort_values(by=effect_size, ascending=False)
     else:
         effect_size = ''
+        outcome_direction = False
         df = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
                                               'CI_width', 'CI_width_hf'])
 

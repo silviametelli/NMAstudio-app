@@ -389,22 +389,26 @@ def update_boxplot(value, edges, net_data):
               [Input('cytoscape', 'selectedEdgeData'),
                Input("toggle_forest_pair_outcome", "value"),
                Input('forest_data_prws_STORAGE', 'data'),
-               Input('forest_data_prws_out2_STORAGE', 'data')])
+               Input('forest_data_prws_out2_STORAGE', 'data')],
+              State("net_data_STORAGE", "data")
+              )
 
-def  update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2):
-    return __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2)
+def  update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2, net_storage):
+    return __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2, net_storage)
 
 
 ### ----- display forest plot on node click ------ ###
 @app.callback(Output('tapNodeData-fig', 'figure'),
               [Input('cytoscape', 'selectedNodeData'),
-               Input("toggle_forest_direction", "value"),
                Input("toggle_forest_outcome", "value"),
                Input("forest_data_STORAGE", "data"),
-               Input("forest_data_out2_STORAGE", "data")
-               ])
-def TapNodeData_fig(data, outcome_direction, outcome, forest_data, forest_data_out2):
-    return __TapNodeData_fig(data, outcome_direction, outcome, forest_data, forest_data_out2)
+               Input("forest_data_out2_STORAGE", "data"),
+               #Input("toggle_forest_direction", "value")
+               ],
+              State("net_data_STORAGE", "data")
+              )
+def TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage):
+    return __TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage)
 
 
 ### ----- display dibim forest plot on node click ------ ###
@@ -423,7 +427,7 @@ def TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
               [Input('cytoscape', 'selectedNodeData'),
                Input("toggle_funnel_direction", "value"),
                Input("funnel_data_STORAGE", "data"),
-               Input("funnel_data_out2_STORAGE", "data")],
+               Input("funnel_data_out2_STORAGE", "data")]
                )
 def Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):
     return __Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2)
@@ -432,18 +436,10 @@ def Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):
 ############ - ranking plots  - ###############
 @app.callback([Output('tab-rank1', 'figure'),
                Output('tab-rank2', 'figure')],
-              [Input('toggle_rank_direction', 'value'),
-               Input('toggle_rank2_direction', 'value'),
-               Input('toggle_rank2_direction_outcome1', 'value'),
-               Input('toggle_rank2_direction_outcome2', 'value'),
-               Input('net_data_STORAGE', 'data'),
+              [Input('net_data_STORAGE', 'data'),
                Input('ranking_data_STORAGE', 'data')])
-def ranking_plot(outcome_direction_1, outcome_direction_2,
-                 outcome_direction_11, outcome_direction_22,
-                 net_data, ranking_data):
-    return __ranking_plot(outcome_direction_1, outcome_direction_2,
-                          outcome_direction_11, outcome_direction_22,
-                          net_data, ranking_data)
+def ranking_plot( net_data, ranking_data):
+    return __ranking_plot(net_data, ranking_data)
 
 ###############################################################################
 ################### Bootstrap Dropdowns callbacks #############################
@@ -566,9 +562,9 @@ def toggle_modal_edge(open_t, close):
                Input("submit_modal_data", "n_clicks_timestamp"),
                Input('uploaded_datafile_to_disable_cinema','data') #uploaded_datafile_to_disable_cinema
                ],
-              [State("dropdown-format","value"),
-               State("dropdown-outcome1","value"),
-               State("dropdown-outcome2","value"),
+              [State("dropdown-format", "value"),
+               State("dropdown-outcome1", "value"),
+               State("dropdown-outcome2", "value"),
                State("modal_data", "is_open"),
                State("modal_data_checks", "is_open"),
                State('datatable-upload', 'contents'),
@@ -604,43 +600,43 @@ def data_modal(open_modal_data, upload, submit, filename2,
 
             if search_value_format == 'iv':
                 if search_value_outcome2 is None:
-                    studlab, treat1, treat2, rob, year, TE, seTE, n1, n2 = dataselectors[1: ] # first dataselector is the effect size
+                    studlab, treat1, treat2, rob, year, TE, seTE, n1, n2 = dataselectors[3: ] # first dataselector is the effect size
                     var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2',  rob: 'rob', year: 'year',
                                 TE: 'TE', seTE: 'seTE', n1: 'n1', n2:'n2'}
                 else:
-                    studlab, treat1, treat2, rob, year, TE, seTE, n1, n2, TE2, seTE2, n21, n22 = dataselectors[2: ]
+                    studlab, treat1, treat2, rob, year, TE, seTE, n1, n2, TE2, seTE2, n21, n22 = dataselectors[4: ]
                     var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2',  rob: 'rob', year: 'year',
                                 TE: 'TE', seTE: 'seTE', n1: 'n1', n2:'n2',
                                 TE2: 'TE2', seTE2: 'seTE2', n21: 'n2.1', n22:  'n2.2'}
             elif search_value_format == 'contrast':
                 if search_value_outcome1 == 'continuous':
                     if search_value_outcome2 is None:
-                        studlab, treat1, treat2, rob, year, y1, sd1, y2, sd2, n1, n2 = dataselectors[1: ]  # first dataselector is the effect size
+                        studlab, treat1, treat2, rob, year, y1, sd1, y2, sd2, n1, n2 = dataselectors[3: ]  # first dataselector is the effect size
                         var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
                                     y1: 'y1', sd1: 'sd1',
                                     y2: 'y2', sd2: 'sd2', n1: 'n1', n2: 'n2'}
                     elif search_value_outcome2 == 'continuous':
-                        studlab, treat1, treat2, rob, year, y1, sd1, y2, sd2, n1, n2, y21, sd12, y22, sd22, n21, n22 = dataselectors[2: ]
+                        studlab, treat1, treat2, rob, year, y1, sd1, y2, sd2, n1, n2, y21, sd12, y22, sd22, n21, n22 = dataselectors[4: ]
                         var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
                                     y1: 'y1', sd1: 'sd1', y2: 'y2', sd2: 'sd2', n1: 'n1', n2: 'n2', y21: 'y2.1', sd12: 'sd1.2', y22: 'y2.2', sd22: 'sd2.2',
                                     n21: 'n2.1', n22: 'n2.2'}
                     else:
-                        studlab, treat1, treat2, rob, year, y1, sd1, y2, sd2, n1, n2, z1, z2, n21, n22 = dataselectors[2: ]
+                        studlab, treat1, treat2, rob, year, y1, sd1, y2, sd2, n1, n2, z1, z2, n21, n22 = dataselectors[4: ]
                         var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
                                     y1: 'y1', sd1: 'sd1', y2: 'y2', sd2: 'sd2', n1: 'n1', n2: 'n2', z1: 'z1', z2: 'z2',
                                     n21: 'n2.1', n22: 'n2.2'}
 
                 if search_value_outcome1 == 'binary':
                     if search_value_outcome2 is None:
-                        studlab, treat1, treat2, rob, year, r1, n1, r2, n2 = dataselectors[1: ]  # first dataselector is the effect size
+                        studlab, treat1, treat2, rob, year, r1, n1, r2, n2 = dataselectors[3: ]  # first dataselector is the effect size
                         var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
                                     r1: 'r1', r2: 'r2', n1: 'n1', n2: 'n2'}
                     elif search_value_outcome2 == 'continuous':
-                        studlab, treat1, treat2, rob, year, r1, r2, n1, n2, y21, sd12, y22, sd22, n21, n22 = dataselectors[2: ]  # first dataselector is the effect size
+                        studlab, treat1, treat2, rob, year, r1, r2, n1, n2, y21, sd12, y22, sd22, n21, n22 = dataselectors[4: ]  # first dataselector is the effect size
                         var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
                                     r1: 'r1', r2: 'r2', n1: 'n1', n2: 'n2',  y21: 'y2.1', sd12: 'sd1.2', y22: 'y2.2', sd22: 'sd2.2', n21: 'n2.1', n22: 'n2.2'}
                     else:
-                        studlab, treat1, treat2, rob, year, r1, r2, n1, n2, z1, z2, n21, n22 = dataselectors[2: ]  # first dataselector is the effect size
+                        studlab, treat1, treat2, rob, year, r1, r2, n1, n2, z1, z2, n21, n22 = dataselectors[4: ]  # first dataselector is the effect size
                         var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
                                     r1: 'r1', r2: 'r2', n1: 'n1', n2: 'n2',
                                     z1: 'z1', z2: 'z2', n21: 'n2.1', n22: 'n2.2',
@@ -649,29 +645,29 @@ def data_modal(open_modal_data, upload, submit, filename2,
                 if search_value_outcome1 == 'continuous':
                     if search_value_outcome2 is None:
 
-                        studlab, treat, rob, year, y, sd, n = dataselectors[1: ]
+                        studlab, treat, rob, year, y, sd, n = dataselectors[3: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     y: 'y', sd: 'sd', n: 'n'}
                     elif search_value_outcome2 == 'continuous':
-                        studlab, treat, rob, year, y, sd, n, y2, sd2, n2 = dataselectors[2: ]
+                        studlab, treat, rob, year, y, sd, n, y2, sd2, n2 = dataselectors[4: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     y: 'y', sd: 'sd', n: 'n', y2: 'y2', sd2: 'sd2', n2: 'n2'}
                     else:
-                        studlab, treat, rob, year, y, sd, n, z1, nz = dataselectors[2: ]
+                        studlab, treat, rob, year, y, sd, n, z1, nz = dataselectors[4: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     y: 'y', sd: 'sd', n: 'n', z1: 'z1', nz: 'nz'}
                 if search_value_outcome1 == 'binary':
                     if search_value_outcome2 is None:
 
-                        studlab, treat, rob, year, r, n = dataselectors[1: ]
+                        studlab, treat, rob, year, r, n = dataselectors[3: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     r: 'r', n: 'n'}
                     elif search_value_outcome2 == 'continuous':
-                        studlab, treat, rob, year, r, n, y2, sd2, n2 = dataselectors[2: ]
+                        studlab, treat, rob, year, r, n, y2, sd2, n2 = dataselectors[4: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     r: 'r', n: 'n', y2: 'y2', sd2: 'sd2', n2:'n2'}
                     else:
-                        studlab, treat, rob, year, r, n, z1, nz = dataselectors[2: ]
+                        studlab, treat, rob, year, r, n, z1, nz = dataselectors[4: ]
                         var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
                                     r: 'r', n: 'n', z1:'z1', nz: 'nz'}
 
@@ -712,7 +708,8 @@ OUTPUTS_STORAGE_IDS = list(DEFAULT_DATA.keys())[:-2]
                Input('reset_project','n_clicks')
                ],
               [State('TEMP_'+id, 'data') for id in OUTPUTS_STORAGE_IDS],
-              prevent_initial_call=True)
+              prevent_initial_call=True
+              )
 def modal_SUBMIT_button(submit,  reset_btn,
                         TEMP_net_data_STORAGE,
                         TEMP_net_data_out2_STORAGE,
@@ -747,6 +744,7 @@ def modal_SUBMIT_button(submit,  reset_btn,
 
         return OUT_DATA
     else:  # Must be triggered by reset_project.n_clicks
+
         return [data.to_json(orient='split')
                 if label not in ['user_elements_STORAGE', 'user_elements_out2_STORAGE']
                 else data
@@ -1185,15 +1183,15 @@ def generate_xlsx(n_clicks, leaguedata):
 #############################################################################
 
 ### -------------- toggle switch forest beneficial/harm ---------------- ###
-@app.callback([Output("forestswitchlabel1", "style"),
-               Output("forestswitchlabel2", "style")],
-              [Input("toggle_forest_direction", "value")])
-def color_forest_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
-              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
-              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', }
-    return style1, style2
+# @app.callback([Output("forestswitchlabel1", "style"),
+#                Output("forestswitchlabel2", "style")],
+#               [Input("toggle_forest_direction", "value")])
+# def color_forest_toggle(toggle_value):
+#     style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+#               'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px'}
+#     style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+#               'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', }
+#     return style1, style2
 
 ### -------------- toggle switch forest outcome1/outcome2 ---------------- ###
 @app.callback([Output("forestswitchlabel_outcome1", "style"),
@@ -1217,48 +1215,6 @@ def color_funnel_toggle(toggle_value):
               'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
     return style1, style2
 
-### -------------- toggle switch rank  ---------------- ###
-### heatmap
-@app.callback([Output("rankswitchlabel1", "style"),
-               Output("rankswitchlabel2", "style")],
-              [Input("toggle_rank_direction", "value")])
-def color_rank1_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
-              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
-              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
-    return style1, style2
-
-@app.callback([Output("rank2switchlabel1", "style"),
-               Output("rank2switchlabel2", "style")],
-              [Input("toggle_rank2_direction", "value")])
-def color_rank2_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
-              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
-              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
-    return style1, style2
-
-#### scatter plot
-@app.callback([Output("rank2switchlabel11", "style"),
-               Output("rank2switchlabel22", "style")],
-              [Input("toggle_rank2_direction_outcome1", "value")])
-def color_rank1_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
-              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
-              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
-    return style1, style2
-
-@app.callback([Output("rankswitchlabel11", "style"),
-               Output("rankswitchlabel22", "style")],
-              [Input("toggle_rank2_direction_outcome2", "value")])
-def color_rank2_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
-              'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
-              'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
-    return style1, style2
 
 ### -------------- toggle switch league table ---------------- ###
 @app.callback([Output("cinemaswitchlabel1", "style"),
@@ -1315,9 +1271,6 @@ def disable_cinema_toggle(filename_cinema1, filename_data):
 @app.callback([Output('toggle_funnel_direction', 'disabled'),
               Output('toggle_forest_outcome', 'disabled'),
               Output('toggle_forest_pair_outcome', 'disabled'),
-              Output('toggle_rank2_direction', 'disabled'),
-              Output('toggle_rank2_direction_outcome1', 'disabled'),
-              Output('toggle_rank2_direction_outcome2', 'disabled'),
               Output('toggle_consistency_direction', 'disabled'),
               Output('datatable-secondfile-upload-2','disabled')
                ],
@@ -1327,9 +1280,8 @@ def disable_out2_toggle(ranking_data):
     df_ranking = pd.read_json(ranking_data, orient='split')
     df_ranking = df_ranking.loc[:, ~df_ranking.columns.str.contains('^Unnamed')]  # Remove unnamed columns
     if "pscore2" not in df_ranking.columns:
-        return True, True, True, True, True, True, True, True
-    else: return False, False, False, False, False, False, False, False
-
+        return True, True, True, True, True
+    else: return False, False, False, False, False
 
 
 #### download pdfs ####

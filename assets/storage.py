@@ -6,7 +6,7 @@ from tools.PATHS import SESSION_TYPE
 from collections import OrderedDict
 
 
-NET_DATA = pd.read_csv('db/psoriasis_wide_with_class.csv', encoding='unicode-escape')
+NET_DATA = pd.read_csv('db/psoriasis_wide_complete.csv', encoding='iso-8859-1')
 NET_DATA2 = NET_DATA.drop(["TE", "seTE", "n1", "n2"], axis=1)
 NET_DATA2 = NET_DATA2.rename(columns={"TE2": "TE", "seTE2": "seTE", "n2.1": "n1", "n2.2": "n2"})
 DEFAULT_ELEMENTS = USER_ELEMENTS = get_network(df=NET_DATA)
@@ -50,7 +50,6 @@ DEFAULT_DATA = OrderedDict(net_data_STORAGE=NET_DATA,
 
 OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col} for col in NET_DATA.select_dtypes(['number']).columns]
 N_CLASSES = USER_ELEMENTS[-1]["data"]['n_class'] if "n_class" in USER_ELEMENTS[-1]["data"] else 1
-filename = None
 
 STORAGE = [dcc.Store(id=label, data=(data.to_json(orient='split')
                                      if label not in ['user_elements_STORAGE', 'user_elements_out2_STORAGE', 'filename_data_STORAGE']

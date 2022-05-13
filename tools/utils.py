@@ -176,12 +176,12 @@ def parse_contents(contents, filename):
 
 def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome2):
 
-    #if data['rob'].dtype == object or any(data.rob.str.isalpha()) or data.rob.str.lower().str.contains('mel').any():
     data['rob'] = data['rob'].astype("string")
     data['rob'] = (data['rob'].str.lower()
                       .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
                       .replace({'l': 1, 'm': 2, 'h': 3}))
     data['effect_size1'] = dataselectors[0]
+    data['outcome1_direction'] = dataselectors[1]
 
     if value_format=='long':
         try:
@@ -192,12 +192,12 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
             pass
         if value_outcome2:
             data['effect_size2'] = dataselectors[1]
-
+            data['outcome1_direction'] = dataselectors[2]
+            data['outcome2_direction'] = dataselectors[3]
             data = apply_r_func_two_outcomes(func=run_pairwise_data_long_r, df=data)
         else:
             data = apply_r_func(func=run_pairwise_data_long_r, df=data)
         data[data=='__NONE__'] = np.nan
-
 
     if value_format=='contrast':
         for c in data.columns:
@@ -208,6 +208,8 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
         #data['TE'], data['seTE'] = get_effect_size1(data, effect=1)
         if value_outcome2:
             data['effect_size2'] = dataselectors[1]
+            data['outcome1_direction'] = dataselectors[2]
+            data['outcome2_direction'] = dataselectors[3]
             data = apply_r_func_two_outcomes(func=run_pairwise_data_contrast_r, df=data)
             #get_effect_size2 = effect_sizes[value_outcome2][dataselectors[1]]
             #data['TE2'], data['seTE2'] = get_effect_size2(data, effect=2)
@@ -215,10 +217,13 @@ def adjust_data(data, dataselectors, value_format, value_outcome1, value_outcome
             data = apply_r_func(func=run_pairwise_data_contrast_r, df=data)
         data[data=='__NONE__'] = np.nan
 
-
     if value_format == 'iv':
         data['effect_size1'] = dataselectors[0]
-        if value_outcome2: data['effect_size2'] = dataselectors[1]
+        data['outcome1_direction'] = dataselectors[1]
+        if value_outcome2:
+            data['effect_size2'] = dataselectors[1]
+            data['outcome1_direction'] = dataselectors[2]
+            data['outcome2_direction'] = dataselectors[3]
         data = data
 
     return data

@@ -7,18 +7,21 @@ from functools import lru_cache
 
 
 @lru_cache(maxsize=None)
-def __ranking_plot(outcome_direction_1, outcome_direction_2,
-                   outcome_direction_11, outcome_direction_22,
-                   net_data, ranking_data):
+def __ranking_plot(net_data, ranking_data):
     df = pd.read_json(ranking_data, orient='split')
 
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
     outcomes = ("Outcome 1", "Outcome 2")
-
+    net_storage = pd.read_json(net_data, orient='split')
+    outcome_direction_data1 = net_storage['outcome1_direction'].iloc[1]
+    outcome_direction_1 = False if outcome_direction_data1 == 'beneficial' else True
+    outcome_direction_2 = None
     # True=harmful
     df1 = df.copy(deep=True)
 
     if "pscore2" in df1.columns:
+        outcome_direction_data2 = net_storage['outcome2_direction'].iloc[1]
+        outcome_direction_2 = False if outcome_direction_data2 == 'beneficial' else True
 
         if outcome_direction_1: df1.pscore1 = 1 - df1.pscore1.values
         if outcome_direction_2: df1.pscore2 = 1 - df1.pscore2.values
@@ -44,7 +47,7 @@ def __ranking_plot(outcome_direction_1, outcome_direction_2,
     fig = __ranking_heatmap(treatments, pscores, outcomes, z_text)
 
     ######################### scatter plot #########################
-    fig2 = __ranking_scatter(df, net_data, outcome_direction_11, outcome_direction_22)
+    fig2 = __ranking_scatter(df, net_data, outcome_direction_1, outcome_direction_2)
 
     return fig, fig2
 
@@ -74,14 +77,13 @@ def __ranking_heatmap(treatments, pscores, outcomes, z_text):
     return fig
 
 
-
-def __ranking_scatter(df, net_data, outcome_direction_11, outcome_direction_22):
+def __ranking_scatter(df, net_data, outcome_direction_1, outcome_direction_2):
     net_data = pd.read_json(net_data, orient='split')
 
     if 'pscore2' in df.columns:
         df = df.dropna()
-        if outcome_direction_11: df.pscore1 = 1 - df.pscore1
-        if outcome_direction_22: df.pscore2 = 1 - df.pscore2
+        if outcome_direction_1: df.pscore1 = 1 - df.pscore1
+        if outcome_direction_2: df.pscore2 = 1 - df.pscore2
 
         kmeans = KMeans(n_clusters=int(round(len(df.treatment) / float(5.0), 0)),
                         init='k-means++', max_iter=300, n_init=10, random_state=0)

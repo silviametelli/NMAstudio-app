@@ -44,34 +44,6 @@ tab_forests = dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persisten
                                                        'display': 'flex', 'margin-left': '70%',
                                                        'font-size': '0.8em', 'margin-top': '-2.5%'},
                                              ),
-                                             dbc.Col([
-                                                 html.P(
-                                                 "Beneficial",
-                                                 id='forestswitchlabel1',
-                                                 style={'display': 'inline-block',
-                                                        'margin': 'auto',
-                                                        'font-size': '10px',
-                                                        'padding-left': '-1px'}),
-                                                 daq.ToggleSwitch(
-                                                     id='toggle_forest_direction',
-                                                     color='', size=30, vertical=False,
-                                                     label={'label': "",
-                                                            'style': dict(color='white', font='0.5em')},
-                                                     labelPosition="top",
-                                                     style={'display': 'inline-block',
-                                                            'margin': 'auto', 'font-size': '10px',
-                                                            'padding-left': '2px',
-                                                            'padding-right': '2px'}),
-                                                 html.P('Harmful',
-                                                        id='forestswitchlabel2',
-                                                        style={'display': 'inline-block',
-                                                               'margin': 'auto',
-                                                               'font-size': '10px',
-                                                               'padding-right': '0px'})
-                                             ], style={'flex-grow': '1', 'justify-content': 'flex-end',
-                                                       'display': 'flex', 'margin-left': '70%',
-                                                       'font-size': '0.8em', 'margin-top': '0.5%'},
-                                             ),
                                      dcc.Loading(
                                              dcc.Graph(
                                                 id='tapNodeData-fig',

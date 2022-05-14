@@ -34,5 +34,5 @@ python app.py
 Open a browser at http://127.0.0.1:8050
 
 
-<!-- ![demo.gif](assets/logo_universite_paris.jpg) -->
+ ![demo.gif](assets/favicon.ico) 
 

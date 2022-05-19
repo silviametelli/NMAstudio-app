@@ -46,18 +46,9 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     robs = (net_data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
             .pivot_table(index='treat2', columns='treat1', values='rob')
             .reindex(index=treatments, columns=treatments, fill_value=np.nan))
-    robs_slct = robs
+    robs = robs.fillna(robs.T)
+    robs_slct = robs #robs + robs.T - np.diag(np.diag(robs))  if not toggle_cinema else robs ## full rob table
 
-    # df_ranking = pd.read_json(ranking_data, orient='split')
-    # if filename_cinema1 is not None:
-    #     cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
-    #     cinema_net_data1 =  cinema_net_data1.loc[:, ~cinema_net_data1.columns.str.contains('^Unnamed')]  # Remove unnamed columns
-    #     if "pscore2" not in df_ranking.columns:
-    #         cinema_net_data2 = None
-    #     else:
-    #         if filename_cinema2 is not None:
-    #             cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
-    #             cinema_net_data2 =  cinema_net_data2.loc[:, ~cinema_net_data2.columns.str.contains('^Unnamed')]  # Remove unnamed columns
 
     comprs_downgrade  = pd.DataFrame()
     comprs_conf_lt = comprs_conf_ut = None
@@ -138,11 +129,16 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
                             if leaguetable_bool.loc[treat_r][treat_c]:
                                 leaguetable.loc[treat_r][treat_c] = f'{effcsze2}\n{ci_lower2, ci_upper2}'
                                 if toggle_cinema: robs_slct.loc[treat_r][treat_c] = comprs_conf_ut['Confidence'][(comprs_conf_ut[0] == treat_c) & (comprs_conf_ut[1] == treat_r) |
-                                                                                               (comprs_conf_ut[0] == treat_r) & (comprs_conf_ut[1] == treat_c)].values[0]
+                                                                                    (comprs_conf_ut[0] == treat_r) & (comprs_conf_ut[1] == treat_c)].values[0]
+                                else:
+                                    robs_slct.loc[treat_r][treat_c] = robs_slct[treat_r][treat_c] if not np.isnan(robs_slct[treat_r][treat_c]) else robs_slct[treat_c][treat_r]
 
                             else:
                                 if toggle_cinema: robs_slct.loc[treat_r][treat_c] = comprs_conf_lt['Confidence'][(comprs_conf_lt[0] == treat_c) & (comprs_conf_lt[1] == treat_r) |
-                                                                                               (comprs_conf_lt[0] == treat_r) & (comprs_conf_lt[1] == treat_c)].values[0]
+                                                                                    (comprs_conf_lt[0] == treat_r) & (comprs_conf_lt[1] == treat_c)].values[0]
+                                else:
+                                    robs_slct.loc[treat_r][treat_c] = robs_slct[treat_r][treat_c] if not np.isnan(robs_slct[treat_r][treat_c]) else robs_slct[treat_c][treat_r]
+
 
             leaguetable.replace(0, np.nan) #inplace
 
@@ -151,7 +147,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
                                       index=leaguetable.columns)
             tril_order = tril_order.loc[slctd_trmnts, slctd_trmnts]
             filter = np.tril(tril_order == 0)
-            filter += filter.T  # inverting of rows and columns common in meta-analysis visualization
+            filter += filter.T  # inverting of rows and columns common in meta-analysis visualissation
 
             robs = robs.loc[slctd_trmnts, slctd_trmnts]
             robs_values = robs.values

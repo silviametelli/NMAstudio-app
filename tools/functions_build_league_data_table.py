@@ -39,52 +39,52 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 
         return _output + _out_slider + [data_and_league_table_DATA]
 
-
+    ranking_data = pd.read_json(ranking_data, orient='split')
     leaguetable = pd.read_json(league_table_data, orient='split')
     confidence_map = {k: n for n, k in enumerate(['low', 'medium', 'high'])}
     treatments = np.unique(net_data[['treat1', 'treat2']].dropna().values.flatten())
     robs = (net_data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
             .pivot_table(index='treat2', columns='treat1', values='rob')
             .reindex(index=treatments, columns=treatments, fill_value=np.nan))
-    robs = robs.fillna(robs.T) #if 'pscore2' in ranking_data.columns else robs
+    robs = robs.fillna(robs.T) if not toggle_cinema else robs
     robs_slct = robs #robs + robs.T - np.diag(np.diag(robs))  if not toggle_cinema else robs ## full rob table
-
 
     comprs_downgrade  = pd.DataFrame()
     comprs_conf_lt = comprs_conf_ut = None
 
     if toggle_cinema:
+
         cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
         cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
         confidence_map = {k: n for n, k in enumerate(['very low', 'low', 'moderate', 'high'])}
         comparisons1 = cinema_net_data1.Comparison.str.split(':', expand=True)
         confidence1 = cinema_net_data1['Confidence rating'].str.lower().map(confidence_map)
-        confidence2 = cinema_net_data2['Confidence rating'].str.lower().map(confidence_map) if filename_cinema2 is not None or (filename_cinema2 is None and "Default_data" in cinema_net_data2.columns) else confidence1
-        comparisons2 = cinema_net_data2.Comparison.str.split(':', expand=True) if filename_cinema2 is not None or (filename_cinema2 is None and "Default_data" in cinema_net_data2.columns) else comparisons1
-
+        if filename_cinema2 is not None or (filename_cinema2 is None and "Default_data" in cinema_net_data2.columns):
+            confidence2 = cinema_net_data2['Confidence rating'].str.lower().map(confidence_map)
+        else:
+            confidence2 = pd.Series(np.array([np.nan]*len(confidence1)), copy=False)
+        comparisons2 = cinema_net_data2.Comparison.str.split(':', expand=True) if filename_cinema2 is not None or (filename_cinema2 is None and "Default_data" not in cinema_net_data2.columns) else comparisons1
         comprs_conf_ut = comparisons2.copy()  # Upper triangle
         comparisons1.columns = [1, 0]  # To get lower triangle
         comprs_conf_lt = comparisons1  # Lower triangle
         comprs_downgrade_lt = comprs_conf_lt
         comprs_downgrade_ut = comprs_conf_ut
-
         if "Reason(s) for downgrading" in cinema_net_data1.columns:
             downgrading1 = cinema_net_data1["Reason(s) for downgrading"]
             comprs_downgrade_lt['Downgrading'] = downgrading1
-            if (filename_cinema2 is not None and "Reason(s) for downgrading" in cinema_net_data2.columns) or (filename_cinema2 is None and "Default_data" in cinema_net_data2.columns):
+            if (filename_cinema2 is not None and "Reason(s) for downgrading" in cinema_net_data2.columns):
                 downgrading2 = cinema_net_data2["Reason(s) for downgrading"]
             else:
-                downgrading2 = downgrading1
+                downgrading2 = pd.Series(np.array([np.nan]*len(downgrading1)), copy=False)
             comprs_downgrade_ut['Downgrading'] = downgrading2
             comprs_downgrade = pd.concat([comprs_downgrade_ut, comprs_downgrade_lt])
             comprs_downgrade = comprs_downgrade.pivot(index=0, columns=1, values='Downgrading')
-
         comprs_conf_lt['Confidence'] = confidence1
         comprs_conf_ut['Confidence'] = confidence2
         comprs_conf = pd.concat([comprs_conf_ut, comprs_conf_lt])
         comprs_conf = comprs_conf.pivot_table(index=0, columns=1, values='Confidence')
 
-        if filename_cinema2 is None and "Default_data" not in cinema_net_data2.columns:
+        if filename_cinema2 is None and "pscore2" not in ranking_data.columns:
             ut = np.triu(np.ones(comprs_conf.shape), 1).astype(bool)
             comprs_conf = comprs_conf.where(ut == False, np.nan)
 
@@ -95,7 +95,6 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
         slctd_trmnts = [nd['id'] for nd in store_node]
         if len(slctd_trmnts) > 0:
             forest_data = pd.read_json(forest_data, orient='split')
-            ranking_data = pd.read_json(ranking_data, orient='split')
             net_data = pd.read_json(net_storage, orient='split')
             forest_data_out2 = pd.read_json(forest_data_out2, orient='split') if 'pscore2' in ranking_data.columns else None
             dataselectors = []
@@ -184,7 +183,6 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     ranges[-1] *= 1.001
     ranges = ranges + 1 if not toggle_cinema else ranges
     league_table_styles = []
-
 
     for treat_c in treatments:
         for treat_r in treatments:

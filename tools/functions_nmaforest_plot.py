@@ -280,7 +280,7 @@ def __TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
                                plot_bgcolor='rgba(0,0,0,0)',
                                autosize=True,
                                annotations=[
-                                   {"text": "Please provide a second outcome from data upload to display bi-dimensional plot",
+                                   {"text": "Please provide a second outcome in data upload to display bi-dimensional plot",
                                     "font": {"size": 15, "color": "white", 'family': 'sans-serif'},
                                     "xref": "paper", "yref": "paper",
                                     "showarrow": False},

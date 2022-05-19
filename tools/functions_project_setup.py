@@ -93,7 +93,7 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
             [dbc.Row([html.P("Outcome direction", style={'color': 'white', 'vertical-align': 'middle'})])] +
             [dbc.Row([dbc.Col(dbc.Row(
                 [html.P(f"{name}", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
-                                                                 'margin-left': '-1.8px', 'font-size': '12px',
+                                                                 'margin-left': '-1.5px', 'font-size': '12px',
                                                                  'color': '#b2e1ec'}),
                  dcc.Dropdown(id={'type': 'dataselectors', 'index': f'dropdown-outcome-{name_outcomes}'},
                               options=options_outcome_direction,

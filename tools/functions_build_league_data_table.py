@@ -46,7 +46,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     robs = (net_data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
             .pivot_table(index='treat2', columns='treat1', values='rob')
             .reindex(index=treatments, columns=treatments, fill_value=np.nan))
-    robs = robs.fillna(robs.T) if 'pscore2' in ranking_data.columns else robs
+    robs = robs.fillna(robs.T) #if 'pscore2' in ranking_data.columns else robs
     robs_slct = robs #robs + robs.T - np.diag(np.diag(robs))  if not toggle_cinema else robs ## full rob table
 
 
@@ -73,10 +73,9 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
             comprs_downgrade_lt['Downgrading'] = downgrading1
             if (filename_cinema2 is not None and "Reason(s) for downgrading" in cinema_net_data2.columns) or (filename_cinema2 is None and "Default_data" in cinema_net_data2.columns):
                 downgrading2 = cinema_net_data2["Reason(s) for downgrading"]
-                comprs_downgrade_lt['Downgrading'] = downgrading2
             else:
                 downgrading2 = downgrading1
-                comprs_downgrade_lt['Downgrading'] = downgrading2
+            comprs_downgrade_ut['Downgrading'] = downgrading2
             comprs_downgrade = pd.concat([comprs_downgrade_ut, comprs_downgrade_lt])
             comprs_downgrade = comprs_downgrade.pivot(index=0, columns=1, values='Downgrading')
 

@@ -149,7 +149,7 @@ def __ranking_scatter(df, net_data, outcome_direction_1, outcome_direction_2):
                           paper_bgcolor='rgba(0,0,0,0)',
                           plot_bgcolor='rgba(0,0,0,0)',
                           autosize=True,
-                          annotations=[{"text": "Please provide a second outcome from data upload to display p-scores scatter plot",
+                          annotations=[{"text": "Please provide a second outcome in data upload to display p-scores scatter plot",
                                          "font": {"size": 15, "color": "white", 'family': 'sans-serif'},
                                          "xref":"paper", "yref":"paper",
                                          "showarrow":False},

@@ -46,7 +46,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     robs = (net_data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
             .pivot_table(index='treat2', columns='treat1', values='rob')
             .reindex(index=treatments, columns=treatments, fill_value=np.nan))
-    robs = robs.fillna(robs.T)
+    robs = robs.fillna(robs.T) if 'pscore2' in ranking_data.columns else robs
     robs_slct = robs #robs + robs.T - np.diag(np.diag(robs))  if not toggle_cinema else robs ## full rob table
 
 

@@ -3,10 +3,17 @@ venv
 *.pickle
 db/forest_data/old_data
 db/SennXXX.csv
+db/league_new.csv
+db/psoriasis class data.csv
+db/pasi 90 cinema sivem_random_RR_Report.csv
+db/sae cinema sivem_random_RR_Report.csv
+db/db_errors
 db/GRIS_depression_long copy.csv
 db/GRIS_depression_long.csv
 db/GRISdataRESPmergeALL.csv
-db/psoriasis_wide_with_class.csvx
+db/psoriasis_wide_with_class.csv
+__backup
+_backup
 *.ipynb
 .*
 !.gitignore

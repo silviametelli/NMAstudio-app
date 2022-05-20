@@ -3,6 +3,7 @@ venv
 *.pickle
 db/forest_data/old_data
 db/SennXXX.csv
+db/senn2013data/*
 db/league_new.csv
 db/psoriasis class data.csv
 db/pasi 90 cinema sivem_random_RR_Report.csv

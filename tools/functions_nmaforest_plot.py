@@ -22,12 +22,17 @@ def __TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage)
         CI_lower, CI_upper = df["CI_lower"].map('{:,.2f}'.format), df["CI_upper"].map('{:,.2f}'.format),
         df['CI'] = '(' + CI_lower.astype(str) + ', ' + CI_upper.astype(str) + ')'
         df = df.sort_values(by=effect_size, ascending=False)
+        FOREST_ANNOTATION = ('<b>RE model:</b>'
+                             + u"\u03C4" + '<sup>2</sup>='
+                             + f"{'NA' if np.isnan(tau2) else tau2}")
+        LEN_FOREST_ANNOT = 25 + len(str(tau2))
     else:
         effect_size = ''
         outcome_direction = False
         df = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
                                               'CI_width', 'CI_width_hf'])
-
+        FOREST_ANNOTATION = ''
+        LEN_FOREST_ANNOT = 0
 
     xlog = effect_size in ('RR', 'OR')
     up_rng, low_rng = df.CI_upper.max(), df.CI_lower.min()
@@ -100,7 +105,7 @@ def __TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage)
                                             showarrow=False),
                                        dict(x=-0.52, y=-0.033, align='center',
                                             xref='paper', yref='paper',
-                                            text='<b>RE model:</b> ' u"\u03C4" '<sup>2</sup>=' f'{tau2}',
+                                            text=FOREST_ANNOTATION, #'<b>RE model:</b> ' u"\u03C4" '<sup>2</sup>=' f'{tau2}',
                                             showarrow=False),
                                  ]
                           )
@@ -120,10 +125,12 @@ def __TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage)
                         titlefont=dict(color='black'),
                         tickfont=dict(color='black'),
                         type='category',
-                        range=[-1.4, df.shape[0]],
+                        range=[-1.4, df.shape[0]+1],
                         anchor="x", overlaying="y",
                         side="right"),
         ),
+
+        fig.update_layout(yaxis_range=[-1.4, len(df["Treatment"])+1])
 
         fig.add_annotation(x=1.19, y=1.03, align='center',
              xref='paper', yref='y domain',

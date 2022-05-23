@@ -120,8 +120,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
                         else:
                             pass
                             #direct = round(float(leaguetable.loc[treat_r][treat_c].strip().split("\n")[0]), 2) if leaguetable[treat_r][treat_c] != "." else None
-                            #leaguetable.loc[treat_r][treat_c] = np.exp( -np.log(direct)) if leaguetable[treat_r][treat_c] != "." else  "."
-
+                            #leaguetable.loc[treat_r][treat_c] = np.exp( -np.log(direct)) if leaguetable[treat_r][treat_c] != "." else  "." # TODO: might want to save direct evidence from R and update it upoon filtering, so far it is removed iif nodes are filtered
                             # leaguetable = pd.DataFrame(np.tril(leaguetable), columns=slctd_trmnts, index=slctd_trmnts)
                         if 'pscore2' in ranking_data.columns:
                             effcsze2 = round(forest_data_out2[dataselectors[2]][(forest_data_out2.Treatment == treat_r) & (forest_data_out2.Reference == treat_c)].values[0], 2)

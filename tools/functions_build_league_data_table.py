@@ -117,6 +117,10 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
                             ci_lower = round(forest_data['CI_lower'][(forest_data.Treatment == treat_c) & (forest_data.Reference == treat_r)].values[0], 2)
                             ci_upper = round(forest_data['CI_upper'][(forest_data.Treatment == treat_c) & (forest_data.Reference == treat_r)].values[0], 2)
                             leaguetable.loc[treat_r][treat_c] = f'{effcsze}\n{ci_lower, ci_upper}'
+                        else:
+                            pass
+                            #direct = round(float(leaguetable.loc[treat_r][treat_c].strip().split("\n")[0]), 2) if leaguetable[treat_r][treat_c] != "." else None
+                            #leaguetable.loc[treat_r][treat_c] = np.exp( -np.log(direct)) if leaguetable[treat_r][treat_c] != "." else  "."
 
                             # leaguetable = pd.DataFrame(np.tril(leaguetable), columns=slctd_trmnts, index=slctd_trmnts)
                         if 'pscore2' in ranking_data.columns:
@@ -136,6 +140,23 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
                                                                                     (comprs_conf_lt[0] == treat_r) & (comprs_conf_lt[1] == treat_c)].values[0]
                                 else:
                                     robs_slct.loc[treat_r][treat_c] = robs_slct[treat_r][treat_c] if not np.isnan(robs_slct[treat_r][treat_c]) else robs_slct[treat_c][treat_r]
+                        else:
+                            if toggle_cinema:
+                                robs_slct.loc[treat_r][treat_c] = comprs_conf_lt['Confidence'][
+                                    (comprs_conf_lt[0] == treat_c) & (comprs_conf_lt[1] == treat_r) |
+                                    (comprs_conf_lt[0] == treat_r) & (comprs_conf_lt[1] == treat_c)].values[0]
+                            else:
+                                robs_slct.loc[treat_r][treat_c] = robs_slct[treat_r][treat_c] if not np.isnan(
+                                    robs_slct[treat_r][treat_c]) else robs_slct[treat_c][treat_r]
+
+            if 'pscore2' not in ranking_data.columns:
+                if not toggle_cinema:
+                    robs_slct = robs_slct[leaguetable_bool.T]
+                    leaguetable = leaguetable[leaguetable_bool.T]
+                else:
+                    print(robs_slct)
+                    robs_slct = robs_slct[leaguetable_bool.T]
+                    #leaguetable = leaguetable[leaguetable_bool.T]
 
 
             leaguetable.replace(0, np.nan) #inplace
@@ -153,6 +174,8 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
             robs = pd.DataFrame(robs_values,
                                 columns=robs.columns,
                                 index=robs.columns)
+
+            robs = robs.T if 'pscore2' not in ranking_data.columns else robs
 
             treatments = slctd_trmnts
 

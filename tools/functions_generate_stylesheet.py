@@ -7,7 +7,7 @@ def __generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                         dwld_button, net_download_activation):
 
     nodes_color = (custom_nd_clr or DFLT_ND_CLR) if dd_nclr != 'Default' else DFLT_ND_CLR
-    edges_color = (custom_edg_clr or None) if dd_eclr != 'Default' else None
+    edges_color = (custom_edg_clr or DFLT_EDG_CLR) if dd_eclr != 'Default' else DFLT_EDG_CLR
 
     node_size = dd_nds or 'Default'
     node_size = node_size == 'Tot randomized'
@@ -37,7 +37,7 @@ def __generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                                     "opacity": 1}}
                          for id in selected_nodes_id] + [
                          {"selector": 'edge[id= "{}"]'.format(edge['id']),
-                          "style": {'opacity': 1,  # "line-color": 'pink',
+                          "style": {'opacity': 1,  # "line-color": edges_color,
                                     'z-index': 5000}} for edge in edgedata if edge['source'] in selected_nodes_id
                                                                               or edge['target'] in selected_nodes_id] + [
                          {"selector": 'node[id = "{}"]'.format(id),

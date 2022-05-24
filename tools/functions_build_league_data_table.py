@@ -154,7 +154,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
                     leaguetable = leaguetable[leaguetable_bool.T]
                 else:
                     robs_slct = robs_slct[leaguetable_bool.T]
-                    #leaguetable = leaguetable[leaguetable_bool.T]
+                    leaguetable = leaguetable[leaguetable_bool.T]
 
 
             leaguetable.replace(0, np.nan) #inplace

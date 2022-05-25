@@ -231,7 +231,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
                                    'type': 'markdown'} if col['id'] != 'Treatment' else None
                            for col in leaguetable_cols} for rn, (_, tip) in enumerate(tips.iterrows())]
     if toggle_cinema:
-        tooltip_values = [{col['id']: {'value': f"**Reason for Downgrading:**{tip[col['id']]}" if not comprs_downgrade.empty else f"**Reason for Downgrading:**",
+        tooltip_values = [{col['id']: {'value': f"**Reason for Downgrading:**{tip[col['id']]}" if not comprs_downgrade.empty and not store_node else f"**Reason for Downgrading:**",
                                        'type': 'markdown'} if col['id'] != 'Treatment' else None
                        for col in leaguetable_cols} for rn, (_, tip) in enumerate(comprs_downgrade.iterrows())]
 

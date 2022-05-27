@@ -225,7 +225,7 @@ dcc.Markdown('G. Rücker, U. Krahn, J. König, O. Efthimiou, A. Davies, T. Papak
 
 ############################################  NEWS PAGE  #######################################################
 
-list_forthcmg_features=['A system of warnings' 'Sensitivity analyses',
+list_forthcmg_features=['A system of warnings', 'Sensitivity analyses',
                         'Fully connected network', 'More options for node size', 'More options for edge size']
 
 list_future_features=['Option for Bayesian analysis', 'Option to upload a file containing NMA results']

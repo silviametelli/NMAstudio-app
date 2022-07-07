@@ -15,6 +15,7 @@ db/GRISdataRESPmergeALL.csv
 db/psoriasis_wide_with_class.csv
 __backup/*
 _backup/*
+db_old/*
 *.ipynb
 .*
 !.gitignore

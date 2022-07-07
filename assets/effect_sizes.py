@@ -19,7 +19,7 @@ def get_OR(df, effect=1):
     TE = np.log(((n11 + incr1) * (n22 + incr2)) / ((n12 + incr1) * (n21 + incr2)))
     seTE = np.sqrt(1 / (n11 + incr1) + 1 / (n12 + incr1) + 1 / (n21 + incr2) + 1 / (n22 + incr2))
 
-    return round(TE,3), round(seTE,3)
+    return round(TE, 3), round(seTE, 3)
 
 #### RR
 def get_RR(df, effect=1): #TODO: check formula

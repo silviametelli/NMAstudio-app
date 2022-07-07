@@ -16,6 +16,11 @@ FOREST_DATA_OUT2 = pd.read_csv('db/forest_data/forest_data_outcome2.csv')
 FOREST_DATA_PRWS = pd.read_csv('db/forest_data/forest_data_pairwise.csv')
 FOREST_DATA_PRWS_OUT2 = pd.read_csv('db/forest_data/forest_data_pairwise_out2.csv')
 LEAGUE_TABLE_DATA = pd.read_csv('db/league_table_data/league_table.csv', index_col=0)
+replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
+LEAGUE_TABLE_DATA = LEAGUE_TABLE_DATA.fillna('')
+LEAGUE_TABLE_DATA = pd.DataFrame([[replace_and_strip(col) for col in list(row)] for idx, row in LEAGUE_TABLE_DATA.iterrows()],
+                           columns=LEAGUE_TABLE_DATA.columns,
+                           index=LEAGUE_TABLE_DATA.index)
 CINEMA_NET_DATA1 =  pd.read_csv('db/Cinema/cinema_report_PASI90.csv')
 CINEMA_NET_DATA2 =  pd.read_csv('db/Cinema/cinema_report_SAE.csv')
 CONSISTENCY_DATA = pd.read_csv('db/consistency/consistency.csv')

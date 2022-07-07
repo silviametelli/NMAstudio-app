@@ -106,15 +106,16 @@ def get_network(df):
         long_df_class = long_df_class.rename({long_df_class.columns[0]: 'treat', long_df_class.columns[1]: 'class'}, axis='columns')
         if not is_numeric_dtype(long_df_class.columns[1]):
             long_df_class["class_codes"] = long_df_class['class'].astype("category").cat.codes
-            long_df_class = long_df_class.rename({long_df_class.columns[0]: 'treat', long_df_class.columns[1]: 'class_names', long_df_class.columns[2]: 'class'},
-                                                 axis='columns')
+            long_df_class = long_df_class.rename({long_df_class.columns[0]: 'treat', long_df_class.columns[1]: 'class_names',
+                                                  long_df_class.columns[2]: 'class'},
+                                                  axis='columns')
         all_nodes_class = long_df_class.drop_duplicates().sort_values(by='treat').reset_index(drop=True)
-        num_classes = all_nodes_class['class'].max()+1 #because all_nodes_class was shifted by minus 1
+        num_classes = all_nodes_class['class'].max() + 1 #because all_nodes_class was shifted by minus 1
     sorted_edges = np.sort(df[['treat1', 'treat2']], axis=1)  ## removes directionality
     df.loc[:,['treat1', 'treat2']] = sorted_edges
     edges = df.groupby(['treat1', 'treat2']).TE.count().reset_index()
-    df_n1g = df.rename(columns={'treat1': 'treat', 'n1':'n'}).groupby(['treat'])
-    df_n2g = df.rename(columns={'treat2': 'treat', 'n2':'n'}).groupby(['treat'])
+    df_n1g = df.rename(columns={'treat1': 'treat', 'n1': 'n'}).groupby(['treat'])
+    df_n2g = df.rename(columns={'treat2': 'treat', 'n2': 'n'}).groupby(['treat'])
     df_n1, df_n2 = df_n1g.n.sum(), df_n2g.n.sum()
     all_nodes_sized = df_n1.add(df_n2, fill_value=0)
     df_n1, df_n2 = df_n1g.rob.value_counts(), df_n2g.rob.value_counts()
@@ -123,11 +124,11 @@ def get_network(df):
 
     if "treat1_class" and "treat2_class" in df.columns: all_nodes_sized = pd.concat([all_nodes_sized, all_nodes_class['class']], axis=1).reset_index(drop=True)
 
-    for c in {1,2,3}.difference(all_nodes_sized): all_nodes_sized[c] = 0
+    for c in {1, 2, 3}.difference(all_nodes_sized): all_nodes_sized[c] = 0
     for c in {1.0, 2.0, 3.0}.difference(all_nodes_sized): all_nodes_sized[c] = 0
 
     all_nodes_sized.drop(columns=[col for col in all_nodes_sized if col not in ['treat', 'n', 'class', 1.0, 2.0, 3.0, 1, 2, 3]], inplace=True)
-    cy_edges = [{'data': {'source': source,  'target': target,
+    cy_edges = [{'data': {'source': source, 'target': target,
                           'weight':  weight * 1 if (len(edges)<100 and len(edges)>13) else weight * 0.75 if len(edges)<13  else weight * 0.7,
                           'weight_lab': weight}}
                 for source, target, weight in edges.values]
@@ -137,18 +138,17 @@ def get_network(df):
         cy_nodes = [{"data": {"id": target,
                           "label": target,
                           "n_class": num_classes,
-                          'size': np.sqrt(size)/max_trsfrmd_size_nodes,
-                          'pie1': r1/(r1+r2+r3), 'pie2':r2/(r1+r2+r3), 'pie3': r3/(r1+r2+r3),
+                          'size': np.sqrt(size) / max_trsfrmd_size_nodes,
+                          'pie1': r1 / (r1+r2+r3), 'pie2':r2 / (r1+r2+r3), 'pie3': r3 / (r1+r2+r3),
                           }, 'classes': f'{CMAP[cls]}'} for target, size, r1, r2, r3, cls in all_nodes_sized.values]
     else:
         cy_nodes = [{"data": {"id": target,
                           "label": target,
                           'classes':'genesis',
-                          'size': np.sqrt(size)/max_trsfrmd_size_nodes,
-                          'pie1': r1/(r1+r2+r3),
-                          'pie2': r2/(r1+r2+r3),
-                          'pie3': r3/(r1+r2+r3)}} for target, size, r1, r2, r3 in all_nodes_sized.values]
-
+                          'size': np.sqrt(size) / max_trsfrmd_size_nodes,
+                          'pie1': r1 / (r1+r2+r3),
+                          'pie2': r2 / (r1+r2+r3),
+                          'pie3': r3 / (r1+r2+r3)}} for target, size, r1, r2, r3 in all_nodes_sized.values]
 
     return cy_edges + cy_nodes
 

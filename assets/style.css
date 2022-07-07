@@ -9,11 +9,24 @@
 body {
     font-family: "sans-serif", sans-serif;
     background-color: var(--CLR_BCKGRND);
+
 }
+
+
 
 h6 {margin-top: 0;}
 
-.app__container {margin: 2% 2% 2% 2%;}
+.app__container {margin: 2% 2% 2% 2%;
+}
+
+.app__dark {margin: 2% 2% 2% 2%;
+    background-color: var(--CLR_BCKGRND);
+}
+
+.app__light {margin: 2% 2% 2% 2%;
+    background-color: var(--CLR_BCKGRND);
+}
+
 
 .app__header {
     display: flex;

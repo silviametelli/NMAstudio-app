@@ -70,6 +70,16 @@ def display_page(pathname):
     else:  return HOMEPAGE
 
 
+# Update background theme
+@app.callback(
+            Output("main_page", "className"),
+            Input("toggleTheme", "value"),
+            )
+def update_background(turn_dark):
+    if turn_dark: return "app__dark"
+    else: return "app__light"
+
+
 # Update which link is active in the navbar
 @app.callback(Output('homepage-link', 'active'),
               [Input('url', 'pathname')])
@@ -295,7 +305,7 @@ def get_new_data_cinema2(contents, cinema_net_data2, filename):
                ])
 def update_layout_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_cons, out2_fun, reset_btn):
     YEARS_DEFAULT = np.array([1963, 1990, 1997, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010,
-                              2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020])
+                              2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021])
     years_dft_max = YEARS_DEFAULT.max()
 
     reset_btn_triggered = False
@@ -1371,7 +1381,7 @@ if __name__ == '__main__':
     # Talisman(app.server, content_security_policy=None)
     # context = generate_ssl_perm_and_key(cert_name='cert.pem', key_name='key.pem')
     # app.run_server(debug=False, ssl_context=context)
-    app.run_server(debug=True)
+    app.run_server(debug=False)
 
 
 

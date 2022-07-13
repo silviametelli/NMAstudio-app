@@ -27,9 +27,10 @@ def home_layout():
         html.Div(id='main_page',
                         ### LEFT HALF OF THE PAGE
                          children=[
+
                             html.Div(  # NMA Graph
                                 [html.Div([dbc.Row([html.Div(Dropdown_graphlayout,
-                                                             style={'display': 'inline-block', 'font-size': '11px'}),#TODO: ADJUST WIDTH INTERNAL DROPDOWN: was working before don't know what changed
+                                                             style={'display': 'inline-block', 'font-size': '11px'}),
                                                     html.Div(modal, style={'display': 'inline-block', 'font-size': '11px'}),
                                                     html.Div(modal_edges, style={'display': 'inline-block', 'font-size': '11px'}),
                                                     html.Div(modal_data, style={'display': 'inline-block', 'font-size': '11px'}),

@@ -9,9 +9,7 @@
 body {
     font-family: "sans-serif", sans-serif;
     background-color: var(--CLR_BCKGRND);
-
 }
-
 
 
 h6 {margin-top: 0;}
@@ -24,9 +22,21 @@ h6 {margin-top: 0;}
 }
 
 .app__light {margin: 2% 2% 2% 2%;
-    background-color: var(--CLR_BCKGRND);
+   background-color: white;  /*var(--CLR_BCKGRND);*/
 }
 
+
+.light-card{
+  background-color: #E9EEF6;
+  width: 90%;
+  margin: 32px auto;
+  padding: 24px;
+}
+
+#toggleTheme{
+    width: fit-content;
+    margin: auto;
+  }
 
 .app__header {
     display: flex;

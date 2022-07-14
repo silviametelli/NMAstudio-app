@@ -17,13 +17,6 @@ h6 {margin-top: 0;}
 .app__container {margin: 2% 2% 2% 2%;
 }
 
-.app__dark {margin: 2% 2% 2% 2%;
-    background-color: var(--CLR_BCKGRND);
-}
-
-.app__light {margin: 2% 2% 2% 2%;
-   background-color: white;  /*var(--CLR_BCKGRND);*/
-}
 
 
 .light-card{

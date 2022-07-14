@@ -180,14 +180,14 @@ html.H1("NMAstudio (version 0.1)", style={'font-size':'22px',  'padding-left':'3
                                           'padding-right':'3%'}),  html.Br(),
 
 dcc.Markdown('Please cite us as: Metelli S, Chaimani A. NMAstudio: a fully interactive web-application for producing and visualising network meta-analyses. *SRSM Annual Meeting 2021, Bern, Switzerland.*',
-             className="markdown_style", style={"color": "black"}),
+             className="markdown_style", style={"color": "black", "margin-right":"10%"}),
 
 html.Br(), html.Br(),
 
 dcc.Markdown('NMAstudio is a web application to produce and visualise interactive outputs from network meta-analyses. NMAstudio is written in Python, and linked to the R-package netmeta for performing network meta analysis.',
-             className="markdown_style",style={"color": "black"}),
+             className="markdown_style",style={"color": "black", "margin-right":"10%"}),
 
-dcc.Markdown('G. Rücker, U. Krahn, J. König, O. Efthimiou, A. Davies, T. Papakonstantinou & G. Schwarzer. netmeta: Network Meta-Analysis using Frequentist Methods, 2021. R package version 2.0-1, https://CRAN.R-project.org/package=netmeta.'
+dcc.Markdown('G. Rücker, U. Krahn, J. König, O. Efthimiou, A. Davies, T. Papakonstantinou & G. Schwarzer. netmeta: Network Meta-Analysis using Frequentist Methods, 2021. R package version 2.0-1.'
              ,className="markdown_style", style={"font-size":"14px", "color": "black"}),
 
 html.Br(),
@@ -199,7 +199,7 @@ html.Div([dcc.Markdown("Demonstration data set (class level psoriasis treatments
                 Download(id="download-demodata")]),
 
 dcc.Markdown("Sbidian E, Chaimani A, Garcia-Doval I, Doney L, Dressler C, Hua C, et al. Systemic pharmacological treatments for chronic plaque psoriasis: a network meta-analysis. \n Cochrane Database Syst Rev. 2021 Apr 19;4:CD011535.",
-             className="markdown_style", style={"font-size":"14px", "color": "black"}),
+             className="markdown_style", style={"font-size":"14px", "color": "black", "margin-right":"10%"}),
 
  html.Br(), html.Br(),
 

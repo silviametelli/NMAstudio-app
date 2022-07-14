@@ -41,33 +41,33 @@ def Navbar():
                           ]),
 
                 #Toggle theme
-                dbc.Col([html.P(
-                    "Light",
-                    id='light_theme',
-                    style={'display': 'inline-block',
-                           'margin': 'auto', 'color':'white',
-                           'font-size': '10px',
-                           'padding-left': '0px'}),
-                    daq.ToggleSwitch(
-                        id='toggleTheme', value=True, color="#00418e",
-                        size=40, vertical=False,
-                        label={'label': "",
-                               'style': dict(color='white', font='0.5em')},
-                        labelPosition="top",
-                        style={'display': 'inline-block',
-                               'margin': 'auto', 'font-size': '10px',
-                               'padding-left': '2px',
-                               'padding-right': '2px'}),
-                    html.P('Dark',
-                           id='dark_theme',
-                           style={'display': 'inline-block',
-                                  'margin': 'auto', 'color':'white',
-                                  'font-size': '10px',
-                                  'padding-right': '10px'})
-
-                ], style={'display': 'inline-block',
-                          'margin-top': '10px',  'margin-right': '25px'}
-                ),
+                # dbc.Col([html.P(
+                #     "Light",
+                #     id='light_theme',
+                #     style={'display': 'inline-block',
+                #            'margin': 'auto', 'color':'white',
+                #            'font-size': '10px',
+                #            'padding-left': '0px'}),
+                #     daq.ToggleSwitch(
+                #         id='toggleTheme', value=True, color="#00418e",
+                #         size=40, vertical=False,
+                #         label={'label': "",
+                #                'style': dict(color='white', font='0.5em')},
+                #         labelPosition="top",
+                #         style={'display': 'inline-block',
+                #                'margin': 'auto', 'font-size': '10px',
+                #                'padding-left': '2px',
+                #                'padding-right': '2px'}),
+                #     html.P('Dark',
+                #            id='dark_theme',
+                #            style={'display': 'inline-block',
+                #                   'margin': 'auto', 'color':'white',
+                #                   'font-size': '10px',
+                #                   'padding-right': '10px'})
+                #
+                # ], style={'display': 'inline-block',
+                #           'margin-top': '10px',  'margin-right': '25px'}
+                # ),
                 dbc.Col(html.Img(src=UP_LOGO, height="57px"), style={'padding-right':'1%','padding-top':'0.3%','padding-bottom':'0.3%'},
                     width="auto")], className="child child-right" ),
         ],

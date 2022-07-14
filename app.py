@@ -51,6 +51,17 @@ def get_new_layout():
 server = app.server
 app.layout = get_new_layout()
 
+light_theme = {
+    "main-background": "#ffe7a6",
+    "header-text": "#376e00",
+    "sub-text": "#0c5703",
+}
+
+dark_theme = {
+    "main-background": "#000000",
+    "header-text": "#ff7575",
+    "sub-text": "#ffd175",
+}
 
 # ------------------------------ app interactivity ----------------------------------#
 
@@ -70,14 +81,14 @@ def display_page(pathname):
     else:  return HOMEPAGE
 
 
-# Update background theme
-# @app.callback(
-#             Output("main_page", "className"),
-#             Input("toggleTheme", "value"),
-#             )
-# def update_background(turn_dark):
-#     if turn_dark: return "app__dark"
-#     #else: return "app__light"
+#Update background theme
+@app.callback(
+    Output("main_page", "style"),
+    Input("toggleTheme", "value"),
+            )
+def update_background(turn_dark):
+    theme = dark_theme if turn_dark else light_theme
+    return {"backgroundColor": theme["main-background"]}
 
 
 

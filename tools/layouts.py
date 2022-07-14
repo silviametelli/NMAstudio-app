@@ -169,111 +169,125 @@ def home_layout():
 
 ############################################  DOCUMENTATION PAGE  #######################################################
 
-doc_layout = html.Div(id='docpage-link', children = [Navbar(), html.Br(),  html.Br(), html.Br(),
+doc_layout = html.Div(id='docpage-link', className="markdown_style",
+                      children = [Navbar(), html.Br(),
 
-html.H1("NMAstudio (version 0.1)", style={'font-size':'20px', 'color':'white', 'padding-left':'3%',
-                                          'padding-right':'3%', 'font-family':'sans-serif'}),  html.Br(),
-
-dcc.Markdown('NMAstudio is a web application to produce and visualise interactive outputs from network meta-analyses',
-             className="markdown_style"),
+html.Div(style={"width": "98%","border": "1px solid gray", "padding": "10px", "color": "black",'font-family':'sans-serif',
+                                         "margin": "15px", "background-color": "#d7dbda", "font-weight": "550"},
+children = [
+html.Br(),
+html.H1("NMAstudio (version 0.1)", style={'font-size':'22px',  'padding-left':'3%',#'color':'white',
+                                          'padding-right':'3%'}),  html.Br(),
 
 dcc.Markdown('Please cite us as: Metelli S, Chaimani A. NMAstudio: a fully interactive web-application for producing and visualising network meta-analyses. *SRSM Annual Meeting 2021, Bern, Switzerland.*',
-             className="markdown_style"),   html.Br(),
-dcc.Markdown("Demonstration: Sbidian E, Chaimani A, Garcia-Doval I, Doney L, Dressler C, Hua C, et al. Systemic pharmacological treatments for chronic plaque psoriasis: a network meta-analysis. *Cochrane Database Syst Rev*. 2021 Apr 19;4:CD011535. https://www.cochranelibrary.com/cdsr/doi/10.1002/14651858.CD011535.pub4/full ",
-             className="markdown_style"),
+             className="markdown_style", style={"color": "black"}),
+
+html.Br(), html.Br(),
+
+dcc.Markdown('NMAstudio is a web application to produce and visualise interactive outputs from network meta-analyses. NMAstudio is written in Python, and linked to the R-package netmeta for performing network meta analysis.',
+             className="markdown_style",style={"color": "black"}),
+
+dcc.Markdown('G. Rücker, U. Krahn, J. König, O. Efthimiou, A. Davies, T. Papakonstantinou & G. Schwarzer. netmeta: Network Meta-Analysis using Frequentist Methods, 2021. R package version 2.0-1, https://CRAN.R-project.org/package=netmeta.'
+             ,className="markdown_style", style={"font-size":"14px", "color": "black"}),
+
+html.Br(),
 
 html.Div([dcc.Markdown("Demonstration data set (class level psoriasis treatments):",
-             className="markdown_style", style={'margin-right':'0px', 'display':'inline-block'}) ,
-    html.Button("Demo Data", id="demodata", style={"color":"green", 'display': 'inline-block', 'border':"0px solid black",
-                                                   'padding': '4px'}),
+             className="markdown_style", style={'margin-right':'0px', 'display':'inline-block',"color": "black"}) ,
+    html.Button("Download data", id="demodata", style={"color":"#535453", 'display': 'inline-block', 'border':"0px solid black",
+                                                   'padding': '1px', 'margin-left':'-23px'}),
                 Download(id="download-demodata")]),
 
+dcc.Markdown("Sbidian E, Chaimani A, Garcia-Doval I, Doney L, Dressler C, Hua C, et al. Systemic pharmacological treatments for chronic plaque psoriasis: a network meta-analysis. \n Cochrane Database Syst Rev. 2021 Apr 19;4:CD011535.",
+             className="markdown_style", style={"font-size":"14px", "color": "black"}),
 
-    html.Br(),
-    dcc.Markdown('NMAstudio is a Plotly Dash app written in Python, and linked to the  R-package netmeta for performing analysis of the data',
-                 className="markdown_style"),
-dcc.Markdown('G. Rücker, U. Krahn, J. König, O. Efthimiou, A. Davies, T. Papakonstantinou & G. Schwarzer. netmeta: Network Meta-Analysis using Frequentist Methods, 	2021.'
-             ,className="markdown_style"),
-    dcc.Markdown('R package version 2.0-1. https://CRAN.R-project.org/package=netmeta.', className="markdown_style"),
-                       html.Br(), html.Br(),
+ html.Br(), html.Br(),
+
 
 # dcc.Markdown('The methods are described in',className="markdown_style"),
 #                        html.Br(), html.Br(),
 
                        html.Div([dcc.Markdown("Click beside to download a pdf copy of the Tutorial and NMAstudio User Guide:", className="markdown_style",
-                               style={'margin-right':'5px', 'display':'inline-block'}),
+                               style={'margin-right':'5px', 'display':'inline-block', "color": "black"}),
 
-                      html.Button('Download Tutorial', id='full-tuto-pdf',
-                                             style={'color': 'white',
+                      html.Button('Tutorial', id='full-tuto-pdf',
+                                             style={'color': 'black',
                                                     'display': 'inline-block',
+                                                    'margin-left':'-23px',
                                                     'padding': '4px'}),
                                  Download(id="download-tuto"),
-                       html.Button('Download User Guide', id='full-docu-pdf',
-                                   style={'color':'white', 'margin-left':'10px', 'display':'inline-block','padding':'4px'}),
-                                 Download(id="download-guide")
+                       # html.Button('Download User Guide', id='full-docu-pdf',
+                       #             style={'color':'white', 'margin-left':'10px', 'display':'inline-block','padding':'4px'}),
+                       #           Download(id="download-guide")
                     ]),
 
 
-    html.Br(), html.Br(), html.Br(), html.Br(),
+    html.Br(), html.Br(), html.Br(),
     dcc.Markdown(
         'The full source code is freely available at [https://github.com/silviametelli/network-meta-analysis](https://github.com/silviametelli/network-meta-analysis)'
-        , className="markdown_style"),
+        , className="markdown_style",style={"color": "black"}),
 
-
+])
                        ]),
 
 
 
 ############################################  NEWS PAGE  #######################################################
+ICON  = "/assets/icons/favicon_nmastudio.ico"
 
 list_forthcmg_features=['A system of warnings', 'Sensitivity analyses',
                         'Fully connected network', 'More options for node size', 'More options for edge size']
+list_future_features=['Option for Bayesian analysis', 'Permanent link to project']
 
-list_future_features=['Option for Bayesian analysis', 'Option to upload a file containing NMA results']
+news_layout = \
+    html.Div(id='newspage-link', className="markdown_style",
+            children = [Navbar(), html.Br(),
 
-news_layout = html.Div([
+            html.Div(style={"width": "98%","border": "1px solid gray", "padding": "10px",
+                            "color": "black",'font-family':'sans-serif',
+                            "margin": "15px", "background-color": "#d7dbda", "font-weight": "530"},
+                     children = [
+                         html.Div(className="one-half-news-1 column",
+                          children=[
+                              html.Br(), html.Br(),
+                              html.Div(dbc.Col([html.H1("NEW!",
+                                   style={'font-size':'20px', 'color':'#587485','padding-left':'3%',
+                                          'padding-right':'3%', 'font-family':'sans-serif', "font-weight": "530"}),
+             html.H3("nmastudio Python package", style={'font-size':'20px', #'color':'white',
+                                                        'padding-left':'3%', 'padding-right':'3%',
+                                                        'font-family':'sans-serif', 'display':'inline-block'}),
 
-    Navbar(),
-
-    html.Br(),html.Br(),
-
-
-    html.H1("Forthcoming features", style={'font-size':'20px', 'color':'#76c0cf', 'padding-left':'3%',
-                                          'padding-right':'3%', 'font-family':'sans-serif'}),
-    html.Br(),
+    html.Img(src=ICON, height="30px", style={'display':'inline-block',  'margin-left':'-8px'} ) ])),
+    html.Br(), html.Br(),
+    html.H1("Forthcoming features", style={'font-size':'20px', 'color':'#587485', 'padding-left':'3%',
+                                           "font-weight": "530", 'padding-right':'3%', 'font-family':'sans-serif'}),
         html.Div(
            className="list-features",
-           children=[html.Ul(id='my-list', children=[html.Li(i) for i in list_forthcmg_features])],
-            ),
-
-    html.Br(),  html.Br(),
-
-
-    html.H1("Future features", style={'font-size': '20px', 'color': '#76c0cf', 'padding-left': '3%',
+           children=[html.Ul(id='my-list',  style={"color": "black", "font-weight": "450", "font-size": "18px"},
+                             children=[html.Li(i) for i in list_forthcmg_features])]),
+    html.Br(), html.Br(),
+    html.H1("Future features", style={'font-size': '20px', 'color': '#587485', 'padding-left': '3%',
+                                      "font-weight": "560",
                                       'padding-right': '3%', 'font-family': 'sans-serif'}),
+    html.Div(html.Ul( style={"color": "black", "font-weight": "450", "font-size": "18px"},
+                      children= [html.Li(i) for i in list_future_features])),
+    html.Br(), html.Br()
+    ]),
+
+
+    html.Br(),html.Br(),html.Br(),html.Br(),html.Br(),html.Br(),html.Br(),html.Br(),html.Br(),html.Br(),
+
+    dcc.Markdown('Do you have any questions or suggestions for features you would '
+                 'like to see implemented in the next update of NMAstudio?',
+                 className="markdown_style_black",
+                 style={"font-size": '20px', "font-style": "italic", "margin-right":"10%", "margin-left":"30%"}),
     html.Br(),
+    dcc.Markdown('Please get in touch at silvia.metelli@u-paris.fr',
+                 className="markdown_style_black",
+                 style={"font-size": '20px', "margin-right":"10%", "margin-left":"30%", "margin-bottom":"1%"}),
 
-    # html.Div(
-       #     className="list-features",
-       #     children=[
-       #         html.Ul(id='my-list2', children=[html.Li(i) for i in list_future_features])],
-       #     style={ "content":"\f138"}
-       # ),
+                         html.Br(), html.Br(), html.Br(), html.Br(), html.Br(), html.Br(), html.Br(), html.Br()
 
-    html.Div(html.Ul([html.Li(i) for i in list_future_features])),
-
-    html.Br(),
-
-    html.Div([dcc.Markdown('',
-                 className="markdown_style"),
-                        html.Br(),html.Br(),
-
-                        dcc.Markdown('Do you have any questions or suggestions for features you would like to see implemented in the next update of NMAstudio?'
-                            , className="markdown_style"),
-                        html.Br(),
-
-                        dcc.Markdown('Get in touch at silvia.metelli@u-paris.fr'
-                            , className="markdown_style"),
+                     ])
     ])
 
-])

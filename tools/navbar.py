@@ -30,7 +30,7 @@ def Navbar():
                             #"border": "0.01px white solid",
                             'padding-bottom':'0.2%','padding-left':'0.2%',
                             'padding-right':'0.2%', 'padding-top':'0.2%',
-                            'background-color':'#304569'
+                           # 'background-color':'#304569'
                             }),
 
             html.Div([

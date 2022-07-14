@@ -71,13 +71,13 @@ def display_page(pathname):
 
 
 # Update background theme
-@app.callback(
-            Output("main_page", "className"),
-            Input("toggleTheme", "value"),
-            )
-def update_background(turn_dark):
-    if turn_dark: return "app__dark"
-    #else: return "app__light"
+# @app.callback(
+#             Output("main_page", "className"),
+#             Input("toggleTheme", "value"),
+#             )
+# def update_background(turn_dark):
+#     if turn_dark: return "app__dark"
+#     #else: return "app__light"
 
 
 

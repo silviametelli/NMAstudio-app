@@ -7,7 +7,7 @@
 }
 
 body {
-    font-family: "sans-serif", sans-serif;
+    font-family: sans-serif;
     background-color: var(--CLR_BCKGRND);
 }
 
@@ -186,6 +186,16 @@ h6 {margin-top: 0;}
     font-weight: lighter;
     font-family:sans-serif
 }
+
+.markdown_style_black{
+    color:black;
+    padding-left:3%;
+    padding-right:3%;
+    font-size: medium;
+    font-weight: lighter;
+    font-family:sans-serif
+}
+
 
 .data__container {
     background-color: #40515e;

@@ -120,6 +120,9 @@ Grid
     .one-half.column {width: 42%;}
     .one-half-2.column {width: 53%;}
 
+    .one-half-news-1.column {width: 40%; margin-left: 2.66666666667%}
+    .one-half-news-2.column {width: 20%; margin-top: 48.66666666667%; margin-left: 25%; margin-right: 15%}
+
     /* Offsets */
     .offset-by-one.column,
     .offset-by-one.columns {margin-left: 8.66666666667%;}

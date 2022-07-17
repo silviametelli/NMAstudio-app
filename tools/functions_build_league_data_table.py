@@ -72,7 +72,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
         if "Reason(s) for downgrading" in cinema_net_data1.columns:
             downgrading1 = cinema_net_data1["Reason(s) for downgrading"]
             comprs_downgrade_lt['Downgrading'] = downgrading1
-            if (filename_cinema2 is not None and "Reason(s) for downgrading" in cinema_net_data2.columns):
+            if (filename_cinema2 is not None) or (filename_cinema2 is None and "Default_data" in cinema_net_data2.columns) and ("Reason(s) for downgrading" in cinema_net_data2.columns):
                 downgrading2 = cinema_net_data2["Reason(s) for downgrading"]
             else:
                 downgrading2 = pd.Series(np.array([np.nan]*len(downgrading1)), copy=False)

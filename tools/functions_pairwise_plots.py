@@ -10,7 +10,6 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
         slctd_comps += [f'{src} vs {trgt}']
         df = pd.read_json(forest_data_prws_out_2, orient='split') if outcome else pd.read_json(forest_data_prws, orient='split')
         df = df.reset_index(drop=True)
-        print(df)
         net_data = pd.read_json(net_storage, orient='split')
         outcome_direction_data = net_data['outcome1_direction'].iloc[1] if not outcome else net_data['outcome2_direction'].iloc[1]
         outcome_direction = False if outcome_direction_data == 'beneficial' else True

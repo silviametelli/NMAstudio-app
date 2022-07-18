@@ -92,6 +92,7 @@ def update_background(turn_dark):
 
 
 
+
 # Update which link is active in the navbar
 @app.callback(Output('homepage-link', 'active'),
               [Input('url', 'pathname')])

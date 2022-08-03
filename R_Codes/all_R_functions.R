@@ -416,8 +416,8 @@ get_pairwise_data_long <- function(dat, outcome2=FALSE){
      #names(pairwise_dat)[names(pairwise_dat) == 'year.x'] <- 'year'
      pairwise_dat$year <- coalesce(pairwise_dat$year.x, pairwise_dat$year.y)
      pairwise_dat$rob <- coalesce(pairwise_dat$rob.x, pairwise_dat$rob.y)
-     pairwise_dat$age <- coalesce(pairwise_dat$age.x, pairwise_dat$age.y)
-     pairwise_dat$male <- coalesce(pairwise_dat$male.x, pairwise_dat$male.y)
+     #pairwise_dat$age <- coalesce(pairwise_dat$age.x, pairwise_dat$age.y)
+     #pairwise_dat$male <- coalesce(pairwise_dat$male.x, pairwise_dat$male.y)
   }
   return (pairwise_dat)
 }

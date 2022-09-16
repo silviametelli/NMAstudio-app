@@ -10,7 +10,7 @@ from assets.Tabs.tabranking import tab_ranking
 from assets.Tabs.tabconsistency import tab_consistency
 from assets.COLORS import *
 from assets.storage import STORAGE
-from assets.alerts import alert_outcome_type, alert_data_type, R_errors_nma, R_errors_pair, R_errors_league, R_errors_funnel, dataupload_error
+from assets.alerts import alert_outcome_type, alert_data_type, R_errors_data, R_errors_nma, R_errors_pair, R_errors_league, R_errors_funnel, dataupload_error
 from dash_extensions import Download
 
 def Homepage():
@@ -20,6 +20,7 @@ def Homepage():
 def home_layout():
     return html.Div(className="app__container", children=STORAGE+[
                         html.Div(dataupload_error, style={'vertical-align': "top"}),
+                        html.Div(R_errors_data, style={'vertical-align': "top"}),
                         html.Div(R_errors_nma, style={'vertical-align': "top"}),
                         html.Div(R_errors_pair, style={'vertical-align': "top"}),
                         html.Div(R_errors_league, style={'vertical-align': "top"}),

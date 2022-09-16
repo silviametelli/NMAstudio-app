@@ -70,7 +70,7 @@ def __generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
 
 
     triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
-    if 'btn-get-png.n_clicks' in triggered:
+    if 'btn-get-png.n_clicks' in triggered or 'btn-get-png-modal.n_clicks' in triggered :
         stylesheet[0]['style']['color'] = 'black'
         net_download_activation = True
     else:

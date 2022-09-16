@@ -179,7 +179,8 @@ def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                         dwld_button, net_download_activation)
 
 ### ----- save network plot as png ------ ###
-@app.callback(Output("cytoscape", "generateImage"),
+@app.callback([Output("cytoscape", "generateImage"),
+               Output("modal-cytoscape", "generateImage")],
               Input("net_download_activation", "data"),
               State('exp-options', 'children'),
               prevent_initial_call=True)
@@ -189,6 +190,9 @@ def get_image(net_download_activation, export):
     if net_download_activation:
         action = "download"
     return {'type': 'jpeg' if export_selection=='as jpeg' else ('png' if export_selection=='as png' else 'svg'),
+            'action': action,
+            'options': {  # 'bg':'#40515e',
+            'scale': 3}}, {'type': 'jpeg' if export_selection=='as jpeg' else ('png' if export_selection=='as png' else 'svg'),
             'action': action,
             'options': {  # 'bg':'#40515e',
             'scale': 3}}
@@ -580,6 +584,8 @@ def toggle_modal_edge(open_t, close):
                Output("modal_data_checks", "is_open"),
                Output("TEMP_net_data_STORAGE", "data"),
                Output("uploaded_datafile_to_disable_cinema", "data"),
+               Output('Rconsole-error-data', 'children'),
+               Output('R-alert-data', 'is_open'),
                ],
               [Input("upload_your_data", "n_clicks_timestamp"),
                Input("upload_modal_data", "n_clicks_timestamp"),
@@ -751,18 +757,23 @@ def data_modal(open_modal_data, upload, submit, filename2,
                 data = adjust_data(data_user, search_value_format, search_value_outcome1, search_value_outcome2)
                 TEMP_net_data_STORAGE = data.to_json(orient='split')
 
-            except:
-                 TEMP_net_data_STORAGE = {}
-                 raise ValueError('Data conversion failed')
+            #except:
+                 #TEMP_net_data_STORAGE = {}
+                 #raise ValueError('Data conversion failed')
+            except Exception as Rconsole_error_data:
+                TEMP_net_data_STORAGE = {}
+                error = Rconsole_error_data
+                return modal_data_is_open, modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, str(error),  True
 
-            return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists
+            return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, '',  False
+
 
         if submit and button_id == 'submit_modal_data':
-                return modal_data_is_open, not modal_data_checks_is_open and (not modal_data_is_open), TEMP_net_data_STORAGE, filename_exists
+                return modal_data_is_open, not modal_data_checks_is_open and (not modal_data_is_open), TEMP_net_data_STORAGE, filename_exists, '', False
 
-        return not modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE, filename_exists
+        return not modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE, filename_exists, '', False
     else:
-        return modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE, filename_exists
+        return modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE, filename_exists, '', False
 
 
 
@@ -881,8 +892,8 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
         try:
             TEMP_user_elements_STORAGE = get_network(df=net_data)
             TEMP_user_elements_out2_STORAGE = []
+            NMA_data = run_network_meta_analysis(net_data)
 
-            NMA_data= run_network_meta_analysis(net_data)
             TEMP_forest_data_STORAGE = NMA_data.to_json( orient='split')
 
             if "TE2" in net_data.columns:

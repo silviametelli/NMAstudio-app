@@ -158,7 +158,6 @@ modal_data_table = dbc.Modal([
                                       fixed_rows={'headers': True, 'data': 0},
                                       style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
                                                   'color': 'white',
-                                                  'minWidth': '35px',
                                                   'minWidth': '60px',
                                                   'textAlign': 'center',
                                                   'border': '1px solid #5d6d95',

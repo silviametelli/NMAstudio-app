@@ -19,6 +19,15 @@ dataupload_error= dbc.Modal([
         size="lg",
         is_open=False)
 
+
+R_errors_data = dbc.Modal([
+        dbc.ModalHeader("Error"),
+        dbc.ModalBody([html.P("Data conversion failed: see error below / check your data for format errors",  style={"color":"red"}),
+                       html.P(id="Rconsole-error-data", style={"color":"white"})])],
+        id="R-alert-data",
+        size="lg",
+        is_open=False)
+
 R_errors_nma = dbc.Modal([
         dbc.ModalHeader("Error"),
         dbc.ModalBody([html.P("NMA estimation and/or network generation failed: see error below and check your data",  style={"color":"red"}),

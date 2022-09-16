@@ -9,8 +9,8 @@ suppressMessages(library(meta))
 suppressMessages(library(metafor))
 suppressMessages(library(tidyverse))
 
-iswhole <- function(x, tol = .Machine$double.eps^0.5) abs(x - round(x)) < tol
 
+iswhole <- function(x, tol = .Machine$double.eps^0.5) abs(x - round(x)) < tol
 
 #--------------------------------------- NMA forest plots -------------------------------------------------#
 run_NetMeta <- function(dat){
@@ -30,16 +30,16 @@ run_NetMeta <- function(dat){
                         reference.group = treatments[1])
     ### Values
   for (treatment in treatments){
-      treatment_list <- nma_temp$trts[nma_temp$trts!=treatment]
+      treatment_list <- nma_temp$trts[nma_temp$trts != treatment]
       TE <-  nma_temp$TE.random[, treatment]
       TE_names <- names(TE)[sapply(TE, is.numeric)]
-      TE <- TE[which(TE_names!=treatment)]
+      TE <- TE[which(TE_names != treatment)]
       se <- nma_temp$seTE.random[, treatment]
-      se <- se[which(TE_names!=treatment)]
-      ci_lo <- TE-1.96*se
-      ci_up <- TE+1.96*se
-      TEweights <- 1/nma_temp$seTE.random[, treatment] # Precision
-      TEweights <- TEweights[which(TE_names!=treatment)]
+      se <- se[which(TE_names != treatment)]
+      ci_lo <- TE - 1.96*se
+      ci_up <- TE + 1.96*se
+      TEweights <- 1 / nma_temp$seTE.random[, treatment] # Precision
+      TEweights <- TEweights[which(TE_names != treatment)]
       tau2 <- nma_temp$tau^2
       if(sm=="MD" | sm=="SMD"){df <- data.frame(treatment_list, TE,  ci_lo, ci_up, TEweights, tau2)
       }else{df <- data.frame(treatment_list, exp(TE),  exp(ci_lo),  exp(ci_up), TEweights, tau2)}
@@ -64,17 +64,17 @@ league_rank <- function(dat, outcome2=FALSE){
   nma_primary <- netmeta(TE=dat1$TE, seTE=dat1$seTE,
                          treat1=dat1$treat1, treat2=dat1$treat2,
                          studlab=dat1$studlab,
-                         sm = sm1,
-                         random = TRUE, backtransf = TRUE,
-                         reference.group = dat1$treat2[1])
+                         sm =sm1,
+                         random=TRUE, backtransf=TRUE,
+                         reference.group=dat1$treat2[1])
   sortedseq <- sort(nma_primary$trts)
   netleague_table <- netleague(nma_primary, digits = 2,
-                               seq = sortedseq,
+                               seq=sortedseq,
                                bracket="(",
-                               backtransf = TRUE, ci = TRUE, separator=',')
+                               backtransf=TRUE, ci=TRUE, separator=',')
   lt <- netleague_table$random
-  colnames(lt)<- sortedseq
-  rownames(lt)<- sortedseq
+  colnames(lt) <- sortedseq
+  rownames(lt) <- sortedseq
   #p-scores
   rank1 <- netrank(nma_primary, small.values = "bad")
   rank <- data.frame(names(rank1$Pscore.random), as.numeric(round(rank1$Pscore.random,2)))
@@ -98,7 +98,7 @@ league_rank <- function(dat, outcome2=FALSE){
   p_all <- ne$compare.random$p
   netsplit_all <- data.frame(comp_all, k_all, direct_all, nma_all, indirect_all, p_all)
   colnames(netsplit_all) <- c("comparison", "k", "direct", "nma", "indirect", "p-value")
-  if (all(is.na(ne$compare.random$p))==TRUE){
+  if (all(is.na(ne$compare.random$p)) == TRUE){
       df_cons <- data.frame(comp_all, direct_all, indirect_all, p_all)
       colnames(df_cons) <- c("comparison", "direct", "indirect", "p-value")
     }
@@ -111,19 +111,19 @@ league_rank <- function(dat, outcome2=FALSE){
     sm2 <- dat$effect_size2[1]
     nma_secondary <- netmeta(TE=dat2$TE2, seTE=dat2$seTE2,
                              treat1=dat2$treat1, treat2=dat2$treat2,
-                             studlab=dat2$studlab, sm = sm2,
-                             random = TRUE, backtransf = TRUE,
-                             reference.group = dat2$treat2[1])
+                             studlab=dat2$studlab, sm=sm2,
+                             random=TRUE, backtransf=TRUE,
+                             reference.group=dat2$treat2[1])
 
     # - network estimates of first outcome in lower triangle, second outcome in upper triangle
     #if(length(sort(nma_primary$trts))>length(sort(nma_secondary$trts))){sortedseq <- sort(nma_primary$trts)}else{sortedseq <- sort(nma_secondary$trts)}
 
-    netleague_table1 <- netleague(nma_primary, digits = 2,
-                             bracket="(",  direct = FALSE,
-                             backtransf = TRUE, ci = TRUE, separator=',')
-    netleague_table2 <- netleague(nma_secondary, digits = 2,
-                             bracket="(", direct = FALSE,
-                             backtransf = TRUE, ci = TRUE, separator=',')
+    netleague_table1 <- netleague(nma_primary, digits=2,
+                             bracket="(",  direct=FALSE,
+                             backtransf=TRUE, ci=TRUE, separator=',')
+    netleague_table2 <- netleague(nma_secondary, digits=2,
+                             bracket="(", direct=FALSE,
+                             backtransf=TRUE, ci=TRUE, separator=',')
 
     lt1 <- netleague_table1$random
     lt2 <- netleague_table2$random

@@ -461,7 +461,7 @@ def Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):
     return __Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2)
 
 
-############ - ranking plots  - ###############
+############ - Ranking plots  - ###############
 @app.callback([Output('tab-rank1', 'figure'),
                Output('tab-rank2', 'figure')],
               Input('ranking_data_STORAGE', 'data'),
@@ -763,10 +763,9 @@ def data_modal(open_modal_data, upload, submit, filename2,
             except Exception as Rconsole_error_data:
                 TEMP_net_data_STORAGE = {}
                 error = Rconsole_error_data
-                return modal_data_is_open, modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, str(error),  True
+                return modal_data_is_open, modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, str(error), True
 
-            return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, '',  False
-
+            return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, '', False
 
         if submit and button_id == 'submit_modal_data':
                 return modal_data_is_open, not modal_data_checks_is_open and (not modal_data_is_open), TEMP_net_data_STORAGE, filename_exists, '', False
@@ -819,6 +818,7 @@ def modal_SUBMIT_button(submit,  reset_btn,
 
     triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
     if 'submit_modal_data.n_clicks' in triggered: submit_modal_data_trigger = True
+
 
     if submit_modal_data_trigger:  # Is triggered by submit_modal_data.n_clicks
         OUT_DATA = [TEMP_net_data_STORAGE, TEMP_net_data_out2_STORAGE, TEMP_consistency_data_STORAGE, TEMP_user_elements_STORAGE,
@@ -892,6 +892,7 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
         try:
             TEMP_user_elements_STORAGE = get_network(df=net_data)
             TEMP_user_elements_out2_STORAGE = []
+
             NMA_data = run_network_meta_analysis(net_data)
 
             TEMP_forest_data_STORAGE = NMA_data.to_json( orient='split')

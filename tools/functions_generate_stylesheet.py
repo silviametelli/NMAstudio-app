@@ -17,6 +17,7 @@ def __generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
     cls = dd_nclr == 'By class'
     edg_lbl = dd_eclr == 'Add label'
     FOLLOWER_COLOR, FOLLOWING_COLOR = DFLT_ND_CLR, DFLT_ND_CLR
+
     n_cls = elements[-1]["data"]['n_class'] if "n_class" in elements[-1]["data"] and cls else 1
     stylesheet = get_stylesheet(pie=pie, classes=cls, n_class=n_cls, edg_lbl=edg_lbl, edg_col=edges_color,
                                 nd_col=nodes_color, node_size=node_size, edge_size=edge_size)
@@ -44,6 +45,8 @@ def __generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                          {"selector": 'node[id = "{}"]'.format(id),
                           "style": {"opacity": 1}}
                          for id in all_nodes_id if id not in slct_nodesdata and id in all_slct_src_trgt]
+
+
     # if slct_edgedata and False:  #TODO: Not doing much at the moment
     #     for edge in edgedata:
     #         if edge['source'] in edgedata:
@@ -70,7 +73,7 @@ def __generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
 
 
     triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
-    if 'btn-get-png.n_clicks' in triggered or 'btn-get-png-modal.n_clicks' in triggered :
+    if 'btn-get-png.n_clicks' in triggered or 'btn-get-png-modal.n_clicks' in triggered:
         stylesheet[0]['style']['color'] = 'black'
         net_download_activation = True
     else:

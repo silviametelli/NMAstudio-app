@@ -21,6 +21,8 @@ def get_stylesheet(node_size=False, classes=False, n_class=N_CLASSES, edg_col=Fa
                    'width': 'data(weight)',
                 #   'line-color': edg_col,
                     "opacity": edges_opacity}}]
+
+
     if classes:
        # default_stylesheet[0]['style'].update({"shape": "triangle"})
        list_classes = [{'selector': '.' + f'{x}',

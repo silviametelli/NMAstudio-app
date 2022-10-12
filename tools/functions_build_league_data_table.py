@@ -7,7 +7,7 @@ from assets.COLORS import *
 def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema_modal, slider_value,
                    league_table_data, cinema_net_data1, cinema_net_data2, data_and_league_table_DATA,
                    forest_data, forest_data_out2, reset_btn, ranking_data, net_storage, net_data_STORAGE_TIMESTAMP,
-                   data_filename, league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2, filename_cinema2_disabled):
+                   data_filename, league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2,  filename_cinema2_disabled):
 
 
     YEARS_DEFAULT = np.array([1963, 1990, 1997, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010,
@@ -24,7 +24,6 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     slider_marks = set_slider_marks(slider_min, slider_max, years)
     _out_slider = [slider_min, slider_max, slider_marks]
 
-
     triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
     if 'rob_vs_cinema.value' in triggered:
         toggle_cinema_modal = toggle_cinema
@@ -35,7 +34,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
         _data = pd.read_json(data_and_league_table_DATA['FULL_DATA'], orient='split').round(3)
         data_output = _data[_data.year <= slider_value].to_dict('records')
         _OUTPUT0 = data_and_league_table_DATA['OUTPUT']
-        _output = [data_output]+[_OUTPUT0[1]]+[data_output] + _OUTPUT0[3:]
+        _output = [data_output] + [_OUTPUT0[1]] + [data_output] + _OUTPUT0[3: ]
 
         return _output + _out_slider + [data_and_league_table_DATA]
 

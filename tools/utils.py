@@ -124,10 +124,15 @@ def get_network(df):
 
     if "treat1_class" and "treat2_class" in df.columns: all_nodes_sized = pd.concat([all_nodes_sized, all_nodes_class['class']], axis=1).reset_index(drop=True)
 
-    for c in {1, 2, 3}.difference(all_nodes_sized): all_nodes_sized[c] = 0
-    for c in {1.0, 2.0, 3.0}.difference(all_nodes_sized): all_nodes_sized[c] = 0
+    if isinstance(all_nodes_sized.columns[2], str):
+        for c in {'1', '2', '3'}.difference(all_nodes_sized): all_nodes_sized[c] = 0
+    elif all_nodes_sized.columns[2] in {1, 2, 3}:
+        for c in {1, 2, 3}.difference(all_nodes_sized): all_nodes_sized[c] = 0
+    elif all_nodes_sized.columns[2] in {1.0, 2.0, 3.0}:
+        for c in {1.0, 2.0, 3.0}.difference(all_nodes_sized): all_nodes_sized[c] = 0
 
-    all_nodes_sized.drop(columns=[col for col in all_nodes_sized if col not in ['treat', 'n', 'class', 1.0, 2.0, 3.0, 1, 2, 3]], inplace=True)
+    all_nodes_sized.drop(columns=[col for col in all_nodes_sized if col not in ['treat', 'n', 'class', 1.0, 2.0, 3.0, 1, 2, 3, '1','2','3']], inplace=True)
+
     cy_edges = [{'data': {'source': source, 'target': target,
                           'weight':  weight * 1 if (len(edges)<100 and len(edges)>13) else weight * 0.75 if len(edges)<13  else weight * 0.7,
                           'weight_lab': weight}}
@@ -149,7 +154,6 @@ def get_network(df):
                           'pie1': r1 / (r1+r2+r3),
                           'pie2': r2 / (r1+r2+r3),
                           'pie3': r3 / (r1+r2+r3)}} for target, size, r1, r2, r3 in all_nodes_sized.values]
-
     return cy_edges + cy_nodes
 
 

@@ -412,6 +412,10 @@ get_pairwise_data_long <- function(dat, outcome2=FALSE){
      names(pairwise_dat)[names(pairwise_dat) == 'outcome2_direction.x'] <- 'outcome2_direction'
      names(pairwise_dat)[names(pairwise_dat) == 'treat_class1.x'] <- 'treat1_class'
      names(pairwise_dat)[names(pairwise_dat) == 'treat_class2.x'] <- 'treat2_class'
+     names(pairwise_dat)[names(pairwise_dat) == 'treat_class1.y'] <- 'treat1_class'
+     names(pairwise_dat)[names(pairwise_dat) == 'treat_class2.y'] <- 'treat2_class'
+     names(pairwise_dat)[names(pairwise_dat) == 'treat_class1.1'] <- 'treat1_class'
+     names(pairwise_dat)[names(pairwise_dat) == 'treat_class2.1'] <- 'treat2_class'
      #names(pairwise_dat)[names(pairwise_dat) == 'rob.x'] <- 'rob'
      #names(pairwise_dat)[names(pairwise_dat) == 'year.x'] <- 'year'
      pairwise_dat$year <- coalesce(pairwise_dat$year.x, pairwise_dat$year.y)

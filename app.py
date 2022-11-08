@@ -92,8 +92,7 @@ def update_background(turn_dark):
 
 
 
-
-# Update which link is active in the navbar
+# Update active link in the navbar
 @app.callback(Output('homepage-link', 'active'),
               [Input('url', 'pathname')])
 def set_homepage_active(pathname):
@@ -106,6 +105,8 @@ def set_docpage_active(pathname):
 @app.callback(Output('newspage-link', 'active'), [Input('url', 'pathname')])
 def set_docpage_active(pathname):
     return pathname == '/news'
+
+
 
 #####################################################################################
 #####################################################################################
@@ -138,6 +139,8 @@ def is_data_file_uploaded(filename):
     else:
         return donot_show_DIV_style, '', filename
 
+
+### -------------------------- ALL CYTOSCAPE CALLBACKS  ------------------------------- ###
 
 ### --- update graph layout with dropdown: graph layout --- ###
 @app.callback([Output('cytoscape', 'layout'),
@@ -197,118 +200,6 @@ def get_image(net_download_activation, export):
             'options': {  # 'bg':'#40515e',
             'scale': 3}}
 
-
-### ----- update node info on NMA forest plot  ------ ###
-@app.callback(Output('tapNodeData-info', 'children'),
-              [Input('cytoscape', 'selectedNodeData')])
-def TapNodeData_info(data):
-    if data:
-        return 'Reference treatment: ', data[0]['label']
-    else:
-        return 'Click on a node to choose reference'
-
-
-### ----- update node info on bidim forest plot  ------ ###
-@app.callback(Output('tapNodeData-info-bidim', 'children'),
-              [Input('cytoscape', 'selectedNodeData')],
-              # prevent_initial_call=True
-              )
-def TapNodeData_info(data):
-    if data:
-        return 'Reference treatment selected: ', data[0]['label']
-    else:
-        return 'Click on a node to choose reference'
-
-
-### ----- update edge information on pairwise plot ------ ###
-@app.callback(Output('tapEdgeData-info', 'children'),
-              Input('cytoscape', 'selectedEdgeData'))
-def TapEdgeData_info(data):
-    if data:
-        return 'Selected comparison: ', f"{data[0]['source'].upper()} vs {data[0]['target'].upper()}"
-    else:
-        return 'Click on an edge to display the associated  plot'
-
-
-### ----- update node info on funnel plot  ------ ###
-@app.callback(Output('tapNodeData-info-funnel', 'children'),
-              [Input('cytoscape', 'tapNodeData')],
-              # prevent_initial_call=True
-              )
-def TapNodeData_info(data):
-    if data:
-        return 'Reference treatment selected: ', data['label']
-    else:
-        return 'Click on a node to choose reference treatment'
-
-
-
-### - display information box - ###
-@app.callback(Output('cytoscape-mouseTapEdgeData-output', 'children'),
-              [Input('cytoscape', 'selectedEdgeData')])
-def TapEdgeData(edge):
-    if edge:
-        #     store_edge = read_edge_frompickle()
-        #     if edge['id']==store_edge['id']: # TODO: not working: unselects after clicking
-        #         write_edge_topickle(EMPTY_SELECTION_EDGES)
-        #     else:                            # New click: reset layout on nodes and select layout on edge
-        #         write_edge_topickle(edge)
-        n_studies = edge[0]['weight_lab']
-        studies_str = f"{n_studies}" + (' studies' if n_studies > 1 else ' study')
-        return f"{edge[0]['source'].upper()} vs {edge[0]['target'].upper()}: {studies_str}"
-    else:
-        return "Click on an edge to get information."
-
-
-#### ---------------------- consistency table and netsplit table ------------------------ ####
-@app.callback([Output('netsplit_table-container', 'data'),
-              Output('netsplit_table-container', 'columns'),
-               Output('consistency-table', 'data'),
-               Output('consistency-table', 'columns')],
-              [Input('cytoscape', 'selectedEdgeData'),
-               Input("toggle_consistency_direction", "value"),
-               Input('net_split_data_STORAGE', 'data'),
-               Input('net_split_data_out2_STORAGE', 'data'),
-               Input('consistency_data_STORAGE', 'data'),]
-              )
-def netsplit(edges, outcome, net_split_data, net_split_data_out2, consistency_data):
-   return __netsplit(edges, outcome, net_split_data, net_split_data_out2, consistency_data)
-
-### ----- upload CINeMA data file 1 ------ ###
-@app.callback([Output("cinema_net_data1_STORAGE", "data"),
-               Output("file2-list", "children"),
-               ],
-              [Input('datatable-secondfile-upload', 'contents'),
-               Input('cinema_net_data1_STORAGE', 'data')],
-              [State('datatable-secondfile-upload', 'filename')])
-def get_new_data_cinema1(contents, cinema_net_data1, filename):
-    if contents is None:
-        cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
-    else:
-        cinema_net_data1 = parse_contents(contents, filename)
-    if filename is not None:
-        return cinema_net_data1.to_json(orient='split'), 'loaded'
-    else:
-        return cinema_net_data1.to_json(orient='split'), ''
-
-### ----- upload CINeMA data file 2 ------ ###
-@app.callback([Output("cinema_net_data2_STORAGE", "data"),
-               Output("file2-list-2", "children")],
-              [Input('datatable-secondfile-upload-2', 'contents'),
-               Input('cinema_net_data2_STORAGE', 'data'),],
-              [State('datatable-secondfile-upload-2', 'filename')])
-def get_new_data_cinema2(contents, cinema_net_data2, filename):
-    if contents is None:
-        cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
-    else:
-        cinema_net_data2 = parse_contents(contents, filename)
-
-    if filename is not None:
-        return cinema_net_data2.to_json(orient='split'), 'loaded'
-    else:
-        return cinema_net_data2.to_json(orient='split'), ''
-
-
 ### ----- Update layout with slider ------ ###
 @app.callback([Output('cytoscape', 'elements'),
                Output('modal-cytoscape', 'elements')],
@@ -346,10 +237,110 @@ def update_layout_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_c
 
     return elements, elements
 
+### ---------------------------------- FOREST PLOTS CALLBACKS ---------------------------------- ###
 
-#########################################################
-### ----- display Data Table and League Table ------ ###
-#########################################################
+### ----- update node info on NMA forest plot  ------ ###
+@app.callback(Output('tapNodeData-info', 'children'),
+              [Input('cytoscape', 'selectedNodeData')])
+def TapNodeData_info(data):
+    if data:
+        return 'Reference treatment: ', data[0]['label']
+    else:
+        return 'Click on a node to choose reference'
+
+
+### ----- update node info on bidim forest plot  ------ ###
+@app.callback(Output('tapNodeData-info-bidim', 'children'),
+              [Input('cytoscape', 'selectedNodeData')],
+              # prevent_initial_call=True
+              )
+def TapNodeData_info(data):
+    if data:
+        return 'Reference treatment selected: ', data[0]['label']
+    else:
+        return 'Click on a node to choose reference'
+
+
+### ----- update edge information on pairwise plot ------ ###
+@app.callback(Output('tapEdgeData-info', 'children'),
+              Input('cytoscape', 'selectedEdgeData'))
+def TapEdgeData_info(data):
+    if data:
+        return 'Selected comparison: ', f"{data[0]['source'].upper()} vs {data[0]['target'].upper()}"
+    else:
+        return 'Click on an edge to display the associated  plot'
+
+
+### - display information box - ###
+@app.callback(Output('cytoscape-mouseTapEdgeData-output', 'children'),
+              [Input('cytoscape', 'selectedEdgeData')])
+def TapEdgeData(edge):
+    if edge:
+        #     store_edge = read_edge_frompickle()
+        #     if edge['id']==store_edge['id']: # TODO: not working: unselects after clicking
+        #         write_edge_topickle(EMPTY_SELECTION_EDGES)
+        #     else:                            # New click: reset layout on nodes and select layout on edge
+        #         write_edge_topickle(edge)
+        n_studies = edge[0]['weight_lab']
+        studies_str = f"{n_studies}" + (' studies' if n_studies > 1 else ' study')
+        return f"{edge[0]['source'].upper()} vs {edge[0]['target'].upper()}: {studies_str}"
+    else:
+        return "Click on an edge to get information."
+
+
+### ----- display forest plot on node click ------ ###
+@app.callback(Output('tapNodeData-fig', 'figure'),
+              [Input('cytoscape', 'selectedNodeData'),
+               Input("toggle_forest_outcome", "value"),
+               Input("forest_data_STORAGE", "data"),
+               Input("forest_data_out2_STORAGE", "data"),
+               #Input("toggle_forest_direction", "value")
+               ],
+              State("net_data_STORAGE", "data")
+              )
+def TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage):
+    return __TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage)
+
+
+### ----- display dibim forest plot on node click ------ ###
+@app.callback(Output('tapNodeData-fig-bidim', 'figure'),
+              [Input('cytoscape', 'selectedNodeData'),
+               Input('forest_data_STORAGE', 'data'),
+               Input('forest_data_out2_STORAGE', 'data')],
+               State('ranking_data_STORAGE', 'data')
+              )
+def TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
+    return __TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data)
+
+
+### - figures on edge click: pairwise forest plots  - ###
+@app.callback(Output('tapEdgeData-fig-pairwise', 'figure'),
+              [Input('cytoscape', 'selectedEdgeData'),
+               Input("toggle_forest_pair_outcome", "value"),
+               Input('forest_data_prws_STORAGE', 'data'),
+               Input('forest_data_prws_out2_STORAGE', 'data')],
+              State("net_data_STORAGE", "data")
+              )
+
+def  update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2, net_storage):
+    return __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2, net_storage)
+
+
+
+### ----------------------------------  TRANSITIVITY CALLBACK ---------------------------------- ###
+
+
+@app.callback(Output('tapEdgeData-fig', 'figure'),
+              [Input('dropdown-effectmod', 'value'),
+               Input('cytoscape', 'selectedEdgeData'),
+               Input('net_data_STORAGE','data')])
+def update_boxplot(value, edges, net_data):
+    return __update_boxplot(value, edges, net_data)
+
+
+### ----------------------------------  DATA TABLE, LEAGUE TABLE CALLBACKS ---------------------------------- ###
+
+
 @app.callback([Output('datatable-upload-container', 'data'),
                Output('datatable-upload-container', 'columns'),
                Output('datatable-upload-container-expanded', 'data'),
@@ -398,56 +389,69 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
                           data_filename, league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2, filename_cinema2_disabled)
 
 
-#######################################################################################
-########################## ALL plots calling tools.function ###########################
-#######################################################################################
+
+### ---------------------------------- FUNNEL, CONSISTENCY, RANKING  CALLBACKS ---------------------------------- ###
 
 
-### - figures on edge click: transitivity boxplots  - ###
-@app.callback(Output('tapEdgeData-fig', 'figure'),
-              [Input('dropdown-effectmod', 'value'),
-               Input('cytoscape', 'selectedEdgeData'),
-               Input('net_data_STORAGE','data')])
-def update_boxplot(value, edges, net_data):
-    return __update_boxplot(value, edges, net_data)
-
-
-### - figures on edge click: pairwise forest plots  - ###
-@app.callback(Output('tapEdgeData-fig-pairwise', 'figure'),
+#### ----- consistency table and netsplit table ----- ####
+@app.callback([Output('netsplit_table-container', 'data'),
+              Output('netsplit_table-container', 'columns'),
+               Output('consistency-table', 'data'),
+               Output('consistency-table', 'columns')],
               [Input('cytoscape', 'selectedEdgeData'),
-               Input("toggle_forest_pair_outcome", "value"),
-               Input('forest_data_prws_STORAGE', 'data'),
-               Input('forest_data_prws_out2_STORAGE', 'data')],
-              State("net_data_STORAGE", "data")
+               Input("toggle_consistency_direction", "value"),
+               Input('net_split_data_STORAGE', 'data'),
+               Input('net_split_data_out2_STORAGE', 'data'),
+               Input('consistency_data_STORAGE', 'data'),]
               )
+def netsplit(edges, outcome, net_split_data, net_split_data_out2, consistency_data):
+   return __netsplit(edges, outcome, net_split_data, net_split_data_out2, consistency_data)
 
-def  update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2, net_storage):
-    return __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2, net_storage)
-
-
-### ----- display forest plot on node click ------ ###
-@app.callback(Output('tapNodeData-fig', 'figure'),
-              [Input('cytoscape', 'selectedNodeData'),
-               Input("toggle_forest_outcome", "value"),
-               Input("forest_data_STORAGE", "data"),
-               Input("forest_data_out2_STORAGE", "data"),
-               #Input("toggle_forest_direction", "value")
+### ----- upload CINeMA data file 1 ------ ###
+@app.callback([Output("cinema_net_data1_STORAGE", "data"),
+               Output("file2-list", "children"),
                ],
-              State("net_data_STORAGE", "data")
-              )
-def TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage):
-    return __TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage)
+              [Input('datatable-secondfile-upload', 'contents'),
+               Input('cinema_net_data1_STORAGE', 'data')],
+              [State('datatable-secondfile-upload', 'filename')])
+def get_new_data_cinema1(contents, cinema_net_data1, filename):
+    if contents is None:
+        cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
+    else:
+        cinema_net_data1 = parse_contents(contents, filename)
+    if filename is not None:
+        return cinema_net_data1.to_json(orient='split'), 'loaded'
+    else:
+        return cinema_net_data1.to_json(orient='split'), ''
+
+### ----- upload CINeMA data file 2 ------ ###
+@app.callback([Output("cinema_net_data2_STORAGE", "data"),
+               Output("file2-list-2", "children")],
+              [Input('datatable-secondfile-upload-2', 'contents'),
+               Input('cinema_net_data2_STORAGE', 'data'),],
+              [State('datatable-secondfile-upload-2', 'filename')])
+def get_new_data_cinema2(contents, cinema_net_data2, filename):
+    if contents is None:
+        cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
+    else:
+        cinema_net_data2 = parse_contents(contents, filename)
+
+    if filename is not None:
+        return cinema_net_data2.to_json(orient='split'), 'loaded'
+    else:
+        return cinema_net_data2.to_json(orient='split'), ''
 
 
-### ----- display dibim forest plot on node click ------ ###
-@app.callback(Output('tapNodeData-fig-bidim', 'figure'),
-              [Input('cytoscape', 'selectedNodeData'),
-               Input('forest_data_STORAGE', 'data'),
-               Input('forest_data_out2_STORAGE', 'data')],
-               State('ranking_data_STORAGE', 'data')
+### ----- update node info on funnel plot  ------ ###
+@app.callback(Output('tapNodeData-info-funnel', 'children'),
+              [Input('cytoscape', 'tapNodeData')],
+              # prevent_initial_call=True
               )
-def TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
-    return __TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data)
+def TapNodeData_info(data):
+    if data:
+        return 'Reference treatment selected: ', data['label']
+    else:
+        return 'Click on a node to choose reference treatment'
 
 
 ############ - Funnel plot  - ###############
@@ -576,9 +580,7 @@ def toggle_modal_edge(open_t, close):
     if close: return False
     return False
 
-#--------------------------------------------------------------------------------#
-# ------------------------------ data selector modal ----------------------------#
-#--------------------------------------------------------------------------------#
+#---------------------------------- INITIAL DATA SELECTION and ALL NMA RUNS (in MODALS) ---------------------------------------#
 
 @app.callback([Output("modal_data", "is_open"),
                Output("modal_data_checks", "is_open"),
@@ -590,7 +592,7 @@ def toggle_modal_edge(open_t, close):
               [Input("upload_your_data", "n_clicks_timestamp"),
                Input("upload_modal_data", "n_clicks_timestamp"),
                Input("submit_modal_data", "n_clicks_timestamp"),
-               Input('uploaded_datafile_to_disable_cinema','data') #uploaded_datafile_to_disable_cinema
+               Input('uploaded_datafile_to_disable_cinema','data')
                ],
               [State("dropdown-format", "value"),
                State("dropdown-outcome1", "value"),
@@ -754,13 +756,14 @@ def data_modal(open_modal_data, upload, submit, filename2,
                 data_user['outcome2_direction'] = var_outs['outcome2_direction']
 
             try:
-                data = adjust_data(data_user, search_value_format, search_value_outcome1, search_value_outcome2)
+                data = adjust_data(data_user, search_value_format, search_value_outcome2)
                 TEMP_net_data_STORAGE = data.to_json(orient='split')
-
             #except:
                  #TEMP_net_data_STORAGE = {}
                  #raise ValueError('Data conversion failed')
+
             except Exception as Rconsole_error_data:
+                print('enter except')
                 TEMP_net_data_STORAGE = {}
                 error = Rconsole_error_data
                 return modal_data_is_open, modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, str(error), True
@@ -783,10 +786,9 @@ def modal_ENABLE_UPLOAD_button(dataselectors):
     return not all(dataselectors) if len(dataselectors) else True
 
 
+
 from assets.storage import DEFAULT_DATA
-
 OUTPUTS_STORAGE_IDS = list(DEFAULT_DATA.keys())[:-2]
-
 @app.callback([Output(id, 'data') for id in OUTPUTS_STORAGE_IDS],
               [Input("submit_modal_data", "n_clicks"),
                Input('reset_project','n_clicks')
@@ -892,9 +894,7 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
         try:
             TEMP_user_elements_STORAGE = get_network(df=net_data)
             TEMP_user_elements_out2_STORAGE = []
-
             NMA_data = run_network_meta_analysis(net_data)
-
             TEMP_forest_data_STORAGE = NMA_data.to_json( orient='split')
 
             if "TE2" in net_data.columns:
@@ -906,7 +906,7 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
                 NMA_data2 = run_network_meta_analysis(net_data_out2)
                 TEMP_forest_data_out2_STORAGE = NMA_data2.to_json(orient='split')
 
-            return (False,  '', html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
+            return (False, '', html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
                     '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE, TEMP_user_elements_out2_STORAGE)
 
 
@@ -1058,7 +1058,7 @@ def modal_submit_button(para_check_data_DATA, para_anls_data_DATA, para_prw_data
 
 
 
-##############################  expand callbacks ###################################
+### -------------------------------------------- EXPAND CALLBACKS ----------------------------------------------- ###
 
 # ----- data expand modal -----#
 @app.callback(
@@ -1270,16 +1270,6 @@ def generate_xlsx(n_clicks, leaguedata):
 ############################# TOGGLE SECTION ################################
 #############################################################################
 
-### -------------- toggle switch forest beneficial/harm ---------------- ###
-# @app.callback([Output("forestswitchlabel1", "style"),
-#                Output("forestswitchlabel2", "style")],
-#               [Input("toggle_forest_direction", "value")])
-# def color_forest_toggle(toggle_value):
-#     style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
-#               'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px'}
-#     style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
-#               'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', }
-#     return style1, style2
 
 ### -------------- toggle switch forest outcome1/outcome2 ---------------- ###
 @app.callback([Output("forestswitchlabel_outcome1", "style"),

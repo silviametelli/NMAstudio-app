@@ -30,11 +30,12 @@ def print_console_error():
     rlib.callbacks.consoleread = my_consoleread
 
 def apply_r_func(func, df):
-    # types = df.applymap(type).apply(set)
-    # var_multiple_class = types[types.apply(len) > 1]
-    # print(var_multiple_class)
-
+    df['rob'] = df['rob'].astype("string")
+    df['rob'] = (df['rob'].str.lower()
+                      .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
+                      .replace({'l': 1, 'm': 2, 'h': 3}))
     with localconverter(ro.default_converter + pandas2ri.converter):
+        #print(df.reset_index(drop=True))
         df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
     func_r_res = func(dat=df_r)
     r_result = pandas2ri.rpy2py(func_r_res)
@@ -162,13 +163,13 @@ def get_network(df):
 def parse_contents(contents, filename):
     content_type, content_string = contents.split(',')
     decoded = base64.b64decode(content_string)
-    missing_values = ["n/a", "na", "--", '.', 'missing', 'NA', 'NAN', 'None', '']
+    missing_values = ["n/a", "na", "--", '.', 'missing', 'NA', 'NAN', 'None', '', ' ']
     if 'csv' in filename:  # Assume that the user uploaded a CSV file
         try:
             df = pd.read_csv(io.StringIO(decoded.decode('utf-8', errors = 'ignore')), na_values = missing_values)
         except:
             try:
-                df = pd.read_csv(io.StringIO(decoded.decode('unicode-escape',errors ='ignore')), na_values = missing_values) #unicode-escape
+                df = pd.read_csv(io.StringIO(decoded.decode('unicode-escape',errors ='ignore')), na_values = missing_values)
             except:
                 df = pd.read_csv(io.StringIO(decoded.decode('ISO-8859-1')))
         return df
@@ -178,8 +179,7 @@ def parse_contents(contents, filename):
 
 ## ----------------------  Reshape pd data from long to wide  --------------------------- ##
 
-def adjust_data(data, value_format, value_outcome1, value_outcome2):
-
+def adjust_data(data, value_format, value_outcome2):
     data['rob'] = data['rob'].astype("string")
     data['rob'] = (data['rob'].str.lower()
                       .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
@@ -195,7 +195,9 @@ def adjust_data(data, value_format, value_outcome1, value_outcome2):
         if value_outcome2:
             data = apply_r_func_two_outcomes(func=run_pairwise_data_long_r, df=data)
         else:
+
             data = apply_r_func(func=run_pairwise_data_long_r, df=data)
+
         data[data=='__NONE__'] = np.nan
 
     if value_format=='contrast':

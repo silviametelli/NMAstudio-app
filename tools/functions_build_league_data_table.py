@@ -20,6 +20,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     net_data = pd.read_json(net_data, orient='split').round(3)
 
     years = net_data.year if not reset_btn_triggered else YEARS_DEFAULT
+
     slider_min, slider_max = years.min(), years.max()
     slider_marks = set_slider_marks(slider_min, slider_max, years)
     _out_slider = [slider_min, slider_max, slider_marks]

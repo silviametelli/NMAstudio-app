@@ -19,8 +19,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 
     net_data = pd.read_json(net_data, orient='split').round(3)
 
-    years = net_data.year if not reset_btn_triggered else YEARS_DEFAULT
-
+    years = net_data.year if (not reset_btn_triggered) else YEARS_DEFAULT
     slider_min, slider_max = years.min(), years.max()
     slider_marks = set_slider_marks(slider_min, slider_max, years)
     _out_slider = [slider_min, slider_max, slider_marks]
@@ -39,24 +38,31 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 
         return _output + _out_slider + [data_and_league_table_DATA]
 
+
     ranking_data = pd.read_json(ranking_data, orient='split')
     leaguetable = pd.read_json(league_table_data, orient='split')
-    confidence_map = {k: n for n, k in enumerate(['low', 'medium', 'high'])}
+    confidence_map = {k : n for n, k in enumerate(['low', 'medium', 'high'])}
     treatments = np.unique(net_data[['treat1', 'treat2']].dropna().values.flatten())
+
+    net_data['rob'] = net_data['rob'].replace('__none__', '')
+
     robs = (net_data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
             .pivot_table(index='treat2', columns='treat1', values='rob')
             .reindex(index=treatments, columns=treatments, fill_value=np.nan))
+
+
     robs = robs.fillna(robs.T) if not toggle_cinema else robs
     robs_slct = robs #robs + robs.T - np.diag(np.diag(robs))  if not toggle_cinema else robs ## full rob table
 
     comprs_downgrade  = pd.DataFrame()
     comprs_conf_lt = comprs_conf_ut = None
 
+
     if toggle_cinema:
 
         cinema_net_data1 = pd.read_json(cinema_net_data1, orient='split')
         cinema_net_data2 = pd.read_json(cinema_net_data2, orient='split')
-        confidence_map = {k: n for n, k in enumerate(['very low', 'low', 'moderate', 'high'])}
+        confidence_map = {k : n for n, k in enumerate(['very low', 'low', 'moderate', 'high'])}
         comparisons1 = cinema_net_data1.Comparison.str.split(':', expand=True)
         confidence1 = cinema_net_data1['Confidence rating'].str.lower().map(confidence_map)
         if filename_cinema2 is not None or (filename_cinema2 is None and "Default_data" in cinema_net_data2.columns):
@@ -177,6 +183,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 
             treatments = slctd_trmnts
 
+
     #####   Add style colouring and legend
     N_BINS = 3 if not toggle_cinema else 4
     bounds = np.arange(N_BINS + 1) / N_BINS
@@ -205,6 +212,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     ranges = ranges + 1 if not toggle_cinema else ranges
     league_table_styles = []
 
+
     for treat_c in treatments:
         for treat_r in treatments:
             if treat_r!=treat_c:
@@ -218,6 +226,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
                                                 'backgroundColor': cmap[clr_indx] if not empty else CLR_BCKGRND2,
                                                 'color': CX1 if not empty else CX2 if diag else 'white'})
     league_table_styles.append({'if': {'column_id': 'Treatment'}, 'backgroundColor': CX1})
+
 
 
     # Prepare for output
@@ -241,6 +250,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
         slctd_edgs = [e['source'] + e['target'] for e in store_edge] if store_edge else []
         net_data = net_data[net_data.treat1.isin(slctd_nods) | net_data.treat2.isin(slctd_nods)
                     | (net_data.treat1 + net_data.treat2).isin(slctd_edgs) | (net_data.treat2 + net_data.treat1).isin(slctd_edgs)]
+
 
     data_cols = [{"name": c, "id": c} for c in net_data.columns]
     data_output = net_data[net_data.year <= slider_value].to_dict('records')

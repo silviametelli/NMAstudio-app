@@ -50,6 +50,10 @@ def apply_r_func(func, df):
 
 
 def apply_r_func_two_outcomes(func, df):
+    df['rob'] = df['rob'].astype("string")
+    df['rob'] = (df['rob'].str.lower()
+                      .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
+                      .replace({'l': 1, 'm': 2, 'h': 3}))
     with localconverter(ro.default_converter + pandas2ri.converter):
         df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
     func_r_res = func(dat=df_r, outcome2=True)
@@ -184,7 +188,6 @@ def adjust_data(data, value_format, value_outcome2):
     data['rob'] = (data['rob'].str.lower()
                       .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
                       .replace({'l': 1, 'm': 2, 'h': 3}))
-
     if value_format=='long':
         try:
             for c in data.columns:
@@ -197,21 +200,13 @@ def adjust_data(data, value_format, value_outcome2):
         else:
 
             data = apply_r_func(func=run_pairwise_data_long_r, df=data)
-
         data[data=='__NONE__'] = np.nan
-
     if value_format=='contrast':
         for c in data.columns:
             if data[c].dtype == object:
                 data[c].fillna('__NONE__', inplace=True)
-        #effect_sizes = {'continuous': {'MD': get_MD, 'SMD': get_SMD}, 'binary': {'OR': get_OR, 'RR': get_RR}}
-        #get_effect_size1 = effect_sizes[value_outcome1][dataselectors[0]]
-        #data['TE'], data['seTE'] = get_effect_size1(data, effect=1)
         if value_outcome2:
-
             data = apply_r_func_two_outcomes(func=run_pairwise_data_contrast_r, df=data)
-            #get_effect_size2 = effect_sizes[value_outcome2][dataselectors[1]]
-            #data['TE2'], data['seTE2'] = get_effect_size2(data, effect=2)
         else:
             data = apply_r_func(func=run_pairwise_data_contrast_r, df=data)
         data[data=='__NONE__'] = np.nan

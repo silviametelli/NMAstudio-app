@@ -27,21 +27,22 @@ def __ranking_plot(ranking_data, net_data):
         if outcome_direction_1: df1.pscore1 = 1 - df1.pscore1.values
         if outcome_direction_2: df1.pscore2 = 1 - df1.pscore2.values
         df1 = df1.sort_values(by=["pscore1", "pscore2"], ascending=[False, False])
-        z_text = (tuple(df1.pscore1.round(2).astype(str).values),
-                  tuple(df1.pscore2.round(2).astype(str).values))
-        pscores = (tuple(df1.pscore1), tuple(df1.pscore2))
         treatments = tuple(df1.treatment)
+        z_text = (tuple(df1.pscore1.round(2).astype(str).values),
+                  tuple(df1.pscore2.round(2).astype(str).values)) if len(treatments) < 22 else  (('', ) * len(treatments), ('', ) * len(treatments))
+        pscores = (tuple(df1.pscore1), tuple(df1.pscore2))
     else:
-        outcomes = ("Outcome",)
         pscore = 1 - df1.pscore if outcome_direction_1 else df1.pscore
         pscore = pscore.sort_values(ascending=False)
-        elements = pd.DataFrame({"pscore":pscore,"treat":df1.treatment})
+        elements = pd.DataFrame({"pscore" : pscore, "treat" : df1.treatment})
         sorted_elements = elements.sort_values(by="pscore", ascending=False)
         strd_pscore = sorted_elements['pscore']
         strd_trt = sorted_elements['treat']
-        z_text = (tuple(strd_pscore.round(2).astype(str).values),)
-        pscores = (tuple(strd_pscore),)
         treatments = tuple(strd_trt)
+        z_text = (tuple(strd_pscore.round(2).astype(str).values), ) if len(sorted_elements) < 22 else  (('', ) * len(sorted_elements),)
+        pscores = (tuple(strd_pscore),)
+        outcomes = ("Outcome",)  if len(sorted_elements) < 22 else ("", )
+
 
 
     #################### heatmap ####################

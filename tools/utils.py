@@ -146,19 +146,23 @@ def get_network(df):
 
     if "treat1_class" and "treat2_class" in df.columns:
         cy_nodes = [{"data": {"id": target,
-                          "label": target,
-                          "n_class": num_classes,
-                          'size': np.sqrt(size) / max_trsfrmd_size_nodes,
-                          'pie1': r1 / (r1+r2+r3), 'pie2':r2 / (r1+r2+r3), 'pie3': r3 / (r1+r2+r3),
-                          }, 'classes': f'{CMAP[cls]}'} for target, size, r1, r2, r3, cls in all_nodes_sized.values]
+                              "label": target,
+                              "n_class": num_classes,
+                              'size': np.sqrt(size) / max_trsfrmd_size_nodes,
+                              'pie1': r1 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None,
+                              'pie2': r2 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None,
+                              'pie3': r3 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None,
+                              }, 'classes': f'{CMAP[cls]}'} for target, size, r1, r2, r3, cls in all_nodes_sized.values]
     else:
         cy_nodes = [{"data": {"id": target,
-                          "label": target,
-                          'classes':'genesis',
-                          'size': np.sqrt(size) / max_trsfrmd_size_nodes,
-                          'pie1': r1 / (r1+r2+r3),
-                          'pie2': r2 / (r1+r2+r3),
-                          'pie3': r3 / (r1+r2+r3)}} for target, size, r1, r2, r3 in all_nodes_sized.values]
+                              "label": target,
+                              'classes': 'genesis',
+                              'size': np.sqrt(size) / max_trsfrmd_size_nodes,
+                              'pie1': r1 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None,
+                              'pie2': r2 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None,
+                              'pie3': r3 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None}} for
+                    target, size, r1, r2, r3 in all_nodes_sized.values]
+
     return cy_edges + cy_nodes
 
 

@@ -1,0 +1,314 @@
+Trial_ID,stats_name,n_Randomized,All_cause_mortality_events_D1428,Year,ROB_6_mortality_D28,rob
+110,Convalescent plasma,179,7,2021,Low,l
+110,Standard care/Placebo,171,14,2021,Low,l
+111,Interferon beta-1b,40,2,2020,Some concerns,m
+111,Standard care/Placebo,40,6,2020,Some concerns,m
+112,Hydrocortisone,76,11,2020,Low,l
+112,Standard care/Placebo,73,20,2020,Low,l
+113,Fixed-dose hydrocortisone,143,41,2020,Some concerns,m
+113,Standard care/Placebo,108,33,2020,Some concerns,m
+114,Dexamethasone,151,85,2020,Some concerns,m
+114,Standard care/Placebo,148,91,2020,Some concerns,m
+123,Convalescent plasma,235,34,2020,Some concerns,m
+123,Standard care/Placebo,229,31,2020,Some concerns,m
+125,Tocilizumab,301,58,2022,Low,l
+125,Standard care/Placebo,151,28,2022,Low,l
+131,rhG-CSF,100,3,2020,Some concerns,m
+131,Standard care/Placebo,100,12,2020,Some concerns,m
+148,Convalescent plasma,28,5,2021,Low,l
+148,Late CP,30,2,2021,Low,l
+164,Interferon beta-1a,2063,243,2020,Low,l
+164,Standard care/Placebo,2064,216,2020,Low,l
+167,Methylprednisolone,24,13,2020,Some concerns,m
+167,Standard care/Placebo,23,13,2020,Some concerns,m
+168,Dexamethasone,7,2,2020,Low,l
+168,Standard care/Placebo,12,2,2020,Low,l
+169,Tocilizumab,60,2,2020,Some concerns,m
+169,Standard care/Placebo,66,1,2020,Some concerns,m
+171,Tocilizumab,64,7,2020,Some concerns,m
+171,Standard care/Placebo,67,8,2020,Some concerns,m
+173,Tocilizumab,161,9,2020,Low,l
+173,Standard care/Placebo,82,3,2020,Low,l
+174,Hydrocortisone,15,6,2020,Low,l
+174,Standard care/Placebo,14,2,2020,Low,l
+180,Tocilizumab,259,26,2020,Low,l
+180,Standard care/Placebo,129,11,2020,Low,l
+182,Convalescent plasma,15,3,2022,Some concerns,m
+182,Standard plasma,16,1,2022,Some concerns,m
+195,IV Ig,52,24,2020,Some concerns,m
+195,Standard care/Placebo,32,14,2020,Some concerns,m
+200,Convalescent plasma,20,1,2021,Some concerns,m
+200,Standard care/Placebo,20,2,2021,Some concerns,m
+205,Convalescent plasma,80,2,2021,Low,l
+205,Standard care/Placebo,80,4,2021,Low,l
+206,Convalescent plasma,228,25,2020,Low,l
+206,Standard care/Placebo,106,12,2020,Low,l
+209,Convalescent plasma,40,10,2022,High,h
+209,Standard care/Placebo,40,14,2022,High,h
+211,Itolizumab,22,1,2021,Some concerns,m
+211,Standard care/Placebo,10,3,2021,Some concerns,m
+232,Tocilizumab,366,98,2021,Some concerns,m
+232,Sarilumab,48,10,2021,Some concerns,m
+232,Standard care/Placebo,412,142,2021,Some concerns,m
+24,Ruxolitinib,22,0,2020,Some concerns,m
+24,Standard care/Placebo,21,3,2020,Some concerns,m
+244,Interferon beta-1a High,83,34,2021,Some concerns,m
+244,Interferon beta-1a,85,31,2021,Some concerns,m
+245,INF-beta-1a+INF-beta-1b,40,10,2021,Some concerns,m
+245,Interferon beta-1b,20,6,2021,Some concerns,m
+245,Interferon beta-1a,20,4,2021,Some concerns,m
+245,Standard care/Placebo,20,9,2021,Some concerns,m
+25,Interferon beta-1a,46,8,2020,High,h
+25,Standard care/Placebo,46,17,2020,High,h
+250,Tocilizumab,65,14,2021,Some concerns,m
+250,Standard care/Placebo,64,6,2021,Some concerns,m
+252,Anakinra,59,13,2021,Low,l
+252,Standard care/Placebo,57,13,2021,Low,l
+254,Methylprednisolone,43,0,2021,Some concerns,m
+254,Standard care/Placebo,43,1,2021,Some concerns,m
+26,Convalescent plasma,52,8,2020,Some concerns,m
+26,Standard care/Placebo,51,12,2020,Some concerns,m
+261,Methylprednisolone,47,8,2021,Some concerns,m
+261,Dexamethasone,46,15,2021,Some concerns,m
+267,Sarilumab,334,30,2021,Low,l
+267,Standard care/Placebo,86,7,2021,Low,l
+274,Tocilizumab,2022,621,2021,Low,l
+274,Standard care/Placebo,2094,729,2021,Low,l
+277,INM005,120,8,2021,Low,l
+277,Standard care/Placebo,125,14,2021,Low,l
+280,Convalescent plasma,21,1,2020,,
+280,Standard care/Placebo,28,8,2020,,
+282,Dexamethasone,25,16,2021,Some concerns,m
+282,Standard care/Placebo,25,15,2021,Some concerns,m
+283,IV Ig,50,0,2021,Some concerns,m
+283,Standard care/Placebo,50,1,2021,Some concerns,m
+295,Tocilizumab,90,13,2021,Some concerns,m
+295,Standard care/Placebo,90,15,2021,Some concerns,m
+296,Convalescent plasma,5795,1399,2021,Low,l
+296,Standard care/Placebo,5763,1408,2021,Low,l
+300,Convalescent plasma,150,19,2021,Low,l
+300,Standard plasma,73,18,2021,Low,l
+304,Mavrilimumab,21,1,2021,Some concerns,m
+304,Standard care/Placebo,19,3,2021,Some concerns,m
+311,TD-0903,7,0,2021,Some concerns,m
+311,Standard care/Placebo,6,2,2021,Some concerns,m
+321,Thalidomide,30,4,2021,High,h
+321,Standard care/Placebo,30,6,2021,High,h
+323,Canakinumab,29,4,2021,Low,l
+323,Standard care/Placebo,16,3,2021,Low,l
+326,CERC-002,41,3,2021,Low,l
+326,Standard care/Placebo,42,6,2021,Low,l
+333,Convalescent plasma,59,14,2021,Low,l
+333,Standard plasma,15,4,2021,Low,l
+334,Otilimab,403,64,2021,Low,l
+334,Standard care/Placebo,403,74,2021,Low,l
+34,Dexamethasone,2104,482,2021,Low,l
+34,Standard care/Placebo,4321,1110,2021,Low,l
+344,Tocilizumab,74,60,2021,Some concerns,m
+344,Dexamethasone,75,45,2021,Some concerns,m
+348,PNB001,20,1,2021,Some concerns,m
+348,Standard care/Placebo,20,2,2021,Some concerns,m
+352,Baricitinib,764,62,2021,Low,l
+352,Standard care/Placebo,761,100,2021,Low,l
+353,Tocilizumab,174,21,2022,Low,l
+353,Standard care/Placebo,180,34,2022,Low,l
+354,Lenzilumab,261,24,2021,Some concerns,m
+354,Standard care/Placebo,259,34,2021,Some concerns,m
+356,Tocilizumab,20,5,2021,High,h
+356,Standard care/Placebo,20,4,2021,High,h
+357,Convalescent plasma,53,8,2021,Some concerns,m
+357,Standard care/Placebo,52,14,2021,Some concerns,m
+363,Sarilumab,367,102,2022,Some concerns,m
+363,Standard care/Placebo,90,19,2022,Some concerns,m
+365,Anakinra,412,13,2021,Low,l
+365,Standard care/Placebo,194,13,2021,Low,l
+377,Sarilumab,1044,264,2022,Some concerns,m
+377,Standard care/Placebo,286,64,2022,Some concerns,m
+398,C-IVIG,40,10,2021,Some concerns,m
+398,Standard care/Placebo,10,6,2021,Some concerns,m
+399,Namilumab,57,6,2021,Some concerns,m
+399,Infliximab,35,4,2021,Some concerns,m
+399,Standard care/Placebo,54,10,2021,Some concerns,m
+400,Convalescent plasma,1084,401,2021,Low,l
+400,Standard care/Placebo,916,347,2021,Low,l
+405,Tofacitinib,144,4,2021,Low,l
+405,Standard care/Placebo,145,8,2021,Low,l
+406,Imatinib,204,15,2021,Some concerns,m
+406,Standard care/Placebo,196,27,2021,Some concerns,m
+411,Hydrocortisone,16,6,2021,Low,l
+411,Standard care/Placebo,14,2,2021,Low,l
+425,Convalescent plasma,627,141,2021,Some concerns,m
+425,Standard care/Placebo,313,63,2021,Some concerns,m
+431,Convalescent plasma,80,18,2021,Some concerns,m
+431,Standard care/Placebo,80,13,2021,Some concerns,m
+440,Canakinumab,227,12,2021,Low,l
+440,Standard care/Placebo,227,16,2021,Low,l
+442,Secukinumab,25,1,2022,Some concerns,m
+442,Standard care/Placebo,25,1,2022,Some concerns,m
+448,Sarilumab,68,8,2021,Some concerns,m
+448,Standard care/Placebo,80,14,2021,Some concerns,m
+449,Sarilumab,50,14,2022,Some concerns,m
+449,Standard care/Placebo,41,11,2022,Some concerns,m
+450,Sarilumab,20,2,2022,Some concerns,m
+450,Standard care/Placebo,10,0,2022,Some concerns,m
+452,Sarilumab,99,2,2021,Low,l
+452,Standard care/Placebo,102,2,2021,Low,l
+463,Convalescent plasma,69,10,2021,Some concerns,m
+463,Standard care/Placebo,67,8,2021,Some concerns,m
+467,Tocilizumab,10,0,2021,Low,l
+467,Standard care/Placebo,11,2,2021,Low,l
+468,Tocilizumab,20,0,2021,Low,l
+468,Standard care/Placebo,8,2,2021,Low,l
+469,Tocilizumab,51,8,2022,Some concerns,m
+469,Standard care/Placebo,46,10,2022,Some concerns,m
+470,Tocilizumab,59,1,2022,Some concerns,m
+470,Standard care/Placebo,29,0,2022,Some concerns,m
+472,Tocilizumab,37,11,2021,High,h
+472,Standard care/Placebo,17,8,2021,High,h
+473,Tocilizumab,22,2,2021,Low,l
+473,Standard care/Placebo,27,2,2021,Low,l
+483,TCZ+Dex,226,15,2021,Some concerns,m
+483,Dexamethasone,227,19,2021,Some concerns,m
+484,Adalimumab,34,4,2021,Some concerns,m
+484,Standard care/Placebo,34,4,2021,Some concerns,m
+515,Levilimab,103,4,2021,Some concerns,m
+515,Standard care/Placebo,103,4,2021,Some concerns,m
+516,Opaganib,23,3,2022,Some concerns,m
+516,Standard care/Placebo,19,3,2022,Some concerns,m
+523,Sargramostim,40,2,2021,Some concerns,m
+523,Standard care/Placebo,41,2,2021,Some concerns,m
+531,Baricitinib,51,20,2022,Low,l
+531,Standard care/Placebo,50,29,2022,Low,l
+546,Tocilizumab,82,9,2021,Low,l
+546,Siltuximab,76,10,2021,Low,l
+546,Standard care/Placebo,72,7,2021,Low,l
+554,C-IVIG,30,1,2021,Low,l
+554,Standard care/Placebo,30,1,2021,Low,l
+555,Anakinra,15,5,2021,Some concerns,m
+555,Standard care/Placebo,15,7,2021,Some concerns,m
+558,IV Ig,69,24,2021,Low,l
+558,Standard care/Placebo,77,20,2021,Low,l
+559,Convalescent plasma,41,2,2021,Low,l
+559,Standard care/Placebo,39,10,2021,Low,l
+568,Convalescent plasma,241,14,2021,Low,l
+568,Standard care/Placebo,246,19,2021,Low,l
+571,Clazakizumab,8,1,2021,Some concerns,m
+571,Standard care/Placebo,9,1,2021,Some concerns,m
+574,Convalescent plasma,18,2,2021,Some concerns,m
+574,Standard care/Placebo,15,3,2021,Some concerns,m
+58,IV Ig,17,1,2020,Some concerns,m
+58,Standard care/Placebo,17,3,2020,Some concerns,m
+583,Convalescent plasma,468,59,2021,Low,l
+583,Standard care/Placebo,473,71,2021,Low,l
+59,Methylprednisolone,209,79,2020,Low,l
+59,Standard care/Placebo,207,80,2020,Low,l
+592,Sarilumab,79,4,2021,Some concerns,m
+592,Standard care/Placebo,39,3,2021,Some concerns,m
+593,Auxora,143,10,2022,Some concerns,m
+593,Standard care/Placebo,141,23,2022,Some concerns,m
+607,Ruxolitinib,287,9,2022,Some concerns,m
+607,Standard care/Placebo,145,3,2022,Some concerns,m
+611,Convalescent plasma,63,7,2022,Some concerns,m
+611,Standard care/Placebo,95,12,2022,Some concerns,m
+617,Tocilizumab,21,2,2021,Some concerns,m
+617,Dexamethasone,21,13,2021,Some concerns,m
+626,Methylprednisolone,19,1,2022,High,h
+626,Standard care/Placebo,22,1,2022,High,h
+628,Convalescent plasma,37,8,2022,Some concerns,m
+628,Standard care/Placebo,73,18,2022,Some concerns,m
+638,C-IVIG,301,18,2022,Some concerns,m
+638,Standard care/Placebo,292,22,2022,Some concerns,m
+640,Avdoralimab,103,20,2022,Low,l
+640,Standard care/Placebo,104,12,2022,Low,l
+649,Convalescent plasma,52,11,2022,Low,l
+649,Standard care/Placebo,51,13,2022,Low,l
+652,Sarilumab,20,6,2022,Low,l
+652,Standard care/Placebo,30,2,2022,Low,l
+658,Baricitinib,4148,514,2022,Low,l
+658,Standard care/Placebo,4008,546,2022,Low,l
+659,Ruxolitinib,164,90,2022,Low,l
+659,Standard care/Placebo,47,36,2022,Low,l
+665,Gimsilumab,114,32,2022,Low,l
+665,Standard care/Placebo,113,26,2022,Low,l
+673,Methylprednisolone,152,15,2022,Low,l
+673,Standard care/Placebo,152,18,2022,Low,l
+676,Convalescent plasma,200,42,2022,Some concerns,m
+676,Standard care/Placebo,200,37,2022,Some concerns,m
+678,Dupilumab,19,1,2022,Low,l
+678,Standard care/Placebo,21,3,2022,Low,l
+679,Convalescent plasma,32,4,2022,Some concerns,m
+679,Standard care/Placebo,11,8,2022,Some concerns,m
+680,C-IVIG,10,0,2022,Some concerns,m
+680,IV Ig,8,3,2022,Some concerns,m
+682,CP-High titer,14,2,2022,Some concerns,m
+682,Convalescent plasma,41,10,2022,Some concerns,m
+683,Clazakizumab,78,19,2022,Low,l
+683,Standard care/Placebo,74,20,2022,Low,l
+69,Vilobelimab,15,2,2020,Some concerns,m
+69,Standard care/Placebo,15,4,2020,Some concerns,m
+690,Reparixin,37,1,2022,Some concerns,m
+690,Standard care/Placebo,19,3,2022,Some concerns,m
+691,RPH-104,124,14,2022,Low,l
+691,Olokizumab,124,9,2022,Low,l
+691,Standard care/Placebo,124,6,2022,Low,l
+696,hzVSF-v13,45,4,2022,Some concerns,m
+696,Standard care/Placebo,19,3,2022,Some concerns,m
+699,Sargramostim,79,9,2022,High,h
+699,Standard care/Placebo,44,6,2022,High,h
+700,Garadacimab,63,11,2022,Low,l
+700,Standard care/Placebo,61,11,2022,Low,l
+701,Zanubrutinib,30,2,2022,Low,l
+701,Standard care/Placebo,33,4,2022,Low,l
+702,Acalabrutinib,31,2,2022,Some concerns,m
+702,Standard care/Placebo,31,2,2022,Some concerns,m
+707,Baricitinib,125,40,2022,Low,l
+707,Tocilizumab,126,50,2022,Low,l
+708,Opaganib,237,36,2022,Some concerns,m
+708,Standard care/Placebo,238,38,2022,Some concerns,m
+712,Astegolimab,130,19,2022,Low,l
+712,Efmarodocokin alfa,132,17,2022,Low,l
+712,Standard care/Placebo,134,15,2022,Low,l
+721,Convalescent plasma,50,6,2022,Some concerns,m
+721,Standard care/Placebo,51,2,2022,Some concerns,m
+724,Anakinra,40,0,2022,Some concerns,m
+724,Standard care/Placebo,40,1,2022,Some concerns,m
+726,Convalescent plasma,495,89,2022,Low,l
+726,Standard care/Placebo,479,80,2022,Low,l
+730,Methylprednisolone,73,9,2022,Some concerns,m
+730,Dexamethasone,70,12,2022,Some concerns,m
+735,Pamrevlumab,11,3,2022,Low,l
+735,Standard care/Placebo,11,2,2022,Low,l
+741,TNF/EMT+DEX,71,4,2022,Some concerns,m
+741,TNF/EMT+DEX+Barictinib,70,2,2022,Some concerns,m
+741,Barictinib+DEX,75,1,2022,Some concerns,m
+741,Dexamethasone,71,3,2022,Some concerns,m
+745,Baricitinib,142,14,2022,Low,l
+745,Standard care/Placebo,142,18,2022,Low,l
+746,Anakinra,37,9,2022,Some concerns,m
+746,Standard care/Placebo,34,3,2022,Some concerns,m
+747,Tocilizumab+Remdesivir,104,26,2022,Some concerns,m
+747,Dexamethasone,104,32,2022,Some concerns,m
+764,Convalescent plasma,60,7,2022,Low,l
+764,Standard care/Placebo,60,12,2022,Low,l
+765,Convalescent plasma,35,3,2022,Some concerns,m
+765,Standard care/Placebo,40,4,2022,Some concerns,m
+766,TD-0903,106,6,2022,Low,l
+766,Standard care/Placebo,104,13,2022,Low,l
+767,Vilobelimab,178,54,2022,Some concerns,m
+767,Standard care/Placebo,191,77,2022,Some concerns,m
+770,Sirukumab,140,18,2022,Low,l
+770,Standard care/Placebo,72,13,2022,Low,l
+771,Lanadelumab,28,8,2022,Low,l
+771,Standard care/Placebo,34,9,2022,Low,l
+772,Convalescent plasma,326,29,2021,Some concerns,m
+772,Standard care/Placebo,163,12,2021,Some concerns,m
+775,Otilimab,175,63,2022,Some concerns,m
+775,Standard care/Placebo,175,70,2022,Some concerns,m
+778,Convalescent plasma,20,3,2022,Some concerns,m
+778,Standard care/Placebo,10,2,2022,Some concerns,m
+800,Apremilast,194,34,2022,Low,l
+800,Standard care/Placebo,190,33,2022,Low,l
+85,Methylprednisolone,35,7,2020,High,h
+85,Standard care/Placebo,29,5,2020,High,h
+92,Auxora,17,2,2020,Some concerns,m
+92,Standard care/Placebo,9,2,2020,Some concerns,m

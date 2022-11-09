@@ -762,7 +762,6 @@ def data_modal(open_modal_data, upload, submit, filename2,
                  #raise ValueError('Data conversion failed')
 
             except Exception as Rconsole_error_data:
-                print('enter except')
                 TEMP_net_data_STORAGE = {}
                 error = Rconsole_error_data
                 return modal_data_is_open, modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, str(error), True

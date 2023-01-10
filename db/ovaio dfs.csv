@@ -1,0 +1,17 @@
+studlab,name,year,TE,seTE,treat1,treat2,n1,n2,rob
+1,Shi2021,2021,-0.545,0.129,CRSplatbasedCT,platbasedCT,182,175,M 
+2,Lederman2021,2021,-0.58,0.123,platbasedCTcediranib,platbasedCT,164,118,L
+3,Pignata2021,2021,-0.673,0.111,platbasedCTbevBP,platbasedCT,203,203,M
+4,Monk2020,2020,0.01,0.119,trabectedinPLD,singleagentCT,289,287,M
+5,Coleman2019,2019,-0.198,0.111,CRSplatbasedCT,platbasedCT,240,245,M
+6,Pignata2017,2017,-0.344,0.158,platbasedCT,singleagentCT,108,107,M
+7,Coleman2017,2017,-0.478,0.08,platbasedCTbev,platbasedCT,337,337,M
+8,Vergote2016,2016,-0.078,0.104,platbasedCTfarletuzumab,platbasedCT,736,364,L
+9,Aghajanian2015,2015,-0.734,0.119,platbasedCTbev,platbasedCT,242,242,L
+10,Wagner2012,2012,-0.098,0.066,CBDCAPLD,platinumbasedCT,466,509,L
+11,Monk2012,2012,-0.315,0.135,trabectedinPLD,singleagentCT,337,335,M
+12,Meier2009,2009,-0.117,0.123,singleagentCT,treosulfan,136,138,M
+13,Pfisterer2020,2020,-0.211,0.089,CBDCAPLDbev,platbasedCTbev,345,337,L
+14,Parmar2003,2003,-0.274,0.072,platinumbasedCT,singleagentCT,392,410,L
+15,Harter2021,2021,-0.416,0.102,CRSplatbasedCT,platbasedCT,206,201,M
+16,Pfisterer2006,2006,-0.329,0.111,platinumbasedCT,singleagentCT,178,178,M

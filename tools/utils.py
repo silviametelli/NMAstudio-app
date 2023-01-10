@@ -32,6 +32,7 @@ def print_console_error():
 def apply_r_func(func, df):
     df['rob'] = df['rob'].astype("string")
     df['rob'] = (df['rob'].str.lower()
+                      .str.strip()
                       .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
                       .replace({'l': 1, 'm': 2, 'h': 3}))
     with localconverter(ro.default_converter + pandas2ri.converter):
@@ -190,8 +191,10 @@ def parse_contents(contents, filename):
 def adjust_data(data, value_format, value_outcome2):
     data['rob'] = data['rob'].astype("string")
     data['rob'] = (data['rob'].str.lower()
+                      .str.strip()
                       .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
                       .replace({'l': 1, 'm': 2, 'h': 3}))
+
     if value_format=='long':
         try:
             for c in data.columns:

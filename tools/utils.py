@@ -53,8 +53,9 @@ def apply_r_func(func, df):
 def apply_r_func_two_outcomes(func, df):
     df['rob'] = df['rob'].astype("string")
     df['rob'] = (df['rob'].str.lower()
-                      .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
-                      .replace({'l': 1, 'm': 2, 'h': 3}))
+                 .str.strip()
+                 .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
+                 .replace({'l': 1, 'm': 2, 'h': 3}))
     with localconverter(ro.default_converter + pandas2ri.converter):
         df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
     func_r_res = func(dat=df_r, outcome2=True)

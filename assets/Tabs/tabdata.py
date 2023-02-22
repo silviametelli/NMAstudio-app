@@ -1,4 +1,5 @@
 import numpy as np
+import datetime
 from assets.dropdowns_values import *
 from tools.utils import set_slider_marks
 YEARS_DEFAULT = np.array([1963,1990,1997,2001,2003,2004,2005,2006,2007,2008,2010,
@@ -26,7 +27,7 @@ def tab_data(years=YEARS_DEFAULT):
                      html.Div(dcc.Slider(min=y_min, max=y_max,
                                          step=None,
                                          marks=set_slider_marks(y_min, y_max, years),
-                                         value=y_max,
+                                         value=datetime.date.today().year, #ymax
                                          updatemode='drag',
                                          id='slider-year',
                                          tooltip=dict(placement='top')),

@@ -36,7 +36,6 @@ def apply_r_func(func, df):
                       .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
                       .replace({'l': 1, 'm': 2, 'h': 3}))
     with localconverter(ro.default_converter + pandas2ri.converter):
-        #print(df.reset_index(drop=True))
         df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
     func_r_res = func(dat=df_r)
     r_result = pandas2ri.rpy2py(func_r_res)
@@ -94,7 +93,7 @@ def generate_ssl_perm_and_key(cert_name, key_name):
 def set_slider_marks(y_min, y_max, years):
     return {int(x): {'label': str(x),
                      'style': {'color': 'white', 'font-size':'10px',
-                               'opacity':1 if x in (y_min,y_max) else 0}}
+                               'opacity':1 if x in (y_min, y_max) else 0}}
             for x in np.unique(years).astype('int')
             }
 
@@ -138,10 +137,12 @@ def get_network(df):
     elif all_nodes_sized.columns[2] in {1.0, 2.0, 3.0}:
         for c in {1.0, 2.0, 3.0}.difference(all_nodes_sized): all_nodes_sized[c] = 0
 
+    all_nodes_robs.drop(columns=[col for col in all_nodes_robs if col not in [1.0, 2.0, 3.0, 1, 2, 3, '1','2','3']], inplace=True)
     all_nodes_sized.drop(columns=[col for col in all_nodes_sized if col not in ['treat', 'n', 'class', 1.0, 2.0, 3.0, 1, 2, 3, '1','2','3']], inplace=True)
 
+
     cy_edges = [{'data': {'source': source, 'target': target,
-                          'weight':  weight * 1 if (len(edges)<100 and len(edges)>13) else weight * 0.75 if len(edges)<13  else weight * 0.7,
+                          'weight': weight * 1 if (len(edges)<100 and len(edges)>13) else weight * 0.75 if len(edges)<13  else weight * 0.7,
                           'weight_lab': weight}}
                 for source, target, weight in edges.values]
     max_trsfrmd_size_nodes = np.sqrt(all_nodes_sized.iloc[:,1].max()) / 70

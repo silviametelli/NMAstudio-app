@@ -212,27 +212,33 @@ def get_image(net_download_activation, export):
                Input('reset_project', 'n_clicks'),
                ])
 def update_layout_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_cons, out2_fun, reset_btn):
+
     YEARS_DEFAULT = np.array([1963, 1990, 1997, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010,
                               2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021])
     years_dft_max = YEARS_DEFAULT.max()
+
+
     reset_btn_triggered = False
     triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
     if 'reset_project.n_clicks' in triggered: reset_btn_triggered = True
 
-    net_data = pd.read_json(net_data, orient='split')
+    try:
+        net_datajs = pd.read_json(net_data, orient='split')
+    except:
+        net_datajs = pd.read_json(net_data, orient='split', encoding = 'utf-8')
 
     if out2_nma or out2_pair or out2_cons or out2_fun:
         net_data2 = net_data.drop(["TE", "seTE", "n1", "n2"], axis=1)
         net_data2 = net_data2.rename(columns={"TE2": "TE", "seTE2": "seTE", "n2.1": "n1", "n2.2": "n2"})
-        net_data = pd.DataFrame(net_data2)
-        net_data = net_data.dropna(subset=['TE', 'seTE'])
-        net_data = net_data[net_data.year <= slider_year] if not reset_btn_triggered else net_data[net_data.year <= years_dft_max]
-        elements = get_network(df=net_data)
-    else:
-        net_data = net_data.dropna(subset=['TE', 'seTE'])
+        net_datajs2 = pd.DataFrame(net_data2)
+        net_datajs2 = net_datajs2.dropna(subset=['TE', 'seTE'])
+        net_datajs2 = net_datajs2[net_datajs2.year <= slider_year] if not reset_btn_triggered else net_datajs2[net_datajs2.year <= years_dft_max]
+        elements = get_network(df=net_datajs2)
 
-        net_data = net_data[net_data.year <= slider_year] if not reset_btn_triggered else net_data[net_data.year <= years_dft_max]
-        elements = get_network(df=net_data)
+    else:
+        net_datajs = net_datajs.dropna(subset=['TE', 'seTE'])
+        net_datajs = net_datajs[net_datajs.year <= slider_year] if not reset_btn_triggered else net_datajs[net_datajs.year <= years_dft_max]
+        elements = get_network(df=net_datajs)
 
     return elements, elements
 
@@ -756,6 +762,7 @@ def data_modal(open_modal_data, upload, submit, filename2,
 
             try:
                 data = adjust_data(data_user, search_value_format, search_value_outcome2)
+
                 TEMP_net_data_STORAGE = data.to_json(orient='split')
             #except:
                  #TEMP_net_data_STORAGE = {}
@@ -769,7 +776,8 @@ def data_modal(open_modal_data, upload, submit, filename2,
             return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, '', False
 
         if submit and button_id == 'submit_modal_data':
-                return modal_data_is_open, not modal_data_checks_is_open and (not modal_data_is_open), TEMP_net_data_STORAGE, filename_exists, '', False
+
+            return modal_data_is_open, not modal_data_checks_is_open and (not modal_data_is_open), TEMP_net_data_STORAGE, filename_exists, '', False
 
         return not modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE, filename_exists, '', False
     else:
@@ -821,6 +829,7 @@ def modal_SUBMIT_button(submit,  reset_btn,
 
 
     if submit_modal_data_trigger:  # Is triggered by submit_modal_data.n_clicks
+
         OUT_DATA = [TEMP_net_data_STORAGE, TEMP_net_data_out2_STORAGE, TEMP_consistency_data_STORAGE, TEMP_user_elements_STORAGE,
                     TEMP_user_elements_out2_STORAGE, TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_forest_data_prws_STORAGE,
                     TEMP_forest_data_prws_out2_STORAGE, TEMP_ranking_data_STORAGE, TEMP_funnel_data_STORAGE, TEMP_funnel_data_out2_STORAGE,
@@ -864,7 +873,7 @@ def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, TEMP_net_data_STOR
         if all(passed_checks.values()):
                 return html.P(u"\u2713" + " All data checks passed.", style={"color":"green"}), '__Para_Done__'
         else:
-            return (html.P(["WARNING - some data checks failed:"]+sum([[html.Br(), f'{k}']
+            return (html.P(["WARNINGS:"]+sum([[html.Br(), f'{k}']
                                                                         for k,v in passed_checks.items()
                                                                             if not v], []), style={"color": "orange"}),
                                 '__Para_Done__')

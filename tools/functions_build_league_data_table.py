@@ -21,21 +21,21 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 
     years = net_data.year #if (not reset_btn_triggered) else YEARS_DEFAULT
     slider_min, slider_max = years.min(), years.max()
+
     slider_marks = set_slider_marks(slider_min, slider_max, years)
+
     _out_slider = [slider_min, slider_max, slider_marks]
 
+
     triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
-    if 'rob_vs_cinema.value' in triggered:
-        toggle_cinema_modal = toggle_cinema
-    elif 'rob_vs_cinema_modal.value' in triggered:
-        toggle_cinema = toggle_cinema_modal
+    if 'rob_vs_cinema.value' in triggered: toggle_cinema_modal = toggle_cinema
+    elif 'rob_vs_cinema_modal.value' in triggered: toggle_cinema = toggle_cinema_modal
 
     if 'slider-year.value' in triggered:
         _data = pd.read_json(data_and_league_table_DATA['FULL_DATA'], orient='split').round(3)
         data_output = _data[_data.year <= slider_value].to_dict('records')
         _OUTPUT0 = data_and_league_table_DATA['OUTPUT']
         _output = [data_output] + [_OUTPUT0[1]] + [data_output] + _OUTPUT0[3: ]
-
         return _output + _out_slider + [data_and_league_table_DATA]
 
 
@@ -43,6 +43,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     leaguetable = pd.read_json(league_table_data, orient='split')
     confidence_map = {k : n for n, k in enumerate(['low', 'medium', 'high'])}
     treatments = np.unique(net_data[['treat1', 'treat2']].dropna().values.flatten())
+
 
     net_data['rob'] = net_data['rob'].replace('__none__', '')
 
@@ -183,7 +184,6 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 
             treatments = slctd_trmnts
 
-
     #####   Add style colouring and legend
     N_BINS = 3 if not toggle_cinema else 4
     bounds = np.arange(N_BINS + 1) / N_BINS
@@ -260,6 +260,8 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 
     data_and_league_table_DATA['FULL_DATA'] = net_data.to_json( orient='split')
     data_and_league_table_DATA['OUTPUT'] = _output
+
+
     return _output + _out_slider + [data_and_league_table_DATA]
 
 

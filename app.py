@@ -51,17 +51,6 @@ def get_new_layout():
 server = app.server
 app.layout = get_new_layout()
 
-light_theme = {
-    "main-background": "#ffe7a6",
-    "header-text": "#376e00",
-    "sub-text": "#0c5703",
-}
-
-dark_theme = {
-    "main-background": "#000000",
-    "header-text": "#ff7575",
-    "sub-text": "#ffd175",
-}
 
 # ------------------------------ app interactivity ----------------------------------#
 
@@ -78,6 +67,8 @@ def display_page(pathname):
     if pathname == '/home':  return HOMEPAGE
     elif pathname == '/doc': return doc_layout
     elif pathname == '/news': return news_layout
+    elif pathname == '/save_project': return save_layout
+
     else:  return HOMEPAGE
 
 
@@ -107,6 +98,10 @@ def set_docpage_active(pathname):
     return pathname == '/news'
 
 
+@app.callback(Output('savepage-link', 'active'), [Input('url', 'pathname')])
+def set_docpage_active(pathname):
+    return pathname == '/save_project'
+
 
 #####################################################################################
 #####################################################################################
@@ -127,13 +122,17 @@ def update_options(search_value_format, search_value_outcome1, search_value_outc
 
 
 #update filename DIV and Store filename in Session
+from tools.utils import id_generator
 @app.callback([Output("dropdowns-DIV", "style"),
                Output("uploaded_datafile", "children"),
-               Output("datatable-filename-upload","data")],
-               Input('datatable-upload', 'filename'))
+               Output("datatable-filename-upload","data")
+               ],
+               Input('datatable-upload', 'filename')
+              )
 def is_data_file_uploaded(filename):
     show_DIV_style = {'display': 'inline-block', 'margin-bottom': '0px'}
     donot_show_DIV_style = {'display': 'none', 'margin-bottom': '0px'}
+
     if filename:
         return show_DIV_style, filename or '', filename
     else:
@@ -1387,6 +1386,21 @@ def func(n_clicks):
               prevent_initial_call=True)
 def func(n_clicks):
      return send_file("Documentation/NMAstudio_tutorial.pdf")
+
+
+#################### save project/generate link ###################
+from tools.utils import id_generator
+@app.callback(
+    Output("output_username", "children"),
+    Input("input-username", "value"),
+    prevent_initial_call=True)
+def update_output(input):
+    token = id_generator(input)
+    print(token)
+    return u'User: {}'.format(input)
+
+
+
 
 
 ####################################################################

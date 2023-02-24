@@ -9,13 +9,16 @@ UP_LOGO = "/assets/logos/logo_universite_paris.jpg"
 
 def Navbar():
     home_button = dbc.NavItem(dbc.NavLink('HOME', href="/home", external_link=True,
-                                          style = {'color':'white','font-family': "sans-serif ",
+                                          style = {'color':'#7e95cc','font-family': "sans-serif ",
                                                    'font-size': '13px'}))
     doc_button = dbc.NavItem(dbc.NavLink('DOCUMENTATION', href="/doc", external_link=True,
-                                         style = {'color':'white','font-family': "sans-serif ",
+                                         style = {'color':'#7e95cc','font-family': "sans-serif ",
                                                   'font-size': '13px' }))
     news_button = dbc.NavItem(dbc.NavLink('NEWS', href="/news", external_link=True,
-                                         style = {'color':'white','font-family': "sans-serif ",
+                                         style = {'color':'#7e95cc','font-family': "sans-serif ",
+                                                  'font-size': '13px' }))
+    save_button = dbc.NavItem(dbc.NavLink('SAVE PROJECT', href="/save_project", external_link=True,
+                                         style = {'color':'violet','font-family': "sans-serif ",
                                                   'font-size': '13px' }))
 
     navbar = dbc.Navbar([
@@ -34,7 +37,7 @@ def Navbar():
                             }),
 
             html.Div([
-                dbc.Col(children=[dbc.Nav([home_button, doc_button, news_button],
+                dbc.Col(children=[dbc.Nav([home_button, doc_button, news_button, save_button],
                                           navbar=True, style={'text-align':'center',
                                                               'padding-right':'5%','padding-top':'2.5%',
                                                               'margin-left':'50px'}),

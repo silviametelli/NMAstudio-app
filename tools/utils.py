@@ -1,4 +1,6 @@
 import os, shutil, pickle, base64, io
+import string
+import random
 from pandas.api.types import is_numeric_dtype
 from tools.PATHS import __TEMP_LOGS_AND_GLOBALS, __SESSIONS_FOLDER, YESTERDAY
 from assets.effect_sizes import *
@@ -88,6 +90,9 @@ def generate_ssl_perm_and_key(cert_name, key_name):
 # def read_session_pickle(path):
 #     return pickle.load(open(path, 'rb'))
 
+
+def id_generator(chars=string.ascii_uppercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(len(chars)))
 
 ## --------------------------------MISC-------------------------------------------- ##
 def set_slider_marks(y_min, y_max, years):

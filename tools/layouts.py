@@ -292,3 +292,57 @@ news_layout = \
                      ])
     ])
 
+
+
+save_layout = \
+    html.Div(id='savepage-link', className="markdown_style",
+            children = [Navbar(), html.Br(),
+
+                        html.Div(style={"width": "98%", "border": "1px solid gray", "padding": "10px", "color": "black",
+                                        'font-family': 'sans-serif',
+                                        "margin": "15px", "background-color": "#d7dbda", "font-weight": "550"},
+                     children = [
+                         html.Div(
+                          children=[
+                              html.Br(), html.Br(),
+                              dcc.Markdown('You can generate your own username and then click on the button Generate Link to Your Project to generate a sharable link of your NMA analysis. Please note the analysis will be publicly accessible to anyone you have shared the link with.',
+                                           className="markdown_style_black",
+                                           style={"font-size": '18px', "font-style": "italic", "margin-right":"5%",
+                                                  "margin-left":"1%"}),
+
+                              html.Br(),html.Br(),
+
+                              dcc.Markdown(
+                                  'Username must be at least 8 characters, including one numerical character and one special character.',
+                                  className="markdown_style_black",
+                                  style={"font-size": '18px', "font-style": "italic", "margin-right": "5%",
+                                         "margin-left": "1%"}),
+
+                             html.Br(),html.Br(),html.Br(),
+
+                              html.Div([html.H4("CREATE YOUR USERNAME:", style={'display': 'inline-block', 'margin-left':'1%'}),
+                                       dcc.Input(id='input-username', type="text", placeholder="",
+                                                 style={ 'margin-left':'2%','display': 'inline-block', 'width':"30%"}),
+                                        html.Div(id="output_username", style={ 'margin-left':'2%', 'width':"30%"}),
+                                        ],
+                                    style={'font-size': '20px', 'color': '#587485', 'padding-left': '3%',
+                                           'padding-right': '3%', 'font-family': 'sans-serif', "font-weight": "530"}
+                                       ),
+
+                              html.Br(), html.Br(),
+
+                              html.Div([html.Button("PRINT SHARABLE LINK:",
+                                                             style={'display': 'inline-block', 'color':"#c1e2be",'margin-left':'1.5%',
+                                                                    'background-color': '#587485',}),
+                                        html.H4("Print link here", style={'display': 'inline-block', 'margin-left':'2%'})],
+                                       style={'font-size': '20px', 'color': '#587485', 'padding-left': '2%',
+                                              'padding-right': '3%', 'font-family': 'sans-serif', "font-weight": "530"}
+                                       ),
+
+                              html.Br(), html.Br(),html.Br(), html.Br(),html.Br(), html.Br(),html.Br(),
+                              html.Div(id='print-link')
+
+                          ])
+                ])
+
+    ])

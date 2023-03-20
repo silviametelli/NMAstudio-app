@@ -1,6 +1,7 @@
 import dash_bootstrap_components as dbc
-import dash_html_components as html
 import dash_daq as daq
+from dash import Input, Output, State, html, dcc
+from assets.Tabs.saveload_modal_button import saveload_modal
 
 NMASTUDIO_LOGO = "/assets/logos/NMAstudio_bold.png"
 CRESS_LOGO = "/assets/logos/CRESS_logo.png"
@@ -9,17 +10,17 @@ UP_LOGO = "/assets/logos/logo_universite_paris.jpg"
 
 def Navbar():
     home_button = dbc.NavItem(dbc.NavLink('HOME', href="/home", external_link=True,
-                                          style = {'color':'#7e95cc','font-family': "sans-serif ",
+                                          style = {'color':'#white','font-family': "sans-serif ",
                                                    'font-size': '13px'}))
     doc_button = dbc.NavItem(dbc.NavLink('DOCUMENTATION', href="/doc", external_link=True,
-                                         style = {'color':'#7e95cc','font-family': "sans-serif ",
+                                         style = {'color':'#white','font-family': "sans-serif ",
                                                   'font-size': '13px' }))
     news_button = dbc.NavItem(dbc.NavLink('NEWS', href="/news", external_link=True,
-                                         style = {'color':'#7e95cc','font-family': "sans-serif ",
+                                         style = {'color':'#white','font-family': "sans-serif ",
                                                   'font-size': '13px' }))
-    save_button = dbc.NavItem(dbc.NavLink('SAVE PROJECT', href="/save_project", external_link=True,
-                                         style = {'color':'violet','font-family': "sans-serif ",
-                                                  'font-size': '13px' }))
+
+
+    saveload_button = saveload_modal
 
     navbar = dbc.Navbar([
             html.Div(dbc.Col(html.Img(src=NMASTUDIO_LOGO, height="53px",
@@ -37,7 +38,7 @@ def Navbar():
                             }),
 
             html.Div([
-                dbc.Col(children=[dbc.Nav([home_button, doc_button, news_button, save_button],
+                dbc.Col(children=[dbc.Nav([home_button, doc_button, news_button, saveload_button],
                                           navbar=True, style={'text-align':'center',
                                                               'padding-right':'5%','padding-top':'2.5%',
                                                               'margin-left':'50px'}),

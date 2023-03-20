@@ -1206,7 +1206,8 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
     background-color:var(--app-background-color);
     background-clip:padding-box;
     border:1px solid rgba(0,0,0,.2);border-radius:.3rem;outline:0}
-.modal-backdrop{position:fixed;top:0;right:0;bottom:0;left:0;z-index:1040;background-color:#000}
+.modal-backdrop{position:fixed;top:0;right:0;bottom:0;left:0;z-index:1040;background-color: #1a1818
+}
 .modal-backdrop.fade{opacity:0}.modal-backdrop.show{opacity:.5}
 .modal-header{display:-ms-flexbox;
     display:flex;
@@ -1237,3 +1238,7 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
 .modal-dialog-centered{min-height:calc(100% - (1.75rem * 2))}
 .modal-dialog-centered::before{height:calc(100vh - (1.75rem * 2))}
 .modal-sm{max-width:300px}}@media (min-width:992px){.modal-lg{max-width:800px}}
+
+.dash-table-container{
+height: 100% !important;
+}

@@ -53,6 +53,7 @@ DEFAULT_DATA = OrderedDict(net_data_STORAGE=NET_DATA,
                            cinema_net_data2_STORAGE=CINEMA_NET_DATA2,
                            )
 
+
 OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col} for col in NET_DATA.select_dtypes(['number']).columns]
 N_CLASSES = USER_ELEMENTS[-1]["data"]['n_class'] if "n_class" in USER_ELEMENTS[-1]["data"] else 1
 

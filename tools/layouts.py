@@ -69,9 +69,9 @@ def home_layout():
                                            ], style={'margin-left': '-20px'}),
                          cyto.Cytoscape(id='cytoscape',  responsive=True,
                                 elements=[],
-                                style={ 'height': '75vh', 'width': '99%', 'margin-top': '10px',
+                                style={ 'height': '75vh', 'width': '98%', 'margin-top': '10px',
                                         'margin-left': '-10px','margin-right': '-10px',  'z-index': '999',
-                                        'padding-left': '-10px'
+                                        'padding-left': '-10px', 'max-width': 'calc(52vw)',
                                        },
                                 layout={'name': 'circle', 'animate': True},
                                 stylesheet=get_stylesheet()),
@@ -115,8 +115,12 @@ def home_layout():
                                     selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
                                                     'align-items': 'center'},
                                     label='Data',
-                                    children=html.Div(className='control-tab', children=[tab_data()])
-                                ),
+                                    children=html.Div(className='control-tab', children=[tab_data()],
+                                                      style={'overflowX': 'auto',
+                                                             'overflowY': 'auto',
+                                                             'height': '99%',
+                                                             })
+                                    ),
 
                             dcc.Tab(style={'color':'grey', 'display': 'flex', 'justify-content':'center', 'align-items':'center'},
                                     selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
@@ -293,56 +297,3 @@ news_layout = \
     ])
 
 
-
-save_layout = \
-    html.Div(id='savepage-link', className="markdown_style",
-            children = [Navbar(), html.Br(),
-
-                        html.Div(style={"width": "98%", "border": "1px solid gray", "padding": "10px", "color": "black",
-                                        'font-family': 'sans-serif',
-                                        "margin": "15px", "background-color": "#d7dbda", "font-weight": "550"},
-                     children = [
-                         html.Div(
-                          children=[
-                              html.Br(), html.Br(),
-                              dcc.Markdown('You can generate your own username and then click on the button Generate Link to Your Project to generate a sharable link of your NMA analysis. Please note the analysis will be publicly accessible to anyone you have shared the link with.',
-                                           className="markdown_style_black",
-                                           style={"font-size": '18px', "font-style": "italic", "margin-right":"5%",
-                                                  "margin-left":"1%"}),
-
-                              html.Br(),html.Br(),
-
-                              dcc.Markdown(
-                                  'Username must be at least 8 characters, including one numerical character and one special character.',
-                                  className="markdown_style_black",
-                                  style={"font-size": '18px', "font-style": "italic", "margin-right": "5%",
-                                         "margin-left": "1%"}),
-
-                             html.Br(),html.Br(),html.Br(),
-
-                              html.Div([html.H4("CREATE YOUR USERNAME:", style={'display': 'inline-block', 'margin-left':'1%'}),
-                                       dcc.Input(id='input-username', type="text", placeholder="",
-                                                 style={ 'margin-left':'2%','display': 'inline-block', 'width':"30%"}),
-                                        html.Div(id="output_username", style={ 'margin-left':'2%', 'width':"30%"}),
-                                        ],
-                                    style={'font-size': '20px', 'color': '#587485', 'padding-left': '3%',
-                                           'padding-right': '3%', 'font-family': 'sans-serif', "font-weight": "530"}
-                                       ),
-
-                              html.Br(), html.Br(),
-
-                              html.Div([html.Button("PRINT SHARABLE LINK:",
-                                                             style={'display': 'inline-block', 'color':"#c1e2be",'margin-left':'1.5%',
-                                                                    'background-color': '#587485',}),
-                                        html.H4("Print link here", style={'display': 'inline-block', 'margin-left':'2%'})],
-                                       style={'font-size': '20px', 'color': '#587485', 'padding-left': '2%',
-                                              'padding-right': '3%', 'font-family': 'sans-serif', "font-weight": "530"}
-                                       ),
-
-                              html.Br(), html.Br(),html.Br(), html.Br(),html.Br(), html.Br(),html.Br(),
-                              html.Div(id='print-link')
-
-                          ])
-                ])
-
-    ])

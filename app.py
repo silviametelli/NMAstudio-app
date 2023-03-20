@@ -3,9 +3,7 @@
 # Created by:  Silvia Metelli
 # Created on: 10/11/2020
 # --------------------------------------------------------------------------------------------------------------------#
-import io
-import base64
-import numpy as np
+import secrets
 # --------------------------------------------------------------------------------------------------------------------#
 import warnings
 warnings.filterwarnings("ignore")
@@ -16,6 +14,8 @@ from dash_extensions.snippets import send_file
 from tools.utils import *
 from tools.PATHS import SESSION_PICKLE, get_session_pickle_path, TODAY, SESSION_TYPE, get_new_session_id
 from tools.layouts import *
+from tools.functions_modal_SUBMIT_data import __modal_SUBMIT_button, __data_modal
+from tools.functions_NMA_runs import __modal_submit_checks_DATACHECKS, __modal_submit_checks_NMA, __modal_submit_checks_PAIRWISE, __modal_submit_checks_LT, __modal_submit_checks_FUNNEL
 from tools.functions_ranking_plots import __ranking_plot
 from tools.functions_funnel_plot import __Tap_funnelplot
 from tools.functions_nmaforest_plot import __TapNodeData_fig, __TapNodeData_fig_bidim
@@ -25,6 +25,7 @@ from tools.functions_project_setup import __update_options
 from tools.functions_netsplit import __netsplit
 from tools.functions_build_league_data_table import __update_output
 from tools.functions_generate_stylesheet import __generate_stylesheet
+from tools.functions_export import __generate_xlsx_netsplit, __generate_xlsx_league, __generate_csv_consistency
 # --------------------------------------------------------------------------------------------------------------------#
 create_sessions_folders()
 clean_sessions_folders()
@@ -67,19 +68,9 @@ def display_page(pathname):
     if pathname == '/home':  return HOMEPAGE
     elif pathname == '/doc': return doc_layout
     elif pathname == '/news': return news_layout
-    elif pathname == '/save_project': return save_layout
 
     else:  return HOMEPAGE
 
-
-#Update background theme
-@app.callback(
-    Output("main_page", "style"),
-    Input("toggleTheme", "value"),
-            )
-def update_background(turn_dark):
-    theme = dark_theme if turn_dark else light_theme
-    return {"backgroundColor": theme["main-background"]}
 
 
 
@@ -97,10 +88,6 @@ def set_docpage_active(pathname):
 def set_docpage_active(pathname):
     return pathname == '/news'
 
-
-@app.callback(Output('savepage-link', 'active'), [Input('url', 'pathname')])
-def set_docpage_active(pathname):
-    return pathname == '/save_project'
 
 
 #####################################################################################
@@ -122,17 +109,15 @@ def update_options(search_value_format, search_value_outcome1, search_value_outc
 
 
 #update filename DIV and Store filename in Session
-from tools.utils import id_generator
 @app.callback([Output("dropdowns-DIV", "style"),
                Output("uploaded_datafile", "children"),
-               Output("datatable-filename-upload","data")
+               Output("datatable-filename-upload","data"),
                ],
-               Input('datatable-upload', 'filename')
+               [Input('datatable-upload', 'filename')]
               )
 def is_data_file_uploaded(filename):
     show_DIV_style = {'display': 'inline-block', 'margin-bottom': '0px'}
     donot_show_DIV_style = {'display': 'none', 'margin-bottom': '0px'}
-
     if filename:
         return show_DIV_style, filename or '', filename
     else:
@@ -227,6 +212,7 @@ def update_layout_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_c
         net_datajs = pd.read_json(net_data, orient='split', encoding = 'utf-8')
 
     if out2_nma or out2_pair or out2_cons or out2_fun:
+        net_data = pd.read_json(net_data, orient='split')
         net_data2 = net_data.drop(["TE", "seTE", "n1", "n2"], axis=1)
         net_data2 = net_data2.rename(columns={"TE2": "TE", "seTE2": "seTE", "n2.1": "n1", "n2.2": "n2"})
         net_datajs2 = pd.DataFrame(net_data2)
@@ -280,11 +266,6 @@ def TapEdgeData_info(data):
               [Input('cytoscape', 'selectedEdgeData')])
 def TapEdgeData(edge):
     if edge:
-        #     store_edge = read_edge_frompickle()
-        #     if edge['id']==store_edge['id']: # TODO: not working: unselects after clicking
-        #         write_edge_topickle(EMPTY_SELECTION_EDGES)
-        #     else:                            # New click: reset layout on nodes and select layout on edge
-        #         write_edge_topickle(edge)
         n_studies = edge[0]['weight_lab']
         studies_str = f"{n_studies}" + (' studies' if n_studies > 1 else ' study')
         return f"{edge[0]['source'].upper()} vs {edge[0]['target'].upper()}: {studies_str}"
@@ -452,10 +433,8 @@ def get_new_data_cinema2(contents, cinema_net_data2, filename):
               # prevent_initial_call=True
               )
 def TapNodeData_info(data):
-    if data:
-        return 'Reference treatment selected: ', data['label']
-    else:
-        return 'Click on a node to choose reference treatment'
+    if data: return 'Reference treatment selected: ', data['label']
+    else:    return 'Click on a node to choose reference treatment'
 
 
 ############ - Funnel plot  - ###############
@@ -541,8 +520,8 @@ def which_dd_edges(default_t, default_v, eclr_t, eclr_v, closing_modal):
     which = dd_eclr.index(max(dd_eclr))
     return values[which] if not closing_modal else None, None, None
 
-flatten = lambda t: [item for sublist in t for item in sublist]
 
+flatten = lambda t: [item for sublist in t for item in sublist]
 
 @app.callback([Output('graph-layout-dropdown', 'children')],
               flatten([[Input(f'dd_ngl_{item.lower()}', 'n_clicks_timestamp'),
@@ -614,174 +593,11 @@ def data_modal(open_modal_data, upload, submit, filename2,
                modal_data_is_open, modal_data_checks_is_open,
                contents, filename, dataselectors, TEMP_net_data_STORAGE,
                ):
-    ctx = dash.callback_context
-    if not ctx.triggered: button_id = 'No clicks yet'
-    else:                 button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-
-    #filename_storage = filename if filename is not None else ''
-    #filename_exists = True if filename is not None or filename_storage =='' else False
-    filename_exists = True if filename is not None else False
-
-    if open_modal_data:
-        if upload and button_id=='upload_modal_data':
-            #filename_exists = True if filename is not None else False
-            filename_exists = True if filename is not None else False
-
-            try:
-                data_user = parse_contents(contents, filename)
-
-            except:
-                raise ValueError('Data upload failed: likely UnicodeDecodeError or MultipleTypeError, check variable characters and type')
-            var_dict = dict()
-            var_outcomes = dict()
-            if search_value_format == 'iv':
-                if search_value_outcome2 is None:
-                    out1_type, out1_direction = dataselectors[0:2]
-                    studlab, treat1, treat2, rob, year, TE, seTE, n1, n2 = dataselectors[2: ] # first dataselector is the effect size
-                    var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2',  rob: 'rob', year: 'year',
-                                TE: 'TE', seTE: 'seTE', n1: 'n1', n2:'n2'}
-                    var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction}
-                else:
-                    out1_type, out1_direction, out2_type, out2_direction,  = dataselectors[2:4]
-                    studlab, treat1, treat2, rob, year, TE, seTE, n1, n2, TE2, seTE2, n21, n22 = dataselectors[4: ]
-                    var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2',  rob: 'rob', year: 'year',
-                                TE: 'TE', seTE: 'seTE', n1: 'n1', n2:'n2',
-                                TE2: 'TE2', seTE2: 'seTE2', n21: 'n2.1', n22:  'n2.2'}
-                    var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction,
-                                    'effect_size2': out2_type, 'outcome2_direction': out2_direction}
-
-            elif search_value_format == 'contrast':
-                if search_value_outcome1 == 'continuous':
-                    if search_value_outcome2 is None:
-                        out1_type, out1_direction = dataselectors[0:2]
-                        studlab, treat1, treat2, rob, year, y1, sd1, y2, sd2, n1, n2 = dataselectors[2: ]  # first dataselector is the effect size
-                        var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
-                                    y1: 'y1', sd1: 'sd1',
-                                    y2: 'y2', sd2: 'sd2', n1: 'n1', n2: 'n2'}
-                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction}
-
-                    elif search_value_outcome2 == 'continuous':
-                        out1_type, out1_direction, out2_type, out2_direction, = dataselectors[0:4]
-                        studlab, treat1, treat2, rob, year, y1, sd1, y2, sd2, n1, n2, y21, sd12, y22, sd22, n21, n22 = dataselectors[4: ]
-                        var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
-                                    y1: 'y1', sd1: 'sd1', y2: 'y2', sd2: 'sd2', n1: 'n1', n2: 'n2', y21: 'y2.1', sd12: 'sd1.2', y22: 'y2.2', sd22: 'sd2.2',
-                                    n21: 'n2.1', n22: 'n2.2'}
-                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction,
-                                        'effect_size2': out2_type, 'outcome2_direction': out2_direction}
-                    else:
-                        out1_type, out1_direction, out2_type, out2_direction, = dataselectors[0:4]
-                        studlab, treat1, treat2, rob, year, y1, sd1, y2, sd2, n1, n2, z1, z2, n21, n22 = dataselectors[4: ]
-                        var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
-                                    y1: 'y1', sd1: 'sd1', y2: 'y2', sd2: 'sd2', n1: 'n1', n2: 'n2', z1: 'z1', z2: 'z2',
-                                    n21: 'n2.1', n22: 'n2.2'}
-                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction,
-                                        'effect_size2': out2_type, 'outcome2_direction': out2_direction}
-
-                if search_value_outcome1 == 'binary':
-                    if search_value_outcome2 is None:
-                        out1_type, out1_direction = dataselectors[0:2]
-                        studlab, treat1, treat2, rob, year, r1, n1, r2, n2 = dataselectors[2: ]  # first dataselector is the effect size
-                        var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
-                                    r1: 'r1', r2: 'r2', n1: 'n1', n2: 'n2'}
-                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction}
-
-                    elif search_value_outcome2 == 'continuous':
-                        out1_type, out2_type, out1_direction, out2_direction, = dataselectors[0:4]
-                        studlab, treat1, treat2, rob, year, r1, r2, n1, n2, y21, sd12, y22, sd22, n21, n22 = dataselectors[4: ]  # first dataselector is the effect size
-                        var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
-                                    r1: 'r1', r2: 'r2', n1: 'n1', n2: 'n2',  y21: 'y2.1', sd12: 'sd1.2', y22: 'y2.2', sd22: 'sd2.2', n21: 'n2.1', n22: 'n2.2'}
-                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction,
-                                        'effect_size2': out2_type, 'outcome2_direction': out2_direction}
-                    else:
-                        out1_type, out2_type, out1_direction, out2_direction, = dataselectors[0:4]
-                        studlab, treat1, treat2, rob, year, r1, r2, n1, n2, z1, z2, n21, n22 = dataselectors[4: ]  # first dataselector is the effect size
-                        var_dict = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year',
-                                    r1: 'r1', r2: 'r2', n1: 'n1', n2: 'n2',
-                                    z1: 'z1', z2: 'z2', n21: 'n2.1', n22: 'n2.2',
-                                    }
-                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction,
-                                        'effect_size2': out2_type, 'outcome2_direction': out2_direction}
-            else:  #long format
-                if search_value_outcome1 == 'continuous':
-                    if search_value_outcome2 is None:
-                        out1_type, out1_direction = dataselectors[0:2]
-                        studlab, treat, rob, year, y, sd, n = dataselectors[2: ]
-                        var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
-                                    y: 'y', sd: 'sd', n: 'n'}
-                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction}
-
-                    elif search_value_outcome2 == 'continuous':
-                        out1_type, out2_type, out1_direction, out2_direction, = dataselectors[0:4]
-                        studlab, treat, rob, year, y, sd, n, y2, sd2, n2 = dataselectors[4: ]
-                        var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
-                                    y: 'y', sd: 'sd', n: 'n', y2: 'y2', sd2: 'sd2', n2: 'n2'}
-                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction,
-                                        'effect_size2': out2_type, 'outcome2_direction': out2_direction}
-                    else:
-                        out1_type, out2_type, out1_direction, out2_direction, = dataselectors[0:4]
-                        studlab, treat, rob, year, y, sd, n, z1, nz = dataselectors[4: ]
-                        var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
-                                    y: 'y', sd: 'sd', n: 'n', z1: 'z1', nz: 'nz'}
-                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction,
-                                        'effect_size2': out2_type, 'outcome2_direction': out2_direction}
-                if search_value_outcome1 == 'binary':
-                    if search_value_outcome2 is None:
-                        out1_type, out1_direction = dataselectors[0:2]
-                        studlab, treat, rob, year, r, n = dataselectors[2: ]
-                        var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
-                                    r: 'r', n: 'n'}
-                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction}
-
-                    elif search_value_outcome2 == 'continuous':
-                        out1_type, out2_type, out1_direction, out2_direction, = dataselectors[0:4]
-                        studlab, treat, rob, year, r, n, y2, sd2, n2 = dataselectors[4: ]
-                        var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
-                                    r: 'r', n: 'n', y2: 'y2', sd2: 'sd2', n2:'n2'}
-                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction,
-                                        'effect_size2': out2_type, 'outcome2_direction': out2_direction}
-                    else:
-                        out1_type, out2_type, out1_direction, out2_direction, = dataselectors[0:4]
-                        studlab, treat, rob, year, r, n, z1, nz = dataselectors[4: ]
-                        var_dict = {studlab: 'studlab', treat: 'treat', rob: 'rob', year: 'year',
-                                    r: 'r', n: 'n', z1:'z1', nz: 'nz'}
-                        var_outcomes = {'effect_size1': out1_type, 'outcome1_direction': out1_direction,
-                                        'effect_size2': out2_type, 'outcome2_direction': out2_direction}
-
-            data_user.rename(columns=var_dict, inplace=True)
-            var_outs = pd.Series(var_outcomes, index=var_outcomes.keys())
-
-            if len(var_outcomes.keys()) == 2:
-                data_user['effect_size1'] = var_outs['effect_size1']
-                data_user['outcome1_direction'] = var_outs['outcome1_direction']
-            if len(var_outcomes.keys()) == 4:
-                data_user['effect_size1'] = var_outs['effect_size1']
-                data_user['outcome1_direction'] = var_outs['outcome1_direction']
-                data_user['effect_size2'] = var_outs['effect_size2']
-                data_user['outcome2_direction'] = var_outs['outcome2_direction']
-
-            try:
-                data = adjust_data(data_user, search_value_format, search_value_outcome2)
-
-                TEMP_net_data_STORAGE = data.to_json(orient='split')
-            #except:
-                 #TEMP_net_data_STORAGE = {}
-                 #raise ValueError('Data conversion failed')
-
-            except Exception as Rconsole_error_data:
-                TEMP_net_data_STORAGE = {}
-                error = Rconsole_error_data
-                return modal_data_is_open, modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, str(error), True
-
-            return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, '', False
-
-        if submit and button_id == 'submit_modal_data':
-
-            return modal_data_is_open, not modal_data_checks_is_open and (not modal_data_is_open), TEMP_net_data_STORAGE, filename_exists, '', False
-
-        return not modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE, filename_exists, '', False
-    else:
-        return modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE, filename_exists, '', False
-
+    return __data_modal(open_modal_data, upload, submit, filename2,
+               search_value_format, search_value_outcome1, search_value_outcome2,
+               modal_data_is_open, modal_data_checks_is_open,
+               contents, filename, dataselectors, TEMP_net_data_STORAGE,
+               )
 
 
 @app.callback(Output("upload_modal_data", "disabled"),
@@ -796,12 +612,20 @@ from assets.storage import DEFAULT_DATA
 OUTPUTS_STORAGE_IDS = list(DEFAULT_DATA.keys())[:-2]
 @app.callback([Output(id, 'data') for id in OUTPUTS_STORAGE_IDS],
               [Input("submit_modal_data", "n_clicks"),
-               Input('reset_project','n_clicks')
+               Input('reset_project','n_clicks'),
+               Input("username-token-upload", "data"),
+               Input("button-token", "n_clicks"),
+               Input("input-token-load", "value"),
+               Input("load-project", "n_clicks"),
+               Input("datatable-filename-upload", "data"),
                ],
               [State('TEMP_'+id, 'data') for id in OUTPUTS_STORAGE_IDS],
               prevent_initial_call=True
               )
 def modal_SUBMIT_button(submit,  reset_btn,
+                        token_data, token_btn,
+                        token_data_load, token_load_btn,
+                        filename,
                         TEMP_net_data_STORAGE,
                         TEMP_net_data_out2_STORAGE,
                         TEMP_consistency_data_STORAGE,
@@ -820,28 +644,28 @@ def modal_SUBMIT_button(submit,  reset_btn,
                         TEMP_net_split_ALL_data_STORAGE,
                         TEMP_net_split_ALL_data_out2_STORAGE,
                         ):
-    """ reads in temporary data for all analyses and outputs them in non-temp storages """
-    submit_modal_data_trigger = False
-
-    triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
-    if 'submit_modal_data.n_clicks' in triggered: submit_modal_data_trigger = True
-
-
-    if submit_modal_data_trigger:  # Is triggered by submit_modal_data.n_clicks
-
-        OUT_DATA = [TEMP_net_data_STORAGE, TEMP_net_data_out2_STORAGE, TEMP_consistency_data_STORAGE, TEMP_user_elements_STORAGE,
-                    TEMP_user_elements_out2_STORAGE, TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_forest_data_prws_STORAGE,
-                    TEMP_forest_data_prws_out2_STORAGE, TEMP_ranking_data_STORAGE, TEMP_funnel_data_STORAGE, TEMP_funnel_data_out2_STORAGE,
-                    TEMP_league_table_data_STORAGE, TEMP_net_split_data_STORAGE, TEMP_net_split_data_out2_STORAGE,TEMP_net_split_ALL_data_STORAGE,
-                    TEMP_net_split_ALL_data_out2_STORAGE]
-
-        return OUT_DATA
-    else:  # Must be triggered by reset_project.n_clicks
-
-        return [data.to_json(orient='split')
-                if label not in ['user_elements_STORAGE', 'user_elements_out2_STORAGE']
-                else data
-                for label, data in DEFAULT_DATA.items()][:-2]
+    return __modal_SUBMIT_button(submit,  reset_btn,
+                        token_data, token_btn,
+                        token_data_load, token_load_btn,
+                        filename,
+                        TEMP_net_data_STORAGE,
+                        TEMP_net_data_out2_STORAGE,
+                        TEMP_consistency_data_STORAGE,
+                        TEMP_user_elements_STORAGE,
+                        TEMP_user_elements_out2_STORAGE,
+                        TEMP_forest_data_STORAGE,
+                        TEMP_forest_data_out2_STORAGE,
+                        TEMP_forest_data_prws_STORAGE,
+                        TEMP_forest_data_prws_out2_STORAGE,
+                        TEMP_ranking_data_STORAGE,
+                        TEMP_funnel_data_STORAGE,
+                        TEMP_funnel_data_out2_STORAGE,
+                        TEMP_league_table_data_STORAGE,
+                        TEMP_net_split_data_STORAGE,
+                        TEMP_net_split_data_out2_STORAGE,
+                        TEMP_net_split_ALL_data_STORAGE,
+                        TEMP_net_split_ALL_data_out2_STORAGE,
+                        )
 
 
 
@@ -862,23 +686,7 @@ def update_dropdown_effect_mod(new_data):
               State("TEMP_net_data_STORAGE", "data"),
               )
 def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, TEMP_net_data_STORAGE):
-    if modal_data_checks_is_open:
-        try:
-            data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
-            passed_checks = data_checks(data)
-        except:
-            passed_checks = data_checks(data)
-            passed_checks["Conversion to wide format failed"] = False
-        if all(passed_checks.values()):
-                return html.P(u"\u2713" + " All data checks passed.", style={"color":"green"}), '__Para_Done__'
-        else:
-            return (html.P(["WARNINGS:"]+sum([[html.Br(), f'{k}']
-                                                                        for k,v in passed_checks.items()
-                                                                            if not v], []), style={"color": "orange"}),
-                                '__Para_Done__')
-    else:
-        return None, ''
-
+    return __modal_submit_checks_DATACHECKS(modal_data_checks_is_open, TEMP_net_data_STORAGE)
 
 @app.callback([Output('R-alert-nma', 'is_open'),
                Output('Rconsole-error-nma', 'children'),
@@ -888,41 +696,15 @@ def modal_submit_checks_DATACHECKS(modal_data_checks_is_open, TEMP_net_data_STOR
                Output("TEMP_forest_data_out2_STORAGE", "data"),
                Output("TEMP_user_elements_STORAGE", "data"),
                Output("TEMP_user_elements_out2_STORAGE", 'data')],
-              Input("modal_data_checks", "is_open"),
-              State("TEMP_net_data_STORAGE", "data"),
-              State("TEMP_forest_data_STORAGE", "data"),
-              State("TEMP_forest_data_out2_STORAGE", "data"),
+               Input("modal_data_checks", "is_open"),
+               State("TEMP_net_data_STORAGE", "data"),
+               State("TEMP_forest_data_STORAGE", "data"),
+               State("TEMP_forest_data_out2_STORAGE", "data"),
               )
 def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
                             TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE):
-    if modal_data_checks_is_open:
-        net_data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
-        try:
-            TEMP_user_elements_STORAGE = get_network(df=net_data)
-            TEMP_user_elements_out2_STORAGE = []
-            NMA_data = run_network_meta_analysis(net_data)
-            TEMP_forest_data_STORAGE = NMA_data.to_json( orient='split')
-
-            if "TE2" in net_data.columns:
-                net_data_out2 = net_data.drop(["TE", "seTE",  "n1",  "n2", "effect_size1"], axis=1)
-                net_data_out2 = net_data_out2.rename(columns={"TE2": "TE", "seTE2": "seTE", "effect_size2": 'effect_size1',
-                                                              "n2.1": "n1", "n2.2": "n2"})
-
-                TEMP_user_elements_out2_STORAGE = get_network(df=net_data_out2)
-                NMA_data2 = run_network_meta_analysis(net_data_out2)
-                TEMP_forest_data_out2_STORAGE = NMA_data2.to_json(orient='split')
-
-            return (False, '', html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
-                    '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE, TEMP_user_elements_out2_STORAGE)
-
-
-        except Exception as Rconsole_error_nma:
-            return (True, str(Rconsole_error_nma), html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
-                        '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE, TEMP_user_elements_out2_STORAGE)
-
-    else:
-        return False, '', None, '', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, None, None
-
+    return __modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
+                            TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE)
 
 
 @app.callback([Output('R-alert-pair', 'is_open'),
@@ -938,29 +720,7 @@ def modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
                State("TEMP_forest_data_prws_out2_STORAGE", "data"),
               )
 def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, TEMP_net_data_STORAGE, TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2):
-
-    if modal_data_checks_is_open:
-
-        data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
-        try:
-            PAIRWISE_data = run_pairwise_MA(data)
-            TEMP_forest_data_prws_STORAGE = PAIRWISE_data.to_json( orient='split')
-            TEMP_forest_data_prws_out2 = []
-
-            if "TE2" in data.columns:
-                pair_data_out2 = data.drop(["TE", "seTE",  "n1",  "n2"], axis=1)
-                pair_data_out2 = pair_data_out2.rename(columns={"TE2": "TE", "seTE2": "seTE", "n2.1": "n1", "n2.2": "n2"})
-                PAIRWISE_data2 = run_pairwise_MA(pair_data_out2)
-                TEMP_forest_data_prws_out2 = PAIRWISE_data2.to_json(orient='split')
-
-            return (False, '', html.P(u"\u2713" + " Pairwise meta-analysis run successfully.", style={"color":"green"}),
-                               '__Para_Done__', TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2)
-        except Exception as Rconsole_error_pw:
-                return (True, str(Rconsole_error_pw), html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
-                              '__Para_Done__', TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2)
-
-    else:
-        return False, '', None, '', TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2
+    return __modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, TEMP_net_data_STORAGE, TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2)
 
 
 @app.callback([Output('R-alert-league', 'is_open'),
@@ -991,33 +751,10 @@ def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
                            TEMP_net_data_STORAGE, LEAGUETABLE_data,
                            ranking_data, consistency_data, net_split_data, net_split_data2,
                            netsplit_all, netsplit_all2, dataselectors):
-    """ produce new league table from R """
-    if modal_data_checks_is_open:
-
-        data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
-
-        try:
-            LEAGUETABLE_OUTS =  generate_league_table(data, outcome2=False) if "TE2" not in data.columns or dataselectors[1] not in ['MD','SMD','OR','RR'] else generate_league_table(data, outcome2=True)
-
-            if "TE2" not in data.columns or dataselectors[1] not in ['MD','SMD','OR','RR']:
-                (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, netsplit_all) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
-                net_split_data2 = {}
-                netsplit_all2 = {}
-            else:
-                (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
-
-            return (False, '', html.P(u"\u2713" + " Successfully generated league table, consistency tables, ranking data.", style={"color":"green"}),
-                         '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2)
-        except Exception as Rconsole_error_league:
-            return (True, str(Rconsole_error_league), html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
-                    '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, netsplit_all) if "TE2" not in data.columns else \
-                                    (False, html.P(u"\u274C" + "An error occurred when computing analyses in R: check your data", style={"color":"red"}),
-                    '__Para_Done__', Rconsole_error_league, LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2)
-    else:
-        net_split_data2 = {}
-        netsplit_all2 = {}
-        return False, '', None, '', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2
-
+    return  __modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
+                           TEMP_net_data_STORAGE, LEAGUETABLE_data,
+                           ranking_data, consistency_data, net_split_data, net_split_data2,
+                           netsplit_all, netsplit_all2, dataselectors)
 
 @app.callback([Output('R-alert-funnel', 'is_open'),
                Output('Rconsole-error-funnel', 'children'),
@@ -1033,27 +770,7 @@ def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
 
               )
 def modal_submit_checks_FUNNEL(lt_data_ts, modal_data_checks_is_open, TEMP_net_data_STORAGE, FUNNEL_data, FUNNEL_data2):
-    if modal_data_checks_is_open:
-        try:
-            data = pd.read_json(TEMP_net_data_STORAGE, orient='split')
-            FUNNEL_data = generate_funnel_data(data)
-            FUNNEL_data = FUNNEL_data.to_json(orient='split')
-
-            if "TE2" in data.columns:
-                data_out2 = data.drop(["TE", "seTE",  "n1",  "n2"], axis=1)
-                data_out2 = data_out2.rename(columns={"TE2": "TE", "seTE2": "seTE", "n2.1": "n1", "n2.2": "n2"})
-                FUNNEL_data2 = generate_funnel_data(data_out2)
-                FUNNEL_data2 = FUNNEL_data2.to_json(orient='split')
-
-            return (False, '', html.P(u"\u2713" + " Successfully generated funnel plot data.", style={"color": "green"}),
-            '__Para_Done__', FUNNEL_data, FUNNEL_data2)
-        except Exception as Rconsole_error_funnel:
-            return (True, str(Rconsole_error_funnel), html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color": "red"}),
-                    '__Para_Done__', FUNNEL_data, FUNNEL_data2)
-
-    else:
-        return False, '', None, '', FUNNEL_data, FUNNEL_data2
-
+    return __modal_submit_checks_FUNNEL(lt_data_ts, modal_data_checks_is_open, TEMP_net_data_STORAGE, FUNNEL_data, FUNNEL_data2)
 
 @app.callback(Output("submit_modal_data", "disabled"),
               [Input(id, 'data') for id in ['para-check-data','para-anls-data','para-pairwise-data',
@@ -1090,7 +807,7 @@ def toggle_modal(open, close, is_open):
         return not is_open
     return is_open
 
-# ----- network expand modal -----#
+# ----- network expand modal -----# #TODO: this needs some fixing: eg. node coloring and options not working in expand mode
 @app.callback(
     Output("modal_network", "is_open"),
     [Input("network-expand", "n_clicks"),
@@ -1104,7 +821,7 @@ def toggle_modal(open, close, is_open):
 
 
 ###############################################################################
-################### EXPORT TO  CSV ON CLICK BUTTON ############################
+################### EXPORT TO CSV ON CLICK BUTTON ############################
 ###############################################################################
 
 @app.callback(Output("download_datatable", "data"),
@@ -1122,154 +839,24 @@ def generate_csv(n_nlicks, data):
                State("net_split_ALL_data_STORAGE", "data"),
                State("net_split_ALL_data_out2_STORAGE", "data")],
                prevent_initial_call=True)
-def generate_csv(n_nlicks, outcome2, consistencydata_all,  consistencydata_all_out2):
-
-    button_trigger  = False
-    triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
-    if 'btn-netsplit-all.n_clicks' in triggered: button_trigger = True
-
-    df = (pd.read_json(consistencydata_all, orient='split') if not outcome2
-          else  pd.read_json(consistencydata_all_out2, orient='split') if consistencydata_all_out2 else None)
-
-    if button_trigger:
-        if df is not None:
-            comparisons = df.comparison.str.split(':', expand=True)
-            df['Comparison'] = comparisons[0] + ' vs ' + comparisons[1]
-            df = df.loc[:, ~df.columns.str.contains("comparison")]
-            df = df.sort_values(by='Comparison').reset_index()
-            df = df[['Comparison', 'k', "direct", 'nma', "indirect", "p-value"]].round(decimals=4)
-            df = df.set_index('Comparison')
-            df = df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
-            return dash.dcc.send_data_frame(df.to_csv, filename="consistency_table_full.csv")
-
-    else: return None
-
+def generate_csv_consistency(n_nlicks, outcome2, consistencydata_all,  consistencydata_all_out2):
+    return __generate_csv_consistency(n_nlicks, outcome2, consistencydata_all,  consistencydata_all_out2)
 
 #### xlsx colors netsplit table
 @app.callback(Output("download_consistency", "data"),
               [Input('consistency-export', "n_clicks"),
                State("netsplit_table-container", "data")],
                prevent_initial_call=True)
-def generate_xlsx(n_nlicks, consistencydata):
-    df = pd.DataFrame(consistencydata)
-    df = df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
-    def to_xlsx(bytes_io):
-        writer = pd.ExcelWriter(bytes_io, engine='xlsxwriter')  # Create a Pandas Excel writer using XlsxWriter as the engine.
-        df.to_excel(writer, sheet_name='Netsplit_Table', index=False)  # Convert the dataframe to an XlsxWriter Excel object.
-        workbook, worksheet = writer.book, writer.sheets['Netsplit_Table']  # Get the xlsxwriter workbook and worksheet objects.
-        wrap_format = workbook.add_format({'text_wrap': True,
-                                           'border':1})
-        wrap_format.set_align('center')
-        wrap_format.set_align('vcenter')
-
-        col_pval=3
-        start_row, end_row =0, df.shape[0]
-        #worksheet.write(r+1, col_pval, df.loc[rl, cl], wrap_format) # Overwrite both the value and the format of each header cell
-        worksheet.conditional_format(first_row=0, first_col=col_pval,
-                                             last_row=end_row, last_col=col_pval,
-                                             options={'type': 'cell',
-                                                      'format': workbook.add_format({
-                                                          'bg_color': 'white',
-                                                          'font_color': 'blue',
-                                                          'text_wrap': True
-                                                           }),
-                                                      'criteria': 'between',
-                                                      'minimum': 0.10001,
-                                                      'maximum': 0.15,
-                                                      })
-        worksheet.conditional_format(first_row=0, first_col=col_pval,
-                                             last_row=end_row, last_col=col_pval,
-                                             options={'type': 'cell',
-                                                      'format': workbook.add_format({
-                                                          'bg_color': 'white',
-                                                          'font_color': 'orange',
-                                                          'text_wrap': True
-                                                           }),
-                                                      'criteria': 'between',
-                                                      'minimum': 0.05001,
-                                                      'maximum': 0.10,
-                                                      })
-        worksheet.conditional_format(first_row=0, first_col=col_pval,
-                                             last_row=end_row, last_col=col_pval,
-                                             options={'type': 'cell',
-                                                      'format': workbook.add_format({
-                                                          'bg_color': 'white',
-                                                          'font_color': 'red',
-                                                          'text_wrap': True
-                                                           }),
-                                                      'criteria': '<=',
-                                                      'value': 0.05
-                                                      })
-        worksheet.set_default_row(30)  # Set the default height of Rows to 20.
-        for idx, col in enumerate(df):  # loop through all columns
-            series = df[col].astype(str).str.split('\n').str[-1]
-            max_len = max((
-                series.map(len).max(),  # len of largest item
-                len(str(series.name))  # len of column name/header
-            )) + 0  # adding a little extra space
-            worksheet.set_column(idx+1, idx+1, max_len)  # set column width
-        writer.save()  # Close the Pandas Excel writer and output the Excel file.
-
-    return dash.dcc.send_bytes(to_xlsx, filename="Netsplit_Table.xlsx")
-    ###########return dash.dcc.send_data_frame(writer.save(), filename="Netsplit_Table_table.xlsx")
-
+def generate_xlsx_netsplit(n_nlicks, consistencydata):
+    return __generate_xlsx_netsplit(n_nlicks, consistencydata)
 
 #### xlsx colors league table
 @app.callback(Output("download_leaguetable", "data"),
               [Input('league-export', "n_clicks"),
                State("league_table", "children")],
                prevent_initial_call=True)
-def generate_xlsx(n_clicks, leaguedata):
-    df = pd.DataFrame(leaguedata['props']['data'])
-    style_data_conditional = leaguedata['props']['style_data_conditional']
-
-    conditional_df = {r: {c: None for c in df.columns} for r in  df.columns}
-    for d in style_data_conditional:
-        col_k = d['if']['column_id']
-        if 'filter_query' in d['if']:
-            row_string = d['if']['filter_query'].split('=')[-1]
-            row_k = row_string[row_string.find("{") + 1: row_string.find("}")]
-            conditional_df[row_k][col_k] = d['backgroundColor']
-
-    df = df.set_index('Treatment')[df.Treatment]
-
-    def to_xlsx(bytes_io):
-        writer = pd.ExcelWriter(bytes_io, engine='xlsxwriter')  # Create a Pandas Excel writer using XlsxWriter as the engine.
-        df.to_excel(writer, sheet_name='League_Table')  # Convert the dataframe to an XlsxWriter Excel object.
-        workbook, worksheet = writer.book, writer.sheets['League_Table']  # Get the xlsxwriter workbook and worksheet objects.
-        wrap_format = workbook.add_format({'text_wrap': True,
-                                           'border':1})
-        wrap_format.set_align('center')
-        wrap_format.set_align('vcenter')
-
-        for r, rl in enumerate(df.columns):
-            for c, cl in enumerate(df.columns):
-                worksheet.write(r+1, c+1, df.loc[rl, cl], wrap_format) # Overwrite both the value and the format of each header cell
-                worksheet.conditional_format(first_row=r+1, first_col=c+1,
-                                             last_row=r+1, last_col=c+1,
-                                             options={'type': 'cell',
-                                                      'format': workbook.add_format({
-                                                          'bg_color': (conditional_df[rl][cl]
-                                                                       if conditional_df[rl][cl]!=CLR_BCKGRND2
-                                                                       else 'white'),
-                                                          'text_wrap': True
-                                                           }),
-                                                      'criteria': '>',
-                                                      'value': -int(1e8)
-                                                      })
-        worksheet.set_default_row(30)  # Set the default height of Rows to 20.
-        for idx, col in enumerate(df):  # loop through all columns
-            series = df[col].astype(str).str.split('\n').str[-1]
-            max_len = max((
-                series.map(len).max(),  # len of largest item
-                len(str(series.name))  # len of column name/header
-            )) + 0  # adding a little extra space
-            worksheet.set_column(idx+1, idx+1, max_len)  # set column width
-        writer.save()  # Close the Pandas Excel writer and output the Excel file.
-
-    return dash.dcc.send_bytes(to_xlsx, filename="League_Table.xlsx")
-
-    ######### return dash.dcc.send_data_frame(writer.save(), filename="league_table.xlsx")
+def generate_xlsx_league(n_clicks, leaguedata):
+    return __generate_xlsx_league(n_clicks, leaguedata)
 
 
 #############################################################################
@@ -1357,7 +944,7 @@ def disable_cinema_toggle(filename_cinema1, filename_data):
               Output('toggle_forest_pair_outcome', 'disabled'),
               Output('toggle_consistency_direction', 'disabled'),
               Output('datatable-secondfile-upload-2','disabled')
-               ],
+              ],
               Input('ranking_data_STORAGE','data')
               )
 def disable_out2_toggle(ranking_data):
@@ -1388,17 +975,52 @@ def func(n_clicks):
      return send_file("Documentation/NMAstudio_tutorial.pdf")
 
 
-#################### save project/generate link ###################
-from tools.utils import id_generator
-@app.callback(
-    Output("output_username", "children"),
-    Input("input-username", "value"),
-    prevent_initial_call=True)
-def update_output(input):
-    token = id_generator(input)
-    print(token)
-    return u'User: {}'.format(input)
+#################### save project/generate token/laod project ###################
 
+#modal Save/Load Project
+@app.callback(
+    Output("modal_saveload", "is_open"),
+    [Input("open_saveload", "n_clicks"),
+     Input("close_saveload", "n_clicks"),
+     Input("close_saveload_2", "n_clicks")
+     ],
+    [State("modal_saveload", "is_open")],
+)
+def toggle_modal(n1, n2, n2_close, is_open):
+    if n1 or n2 or n2_close:
+        return not is_open
+    return is_open
+
+#### generate username and token
+@app.callback(
+    [Output("output_username", "children"),
+     Output("output_token_entered", "children"),
+     Output('button-token','disabled'),
+     Output("username-token-upload", "data")
+     ],
+     State("input-username", "value"),
+     Input("button-token", "n_clicks")
+     )
+def save_project_user_token(input, n_clicks):
+    token_btn_triggered = False
+    triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
+    if 'button-token.n_clicks' in triggered: token_btn_triggered = True
+
+    if input and token_btn_triggered:
+            if len(input) >= 6:
+                password = secrets.token_urlsafe(8)
+                token = input + "-" + password
+                token_data = {'token': token}
+                if n_clicks > 0 :
+                    return html.P(u"\u2713" + " Successfully generated user",style={"color": "#B1D27B", "font-size":"11px","font-weight": "530"}), f'{token}', True, token_data
+            else:
+                return html.P(u"\u274C" + " Username must be at least 6 characters", style={"color": "red"}), None, False, None
+
+    else:
+        return None, None, False, None
+
+
+#### load project using token
 
 
 

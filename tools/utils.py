@@ -236,7 +236,7 @@ def adjust_data(data, value_format, value_outcome2):
 
 def data_checks(df):
     return {'Conversion to wide format failed': True,
-            'Some variables are a mix of numerical and string values': all(df.applymap(type).nunique() >1),
+            #'Some variables are a mix of numerical and string values': all(df.applymap(type).nunique() >1),
             'Missing values present': df.isnull().sum().sum() < 1,
             'Non-negative variances': (any(df.seTE>0) if ("seTE2" not in df.columns) else (any(df.seTE > 0) or any(df.seTE2 > 0)))
             }

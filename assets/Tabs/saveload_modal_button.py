@@ -38,6 +38,10 @@ saveload_modal = html.Div(
                                                               'padding-right': '3%', 'display': 'inline-block',
                                                               'font-family': 'sans-serif',
                                                               "font-weight": "410", "color": "white"}),
+                           # dcc.Clipboard(id="token_copy",  target_id="token",
+                           #               style={"display": "inline-block", "fontSize": 20, "verticalAlign": "top",
+                           #                      "padding-left": "5px", "color": "white"}),
+
                            ],
                           style={'font-size': '20px', 'color': '#587485', 'padding-left': '3%',
                                  'padding-right': '3%', 'font-family': 'sans-serif', "font-weight": "530"}

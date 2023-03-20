@@ -994,9 +994,9 @@ def toggle_modal(n1, n2, n2_close, is_open):
 #### generate username and token
 @app.callback(
     [Output("output_username", "children"),
-     Output("output_token_entered", "children"),
+     Output("output_token", "children"),
      Output('button-token','disabled'),
-     Output("username-token-upload", "data")
+     Output("username-token-upload", "data"),
      ],
      State("input-username", "value"),
      Input("button-token", "n_clicks")
@@ -1018,9 +1018,6 @@ def save_project_user_token(input, n_clicks):
 
     else:
         return None, None, False, None
-
-
-#### load project using token
 
 
 

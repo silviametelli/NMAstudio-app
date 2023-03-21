@@ -610,7 +610,7 @@ def modal_ENABLE_UPLOAD_button(dataselectors):
 
 from assets.storage import DEFAULT_DATA
 OUTPUTS_STORAGE_IDS = list(DEFAULT_DATA.keys())[:-2]
-@app.callback([Output(id, 'data') for id in OUTPUTS_STORAGE_IDS],
+@app.callback([Output(id, 'data') for id in OUTPUTS_STORAGE_IDS] + [Output('token-not-found-alert','children')],
               [Input("submit_modal_data", "n_clicks"),
                Input('reset_project','n_clicks'),
                Input("username-token-upload", "data"),

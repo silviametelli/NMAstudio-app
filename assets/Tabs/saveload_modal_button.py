@@ -65,7 +65,7 @@ saveload_modal = html.Div(
                     label='Load Project',
                     children=html.Div(className='control-tab', children=[
 
-                 dbc.ModalBody("You can retrieve a project by entering the associated Token that has been shared with you.",style={'font-size': '20px', 'margin-left': '1%', 'color': 'white'}),
+                 dbc.ModalBody("You can retrieve an existing project by entering the token that has been shared with you.",style={'font-size': '20px', 'margin-left': '1%', 'color': 'white'}),
                  html.Br(),
                  dbc.ModalBody(""),
                  html.Br(),
@@ -90,6 +90,11 @@ saveload_modal = html.Div(
                                                                      'padding-right': '3%', 'display': 'inline-block',
                                                                      'font-family': 'sans-serif',
                                                                      "font-weight": "410", "color": "white"}),
+
+                                   html.Div(id='token-not-found-alert', style={'font-size': '13px', 'padding-left': '0.5%',
+                                                                               'padding-right': '1%', 'display': 'inline-block',
+                                                                               'font-family': 'sans-serif',
+                                                                               "font-weight": "410", "color": "red"}),
                                   ],
                                  style={'font-size': '20px', 'color': '#587485', 'padding-left': '3%',
                                         'padding-right': '3%', 'font-family': 'sans-serif', "font-weight": "530"}

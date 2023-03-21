@@ -231,7 +231,7 @@ def __modal_SUBMIT_button(submit,  reset_btn,
                 "TEMP_net_split_ALL_data_STORAGE",
                 "TEMP_net_split_ALL_data_out2_STORAGE"]
     if submit_modal_data_trigger:  # Is triggered by submit_modal_data.n_clicks
-            return OUT_DATA
+            return OUT_DATA + ['']
     else:  # Must be triggered by reset_project.n_clicks
         if token_btn_triggered and filename and len(token_data['token']) >= 6:
             usr_token = token_data['token']
@@ -252,14 +252,14 @@ def __modal_SUBMIT_button(submit,  reset_btn,
                     df_i = pd.DataFrame(dict())
                     df_i.to_csv(f'{path}/{dfname_i}.csv', encoding='utf-8')
 
-            return OUT_DATA
+            return OUT_DATA + ['']
 
         else:
             if not load_btn_triggered:
                 return [data.to_json(orient='split')
                     if label not in ['user_elements_STORAGE', 'user_elements_out2_STORAGE']
                     else data
-                    for label, data in DEFAULT_DATA.items()][:-2]
+                    for label, data in DEFAULT_DATA.items()][:-2] + ['']
 
             else:
 
@@ -268,62 +268,70 @@ def __modal_SUBMIT_button(submit,  reset_btn,
                 parent_dir_load = "USR_DATASETS/"
                 path = os.path.join(parent_dir_load, directory_load)
 
+                for foldername in os.listdir(parent_dir_load):
+                    d = foldername
+                    if token_data_load in d:
 
-                NET_DATA_USR = pd.read_csv(f'{path}/TEMP_net_data_STORAGE.csv')
-                NET_DATA2_USR= pd.read_csv(f'{path}/TEMP_net_data_out2_STORAGE.csv')
+                        NET_DATA_USR = pd.read_csv(f'{path}/TEMP_net_data_STORAGE.csv')
+                        NET_DATA2_USR= pd.read_csv(f'{path}/TEMP_net_data_out2_STORAGE.csv')
+                        DEFAULT_ELEMENTS_USR = USER_ELEMENTS_USR = get_network(df=NET_DATA_USR)
+                        DEFAULT_ELEMENTS2_USR = USER_ELEMENTS2_USR = get_network(df=NET_DATA2_USR) if not NET_DATA2_USR.empty else []
+                        FOREST_DATA_USR = pd.read_csv(f'{path}/TEMP_forest_data_STORAGE.csv')
+                        FOREST_DATA_OUT2_USR = pd.read_csv(f'{path}/TEMP_forest_data_out2_STORAGE.csv')
+                        FOREST_DATA_PRWS_USR = pd.read_csv(f'{path}/TEMP_forest_data_prws_STORAGE.csv')
+                        FOREST_DATA_PRWS_OUT2_USR = pd.read_csv(f'{path}/TEMP_forest_data_out2_STORAGE.csv')
+                        LEAGUE_TABLE_DATA_USR = pd.read_csv(f'{path}/TEMP_league_table_data_STORAGE.csv', index_col=0)
+                        replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
+                        LEAGUE_TABLE_DATA_USR = LEAGUE_TABLE_DATA_USR.fillna('')
+                        LEAGUE_TABLE_DATA_USR = pd.DataFrame(
+                            [[replace_and_strip(col) for col in list(row)] for idx, row in LEAGUE_TABLE_DATA_USR.iterrows()],
+                            columns=LEAGUE_TABLE_DATA_USR.columns,
+                            index=LEAGUE_TABLE_DATA_USR.index)
+                        CINEMA_NET_DATA1_USR = None
+                        CINEMA_NET_DATA2_USR = None
+                        CONSISTENCY_DATA_USR = pd.read_csv(f'{path}/TEMP_consistency_data_STORAGE.csv')
+                        NETSPLIT_DATA_USR = pd.read_csv(f'{path}/TEMP_net_split_data_STORAGE.csv')
+                        NETSPLIT_DATA_OUT2_USR = pd.read_csv(f'{path}/TEMP_net_split_data_out2_STORAGE.csv')
+                        NETSPLIT_DATA_ALL_USR = pd.read_csv(f'{path}/TEMP_net_split_ALL_data_STORAGE.csv')
+                        NETSPLIT_DATA_ALL_OUT2_USR = pd.read_csv(f'{path}/TEMP_net_split_ALL_data_out2_STORAGE.csv')
+                        RANKING_DATA_USR = pd.read_csv(f'{path}/TEMP_ranking_data_STORAGE.csv')
+                        FUNNEL_DATA_USR = pd.read_csv(f'{path}/TEMP_funnel_data_STORAGE.csv')
+                        FUNNEL_DATA_OUT2_USR = pd.read_csv(f'{path}/TEMP_funnel_data_out2_STORAGE.csv')
 
-                DEFAULT_ELEMENTS_USR = USER_ELEMENTS_USR = get_network(df=NET_DATA_USR)
-                DEFAULT_ELEMENTS2_USR = USER_ELEMENTS2_USR = get_network(df=NET_DATA2_USR) if not NET_DATA2_USR.empty else []
+                        USER_DATA = OrderedDict(net_data_STORAGE=NET_DATA_USR,
+                                                net_data_out2_STORAGE=NET_DATA2_USR,
+                                                consistency_data_STORAGE=CONSISTENCY_DATA_USR,
+                                                user_elements_STORAGE=USER_ELEMENTS_USR,
+                                                user_elements_out2_STORAGE=USER_ELEMENTS2_USR,
+                                                forest_data_STORAGE=FOREST_DATA_USR,
+                                                forest_data_out2_STORAGE=FOREST_DATA_OUT2_USR,
+                                                forest_data_prws_STORAGE=FOREST_DATA_PRWS_USR,
+                                                forest_data_prws_out2_STORAGE=FOREST_DATA_PRWS_OUT2_USR,
+                                                ranking_data_STORAGE=RANKING_DATA_USR,
+                                                funnel_data_STORAGE=FUNNEL_DATA_USR,
+                                                funnel_data_out2_STORAGE=FUNNEL_DATA_OUT2_USR,
+                                                league_table_data_STORAGE=LEAGUE_TABLE_DATA_USR,
+                                                net_split_data_STORAGE=NETSPLIT_DATA_USR,
+                                                net_split_data_out2_STORAGE=NETSPLIT_DATA_OUT2_USR,
+                                                net_split_ALL_data_STORAGE=NETSPLIT_DATA_ALL_USR,
+                                                net_split_ALL_data_out2_STORAGE=NETSPLIT_DATA_ALL_OUT2_USR,
+                                                #cinema_net_data1_STORAGE=CINEMA_NET_DATA1_USR,
+                                                #cinema_net_data2_STORAGE=CINEMA_NET_DATA2_USR,
+                                                )
 
-                FOREST_DATA_USR = pd.read_csv(f'{path}/TEMP_forest_data_STORAGE.csv')
-                FOREST_DATA_OUT2_USR = pd.read_csv(f'{path}/TEMP_forest_data_out2_STORAGE.csv')
-                FOREST_DATA_PRWS_USR = pd.read_csv(f'{path}/TEMP_forest_data_prws_STORAGE.csv')
-                FOREST_DATA_PRWS_OUT2_USR = pd.read_csv(f'{path}/TEMP_forest_data_out2_STORAGE.csv')
-                LEAGUE_TABLE_DATA_USR = pd.read_csv(f'{path}/TEMP_league_table_data_STORAGE.csv', index_col=0)
-                replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
-                LEAGUE_TABLE_DATA_USR = LEAGUE_TABLE_DATA_USR.fillna('')
-                LEAGUE_TABLE_DATA_USR = pd.DataFrame(
-                    [[replace_and_strip(col) for col in list(row)] for idx, row in LEAGUE_TABLE_DATA_USR.iterrows()],
-                    columns=LEAGUE_TABLE_DATA_USR.columns,
-                    index=LEAGUE_TABLE_DATA_USR.index)
-                CINEMA_NET_DATA1_USR = None
-                CINEMA_NET_DATA2_USR = None
-                CONSISTENCY_DATA_USR = pd.read_csv(f'{path}/TEMP_consistency_data_STORAGE.csv')
-                NETSPLIT_DATA_USR = pd.read_csv(f'{path}/TEMP_net_split_data_STORAGE.csv')
-                NETSPLIT_DATA_OUT2_USR = pd.read_csv(f'{path}/TEMP_net_split_data_out2_STORAGE.csv')
-                NETSPLIT_DATA_ALL_USR = pd.read_csv(f'{path}/TEMP_net_split_ALL_data_STORAGE.csv')
-                NETSPLIT_DATA_ALL_OUT2_USR = pd.read_csv(f'{path}/TEMP_net_split_ALL_data_out2_STORAGE.csv')
-                RANKING_DATA_USR = pd.read_csv(f'{path}/TEMP_ranking_data_STORAGE.csv')
-                FUNNEL_DATA_USR = pd.read_csv(f'{path}/TEMP_funnel_data_STORAGE.csv')
-                FUNNEL_DATA_OUT2_USR = pd.read_csv(f'{path}/TEMP_funnel_data_out2_STORAGE.csv')
+                        # Remove unnamed columns
+                        for label, data in USER_DATA.items():
+                            if (data is not None) and (type(data) != list) and (type(data) != dict):
+                                USER_DATA[label] = USER_DATA[label].loc[:, ~USER_DATA[label].columns.str.contains('^Unnamed')]
 
-                USER_DATA = OrderedDict(net_data_STORAGE=NET_DATA_USR,
-                                        net_data_out2_STORAGE=NET_DATA2_USR,
-                                        consistency_data_STORAGE=CONSISTENCY_DATA_USR,
-                                        user_elements_STORAGE=USER_ELEMENTS_USR,
-                                        user_elements_out2_STORAGE=USER_ELEMENTS2_USR,
-                                        forest_data_STORAGE=FOREST_DATA_USR,
-                                        forest_data_out2_STORAGE=FOREST_DATA_OUT2_USR,
-                                        forest_data_prws_STORAGE=FOREST_DATA_PRWS_USR,
-                                        forest_data_prws_out2_STORAGE=FOREST_DATA_PRWS_OUT2_USR,
-                                        ranking_data_STORAGE=RANKING_DATA_USR,
-                                        funnel_data_STORAGE=FUNNEL_DATA_USR,
-                                        funnel_data_out2_STORAGE=FUNNEL_DATA_OUT2_USR,
-                                        league_table_data_STORAGE=LEAGUE_TABLE_DATA_USR,
-                                        net_split_data_STORAGE=NETSPLIT_DATA_USR,
-                                        net_split_data_out2_STORAGE=NETSPLIT_DATA_OUT2_USR,
-                                        net_split_ALL_data_STORAGE=NETSPLIT_DATA_ALL_USR,
-                                        net_split_ALL_data_out2_STORAGE=NETSPLIT_DATA_ALL_OUT2_USR,
-                                        #cinema_net_data1_STORAGE=CINEMA_NET_DATA1_USR,
-                                        #cinema_net_data2_STORAGE=CINEMA_NET_DATA2_USR,
-                                        )
+                        return [data.to_json(orient='split')
+                            if label not in ['user_elements_STORAGE', 'user_elements_out2_STORAGE']
+                            else data
+                            for label, data in USER_DATA.items()] + ['']
 
-                # Remove unnamed columns
-                for label, data in USER_DATA.items():
-                    if (data is not None) and (type(data) != list) and (type(data) != dict):
-                        USER_DATA[label] = USER_DATA[label].loc[:, ~USER_DATA[label].columns.str.contains('^Unnamed')]
-
-                return [data.to_json(orient='split')
+                    else:
+                        return [data.to_json(orient='split')
                     if label not in ['user_elements_STORAGE', 'user_elements_out2_STORAGE']
                     else data
-                    for label, data in USER_DATA.items()]
+                    for label, data in DEFAULT_DATA.items()][:-2] + [u"\u274C" + 'Token not found: please double-check']
+

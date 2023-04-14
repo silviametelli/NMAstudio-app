@@ -10,7 +10,6 @@ from functools import lru_cache
 def __ranking_plot(ranking_data, net_data):
     df = pd.read_json(ranking_data, orient='split')
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]  # Remove unnamed columns
-
     outcomes = ("Outcome 1", "Outcome 2")
     net_storage = pd.read_json(net_data, orient='split')
 
@@ -28,6 +27,7 @@ def __ranking_plot(ranking_data, net_data):
         if outcome_direction_2: df1.pscore2 = 1 - df1.pscore2.values
         df1 = df1.sort_values(by=["pscore1", "pscore2"], ascending=[False, False])
         treatments = tuple(df1.treatment)
+        if type(treatments[1])==int: treatments = tuple([str(c) + "\0" for c in treatments])
         z_text = (tuple(df1.pscore1.round(2).astype(str).values),
                   tuple(df1.pscore2.round(2).astype(str).values)) if len(treatments) < 22 else  (('', ) * len(treatments), ('', ) * len(treatments))
         pscores = (tuple(df1.pscore1), tuple(df1.pscore2))
@@ -39,10 +39,10 @@ def __ranking_plot(ranking_data, net_data):
         strd_pscore = sorted_elements['pscore']
         strd_trt = sorted_elements['treat']
         treatments = tuple(strd_trt)
+        if type(treatments[1])==int: treatments = tuple([str(c) + "\0" for c in treatments])
         z_text = (tuple(strd_pscore.round(2).astype(str).values), ) if len(sorted_elements) < 22 else  (('', ) * len(sorted_elements),)
         pscores = (tuple(strd_pscore),)
-        outcomes = ("Outcome",)  if len(sorted_elements) < 22 else ("", )
-
+        outcomes = ("Outcome", )  if len(sorted_elements) < 22 else ("", )
 
 
     #################### heatmap ####################
@@ -55,7 +55,7 @@ def __ranking_plot(ranking_data, net_data):
 
 @lru_cache(maxsize=None)
 def __ranking_heatmap(treatments, pscores, outcomes, z_text):
-    if len(pscores)+len(outcomes)+len(z_text)==3: pscores, outcomes, z_text = list(pscores), list(outcomes), list(z_text)
+    if len(pscores) + len(outcomes) + len(z_text) == 3: pscores, outcomes, z_text = list(pscores), list(outcomes), list(z_text)
 
     fig = ff.create_annotated_heatmap(pscores, x=treatments, y=outcomes,
                                       reversescale=True,

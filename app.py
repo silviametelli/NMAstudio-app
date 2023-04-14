@@ -168,9 +168,9 @@ def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
 ### ----- save network plot as png ------ ###
 @app.callback([Output("cytoscape", "generateImage"),
                Output("modal-cytoscape", "generateImage")],
-              Input("net_download_activation", "data"),
-              State('exp-options', 'children'),
-              prevent_initial_call=True)
+               Input("net_download_activation", "data"),
+               State('exp-options', 'children'),
+               prevent_initial_call=True)
 def get_image(net_download_activation, export):
     action = 'store'
     export_selection = export or 'as png'
@@ -622,7 +622,7 @@ OUTPUTS_STORAGE_IDS = list(DEFAULT_DATA.keys())[:-2]
               [State('TEMP_'+id, 'data') for id in OUTPUTS_STORAGE_IDS],
               prevent_initial_call=True
               )
-def modal_SUBMIT_button(submit,  reset_btn,
+def modal_SUBMIT_button(submit, reset_btn,
                         token_data, token_btn,
                         token_data_load, token_load_btn,
                         filename,
@@ -644,7 +644,7 @@ def modal_SUBMIT_button(submit,  reset_btn,
                         TEMP_net_split_ALL_data_STORAGE,
                         TEMP_net_split_ALL_data_out2_STORAGE,
                         ):
-    return __modal_SUBMIT_button(submit,  reset_btn,
+    return __modal_SUBMIT_button(submit, reset_btn,
                         token_data, token_btn,
                         token_data_load, token_load_btn,
                         filename,
@@ -807,7 +807,7 @@ def toggle_modal(open, close, is_open):
         return not is_open
     return is_open
 
-# ----- network expand modal -----# #TODO: this needs some fixing: eg. node coloring and options not working in expand mode
+# ----- network expand modal -----# #TODO: this needs fixing: eg. node coloring and options not working in expand mode
 @app.callback(
     Output("modal_network", "is_open"),
     [Input("network-expand", "n_clicks"),
@@ -1032,12 +1032,9 @@ def save_project_user_token(input, n_clicks):
 if __name__ == '__main__':
     app._favicon = ("assets/favicon.ico")
     app.title = 'NMAstudio' #TODO: title works fine locally, does not on Heroku
-    # from flask_talisman import Talisman
-    # Talisman(app.server, content_security_policy=None)
     # context = generate_ssl_perm_and_key(cert_name='cert.pem', key_name='key.pem')
     # app.run_server(debug=False, ssl_context=context)
-    app.run_server(debug=True)
-
+    app.run_server(port=8080, debug=True) #change port or remove if needed
 
 
 

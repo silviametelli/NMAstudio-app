@@ -235,10 +235,15 @@ def adjust_data(data, value_format, value_outcome2):
 ## ----------------------  FUNCTIONS for Running data analysis in R  --------------------------- ##
 
 def data_checks(df):
-    return {'Conversion to wide format failed': True,
-            #'Some variables are a mix of numerical and string values': all(df.applymap(type).nunique() >1),
+    # df = df.infer_objects()
+    # types = df.applymap(type).apply(set)
+    # types_sets = types[types.apply(len) > 1]
+    return {
+         #   'Some columns contain a mix of string and numeric characters. This can create issues in data tables. Please use numbers (with decimal separator for floats) for a numeric variable': len(types_sets) > 0,
+            'Some variables are a mix of numerical and string values. This can create issues in data tables. Please use numerical (decimal sep for floats)': all(df.applymap(type).nunique() > 1),
             'Missing values present': df.isnull().sum().sum() < 1,
-            'Non-negative variances': (any(df.seTE>0) if ("seTE2" not in df.columns) else (any(df.seTE > 0) or any(df.seTE2 > 0)))
+            'Negative variances present': (any(df.seTE>0) if ("seTE2" not in df.columns) else (any(df.seTE > 0) or any(df.seTE2 > 0)))
+
             }
 
 

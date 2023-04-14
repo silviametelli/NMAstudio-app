@@ -21,9 +21,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 
     years = net_data.year #if (not reset_btn_triggered) else YEARS_DEFAULT
     slider_min, slider_max = years.min(), years.max()
-
     slider_marks = set_slider_marks(slider_min, slider_max, years)
-
     _out_slider = [slider_min, slider_max, slider_marks]
 
 
@@ -46,6 +44,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 
 
     net_data['rob'] = net_data['rob'].replace('__none__', '')
+    net_data['rob'] = net_data['rob'].astype(int)
 
     robs = (net_data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
             .pivot_table(index='treat2', columns='treat1', values='rob')
@@ -231,10 +230,10 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 
     # Prepare for output
     tips = robs
+
     leaguetable = leaguetable.reset_index().rename(columns={'index': 'Treatment'})
     leaguetable_cols = [{"name": c, "id": c} for c in leaguetable.columns]
     leaguetable = leaguetable.to_dict('records')
-
 
     tooltip_values = [{col['id']: {'value': f"**Average ROB:** {tip[col['id']]}",
                                    'type': 'markdown'} if col['id'] != 'Treatment' else None
@@ -260,7 +259,6 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 
     data_and_league_table_DATA['FULL_DATA'] = net_data.to_json( orient='split')
     data_and_league_table_DATA['OUTPUT'] = _output
-
 
     return _output + _out_slider + [data_and_league_table_DATA]
 

@@ -2,6 +2,7 @@ from tools.utils import *
 from dash import html
 
 
+
 def __modal_submit_checks_DATACHECKS(modal_data_checks_is_open, TEMP_net_data_STORAGE):
     if modal_data_checks_is_open:
         try:
@@ -9,7 +10,6 @@ def __modal_submit_checks_DATACHECKS(modal_data_checks_is_open, TEMP_net_data_ST
             passed_checks = data_checks(data)
         except:
             passed_checks = data_checks(data)
-            passed_checks["Conversion to wide format failed"] = False
         if all(passed_checks.values()):
                 return html.P(u"\u2713" + " All data checks passed.", style={"color":"green"}), '__Para_Done__'
         else:
@@ -89,12 +89,14 @@ def __modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
         try:
             LEAGUETABLE_OUTS =  generate_league_table(data, outcome2=False) if "TE2" not in data.columns or dataselectors[1] not in ['MD','SMD','OR','RR'] else generate_league_table(data, outcome2=True)
 
-            if "TE2" not in data.columns or dataselectors[1] not in ['MD','SMD','OR','RR']:
+            if "TE2" not in data.columns or dataselectors[1] not in ['MD', 'SMD', 'OR', 'RR']:
                 (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, netsplit_all) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
                 net_split_data2 = {}
                 netsplit_all2 = {}
             else:
+
                 (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
+                print(net_split_data2)
 
             return (False, '', html.P(u"\u2713" + " Successfully generated league table, consistency tables, ranking data.", style={"color":"green"}),
                          '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2)

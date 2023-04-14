@@ -44,6 +44,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 
 
     net_data['rob'] = net_data['rob'].replace('__none__', '')
+    net_data['rob'] = net_data['rob'].replace('.', np.nan)
     net_data['rob'] = net_data['rob'].astype(int)
 
     robs = (net_data.groupby(['treat1', 'treat2']).rob.mean().reset_index()

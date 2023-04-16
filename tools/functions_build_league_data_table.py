@@ -45,7 +45,8 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 
     net_data['rob'] = net_data['rob'].replace('__none__', '')
     net_data['rob'] = net_data['rob'].replace('.', np.nan)
-    net_data['rob'] = net_data['rob'].astype(int)
+    net_data['rob'] = net_data['rob'].replace('', np.nan)
+    #net_data['rob'] = net_data['rob'].astype(int)
 
     robs = (net_data.groupby(['treat1', 'treat2']).rob.mean().reset_index()
             .pivot_table(index='treat2', columns='treat1', values='rob')
@@ -260,6 +261,8 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 
     data_and_league_table_DATA['FULL_DATA'] = net_data.to_json( orient='split')
     data_and_league_table_DATA['OUTPUT'] = _output
+
+    print(type(data_and_league_table_DATA))
 
     return _output + _out_slider + [data_and_league_table_DATA]
 

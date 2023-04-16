@@ -96,7 +96,6 @@ def __modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
             else:
 
                 (LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2) = [f.to_json( orient='split') for f in LEAGUETABLE_OUTS]
-                print(net_split_data2)
 
             return (False, '', html.P(u"\u2713" + " Successfully generated league table, consistency tables, ranking data.", style={"color":"green"}),
                          '__Para_Done__', LEAGUETABLE_data, ranking_data, consistency_data, net_split_data, net_split_data2, netsplit_all, netsplit_all2)

@@ -374,7 +374,6 @@ def update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cinema
                           data_filename, league_table_data_STORAGE_TIMESTAMP, filename_cinema1, filename_cinema2, filename_cinema2_disabled)
 
 
-
 ### ---------------------------------- FUNNEL, CONSISTENCY, RANKING  CALLBACKS ---------------------------------- ###
 
 

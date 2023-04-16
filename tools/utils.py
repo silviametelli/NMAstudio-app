@@ -203,6 +203,8 @@ def adjust_data(data, value_format, value_outcome2):
                       .replace({'l': 1, 'm': 2, 'h': 3}))
 
     if value_format=='long':
+        if is_numeric_dtype(data['treat']):
+            data['treat'] = data['treat'].astype(str) + '_'
         try:
             for c in data.columns:
                 if data[c].dtype == object:

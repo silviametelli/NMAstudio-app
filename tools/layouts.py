@@ -109,7 +109,7 @@ def home_layout():
                 html.Div(
                     id='all-control-tabs',
                     children=[
-                        dcc.Tabs(id='all-tabs', persistence=True, children=[
+                        dcc.Tabs(id='', persistence=True, children=[
 
                             dcc.Tab(style={'color':'grey','display': 'flex', 'justify-content':'center', 'align-items':'center'},
                                     selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',

@@ -99,13 +99,13 @@ def tab_data(years=YEARS_DEFAULT):
                 }, id='slider-container'
         ), 
 
-            html.Div([ html.P("Instruction: xxxxxxxx",id='slider-instruction',),
+            html.Div([ html.P("Click the slider to see the evolution of the evidence over time. The data table will be filtered accordingly in real-time.",
+                              id='slider-instruction',),
                 html.A(
                  html.Img(
                     src="/assets/icons/query.png",
                     style={
                         "width": "16px",
-                        "filter": "invert()",
                         "margin-top": "0px",
                         "border-radius": "0px",
                         "float":"right",},

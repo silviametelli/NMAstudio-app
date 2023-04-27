@@ -108,20 +108,43 @@ def update_options(search_value_format, search_value_outcome1, search_value_outc
     return __update_options(search_value_format, search_value_outcome1, search_value_outcome2, contents, filename)
 
 
+######## second instruction icon showup############
+@app.callback(Output("queryicon-studlb","style"),
+              Output("queryicon-year","style"),
+              Output("queryicon-rob","style"),
+              Input("dropdown-format", "value"),
+              Input("dropdown-outcome1", "value"))
+
+def is_secondicon_show(search_value_format,search_value_outcome1):
+    show_studlb={'display': 'block'}
+    donotshow_studlb={'display': 'none'}
+    if search_value_format and search_value_outcome1 is not None:
+        return show_studlb, show_studlb, show_studlb
+    else:
+        return donotshow_studlb, donotshow_studlb, donotshow_studlb
+
+
+
+
 #update filename DIV and Store filename in Session
-@app.callback([Output("dropdowns-DIV", "style"),
+@app.callback([Output("queryicon-outcome2", "style"),
+               Output("dropdowns-DIV", "style"),
                Output("uploaded_datafile", "children"),
                Output("datatable-filename-upload","data"),
                ],
                [Input('datatable-upload', 'filename')]
               )
 def is_data_file_uploaded(filename):
+    show_outcome2_icon = {'display': 'block'}
     show_DIV_style = {'display': 'inline-block', 'margin-bottom': '0px'}
     donot_show_DIV_style = {'display': 'none', 'margin-bottom': '0px'}
+    donotshow_outcome2_icon = {'display': 'none'}
     if filename:
-        return show_DIV_style, filename or '', filename
+        return show_outcome2_icon, show_DIV_style, filename or '', filename
     else:
-        return donot_show_DIV_style, '', filename
+        return donotshow_outcome2_icon, donot_show_DIV_style, '', filename
+
+
 
 
 ### -------------------------- ALL CYTOSCAPE CALLBACKS  ------------------------------- ###
@@ -249,6 +272,15 @@ def TapNodeData_info(data):
         return 'Reference treatment selected: ', data[0]['label']
     else:
         return 'Click on a node to choose reference'
+
+@app.callback(Output('queryicon-forest', 'style'),
+              Input('cytoscape', 'selectedNodeData'))
+def showquer_forest(data):
+    if data:
+        return {'display': 'inline'}
+    else:
+        return {'display': 'none'}
+
 
 
 ### ----- update edge information on pairwise plot ------ ###

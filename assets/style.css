@@ -239,6 +239,7 @@ h6 {margin-top: 0;}
 }
 
 
+
 /*div.Select–single>.Select-control .Select-value,*/
 .Select-placeholder {
     /*color: --CLR_BCKGRND; */
@@ -750,6 +751,7 @@ li a {
 /*}*/
 
 
+
 #slider-container {
     position: relative;
 }
@@ -765,12 +767,14 @@ li a {
     top: 3px;
     right: 18px;
     border: 1px solid black;
-    padding: 30px 60px;
+    padding: 10px 10px;
     z-index: 1000;
     background-color: rgb(26, 36, 43);
     color: white;
+    width: 270px;
+    font-size: small;
+    text-align: justify;
 }
-
 
 #query-icon{
     margin-top: 2cm;
@@ -780,3 +784,205 @@ li a {
     z-index: 1000;
     width: 16px;
 }
+
+
+#queryicon-cinima:hover #cinema-instruction {
+    display: block;
+}
+
+#cinema-instruction {
+    display: none;
+    margin-top: 10px;
+    position: absolute;
+    left: 18px;
+    border: 1px solid black;
+    padding: 10px 10px;
+    z-index: 1000;
+    background-color: rgb(26, 36, 43);
+    color: white;
+    width: 255px;
+    font-size: small;
+    text-align: justify;
+}
+
+#queryicon-cinima{
+    margin-top: 2cm;
+    position: absolute;
+    top: 225px;
+    left: 990px;
+    z-index: 1000;
+    width: 16px;
+}
+
+
+
+
+
+
+#dropdowns-DIV {
+    position: relative;
+}
+
+#queryicon-outcome2:hover #outcome2-instruction {
+    display: block;
+}
+
+#queryicon-outcome2 {
+    margin-top: 5px;
+    position: absolute;
+    top: 260px;
+    left: 355px;
+    z-index: 1000;
+    width: 16px;
+}
+#outcome2-instruction {
+    display: none;
+    margin-top: 5px;
+    position: absolute;
+    top: 15px;
+    padding: 5px 5px;
+    z-index: 1000;
+    color: white;
+    width: 135px;
+    font-size: small;
+    text-align: justify;
+    background-color: #454e4e;
+}
+
+
+
+
+#queryicon-dataformat:hover #dataformat-instruction {
+    display: block;
+}
+
+#dataformat-instruction {
+    display: none;
+    position: absolute;
+    top: -30px;
+    left: 20px;
+    padding: 8px 8px;
+    z-index: 1000;
+    color: white;
+    width: 220px;
+    font-size: small;
+    text-align: left;
+    background-color: #454e4e;
+}
+
+#queryicon-dataformat{
+    margin-top: 2px;
+    position: absolute;
+    top: 110px;
+    left: 220px;
+    z-index: 1000;
+    width: 16px;
+}
+
+
+#queryicon-studlb:hover #studlb-instruction {
+    display: block;
+}
+
+#studlb-instruction {
+    display: none;
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    padding: 8px 8px;
+    z-index: 1000;
+    color: white;
+    width: 300px;
+    font-size: small;
+    text-align: left;
+    background-color: #454e4e;
+}
+
+#queryicon-studlb{
+    margin-top: 2px;
+    position: absolute;
+    top: 425px;
+    left: 105px;
+    z-index: 1000;
+    width: 16px;
+}
+
+
+#queryicon-year:hover #year-instruction {
+    display: block;
+}
+
+#year-instruction {
+    display: none;
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    z-index: 1000px;
+    color: white;
+    width: 250px;
+    font-size: small;
+    text-align: left;
+    padding: 8px 8px;
+    background-color: #454e4e;
+}
+
+#queryicon-year {
+    margin-top: 2px;
+    position: absolute;
+    top: 536px;
+    left: 120px;
+    z-index: 1000px;
+    width: 16px;
+}
+
+#queryicon-rob:hover #rob-instruction {
+    display: block;
+}
+
+#rob-instruction {
+    display: none;
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    z-index: 1000px;
+    color: white;
+    width: 280px;
+    font-size: small;
+    padding: 8px 8px;
+    text-align: left;
+    background-color: #454e4e;
+}
+
+#queryicon-rob {
+    margin-top: 2px;
+    position: absolute;
+    top: 499px;
+    left: 125px;
+    z-index: 1000px;
+    width: 16px;
+}
+
+
+
+#queryicon-forest:hover #forest-instruction {
+    display: block;
+}
+
+#forest-instruction {
+    display: none;
+    position: absolute;
+    left: 18px;
+    border: 1px solid black;
+    padding: 10px 10px;
+    z-index: 1000;
+    background-color: rgb(26, 36, 43);
+    color: white;
+    width: 255px;
+    font-size: small;
+    text-align: justify;
+}
+
+#queryicon-forest{
+    position: relative;
+}
+

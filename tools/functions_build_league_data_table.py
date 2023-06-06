@@ -262,8 +262,6 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     data_and_league_table_DATA['FULL_DATA'] = net_data.to_json( orient='split')
     data_and_league_table_DATA['OUTPUT'] = _output
 
-    print(type(data_and_league_table_DATA))
-
     return _output + _out_slider + [data_and_league_table_DATA]
 
 

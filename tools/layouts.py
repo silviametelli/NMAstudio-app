@@ -199,8 +199,8 @@ html.Br(),
 
 html.Div([dcc.Markdown("Demonstration data set (class level psoriasis treatments):",
              className="markdown_style", style={'margin-right':'0px', 'display':'inline-block',"color": "black"}) ,
-    html.Button("Download data", id="demodata", style={"color":"#535453", 'display': 'inline-block', 'border':"0px solid black",
-                                                   'padding': '1px', 'margin-left':'-23px'}),
+    html.Button("Download data", id="demodata", style={'display': 'inline-block',
+                                                       'padding': '1px', 'margin-left':'-23px'}),
                 Download(id="download-demodata")]),
 
 dcc.Markdown("Sbidian E, Chaimani A, Garcia-Doval I, Doney L, Dressler C, Hua C, et al. Systemic pharmacological treatments for chronic plaque psoriasis: a network meta-analysis. \n Cochrane Database Syst Rev. 2021 Apr 19;4:CD011535.",
@@ -212,7 +212,7 @@ dcc.Markdown("Sbidian E, Chaimani A, Garcia-Doval I, Doney L, Dressler C, Hua C,
 # dcc.Markdown('The methods are described in',className="markdown_style"),
 #                        html.Br(), html.Br(),
 
-                       html.Div([dcc.Markdown("Click beside to download a pdf copy of the Tutorial and NMAstudio User Guide:", className="markdown_style",
+                       html.Div([dcc.Markdown("Click beside to download a pdf copy of NMAstudio Tutorial:", className="markdown_style",
                                style={'margin-right':'5px', 'display':'inline-block', "color": "black"}),
 
                       html.Button('Tutorial', id='full-tuto-pdf',
@@ -227,10 +227,15 @@ dcc.Markdown("Sbidian E, Chaimani A, Garcia-Doval I, Doney L, Dressler C, Hua C,
                     ]),
 
 
-    html.Br(), html.Br(), html.Br(),
+    html.Br(), html.Br(),
     dcc.Markdown(
         'The full source code is freely available at [https://github.com/silviametelli/network-meta-analysis](https://github.com/silviametelli/network-meta-analysis)'
         , className="markdown_style",style={"color": "black"}),
+
+html.Br(), html.Br(),
+    dcc.Markdown('This project has received funding from the EU H2020 research and innovation programme under the Marie Skłodowska-Curie grant agreement No 101031840 ',
+                 className="markdown_style",style={"color": "black", "font-weight": "330", "font-size":"14px"}),
+
 
 ])
                        ]),

@@ -98,14 +98,82 @@ modal_data = dbc.Modal([dbc.ModalHeader("Data selection"),
                                            dbc.Col([html.Br(),html.Ul(id="file-list", style={'margin-left': '15px', 'color':'white','opacity':'60%'})],
                                                    style={'display': 'inline-block'})
                                                  ]),
-                                  dbc.Row(file_upload_controls,
+                                  html.Div(dbc.Row(file_upload_controls),
                                           style={'display': 'none'},
-                                          id='dropdowns-DIV'),
+                                          id="dropdowns-DIV",), 
+                                   html.Div([html.P("outcome 2 is optional",
+                                              id='outcome2-instruction',),
+                                              html.A(
+                                               html.Img(
+                                                 src="/assets/icons/query.png",
+                                                 style={
+                                                  "width": "12px",
+                                                  "margin-top": "0px",
+                                                  "border-radius": "0px",
+                                                  "float":"right",},)),
+                                                         ],
+                                                         style={'display': 'none'},
+                                                         id="queryicon-outcome2",), 
+                                   html.Div([ html.P("Data should be uploaded as CSV",
+                                              id='dataformat-instruction',),
+                                              html.A(
+                                               html.Img(
+                                                 src="/assets/icons/query.png",
+                                                 style={
+                                                  "width": "16px",
+                                                  "margin-top": "0px",
+                                                  "border-radius": "0px",
+                                                  "float":"right",
+                                                  'position':'relative'},)),
+                                                         ],id="queryicon-dataformat",),                            
                                   html.Div(id='second-selection'),
+                                  html.Div([ html.P("study name or ID for each trial (numeric or string)",
+                                              id='studlb-instruction',),
+                                              html.A(
+                                               html.Img(
+                                                 src="/assets/icons/query.png",
+                                                 style={
+                                                  "width": "12px",
+                                                  "margin-top": "0px",
+                                                  "border-radius": "0px",
+                                                  "float":"right",},)),
+                                                         ],style={'display': 'none'},id="queryicon-studlb",),
+                                   html.Div([ html.P("study-level year of publication (numeric)",
+                                              id='year-instruction',),
+                                              html.A(
+                                               html.Img(
+                                                 src="/assets/icons/query.png",
+                                                 style={
+                                                  "width": "12px",
+                                                  "margin-top": "0px",
+                                                  "border-radius": "0px",
+                                                  "float":"right",},)),
+                                                         ],style={'display': 'none'},id="queryicon-year",),
+                                   html.Div([ html.P("should be encoded in your data file as either {1,2,3}, {l,m,h} or {L,M,H}",
+                                              id='rob-instruction',),
+                                              html.A(
+                                               html.Img(
+                                                 src="/assets/icons/query.png",
+                                                 style={
+                                                  "width": "12px",
+                                                  "margin-top": "0px",
+                                                  "border-radius": "0px",
+                                                  "float":"right",},)),
+                                                         ],style={'display': 'none'},id="queryicon-rob",),
                                   html.Div(id='third-selection'),
                                   ]),
-    dbc.ModalFooter([dbc.Button("Upload", id="upload_modal_data", className="ml-auto", disabled=True)])
-                  ], id="modal_data", centered=False, style={'background-color':'#40515e',"max-width": "none", "width": "50%"})
+
+       
+
+    dbc.ModalFooter([dbc.Col("Note:   the “Upload” button is activated only once all data selection fields are filled ",
+                               style={'display': 'block',
+                                       'color':'#b5b3b3',
+                                       'position':'relative',
+                                       'left':'-60px'}),
+                     dbc.Button("Upload", id="upload_modal_data", className="ml-auto", disabled=True), 
+                     ],)
+                  ], 
+                  id="modal_data", centered=False, style={'background-color':'#40515e',"max-width": "none", "width": "50%"})
 
 
 modal_checks = dbc.Modal(is_open=False, children=[

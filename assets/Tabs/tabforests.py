@@ -2,7 +2,7 @@ import dash_core_components as dcc, dash_html_components as html, dash_bootstrap
 import dash_daq as daq
 from assets.COLORS import *
 
-tab_forests = dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persistence=True,
+tab_forests = dcc.Tabs(id='', value='subtab1', vertical=False, persistence=True,
                              children=[
                          dcc.Tab(label='NMA', id='tab1', value='Tab1', className='control-tab',
                                  style={'height': '30%', 'display': 'flex', 'justify-content': 'center',
@@ -163,8 +163,15 @@ tab_forests = dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persisten
                                          selected_style={'height':'30%', 'display': 'flex', 'justify-content':'center', 'align-items':'center',
                                                          'font-size':'12px','padding': '0'},
                                          children=[
-                                             html.Div([html.P(id='tapNodeData-info-bidim', className="box__title",
-                                                              style={'font-size':'12px', 'margin-top':'0.8%'}),
+                                             html.P([html.Div(id='tapNodeData-info-bidim', className="box__title",
+                                                              style={'font-size':'12px', 'margin-top':'0.8%', 'display': 'inline','padding': '2px 2px 2px 2px'}),
+                                                        html.Div([ html.P("Click on the color point of the treatment to remove the corresponding treatment in the plot.",
+                                                        id='forest-instruction',),
+                                                                  html.A( html.Img( src="/assets/icons/query.png",
+                                                                                    style={ "width": "16px",
+                                                                                            "margin-top": "0px",
+                                                                                            "border-radius": "0px"},)),
+                                                         ],style={'display': 'inline'},id="queryicon-forest",),              
                                                        html.Br()]),
                                              dcc.Loading(
                                                  html.Div([
@@ -173,7 +180,6 @@ tab_forests = dcc.Tabs(id='subtabs1', value='subtab1', vertical=False, persisten
                                                          style={'height': '99%',
                                                                 'max-height': 'calc(52vw)',
                                                                 'width': '99%',
-                                                                'margin-top': '-2.5%',
                                                                 'max-width': 'calc(52vw)'},
                                                          config={'editable': True,
                                                                #  'showEditInChartStudio': True,

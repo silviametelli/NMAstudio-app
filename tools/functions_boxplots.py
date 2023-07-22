@@ -84,7 +84,7 @@ def __update_boxplot(value, edges, net_data):
                                       "of your potential effect modifiers across the different comparisons <br>"
                                        "by visual inspection of the effect modifiers box plots <br> <br>"
                                       "Effect modifiers should be similarly distributed across comparisons",
-                              "font": {"size": 15, "color": "white", 'family': 'sans-serif'},
+                              "font": {"size": 15, "color": "black", 'family': 'sans-serif'},
                               "xref": "paper",
                               "yref": "y",
                               #"xshift": -400,

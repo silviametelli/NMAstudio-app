@@ -97,7 +97,7 @@ def id_generator(chars=string.ascii_uppercase + string.digits):
 ## --------------------------------MISC-------------------------------------------- ##
 def set_slider_marks(y_min, y_max, years):
     return {int(x): {'label': str(x),
-                     'style': {'color': 'white', 'font-size':'10px',
+                     'style': {'color': 'blacj', 'font-size':'10px',
                                'opacity':1 if x in (y_min, y_max) else 0}}
             for x in np.unique(years).astype('int')
             }
@@ -121,7 +121,7 @@ def get_network(df):
                                                   long_df_class.columns[2]: 'class'},
                                                   axis='columns')
         all_nodes_class = long_df_class.drop_duplicates().sort_values(by='treat').reset_index(drop=True)
-        num_classes = all_nodes_class['class'].max() + 1 #because all_nodes_class was shifted by minus 1
+        num_classes = all_nodes_class['class'].max()+1 #because all_nodes_class was shifted by minus 1
     sorted_edges = np.sort(df[['treat1', 'treat2']], axis=1)  ## removes directionality
     df.loc[:,['treat1', 'treat2']] = sorted_edges
     edges = df.groupby(['treat1', 'treat2']).TE.count().reset_index()
@@ -144,32 +144,46 @@ def get_network(df):
 
     all_nodes_robs.drop(columns=[col for col in all_nodes_robs if col not in [1.0, 2.0, 3.0, 1, 2, 3, '1','2','3']], inplace=True)
     all_nodes_sized.drop(columns=[col for col in all_nodes_sized if col not in ['treat', 'n', 'class', 1.0, 2.0, 3.0, 1, 2, 3, '1','2','3']], inplace=True)
+    # all_nodes_sized['n_2'] = all_nodes_sized['n']
+    min_size = min(all_nodes_sized['n'])
+    max_size = max(all_nodes_sized['n'])
 
+    # Calculate the range of 'size'
+    size_range = max_size - min_size
+
+    # Normalize the values in 'size' to the range of 10 to 60
+    normalized_size = [(s - min_size) / size_range for s in all_nodes_sized.n]
+    number = [int(n * 60) + 20 for n in normalized_size]
+    all_nodes_sized['n_2']=number
 
     cy_edges = [{'data': {'source': source, 'target': target,
                           'weight': weight * 1 if (len(edges)<100 and len(edges)>13) else weight * 0.75 if len(edges)<13  else weight * 0.7,
                           'weight_lab': weight}}
                 for source, target, weight in edges.values]
-    max_trsfrmd_size_nodes = np.sqrt(all_nodes_sized.iloc[:,1].max()) / 70
+    # max_trsfrmd_size_nodes = np.sqrt(all_nodes_sized.iloc[:,1].max()) / 70
+    # node_size = float(node_size) if node_size is not None else 0
 
     if "treat1_class" and "treat2_class" in df.columns:
         cy_nodes = [{"data": {"id": target,
                               "label": target,
                               "n_class": num_classes,
-                              'size': np.sqrt(size) / max_trsfrmd_size_nodes,
+                            #   'size': np.power(size,1/4)*8 / (max_trsfrmd_size_nodes-node_size),
+                              'size': n2,
                               'pie1': r1 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None,
                               'pie2': r2 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None,
                               'pie3': r3 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None,
-                              }, 'classes': f'{CMAP[cls]}'} for target, size, r1, r2, r3, cls in all_nodes_sized.values]
+                              },'classes': f'{CMAP[cls]}'} for target, size, r1, r2, r3, cls,n2 in all_nodes_sized.values]
     else:
         cy_nodes = [{"data": {"id": target,
                               "label": target,
                               'classes': 'genesis',
-                              'size': np.sqrt(size) / max_trsfrmd_size_nodes,
+                              'size': n2,
+                            #   'size': np.power(size,1/4)*8 /( max_trsfrmd_size_nodes-node_size),
                               'pie1': r1 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None,
                               'pie2': r2 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None,
-                              'pie3': r3 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None}} for
-                    target, size, r1, r2, r3 in all_nodes_sized.values]
+                              'pie3': r3 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None},
+                              } for
+                    target, size, r1, r2, r3,n2 in all_nodes_sized.values]
 
     return cy_edges + cy_nodes
 

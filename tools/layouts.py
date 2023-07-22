@@ -13,6 +13,10 @@ from assets.storage import STORAGE
 from assets.alerts import alert_outcome_type, alert_data_type, R_errors_data, R_errors_nma, R_errors_pair, R_errors_league, R_errors_funnel, dataupload_error
 from dash_extensions import Download
 
+UP_LOGO = "/assets/logos/universite.jpeg"
+CRESS_LOGO = "/assets/logos/logocress.png"
+inserm_logo="/assets/logos/inserm.png"
+
 def Homepage():
     return html.Div([Navbar(), home_layout()])
 
@@ -39,9 +43,9 @@ def home_layout():
                                                     html.Div(modal_data_table, style={'display': 'inline-block', 'font-size': '11px'}),
                                                     html.Div(modal_league_table, id="modal_league_div", style={'display': 'inline-block', 'font-size': '11px'}),
                                                     html.Div(modal_network, style={'display': 'inline-block', 'font-size': '11px'}),
-                                                    html.A(html.Img(src="/assets/icons/NETD.png", style={'width': '50px', 'filter': 'invert()'}),
+                                                    html.A(html.Img(src="/assets/icons/NETD.png", style={'width': '50px'}),
                                                                     id="btn-get-png", style={'display': 'inline-block'}),
-                                                    dbc.Tooltip("save graph", style={'color': 'white',
+                                                    dbc.Tooltip("save graph", style={'color': 'black',
                                                                                      'font-size': 9,
                                                                                      'margin-left': '10px',
                                                                                      'letter-spacing': '0.3rem'
@@ -49,8 +53,7 @@ def home_layout():
                                                                 target='btn-get-png'),
                                                     html.A(html.Img(src="/assets/icons/expand.png",
                                                                     style={'width': '40px',
-                                                                           'filter': 'invert()',
-                                                                           'margin-top': '2px',
+                                                                           'margin-top': '4px',
                                                                            'padding-left': '-5px',
                                                                            'padding-right': '15px',
                                                                            'margin-bottom': '2px',
@@ -58,25 +61,65 @@ def home_layout():
                                                                     id="network-expand",
                                                                     style={'margin-left': '10px'}),
                                                     dbc.Tooltip("expand plot",
-                                                                style={'color': 'white', 'font-size': 9,
+                                                                style={'color': 'black', 'font-size': 9,
                                                                        'margin-left': '10px',
                                                                        'letter-spacing': '0.3rem'},
-                                                                placement='right',
+                                                                placement='top',
                                                                 target='network-expand'),
+                                                    
+                                                    dbc.Col([html.H4("Enter the label size:",style={'font-size':'13px', 
+                                                                                                #     'margin-left':'60px',
+                                                                                                    'font-family': 'system-ui','width': '101px'}),
+                                                           dcc.Input(id="label_size_input",
+                                                              type="text",
+                                                              name='Label size',
+                                                              style={'background-color':'white',
+                                                                #      'margin-left':'60px',
+                                                                       'font-size':'10.5px',
+                                                                       'padding-left':'-2px',
+                                                                       'color':'gray','margin-top': '-6px'}, 
+                                                                       placeholder="e.g. 30px",),
+                                                                       ], style={'margin-left':'20px','margin-top':'-25px'}),
+                                                    dbc.Col([html.H4("Search the intervention:",style={'font-size':'13px', 
+                                                                                                        #      'margin-left':'150px',
+                                                                                                             'font-family': 'system-ui',
+                                                                                                        #      'margin-top':'-62px'
+                                                                                                             }),
+                                                           dcc.Input(id="treat_name_input",
+                                                              type="text",
+                                                              name='Label size',
+                                                              style={'background-color':'white',
+                                                                #      'margin-left':'150px',
+                                                                       'font-size':'10.5px',
+                                                                       'padding-left':'-2px','color':'gray','margin-top': '-6px'}, 
+                                                                       placeholder="e.g. PBO",)], style={'margin-top':'-25px'})
+                                                    
 
                                     ]),
 
                                            ], style={'margin-left': '-20px'}),
-                         cyto.Cytoscape(id='cytoscape',  responsive=True,
+                         cyto.Cytoscape(id='cytoscape', responsive=True, autoRefreshLayout=True,
                                 elements=[],
-                                style={ 'height': '75vh', 'width': '98%', 'margin-top': '10px',
+                                style={ 
+                                    'height': '70vh', 'width': '600px', 
+                                       'margin-top': '10px',
                                         'margin-left': '-10px','margin-right': '-10px',  'z-index': '999',
-                                        'padding-left': '-10px', 'max-width': 'calc(52vw)',
+                                        'padding-left': '-10px', 
+                                        'max-width': 'calc(52vw)',
                                        },
                                 layout={'name': 'circle', 'animate': True},
                                 stylesheet=get_stylesheet()),
-
                         html.P('Copyright © 2020. All rights reserved.', className='__footer'),
+                        dbc.Col([
+                                 html.Img(src=UP_LOGO, height="57px"),
+                                 html.Img(src=CRESS_LOGO, height="57px"), 
+                                 html.Img(src=inserm_logo, height="57px"),
+                                 ], style={'padding-right':'1%','padding-top':'0.3%',
+                                           'padding-bottom':'0.3%','border-top':'solid',
+                                           'display': 'table','margin-left':'10px'},
+                    width="auto"),
+
+                        # html.P('Copyright © 2020. All rights reserved.', className='__footer'),
                                 ],
                           className="one-half column",
                   ),
@@ -90,7 +133,7 @@ def home_layout():
                                           ]),
                                   html.Div([html.P(id='cytoscape-mouseTapEdgeData-output',  style={'margin-top':'-20px'},
                                                    className="info_box" )],
-                                        )], className="info__container"),
+                                        )], className="info__container",style={'background-color':'#9fb5bd'}),
                            # html.Div([html.Button('Reset Project', id='reset_project', n_clicks=0, className="reset",
                            #                       style={"font-type": "sans-serif"}),
                            html.Div([html.A(html.Img(src="/assets/icons/reset.png",
@@ -107,7 +150,7 @@ def home_layout():
                                                 'margin-bottom':'2px'}),
 
                 html.Div(
-                    id='all-control-tabs',
+                    id='all-control-tabs',style={'background-color':'#e6e9eb'},
                     children=[
                         dcc.Tabs(id='', persistence=True, children=[
 
@@ -161,18 +204,20 @@ def home_layout():
                             ),
 
 
-                        ],  colors={ "border": 'grey', "primary": "grey", "background": CLR_BCKGRND,
+                        ],  colors={ "border": 'grey', "primary": "grey", "background": '#e8eaeb',
                                    }
                         ) #change border to CLR_BCKGRND to remove tabs borders
                     ]),
 
                 ])
             ]),
-         ],
+          ],
     )
 
 
 ############################################  DOCUMENTATION PAGE  #######################################################
+
+
 
 doc_layout = html.Div(id='docpage-link', className="markdown_style",
                       children = [Navbar(), html.Br(),

@@ -288,7 +288,7 @@ def __TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
                                autosize=True,
                                annotations=[
                                    {"text": "Please provide a second outcome in data upload to display bi-dimensional plot",
-                                    "font": {"size": 15, "color": "white", 'family': 'sans-serif'},
+                                    "font": {"size": 15, "color": "black", 'family': 'sans-serif'},
                                     "xref": "paper", "yref": "paper",
                                     "showarrow": False},
                                    ]

@@ -70,10 +70,10 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
 
 
     selectors_ef = html.Div([html.Div(
-        [dbc.Row([html.P("Select effect size", style={'color': 'white', 'vertical-align': 'middle'})])] +
+        [dbc.Row([html.P("Select effect size", style={'color': 'black', 'vertical-align': 'middle'})])] +
          [dbc.Row([dbc.Col(dbc.Row(
                   [html.P(f"{name}", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
-                                                                   'margin-left': '5px', 'font-size': '12px', 'color':'#b2e1ec'}),
+                                                                   'margin-left': '5px', 'font-size': '12px', 'color':'black'}),
                   dcc.Dropdown(id={'type': 'dataselectors', 'index': f'dropdown-{name_outcomes}'},
                                options=options_effect_size_cont if val=='continuous' else options_effect_size_bin,
                                searchable=True, placeholder="...",
@@ -82,19 +82,18 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
                                                        "font-family": "sans-serif",
                                                        'margin-bottom': '2px',
                                                        'display': 'inline-block',
-                                                       'color': CLR_BCKGRND_old,
-                                                       'font-size': '10px',
-                                                       'background-color': CLR_BCKGRND_old} )]
+                                                       'color': 'black',
+                                                       'font-size': '10px'} )]
           ),  style={'margin-left': '55px', 'margin-right': '5px'}) for name, val in zip(name_outcomes, search_values)]
         )],
      ),
 
         html.Div(
-            [dbc.Row([html.P("Outcome direction", style={'color': 'white', 'vertical-align': 'middle'})])] +
+            [dbc.Row([html.P("Outcome direction", style={'color': 'black', 'vertical-align': 'middle'})])] +
             [dbc.Row([dbc.Col(dbc.Row(
                 [html.P(f"{name}", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
                                                                  'margin-left': '-1.5px', 'font-size': '12px',
-                                                                 'color': '#b2e1ec'}),
+                                                                 'color': 'black'}),
                  dcc.Dropdown(id={'type': 'dataselectors', 'index': f'dropdown-outcome-{name_outcomes}'},
                               options=options_outcome_direction,
                               searchable=True, placeholder="...",
@@ -103,9 +102,8 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
                                                       "font-family": "sans-serif",
                                                       'margin-bottom': '2px',
                                                       'display': 'inline-block',
-                                                      'color': CLR_BCKGRND_old,
-                                                      'font-size': '10px',
-                                                      'background-color': CLR_BCKGRND_old})]
+                                                      'color': 'black',
+                                                      'font-size': '10px'})]
             ), style={'margin-left': '55px', 'margin-right': '5px'}) for name, val in zip(name_outcomes, search_values)]
             )],
         ),
@@ -114,7 +112,7 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
 
     ),
         html.Div(
-            [dbc.Row([html.P("Select variables", style={'color': 'white', 'vertical-align': 'top'})])] +
+            [dbc.Row([html.P("Select variables", style={'color': 'black', 'vertical-align': 'top'})])] +
             [dbc.Row([dbc.Col(dbc.Row(
                 [html.P(f"{name}:", className="selectbox", style={'display': 'inline-block', "text-align": 'right',
                                                                   'margin-left': '0px', 'font-size': '12px'}),
@@ -126,9 +124,8 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
                                                       "font-family": "sans-serif",
                                                       'margin-bottom': '2px',
                                                       'display': 'inline-block',
-                                                      'color': CLR_BCKGRND_old,
-                                                      'font-size': '10px',
-                                                      'background-color': CLR_BCKGRND_old})]),
+                                                      'color': 'black',
+                                                      'font-size': '10px'})]),
                 style={'margin-bottom': '0px'})
                 for var_name, name in zip(var_names, col_var)],
                 style={'display': 'inline-block'})

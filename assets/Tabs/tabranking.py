@@ -96,4 +96,4 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
 
                                  ]),
 
-                        ],  colors={ "border": 'grey', "primary": "grey", "background": CLR_BCKGRND})
+                        ],  colors={ "border": 'grey', "primary": "grey", "background": 'white'})

@@ -28,7 +28,8 @@ def Navbar():
                                              # 'filter': 'invert(42 %) sepia(26 %) saturate(2474 %) hue-rotate(218deg) brightness(97 %) contrast(89 %)',
                                               #'filter': 'invert(44%) sepia(57%) saturate(3117%) hue-rotate(147deg) brightness(99%) contrast(94%)',
                                               'padding-left': '2%','padding-right': '2%',
-                                              'padding-bottom':'0.4%','padding-top':'0.4%'}),
+                                              'padding-bottom':'0.4%','padding-top':'0.4%',
+                                              'margin-left':'40px'}),
                              className="child", sm=3, md=2),
                      style={
                             #"border": "0.01px white solid",
@@ -41,7 +42,8 @@ def Navbar():
                 dbc.Col(children=[dbc.Nav([home_button, doc_button, news_button, saveload_button],
                                           navbar=True, style={'text-align':'center',
                                                               'padding-right':'5%','padding-top':'2.5%',
-                                                              'margin-left':'50px'}),
+                                                              'margin-left':'50px',
+                                                              'justify-content': 'end'}),
                           ]),
 
                 #Toggle theme
@@ -72,10 +74,11 @@ def Navbar():
                 # ], style={'display': 'inline-block',
                 #           'margin-top': '10px',  'margin-right': '25px'}
                 # ),
-                dbc.Col(html.Img(src=UP_LOGO, height="57px"), style={'padding-right':'1%','padding-top':'0.3%','padding-bottom':'0.3%'},
-                    width="auto")], className="child child-right" ),
+                # dbc.Col(html.Img(src=UP_LOGO, height="57px"), style={'padding-right':'1%','padding-top':'0.3%','padding-bottom':'0.3%'},
+                #     width="auto")
+                    ], className="child child-right" ),
         ],
-        color="dark",
+        color="#5c7780",
         dark=True,
     )
 

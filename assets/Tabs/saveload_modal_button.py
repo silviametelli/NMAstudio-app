@@ -19,7 +19,7 @@ saveload_modal = html.Div(
                  dbc.ModalBody("Username must be at least 6 characters"),
                  html.Br(),
 
-                 html.Div([html.H4("USERNAME:", style={'display': 'inline-block', 'margin-left': '1%', 'color':'white'}),
+                 html.Div([html.H4("USERNAME:", style={'display': 'inline-block', 'margin-left': '1%', 'color':'black'}),
                            dcc.Input(id='input-username', type="text", placeholder="",
                                      style={'margin-left': '2%', 'display': 'inline-block', 'width': "20%"}),
                            html.Div(id="output_username", style={'margin-left': '1%', 'width': "45%"}),
@@ -37,7 +37,7 @@ saveload_modal = html.Div(
                            html.Div(id="output_token", style={'font-size': '22px', 'padding-left': '4%',
                                                               'padding-right': '3%', 'display': 'inline-block',
                                                               'font-family': 'sans-serif',
-                                                              "font-weight": "410", "color": "white"}),
+                                                              "font-weight": "410", "color": "black"}),
                            # dcc.Clipboard(id="token_copy",  target_id="token",
                            #               style={"display": "inline-block", "fontSize": 20, "verticalAlign": "top",
                            #                      "padding-left": "5px", "color": "white"}),
@@ -54,7 +54,7 @@ saveload_modal = html.Div(
                                     ],
                                                       style={'overflowX': 'auto',
                                                              'overflowY': 'auto',
-                                                             'height': '99%', 'font-family': 'sans-serif', 'font-size': '20px',  "color": "white",
+                                                             'height': '99%', 'font-family': 'sans-serif', 'font-size': '20px',  "color": "black",
                                                              })
                                     ),
 
@@ -65,15 +65,15 @@ saveload_modal = html.Div(
                     label='Load Project',
                     children=html.Div(className='control-tab', children=[
 
-                 dbc.ModalBody("You can retrieve an existing project by entering the token that has been shared with you.",style={'font-size': '20px', 'margin-left': '1%', 'color': 'white'}),
+                 dbc.ModalBody("You can retrieve an existing project by entering the token that has been shared with you.",style={'font-size': '20px', 'margin-left': '1%', 'color': 'black'}),
                  html.Br(),
                  dbc.ModalBody(""),
                  html.Br(),
                         html.Div([html.H4("ENTER YOUR TOKEN:",
-                                          style={'display': 'inline-block', 'margin-left': '1%', 'color': 'white'}),
+                                          style={'display': 'inline-block', 'margin-left': '1%', 'color': 'black'}),
                                   dcc.Input(id='input-token-load', type="text", placeholder="",
                                             style={'margin-left': '2%', 'display': 'inline-block', 'width': "20%"}),
-                                  html.Div(id="output_token_entered", style={'margin-left': '1%', 'width': "45%", 'color': 'white'}),
+                                  html.Div(id="output_token_entered", style={'margin-left': '1%', 'width': "45%", 'color': 'blcak'}),
 
                                   ],
                                  style={'font-size': '20px', 'color': '#587485', 'padding-left': '3%',
@@ -89,7 +89,7 @@ saveload_modal = html.Div(
                                   html.Div(id="output_load_project", style={'font-size': '22px', 'padding-left': '4%',
                                                                      'padding-right': '3%', 'display': 'inline-block',
                                                                      'font-family': 'sans-serif',
-                                                                     "font-weight": "410", "color": "white"}),
+                                                                     "font-weight": "410", "color": "black"}),
 
                                    html.Div(id='token-not-found-alert', style={'font-size': '13px', 'padding-left': '0.5%',
                                                                                'padding-right': '1%', 'display': 'inline-block',
@@ -118,7 +118,7 @@ saveload_modal = html.Div(
                 is_open=False,
                 size="xl",
                 style={"max-width": "none", "width": "70%", "font-size":"16px", "border": "1px solid gray",
-                            "color": "white",'font-family':'sans-serif',
+                            "color": "black",'font-family':'sans-serif',
                              "background-color": "#d7dbda"},
             ),
         ]

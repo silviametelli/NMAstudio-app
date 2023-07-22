@@ -19,6 +19,7 @@ def __data_modal(open_modal_data, upload, submit, filename2,
     #filename_storage = filename if filename is not None else ''
     #filename_exists = True if filename is not None or filename_storage =='' else False
     filename_exists = True if filename is not None else False
+    treat_list=[{'label': '{}'.format('treat_name'), 'value': 'treat_name'}]
 
     if open_modal_data:
         if upload and button_id=='upload_modal_data':
@@ -156,6 +157,10 @@ def __data_modal(open_modal_data, upload, submit, filename2,
                 data_user['outcome1_direction'] = var_outs['outcome1_direction']
                 data_user['effect_size2'] = var_outs['effect_size2']
                 data_user['outcome2_direction'] = var_outs['outcome2_direction']
+            
+            treat_list = [{'label': '{}'.format(treat_name), 'value': treat_name}
+                   for treat_name in sorted(data_user['treat'].unique())]
+
 
             try:
                 data = adjust_data(data_user, search_value_format, search_value_outcome2)
@@ -168,17 +173,18 @@ def __data_modal(open_modal_data, upload, submit, filename2,
             except Exception as Rconsole_error_data:
                 TEMP_net_data_STORAGE = {}
                 error = Rconsole_error_data
-                return modal_data_is_open, modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, str(error), True
+            
+                return modal_data_is_open, modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, str(error), True, treat_list
 
-            return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, '', False
+            return not modal_data_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, '', False, treat_list
 
         if submit and button_id == 'submit_modal_data':
 
-            return modal_data_is_open, not modal_data_checks_is_open and (not modal_data_is_open), TEMP_net_data_STORAGE, filename_exists, '', False
+            return modal_data_is_open, not modal_data_checks_is_open and (not modal_data_is_open), TEMP_net_data_STORAGE, filename_exists, '', False, treat_list
 
-        return not modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE, filename_exists, '', False
+        return not modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE, filename_exists, '', False, treat_list
     else:
-        return modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE, filename_exists, '', False
+        return modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE, filename_exists, '', False, treat_list
 
 
 ########## submit + load project using token

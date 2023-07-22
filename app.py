@@ -44,7 +44,10 @@ app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=devi
 def get_new_layout():
     SESSION_ID = get_new_session_id()
     return html.Div([dcc.Location(id='url', refresh=False),
-                     html.Div(id='page-content'),
+                     html.Div(id='page-content', style={
+                         'background-color':'#fff'
+                        #  'background-color':'#5c7780'
+                         }),
                      dcc.Store(id='consts_STORAGE',  data={'today': TODAY, 'session_ID': SESSION_ID},
                                storage_type='memory',
                                )
@@ -156,10 +159,7 @@ def is_data_file_uploaded(filename):
               prevent_initial_call=False)
 def update_cytoscape_layout(layout):
     ctx = dash.callback_context
-    return {'name': layout.lower() if layout else 'circle',
-            'animate': True}, {'name': layout.lower() if layout else 'circle',
-                               'fit': True,
-                               'animate': True}
+    return {'name': layout.lower() if layout else 'circle'},{'name': layout.lower() if layout else 'circle', 'fit':True}
 
 
 ### ----- update graph layout on node click ------ ###
@@ -175,6 +175,8 @@ def update_cytoscape_layout(layout):
                Input('dd_eclr', 'children'),
                Input('node_color_input', 'value'),
                Input('edge_color_input', 'value'),
+               Input('label_size_input', 'value'),
+               Input('treat_name_input', 'value'),
                Input('dd_nds', 'children'),
                Input('dd_egs', 'children'),
                Input("btn-get-png", "n_clicks"),
@@ -182,10 +184,10 @@ def update_cytoscape_layout(layout):
                ]
               )
 def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
-                        dd_nclr, dd_eclr, custom_nd_clr, custom_edg_clr, dd_nds, dd_egs,
+                        dd_nclr, dd_eclr, custom_nd_clr, custom_edg_clr, label_size,treat_name,dd_nds, dd_egs,
                         dwld_button, net_download_activation):
     return __generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
-                        dd_nclr, dd_eclr, custom_nd_clr, custom_edg_clr, dd_nds, dd_egs,
+                        dd_nclr, dd_eclr, custom_nd_clr, custom_edg_clr, label_size,treat_name,dd_nds, dd_egs,
                         dwld_button, net_download_activation)
 
 ### ----- save network plot as png ------ ###
@@ -209,7 +211,7 @@ def get_image(net_download_activation, export):
 
 ### ----- Update layout with slider ------ ###
 @app.callback([Output('cytoscape', 'elements'),
-               Output('modal-cytoscape', 'elements')],
+               Output('modal-cytoscape', 'elements'),],
               [Input('net_data_STORAGE', 'data'),
                Input('slider-year', 'value'),
                Input('toggle_forest_outcome', 'value'),
@@ -217,8 +219,9 @@ def get_image(net_download_activation, export):
                Input('toggle_consistency_direction', 'value'),
                Input('toggle_funnel_direction', 'value'),
                Input('reset_project', 'n_clicks'),
+            #    Input('node_size_input', 'value'),
                ])
-def update_layout_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_cons, out2_fun, reset_btn):
+def update_layout_year_slider(net_data, slider_year, out2_nma, out2_pair, out2_cons, out2_fun, reset_btn,):
 
     YEARS_DEFAULT = np.array([1963, 1990, 1997, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010,
                               2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021])
@@ -602,6 +605,7 @@ def toggle_modal_edge(open_t, close):
                Output("uploaded_datafile_to_disable_cinema", "data"),
                Output('Rconsole-error-data', 'children'),
                Output('R-alert-data', 'is_open'),
+               Output('dropdown-intervention', 'options'),
                ],
               [Input("upload_your_data", "n_clicks_timestamp"),
                Input("upload_modal_data", "n_clicks_timestamp"),
@@ -707,6 +711,8 @@ def update_dropdown_effect_mod(new_data):
     new_data = pd.read_json(new_data, orient='split')
     OPTIONS_VAR = [{'label': '{}'.format(col), 'value': col}
                    for col in new_data.columns] #new_data.select_dtypes(['number']).columns
+    # options_intervention = [{'label': '{}'.format(treat), 'value': treat}
+    #                for treat in new_data.columns]
     return OPTIONS_VAR
 
 
@@ -900,9 +906,9 @@ def generate_xlsx_league(n_clicks, leaguedata):
                Output("forestswitchlabel_outcome2", "style")],
               [Input("toggle_forest_outcome", "value")])
 def color_funnel_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+    style1 = {'color': 'gray' if toggle_value else '#5a87c4',
               'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+    style2 = {'color': '#5a87c4' if toggle_value else 'gray',
               'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
     return style1, style2
 
@@ -911,9 +917,9 @@ def color_funnel_toggle(toggle_value):
                Output("forest_pair_switchlabel_outcome2", "style")],
               [Input("toggle_forest_pair_outcome", "value")])
 def color_funnel_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+    style1 = {'color': 'gray' if toggle_value else '#5a87c4',
               'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+    style2 = {'color': '#5a87c4' if toggle_value else 'gray',
               'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
     return style1, style2
 
@@ -923,9 +929,9 @@ def color_funnel_toggle(toggle_value):
                Output("cinemaswitchlabel2", "style")],
               [Input("rob_vs_cinema", "value")])
 def color_leaguetable_toggle(toggle_value):
-    style1 = {'color': '#808484' if toggle_value else '#b6e1f8', 'font-size': '12px',
+    style1 = {'color': '#808484' if toggle_value else '#5a87c4', 'font-size': '12px',
               'display': 'inline-block', 'margin': 'auto', 'padding-left': '10px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else '#808484', 'font-size': '12px',
+    style2 = {'color': '#5a87c4' if toggle_value else '#808484', 'font-size': '12px',
               'display': 'inline-block', 'margin': 'auto', 'padding-right': '0px', }
     return style1, style2
 
@@ -934,9 +940,9 @@ def color_leaguetable_toggle(toggle_value):
                Output("funnelswitchlabel2", "style")],
               [Input("toggle_funnel_direction", "value")])
 def color_funnel_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+    style1 = {'color': 'gray' if toggle_value else '#5a87c4',
               'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+    style2 = {'color': '#5a87c4' if toggle_value else 'gray',
               'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
     return style1, style2
 
@@ -945,9 +951,9 @@ def color_funnel_toggle(toggle_value):
                Output("consistencyswitchlabel2", "style")],
               [Input("toggle_consistency_direction", "value")])
 def color_funnel_toggle(toggle_value):
-    style1 = {'color': 'gray' if toggle_value else '#b6e1f8',
+    style1 = {'color': 'gray' if toggle_value else '#5a87c4',
               'display': 'inline-block', 'margin': 'auto', 'padding-left': '20px', 'font-size':'11px'}
-    style2 = {'color': '#b6e1f8' if toggle_value else 'gray',
+    style2 = {'color': '#5a87c4' if toggle_value else 'gray',
               'display': 'inline-block', 'margin': 'auto', 'padding-right': '20px', 'font-size':'11px'}
     return style1, style2
 

@@ -7,7 +7,7 @@ tab_forests = dcc.Tabs(id='', value='subtab1', vertical=False, persistence=True,
                          dcc.Tab(label='NMA', id='tab1', value='Tab1', className='control-tab',
                                  style={'height': '30%', 'display': 'flex', 'justify-content': 'center',
                                         'align-items': 'center',
-                                        'font-size': '12px', 'color': 'grey', 'padding': '0'},
+                                        'font-size': '12px', 'color': 'black', 'padding': '0'},
                                  selected_style={'height': '30%', 'display': 'flex', 'justify-content': 'center',
                                                  'align-items': 'center',
                                                  'font-size': '12px', 'padding': '0'},
@@ -84,7 +84,7 @@ tab_forests = dcc.Tabs(id='', value='subtab1', vertical=False, persistence=True,
                                  ]),
                                  dcc.Tab(label='Pairwise', id='tab2', value='Tab2',  className='control-tab',
                                          style={'height':'30%', 'display': 'flex', 'justify-content':'center', 'align-items':'center',
-                                                'font-size':'12px', 'color':'grey','padding': '0'},
+                                                'font-size':'12px', 'color':'black','padding': '0'},
                                          selected_style={'height':'30%', 'display': 'flex', 'justify-content':'center', 'align-items':'center',
                                                          'font-size':'12px','padding': '0'},
                                          children=[html.Div([html.P(
@@ -157,7 +157,7 @@ tab_forests = dcc.Tabs(id='', value='subtab1', vertical=False, persistence=True,
                                              ),
                                          ]),
 
-                                 dcc.Tab(label='Bi-dimensional NMA', id='tab3', value='Tab3',  className='control-tab',
+                                 dcc.Tab(label='Bi-dimensional NMA', id='black', value='Tab3',  className='control-tab',
                                          style={'height':'30%', 'display': 'flex', 'justify-content':'center', 'align-items':'center',
                                                 'font-size':'12px', 'color':'grey','padding': '0'},
                                          selected_style={'height':'30%', 'display': 'flex', 'justify-content':'center', 'align-items':'center',
@@ -209,4 +209,4 @@ tab_forests = dcc.Tabs(id='', value='subtab1', vertical=False, persistence=True,
                                                                  'displaylogo': False})])
                                              )],
                                          )
-                             ], colors={ "border": 'grey', "primary": "grey", "background": CLR_BCKGRND})
+                             ], colors={ "border": 'grey', "primary": "grey", 'background': 'white'})

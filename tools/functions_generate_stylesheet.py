@@ -3,11 +3,13 @@ from assets.COLORS import *
 from assets.cytoscape_styleesheeet import get_stylesheet
 
 def __generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
-                        dd_nclr, dd_eclr, custom_nd_clr, custom_edg_clr, dd_nds, dd_egs,
+                        dd_nclr, dd_eclr, custom_nd_clr, custom_edg_clr, label_size,treat_name,dd_nds, dd_egs,
                         dwld_button, net_download_activation):
 
     nodes_color = (custom_nd_clr or DFLT_ND_CLR) if dd_nclr != 'Default' else DFLT_ND_CLR
     edges_color = (custom_edg_clr or None) if dd_eclr != 'Default' else None
+    label_size=(label_size or None) if dd_eclr != 'Default' else None
+    treat_name=(treat_name or None) if dd_eclr != 'Default' else None
 
     node_size = dd_nds or 'Default'
     node_size = node_size == 'Tot randomized'
@@ -20,9 +22,23 @@ def __generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
 
     n_cls = elements[-1]["data"]['n_class'] if "n_class" in elements[-1]["data"] and cls else 1
     stylesheet = get_stylesheet(pie=pie, classes=cls, n_class=n_cls, edg_lbl=edg_lbl, edg_col=edges_color,
-                                nd_col=nodes_color, node_size=node_size, edge_size=edge_size)
+                                nd_col=nodes_color, node_size=node_size, edge_size=edge_size,label_size=label_size)
     edgedata = [el['data'] for el in elements if 'target' in el['data'].keys()]
     all_nodes_id = [el['data']['id'] for el in elements if 'target' not in el['data'].keys()]
+
+    if treat_name is not None:
+        stylesheet = get_stylesheet(pie=pie,  classes=cls,  n_class=n_cls, edg_lbl=edg_lbl, edg_col=edges_color,
+                                    nd_col=nodes_color, node_size=node_size,
+                                    nodes_opacity=0.2, edges_opacity=0.1,label_size=label_size) + [
+                         {"selector": 'node[label = "{}"]'.format(treat_name),
+                          "style": {'color':'red',"opacity": 1,'background-color':'#78131c'}}]+ [
+                         {"selector": 'node[id = "{}"]'.format(id),
+                          "style": {"opacity": 1}}
+                         for id in all_nodes_id if id  not in treat_name]+[
+                           {"selector": 'edge',
+                          "style": {"opacity": 1}}  
+                         ]
+
 
     if slct_nodesdata:
         selected_nodes_id = [d['id'] for d in slct_nodesdata]
@@ -33,7 +49,7 @@ def __generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
 
         stylesheet = get_stylesheet(pie=pie,  classes=cls,  n_class=n_cls, edg_lbl=edg_lbl, edg_col=edges_color,
                                     nd_col=nodes_color, node_size=node_size,
-                                    nodes_opacity=0.2, edges_opacity=0.1) + [
+                                    nodes_opacity=0.2, edges_opacity=0.1,label_size=label_size) + [
                          {"selector": 'node[id = "{}"]'.format(id),
                           "style": {"border-color": "#751225", "border-width": 5, "border-opacity": 1,
                                     "opacity": 1}}

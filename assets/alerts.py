@@ -14,7 +14,7 @@ alert_data_type = dcc.ConfirmDialog(id='data-missing-n-danger',
 dataupload_error= dbc.Modal([
         dbc.ModalHeader("Error"),
         dbc.ModalBody([html.P("NMA estimation and/or network generation failed: see error below and check your data",  style={"color":"red"}),
-                       html.P(id="dataupload-error", style={"color":"white"})])],
+                       html.P(id="dataupload-error", style={"color":"black"})])],
         id="Alert-data",
         size="lg",
         is_open=False)
@@ -23,7 +23,7 @@ dataupload_error= dbc.Modal([
 R_errors_data = dbc.Modal([
         dbc.ModalHeader("Error"),
         dbc.ModalBody([html.P("Data conversion failed: see error below / check your data for format errors",  style={"color":"red"}),
-                       html.P(id="Rconsole-error-data", style={"color":"white"})])],
+                       html.P(id="Rconsole-error-data", style={"color":"black"})])],
         id="R-alert-data",
         size="lg",
         is_open=False)
@@ -31,7 +31,7 @@ R_errors_data = dbc.Modal([
 R_errors_nma = dbc.Modal([
         dbc.ModalHeader("Error"),
         dbc.ModalBody([html.P("NMA estimation and/or network generation failed: see error below and check your data",  style={"color":"red"}),
-                       html.P(id="Rconsole-error-nma", style={"color":"white"})])],
+                       html.P(id="Rconsole-error-nma", style={"color":"black"})])],
         id="R-alert-nma",
         size="lg",
         is_open=False)
@@ -39,7 +39,7 @@ R_errors_nma = dbc.Modal([
 R_errors_pair = dbc.Modal([
         dbc.ModalHeader("Error"),
         dbc.ModalBody([html.P("Pairwise meta-analysis failed: see error below and check your data", style={"color":"red"}),
-                       html.P(id="Rconsole-error-pw", style={"color":"white"})])],
+                       html.P(id="Rconsole-error-pw", style={"color":"black"})])],
         id="R-alert-pair",
         size="lg",
         is_open=False)
@@ -47,7 +47,7 @@ R_errors_pair = dbc.Modal([
 R_errors_league = dbc.Modal([
     dbc.ModalHeader("Error"),
     dbc.ModalBody([html.P("League table generation failed: see error below and check your data", style={"color":"red"}),
-                   html.P(id="Rconsole-error-league", style={"color": "white"})])],
+                   html.P(id="Rconsole-error-league", style={"color": "black"})])],
     id="R-alert-league",
     size="lg",
     is_open=False)
@@ -56,7 +56,7 @@ R_errors_league = dbc.Modal([
 R_errors_funnel= dbc.Modal([
     dbc.ModalHeader("Error"),
     dbc.ModalBody([html.P("Funnel plot data generation failed: see error below and check your data", style={"color":"red"}),
-                   html.P(id="Rconsole-error-funnel", style={"color": "white"})])],
+                   html.P(id="Rconsole-error-funnel", style={"color": "black"})])],
     id="R-alert-funnel",
     size="lg",
     is_open=False)

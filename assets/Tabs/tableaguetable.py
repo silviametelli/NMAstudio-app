@@ -4,7 +4,6 @@ from assets.dropdowns_values import *
 tab_league = html.Div([
     dbc.Row([dbc.Col([html.A(html.Img(src="/assets/icons/expand.png",
                                       style={'width': '34px',
-                                             'filter': 'invert()',
                                              'margin-top': '0px',
                                              'margin-bottom': '2px',
                                              'border-radius': '1px', }),

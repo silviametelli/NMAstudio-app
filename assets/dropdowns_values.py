@@ -65,5 +65,5 @@ Dropdown_export = dbc.DropdownMenu(
 Dropdown_graphlayout = dbc.DropdownMenu(
     label="Graph Settings",
     children=[Dropdown_graphlayout_inner, Dropdown_export, Dropdown_edgesize, Dropdown_nodesize, Dropdown_nodecolor, Dropdown_edgecolor],
-    style={'display': 'inline-block'},
+    style={'display': 'inline-block', 'background-color':'#5c7780','color':'white'},
 )

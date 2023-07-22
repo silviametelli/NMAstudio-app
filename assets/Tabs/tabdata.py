@@ -44,7 +44,7 @@ def tab_data(years=YEARS_DEFAULT):
                     "margin-left": "5px",
                     "padding": "4px 4px 4px 4px",
                     "margin-top": "15px",
-                    "color": "#a1c5f6",
+                    "color": "#5a87c4",
                     "fontSize": 12,
                     "font-weight": "900",
                     "font-family": "sans-serif",
@@ -57,7 +57,6 @@ def tab_data(years=YEARS_DEFAULT):
                     src="/assets/icons/expand.png",
                     style={
                         "width": "34px",
-                        "filter": "invert()",
                         "margin-top": "15px",
                         "border-radius": "1px",
                     },
@@ -68,7 +67,7 @@ def tab_data(years=YEARS_DEFAULT):
             dbc.Tooltip(
                 "expand table",
                 style={
-                    "color": "white",
+                    "color": "#2f496b",
                     "font-size": 9,
                     "margin-left": "10px",
                     "letter-spacing": "0.3rem",
@@ -120,7 +119,7 @@ def tab_data(years=YEARS_DEFAULT):
                 fixed_rows={"headers": True, "data": 0},
                 style_cell={
                     "backgroundColor": "rgba(0,0,0,0.1)",
-                    "color": "white",
+                    "color": "black",
                     "minWidth": "45px",
                     "maxWidth": "60px",
                     "textAlign": "center",
@@ -140,7 +139,7 @@ def tab_data(years=YEARS_DEFAULT):
                     },
                 ],
                 style_header={
-                    "backgroundColor": "rgb(26, 36, 43)",
+                    "backgroundColor": "#738789",
                     "fontWeight": "bold",
                     "border": "1px solid #5d6d95",
                 },

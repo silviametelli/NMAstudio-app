@@ -197,12 +197,12 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
     legend = [html.Div(style={'display': 'inline-block', 'width': '100px'},
                        children=[html.Div(),
                                  html.Small('Risk of bias: ' if not toggle_cinema else 'CINeMA rating: ',
-                                            style={'color': 'white'})])]
+                                            style={'color': 'black'})])]
     legend += [html.Div(style={'display': 'inline-block', 'width': '60px'},
                         children=[html.Div(style={'backgroundColor': cmap[n],
                                                   'height': legend_height}), html.Small(
                             ('Very Low' if toggle_cinema else 'Low') if n == 0 else 'High' if n == N_BINS - 1 else None,
-                            style={'paddingLeft': '2px', 'color': 'white'})])
+                            style={'paddingLeft': '2px', 'color': 'black'})])
                for n in range(N_BINS)]
 
     cmap = [CINEMA_g, CINEMA_y, CINEMA_r] if not toggle_cinema else [CINEMA_r, CINEMA_y, CINEMA_lb, CINEMA_g]
@@ -225,7 +225,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
                 league_table_styles.append({'if': {'filter_query': f'{{Treatment}} = {{{treat_r}}}',
                                                 'column_id': treat_c},
                                                 'backgroundColor': cmap[clr_indx] if not empty else CLR_BCKGRND2,
-                                                'color': CX1 if not empty else CX2 if diag else 'white'})
+                                                'color': 'white' if not empty else CX2 if diag else 'black'})
     league_table_styles.append({'if': {'column_id': 'Treatment'}, 'backgroundColor': CX1})
 
 
@@ -270,7 +270,7 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 def build_league_table(data, columns, style_data_conditional, tooltip_values, modal=False):
 
     return dash_table.DataTable(style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
-                                            'color': 'white',
+                                            'color': 'black',
                                             'border': '1px solid #5d6d95',
                                             'font-family': 'sans-serif',
                                             'fontSize': 11,
@@ -289,7 +289,7 @@ def build_league_table(data, columns, style_data_conditional, tooltip_values, mo
                                 style_data_conditional=style_data_conditional,
                                 # fixed_rows={'headers': True, 'data': 0},    # DOES NOT WORK / LEADS TO BUG
                                 # fixed_columns={'headers': True, 'data': 1}, # DOES NOT WORK / LEADS TO BUG
-                                style_header={'backgroundColor': 'rgb(26, 36, 43)',
+                                style_header={'backgroundColor': '#738789',
                                               'border': '1px solid #5d6d95'},
                                 style_header_conditional=[{'if': {'column_id': 'Treatment',
                                                                   'header_index': 0},

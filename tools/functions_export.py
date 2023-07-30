@@ -1,6 +1,6 @@
 import pandas as pd
 import dash
-
+from assets.COLORS import *
 
 
 

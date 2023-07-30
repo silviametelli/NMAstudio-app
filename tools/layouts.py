@@ -14,8 +14,8 @@ from assets.alerts import alert_outcome_type, alert_data_type, R_errors_data, R_
 from dash_extensions import Download
 
 UP_LOGO = "/assets/logos/universite.jpeg"
-CRESS_LOGO = "/assets/logos/logocress.png"
-inserm_logo="/assets/logos/inserm.png"
+CRESS_LOGO = "/assets/logos/cress_logo.png"
+inserm_logo="/assets/logos/inserm_logo.png"
 
 def Homepage():
     return html.Div([Navbar(), home_layout()])
@@ -79,7 +79,7 @@ def home_layout():
                                                                        'padding-left':'-2px',
                                                                        'color':'gray','margin-top': '-6px'}, 
                                                                        placeholder="e.g. 30px",),
-                                                                       ], style={'margin-left':'20px','margin-top':'-25px'}),
+                                                                       ], style={'margin-left':'25px','margin-top':'-25px'}),
                                                     dbc.Col([html.H4("Search the intervention:",style={'font-size':'13px', 
                                                                                                         #      'margin-left':'150px',
                                                                                                              'font-family': 'system-ui',
@@ -92,7 +92,7 @@ def home_layout():
                                                                 #      'margin-left':'150px',
                                                                        'font-size':'10.5px',
                                                                        'padding-left':'-2px','color':'gray','margin-top': '-6px'}, 
-                                                                       placeholder="e.g. PBO",)], style={'margin-top':'-25px'})
+                                                                       placeholder="e.g. PBO",)], style={'margin-top':'-25px','margin-left':'20px'})
                                                     
 
                                     ]),
@@ -116,7 +116,8 @@ def home_layout():
                                  html.Img(src=inserm_logo, height="57px"),
                                  ], style={'padding-right':'1%','padding-top':'0.3%',
                                            'padding-bottom':'0.3%','border-top':'solid',
-                                           'display': 'table','margin-left':'10px'},
+                                           'display': 'flex','margin-left':'10px',
+                                           'justify-content': 'space-between'},
                     width="auto"),
 
                         # html.P('Copyright © 2020. All rights reserved.', className='__footer'),
@@ -141,7 +142,7 @@ def home_layout():
                                                             "margin-bottom":"15px", "margin-left":"10px"}), ##DIV RESET  BUTTON
                                   id="reset_project", style={'display': 'inline-block'}),
                                      dbc.Tooltip("Reset project - uploaded data will be lost",
-                                                 style={'color': 'white', 'font-size': 9,
+                                                 style={'color': 'black', 'font-size': 9,
                                                         "margin-left": "5px",
                                                         'letter-spacing': '0.2rem'},
                                                  placement='right',

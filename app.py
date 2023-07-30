@@ -310,6 +310,7 @@ def TapEdgeData(edge):
 
 ### ----- display forest plot on node click ------ ###
 @app.callback(Output('tapNodeData-fig', 'figure'),
+            #   Output('tapNodeData-fig', 'style'),
               [Input('cytoscape', 'selectedNodeData'),
                Input("toggle_forest_outcome", "value"),
                Input("forest_data_STORAGE", "data"),

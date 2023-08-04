@@ -67,7 +67,7 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
                        log_x=xlog,
                        size_max=10,
                        range_x=[min(low_rng, 0.1), max([up_rng, 10])] if xlog else [up_rng_, low_rng_],
-                       range_y=[-1,len(df.studlab)+2],
+                       range_y=[-1,len(df.studlab)+1],
                        size=df.WEIGHT if edge else None)
 
     if xlog:
@@ -155,15 +155,16 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
             if width:
                 low, up =  center - width/2, center + width/2
             return {'x': [center, low, center, up, center],
-                    'y': [-height/2, 0, height/2, 0, -height/2]}
+                    'y': [(-height/2), 0, (height/2), 0, (-height/2)]}
         fig.add_trace(go.Scatter(x=romb(center, low=CI_lower_diamond.iloc[0], up=CI_upper_diamond.iloc[0])['x'],
                                  y=romb(center, low=CI_lower_diamond.iloc[0],up=CI_upper_diamond.iloc[0])['y'],
                                  fill="toself", mode="lines", line=dict(color='black'),
                                  fillcolor='#1f77b4', yaxis="y2", showlegend=False))
+        
 
         fig.add_trace(
             go.Scatter(x=[pred_lo, pred_up],
-                       y=[-_HEIGHT_ROMB*2] * 2, #["Prediction Interval"],
+                       y=[(-_HEIGHT_ROMB)*2] * 2, #["Prediction Interval"],
                        mode="lines",
                        line=dict( color='#8B0000', width=4), showlegend=False, yaxis="y3",
                      ))
@@ -183,6 +184,20 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
 
         fig.update_traces(overwrite=False)
 
+        # diamond_tick_text = [' ' * 5 + + '{:.2f}   {:<17}'.format(center, CI_d.iloc[0])]
+        # ticktext_list=[' ' * 5 + '{:.2f}   {:<17}'.format(x, y)
+        #                           # for x, y in zip(df[effect_size].values, df['CI'].values)],
+        #                           for x, y in zip(np.append(df[effect_size].values, center),
+        #                                           np.append(df['CI'].values, CI_d.iloc[0]))]
+        # ticktext_list=ticktext_list+diamond_tick_text
+        ticktext_list = [' ' * 5 + '{:.2f}   {:<17}'.format(x, y) for x, y in zip(df[effect_size].values, df['CI'].values)]
+
+# Add the additional tick label for the bottom
+        # bottom_tick_label = [' ' * 5 + '{:.2f}   {:<17}'.format(center, CI_d.iloc[0])]
+        # ticktext_list=  bottom_tick_label+ ticktext_list
+        len_n = len(df.studlab)
+
+
         fig.update_layout(
             autosize=True,
             yaxis2=dict(tickvals=[], ticktext=[],
@@ -196,15 +211,12 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
                         showgrid=False, zeroline=False,
                         titlefont=dict(color='black'),
                         tickfont=dict(color='black'),
-                        range=[-1, len(df.studlab) + 1],
+                        range=[-1, len(df.studlab)+1 ],
                         scaleanchor = 'y',
                         anchor="x",  overlaying="y2"
                         ),
             yaxis4=dict(tickvals=[*range(df.shape[0])],
-                        ticktext=[' ' * 5 + '{:.2f}   {:<17}'.format(x, y)
-                                  # for x, y in zip(df[effect_size].values, df['CI'].values)],
-                                  for x, y in zip(np.append(df[effect_size].values, center),
-                                                  np.append(df['CI'].values, CI_d.iloc[0]))],
+                        ticktext=ticktext_list,
                         showgrid=False, zeroline=False,
                         titlefont=dict(color='black'),
                         tickfont=dict(color='black'),
@@ -226,6 +238,16 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
                            xanchor='center',
                            text='<b>95% CI</b>',
                            showarrow=False)
+        
+        fig.add_annotation(x=1, y=0.04, align='center', ayref= 'y4 domain',
+                           xref='paper', yref='y3 domain',
+                           xanchor='left',
+                           yanchor='bottom',
+                        # yshift=13,
+                           xshift=0.1,
+                           text=' ' * 5 + '{:.2f}   {:<17}'.format(center, CI_d.iloc[0]),
+                           showarrow=False)
+        
 
     else:
         fig.update_layout(clickmode='event+select',

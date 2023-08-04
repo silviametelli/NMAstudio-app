@@ -310,17 +310,17 @@ def TapEdgeData(edge):
 
 ### ----- display forest plot on node click ------ ###
 @app.callback(Output('tapNodeData-fig', 'figure'),
-            #   Output('tapNodeData-fig', 'style'),
+              Output('tapNodeData-fig', 'style'),
               [Input('cytoscape', 'selectedNodeData'),
                Input("toggle_forest_outcome", "value"),
                Input("forest_data_STORAGE", "data"),
                Input("forest_data_out2_STORAGE", "data"),
-               #Input("toggle_forest_direction", "value")
+               Input('tapNodeData-fig', 'style')
                ],
               State("net_data_STORAGE", "data")
               )
-def TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage):
-    return __TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage)
+def TapNodeData_fig(data, outcome, forest_data, forest_data_out2,style,net_storage):
+    return __TapNodeData_fig(data, outcome, forest_data, forest_data_out2,style,net_storage)
 
 
 ### ----- display dibim forest plot on node click ------ ###

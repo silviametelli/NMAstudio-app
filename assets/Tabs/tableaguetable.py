@@ -9,7 +9,7 @@ tab_league = html.Div([
                                              'border-radius': '1px', }),
                              id="league-expand",
                              style={'margin-left': '10px'}),
-                      dbc.Tooltip("expand table", style={'color': 'white', 'font-size': 9,
+                      dbc.Tooltip("expand table", style={'color': 'black', 'font-size': 9,
                                                          'margin-left': '10px', 'letter-spacing': '0.3rem'},
                                   placement='right',
                                   target='league-expand'), ])]),

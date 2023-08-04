@@ -2,7 +2,7 @@ import numpy as np, pandas as pd
 import plotly.express as px, plotly.graph_objects as go
 
 
-def __TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage):
+def __TapNodeData_fig(data, outcome, forest_data, forest_data_out2,style,net_storage):
 
 
     if data:
@@ -17,15 +17,18 @@ def __TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage)
         df['Treatment'] += ' ' * 23
         df['CI_width'] = df.CI_upper - df.CI_lower
         df['lower_error'] = df[effect_size] - df.CI_lower
-        df['CI_width_hf'] = df['CI_width'] / 2
+        df['CI_width_hf'] = df.CI_upper - df[effect_size] 
+        # df['CI_width_hf'] = df['CI_width'] / 2
         df['WEIGHT'] = round(df['WEIGHT'], 3)
         CI_lower, CI_upper = df["CI_lower"].map('{:,.2f}'.format), df["CI_upper"].map('{:,.2f}'.format),
         df['CI'] = '(' + CI_lower.astype(str) + ', ' + CI_upper.astype(str) + ')'
         df = df.sort_values(by=effect_size, ascending=False)
+        n = len(df)
         FOREST_ANNOTATION = ('<b>RE model:</b>'
                              + u"\u03C4" + '<sup>2</sup>='
                              + f"{'NA' if np.isnan(tau2) else tau2}")
         LEN_FOREST_ANNOT = 25 + len(str(tau2))
+        style.update({'height': 200+16*(n-2)})
     else:
         effect_size = ''
         outcome_direction = False
@@ -33,6 +36,8 @@ def __TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage)
                                               'CI_width', 'CI_width_hf'])
         FOREST_ANNOTATION = ''
         LEN_FOREST_ANNOT = 0
+        style.update({'height': '100%'})
+
 
     xlog = effect_size in ('RR', 'OR')
     up_rng, low_rng = df.CI_upper.max(), df.CI_lower.min()
@@ -40,7 +45,7 @@ def __TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage)
     low_rng = 10 ** np.floor(np.log10(low_rng)) if xlog else None
     fig = px.scatter(df, x=effect_size, y="Treatment",
                      error_x_minus='lower_error' if xlog else None,
-                     error_x='CI_width_hf' if xlog else 'CI_width_hf' if data else None,
+                     error_x='CI_width_hf' if xlog else 'CI_width' if data else None,
                      log_x=xlog,
                      size_max=5,
                      range_x=[min(low_rng, 0.1), max([up_rng, 10])] if xlog else None,
@@ -70,7 +75,7 @@ def __TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage)
     if data:
         fig.update_layout(clickmode='event+select',
                           font_color="black",
-                          modebar= dict(orientation = 'v', bgcolor = 'rgba(0,0,0,0)'),
+                          modebar= dict(orientation = 'v', bgcolor = 'rgba(0,0,0,0.5)'),
                           autosize=True,
                           #width=500,
                           margin=dict(l=5, r=10, t=12, b=80),
@@ -78,32 +83,32 @@ def __TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage)
                                      #tick0=0, # TODO: JUST EXPLAIN IT!!!
                                      title=''),
                           yaxis=dict(showgrid=False, title=''),
-                          annotations=[dict(x=0, ax=0, y=-0.12, ay=-0.1, xref='x', axref='x', yref='paper',
+                          annotations=[dict(x=0, ax=0, y=0, ay=-0.1, xref='x', axref='x', yref='paper',yanchor='bottom',yshift=-40,
                                              showarrow=False, text=effect_size),
                                        dict(x=np.floor(np.log10(min(low_rng, 0.1))) if xlog else df.CI_lower.min(),
-                                            ax=0, y=-0.14, ay=-0.1,
-                                            xref='x', axref='x', yref='paper',
+                                            ax=0, y=0, ay=-0.1,
+                                            xref='x', axref='x', yref='paper',yanchor='bottom',yshift=-45,
                                             showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.8,
                                             arrowcolor='green' if outcome_direction else 'black'),
                                        dict(x= np.floor(np.log10(max([up_rng, 10]))) if xlog else abs(df.CI_upper).max(),
-                                            ax=0, y=-0.14, ay=-0.1,
-                                            xref='x', axref='x', yref='paper',
+                                            ax=0, y=0, ay=-0.1,
+                                            xref='x', axref='x', yref='paper',yanchor='bottom',yshift=-45,
                                             showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.8,
                                             arrowcolor='black' if outcome_direction else 'green'),  #'#751225'
                                        dict(x=np.floor(np.log10(min(low_rng, 0.1)))/2 if xlog else df.CI_lower.min()/2,
-                                            y=-0.22,  xref='x', yref='paper',
+                                            y=0,  xref='x', yref='paper',yanchor='bottom',yshift=-65,
                                             text='Favours treatment' if outcome_direction else f'Favours {treatment}',
                                             showarrow=False),
                                        dict(x=np.floor(np.log10(max([up_rng, 10])))/2 if xlog else abs(df.CI_upper).max()/2,
-                                            y=-0.22,
-                                            xref='x', yref='paper',
+                                            y=0,
+                                            xref='x', yref='paper',yanchor='bottom',yshift=-65,
                                             text=f'Favours {treatment}'if outcome_direction else 'Favours treatment',
                                             showarrow=False),
-                                       dict(x=-0.47, y=1.03, align='center',
+                                       dict(x=-0.47, y=1, align='center',
                                             xref='paper', yref='paper',
                                             text='<b>Treatment</b>',
                                             showarrow=False),
-                                       dict(x=-0.52, y=-0.033, align='center',
+                                       dict(x=-0.52, y=0, align='center',
                                             xref='paper', yref='paper',
                                             text=FOREST_ANNOTATION, #'<b>RE model:</b> ' u"\u03C4" '<sup>2</sup>=' f'{tau2}',
                                             showarrow=False),
@@ -132,13 +137,13 @@ def __TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage)
 
         fig.update_layout(yaxis_range=[-1.4, len(df["Treatment"])+1])
 
-        fig.add_annotation(x=1.19, y=1.03, align='center',
+        fig.add_annotation(x=1.19, y=1, align='center',
              xref='paper', yref='y domain',
              text=f'<b>{effect_size}</b>',
              showarrow=False)
 
 
-        fig.add_annotation(x=1.44, y=1.03, align='center',
+        fig.add_annotation(x=1.44, y=1, align='center',
                            xref='paper', yref='y2 domain',
                            text='<b>95% CI</b>',
                            showarrow=False)
@@ -161,7 +166,7 @@ def __TapNodeData_fig(data, outcome, forest_data, forest_data_out2, net_storage)
                           modebar= dict(orientation = 'v', bgcolor = 'rgba(0,0,0,0)'))
         fig.update_traces(hoverinfo='skip', hovertemplate=None)
 
-    return fig
+    return fig, style
 
 
 

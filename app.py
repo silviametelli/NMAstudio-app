@@ -9,6 +9,7 @@ import warnings
 warnings.filterwarnings("ignore")
 # --------------------------------------------------------------------------------------------------------------------#
 import dash
+import itertools
 from dash.dependencies import Input, Output, State, ALL
 from dash_extensions.snippets import send_file
 from tools.utils import *
@@ -335,16 +336,18 @@ def TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
 
 
 ### - figures on edge click: pairwise forest plots  - ###
-@app.callback(Output('tapEdgeData-fig-pairwise', 'figure'),
+@app.callback([Output('tapEdgeData-fig-pairwise', 'figure'),
+              Output('tapEdgeData-fig-pairwise', 'style')],
               [Input('cytoscape', 'selectedEdgeData'),
                Input("toggle_forest_pair_outcome", "value"),
                Input('forest_data_prws_STORAGE', 'data'),
-               Input('forest_data_prws_out2_STORAGE', 'data')],
+               Input('forest_data_prws_out2_STORAGE', 'data'),
+               Input('tapEdgeData-fig-pairwise', 'style')],
               State("net_data_STORAGE", "data")
               )
 
-def  update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2, net_storage):
-    return __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2, net_storage)
+def  update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2,style_pair, net_storage):
+    return __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2, style_pair,net_storage)
 
 
 
@@ -362,7 +365,8 @@ def update_boxplot(value, edges, net_data):
 ### ----------------------------------  DATA TABLE, LEAGUE TABLE CALLBACKS ---------------------------------- ###
 
 
-@app.callback([Output('datatable-upload-container', 'data'),
+@app.callback([
+               Output('datatable-upload-container', 'data'),
                Output('datatable-upload-container', 'columns'),
                Output('datatable-upload-container-expanded', 'data'),
                Output('datatable-upload-container-expanded', 'columns'),
@@ -858,6 +862,17 @@ def toggle_modal(open, close, is_open):
     return is_open
 
 
+@app.callback(
+    Output("modal_info", "is_open"),
+    [Input("info_icon", "n_clicks"),
+     Input("close_modal_info", "n_clicks")],
+    [State("modal_info", "is_open")],
+)
+def toggle_modal(open, close, is_open):
+    if open or close:
+        return not is_open
+    return is_open
+
 ###############################################################################
 ################### EXPORT TO CSV ON CLICK BUTTON ############################
 ###############################################################################
@@ -1057,6 +1072,36 @@ def save_project_user_token(input, n_clicks):
     else:
         return None, None, False, None
 
+###############overall information##################
+
+@app.callback([Output('numstudies', 'children'),
+              Output('numtreat', 'children'),
+              Output('numcompar', 'children'),
+              Output('numcom_without', 'children')],
+              Input('net_data_STORAGE', 'data'))
+def infor_overall(data):
+    net_data = pd.read_json(data, orient='split').round(3)
+    n_studies = len(net_data.studlab.unique())
+    num_study = f"Number of studies: {n_studies}"
+
+    combined_treats = pd.concat([net_data['treat1'], net_data['treat2']])
+    n_treat= combined_treats.nunique()
+    num_treat = f"Number of treatments: {n_treat}"
+
+    unique_combinations = list(itertools.combinations(combined_treats.unique(), 2))
+    num_unique_combinations = len(unique_combinations)
+
+    net_data['treat_combine'] = list(zip(net_data['treat1'], net_data['treat2']))
+    unique_combinations = set(net_data['treat_combine'])
+    n_com = len(unique_combinations)
+
+    num_com = f"Number of comparisons with direct evidence: {n_com}"
+
+    n_com_without = num_unique_combinations - n_com
+    num_com_without = f"Number of comparisons without direct evidence: {n_com_without}"
+
+    return [num_study],[num_treat],[num_com],[num_com_without]
+    
 
 
 

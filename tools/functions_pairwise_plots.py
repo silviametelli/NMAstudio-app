@@ -2,7 +2,7 @@ import numpy as np, pandas as pd
 import plotly.express as px, plotly.graph_objects as go
 from pandas.api.types import is_numeric_dtype
 
-def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2, net_storage):
+def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2,style_pair,net_storage):
     _HEIGHT_ROMB = 0.3
     slctd_comps = []
     if edge:
@@ -18,16 +18,20 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
         if is_numeric_dtype(df['studlab']): df['studlab'] = df['studlab'].astype('str')
         df['studlab'] += ' ' * 10
         effect_size = df.columns[0]
-        tau2 = round(df['tau2'].iloc[0], 2) if len(df['tau2'])>0 and df['tau2'].iloc[0] and ~np.isnan(df['tau2'].iloc[0]) else np.nan
+        # tau2 = round(df['tau2'].iloc[0], 2) if len(df['tau2'])>0 and df['tau2'].iloc[0] and ~np.isnan(df['tau2'].iloc[0]) else np.nan
+        tau2 = round(df['tau2'].iloc[0], 2) if len(df['tau2'])>0 else np.nan
         I2 = round(df['I2'].iloc[0], 2) if len(df['I2'])>0 else np.nan
         FOREST_ANNOTATION = ('<b>RE model:</b>  I<sup>2</sup>='
                              + f"{'NA' if np.isnan(I2) else I2}%, "
                              + u"\u03C4" + '<sup>2</sup>='
                              + f"{'NA' if np.isnan(tau2) else tau2}")
         LEN_FOREST_ANNOT = 25 + len(str(I2))  + len(str(tau2))
+        n = len(df)
+        style_pair.update({'height': 200+20*(n-2)})
         df['CI_width'] = df.CI_upper - df.CI_lower
         df['lower_error'] = df[effect_size] - df.CI_lower
-        df['CI_width_hf'] = df['CI_width'] / 2
+        df['CI_width_hf'] = df.CI_upper - df[effect_size]
+        # df['CI_width_hf'] = df['CI_width'] / 2
         df['CI_width_diamond'] = df.CI_upper_diamond - df.CI_lower_diamond
         df['WEIGHT'] = round(df['WEIGHT'], 3)
         df['CI_width_hf_diamond'] = df['CI_width_diamond'] / 2
@@ -54,6 +58,7 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
                           columns=[effect_size, "TE_diamond", "id", "studlab", "treat1", "treat2", "CI_lower",
                                    "CI_upper", "CI_lower_diamond", "CI_upper_diamond", "WEIGHT"])
         df.studlab = ''
+        style_pair.update({'height': '99%'})
 
     xlog = effect_size in ('RR', 'OR')
     up_rng_, low_rng_ = df.CI_upper.max(), df.CI_lower.min()
@@ -115,31 +120,31 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
                                          zeroline=True, zerolinecolor='black', zerolinewidth=1,
                                          title=''),
                               yaxis=dict(showgrid=False, title=''),
-                              annotations=[dict(x=0 if xlog else 1, y=-0.12,
-                                                xref='x',  yref='paper',
+                              annotations=[dict(x=0 if xlog else 1, y=0,
+                                                xref='x',  yref='paper',yanchor='bottom',yshift=-40,
                                                 showarrow=False, text=effect_size),
                                            dict(x=np.floor(np.log10(min(low_rng, 0.1))) if xlog else low_rng_,
-                                                ax=0, y=-0.14, ay=-0.1,
+                                                ax=0, y=0, ay=-0.1,yanchor='bottom',yshift=-45,
                                                 xref='x', axref='x', yref='paper',
                                                 showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.8,
                                                 arrowcolor='black'),
                                            dict(x=np.floor(np.log10(max([up_rng, 10]))) if xlog else up_rng_,
-                                                ax=0, y=-0.14, ay=-0.1,
+                                                ax=0, y=0, ay=-0.1,yanchor='bottom',yshift=-45,
                                                 xref='x', axref='x', yref='paper',
                                                 showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.8,
-                                                arrowcolor='black'),  # '#751225'
+                                                arrowcolor='green'),  # '#751225'
                                            dict(x=np.floor(
                                                np.log10(min(low_rng, 0.1))) / 2 if xlog else df.CI_lower.min() / 2,
-                                                y=-0.22, xref='x', yref='paper', xanchor='auto',
+                                                y=0, xref='x', yref='paper', xanchor='auto',yanchor='bottom',yshift=-65,
                                                 text=f'Favours {df.treat1.iloc[0]}' if outcome_direction else f'Favours {df.treat2.iloc[0]}',
                                                 showarrow=False),
                                            dict(x=np.floor(
                                                np.log10(max([up_rng, 10]))) / 2 if xlog else df.CI_upper.max() / 2,
-                                                y=-0.22,
-                                                xref='x', yref='paper', xanchor='auto',
+                                                y=0,
+                                                xref='x', yref='paper', xanchor='auto',yanchor='bottom',yshift=-65,
                                                 text=f'Favours {df.treat2.iloc[0]}' if outcome_direction else f'Favours {df.treat1.iloc[0]}',
                                                 showarrow=False),
-                                           dict(x=0, y=1, xanchor='left',
+                                           dict(x=0, y=1, xanchor='left',yanchor='top',yshift=-10,
                                                 xref='paper', yref='paper',
                                                 text='<b>Study</b>',
                                                 showarrow=False),
@@ -228,13 +233,13 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
 
         fig.update_layout(yaxis_range=[-2.4, len(df.studlab)+1])
 
-        fig.add_annotation(x=1.15, y=1, xanchor='center',  align='center',
+        fig.add_annotation(x=1.15, y=1, xanchor='center',  align='center',yanchor='top',yshift=-10,
                            xref='paper', yref='y domain',
                            text=f'<b>{effect_size}</b>',
                            showarrow=False)
 
         fig.add_annotation(x=1.4, y=1, align='center', ayref= 'y3 domain',
-                           xref='paper', yref='y3 domain',
+                           xref='paper', yref='y3 domain',yanchor='top',yshift=-10,
                            xanchor='center',
                            text='<b>95% CI</b>',
                            showarrow=False)
@@ -266,4 +271,4 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
                           modebar=dict(orientation='v', bgcolor='rgba(0,0,0,0)'))
         fig.update_traces(hoverinfo='skip', hovertemplate=None)
 
-    return fig
+    return fig, style_pair

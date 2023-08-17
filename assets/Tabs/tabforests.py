@@ -119,7 +119,7 @@ tab_forests = dcc.Tabs(id='', value='subtab1', vertical=False, persistence=True,
                                                        'display': 'flex', 'margin-left': '70%',
                                                        'font-size': '0.8em', 'margin-top': '-1.5%'},
                                              ),
-                                             html.Br()]),
+                                             html.Br()], style={'height':'35px'}),
                                              dcc.Loading(
                                                  html.Div([
                                                      dcc.Graph(
@@ -134,7 +134,7 @@ tab_forests = dcc.Tabs(id='', value='subtab1', vertical=False, persistence=True,
                                                                #  'plotlyServerURL': "https://chart-studio.plotly.com",
                                                          'edits': dict(annotationPosition=True,
                                                                       annotationTail=True,
-                                                                      annotationText=False, axisTitleText=False,
+                                                                      annotationText=True, axisTitleText=False,
                                                                       colorbarPosition=False,
                                                                       colorbarTitleText=False,
                                                                       titleText=False,
@@ -154,7 +154,7 @@ tab_forests = dcc.Tabs(id='', value='subtab1', vertical=False, persistence=True,
                                                                  'scale': 3.5
                                                                  # Multiply title/legend/axis/canvas sizes by this factor
                                                              },
-                                                             'displaylogo': False})])
+                                                             'displaylogo': False})], style={'height': '450px', 'overflow':'scroll'})
 
                                              ),
                                          ]),

@@ -79,7 +79,7 @@ def home_layout():
                                                                        'padding-left':'-2px',
                                                                        'color':'gray','margin-top': '-6px'}, 
                                                                        placeholder="e.g. 30px",),
-                                                                       ], style={'margin-left':'25px','margin-top':'-25px'}),
+                                                                       ], style={'margin-left':'25px','margin-top':'-35px'}),
                                                     dbc.Col([html.H4("Search the intervention:",style={'font-size':'13px', 
                                                                                                         #      'margin-left':'150px',
                                                                                                              'font-family': 'system-ui',
@@ -92,7 +92,22 @@ def home_layout():
                                                                 #      'margin-left':'150px',
                                                                        'font-size':'10.5px',
                                                                        'padding-left':'-2px','color':'gray','margin-top': '-6px'}, 
-                                                                       placeholder="e.g. PBO",)], style={'margin-top':'-25px','margin-left':'20px'})
+                                                                       placeholder="e.g. PBO",)], style={'margin-top':'-35px','margin-left':'20px'}),
+                                                    html.Div([
+                                                        html.A(html.Img(src="/assets/icons/list.png",
+                                                                           style={"width": "30px",
+                                                                                  "float":"right",
+                                                                                  'margin-top': '-35px','margin-left': '620px'}),id='img_icon'),
+                                                        # dbc.Toast([html.P("This is the content of the toast", className="mb-0")],
+                                                        #           id="simple-toast",header="This is the header",
+                                                        #           icon="primary",
+                                                        #           dismissable=True,
+                                                        #           is_open=True,style={"position": "fixed", "top": 66, "right": 10, "width": 350},),
+                                                        
+                                                        ],id="info_icon"),
+                                                       html.Div(modal_info, style={'display': 'inline-block', 'font-size': '11px'}),
+                                                        
+
                                                     
 
                                     ]),

@@ -313,6 +313,13 @@ pairwise_forest <- function(dat){
   dat <- dat %>% filter_at(vars(TE, seTE), all_vars(!is.na(.))) %>% filter(seTE!=0)
   dat <- dat %>% arrange(dat, treat1, treat2)
   dat$ID <- dat %>% group_indices(treat1, treat2)
+  dat <- dat %>%
+  mutate(
+    temp = ifelse(treat1 > treat2, treat2, treat1),
+    treat2 = ifelse(treat1 > treat2, treat1, treat2),
+    treat1 = temp
+  ) %>%
+  select(-temp)
 
   for (id in dat$ID){
     dat_temp <- dat[which(dat$ID==id), ]

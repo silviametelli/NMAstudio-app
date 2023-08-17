@@ -207,7 +207,7 @@ modal_checks = dbc.Modal(is_open=False, children=[
                                                                  id='para-FA-data')],
                                               type="default"),
                                   html.Br(),
-                                  html.P("Please check the interventions within the dropdown list:", style={"color": "black"}),
+                                  html.P("*Please check the interventions within the dropdown list:", style={"color": "red"}),
                                   dcc.Dropdown(id='dropdown-intervention', 
                                                clearable=True, placeholder="",
                                                className="tapEdgeData-fig-class",
@@ -339,3 +339,37 @@ modal_network = dbc.Modal([
                      ],
                      id="modal_network", centered=False, style={'background-color': '#40515e',
                      "max-width": "none", "width": "70%",  "max-height":"100%", "height":"99%"})
+
+
+
+modal_info = dbc.Toast([
+                   dbc.ModalHeader([html.P("Overall Information",style={'font':'caption',
+                                                                        'margin-top': '-12px',
+                                                                        'margin-left': '-3px',
+                                                                        'color':'black',
+                                                                        }),
+                                   html.Img(src="/assets/icons/cancel.png", 
+                                            style={"width": "30px",
+                                                   "float":"right",
+                                                   'margin-top': '-27px','margin-right': '-60px','width':'18px'}, id ='close_modal_info')], 
+                                   style={
+                                       'height':'24px',
+                                       'background-color':'#c4c7c9'
+                                   }),
+                   dbc.ModalBody([html.P( id='numstudies'),
+                                  html.P( id='numtreat'),
+                                  html.P(id='numcompar'),
+                                  html.P(id='numcom_without')],style={'border': 'solid #c4c7c9 1px','font-size': 'small'}),
+              #      dbc.ModalFooter(
+              #          dbc.Button(html.P("close", style={"margin-left":'-17px'}), id="close_modal_info", n_clicks=0, className="ml-auto",
+              #                                 style={'height':'20px',
+              #                                        'width':'25px'}),style={'height':'24px','background-color':'#c4c7c9'}
+              #                                        )
+                  ],
+            id="modal_info",style={'background-color':'white',
+                                   'margin-left':'-100px', 'font-size':'10.5px', 
+                                   'padding-left':'-2px',
+                                   'position':'fixed',
+                                   'width':'200px'
+                                   })
+

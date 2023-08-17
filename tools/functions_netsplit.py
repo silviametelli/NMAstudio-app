@@ -16,7 +16,9 @@ def __netsplit(edges, outcome, net_split_data, net_split_data_out2, consistency_
     slctd_comps = []
     for edge in edges or []:
         src, trgt = edge['source'], edge['target']
-        slctd_comps += [f'{src} vs {trgt}']
+        # slctd_comps += [f'{src} vs {trgt}']
+        slctd_comps += [f'{src} vs {trgt}', f'{trgt} vs {src}']
+
     if edges and df is not None:
         df = df[df.Comparison.isin(slctd_comps)]
 

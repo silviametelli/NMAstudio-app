@@ -207,7 +207,7 @@ modal_checks = dbc.Modal(is_open=False, children=[
                                                                  id='para-FA-data')],
                                               type="default"),
                                   html.Br(),
-                                  html.P("*Please check the interventions within the dropdown list:", style={"color": "red"}),
+                                  html.P("*Please check the treatment names within the dropdown list:", style={"color": "red"}),
                                   dcc.Dropdown(id='dropdown-intervention', 
                                                clearable=True, placeholder="",
                                                className="tapEdgeData-fig-class",

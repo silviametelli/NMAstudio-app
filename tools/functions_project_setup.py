@@ -23,7 +23,7 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
     if search_value_format is None: return None
     col_vars = [[]] * 3
     if search_value_format == 'long':
-        col_vars[0] = ['studlab', 'treat', 'rob', 'year']
+        col_vars[0] = ['study ID', 'treat', 'rob', 'year']
         if search_value_outcome1 == 'continuous':
             col_vars[1] = ['y', 'sd', 'n']
             if search_value_outcome2 == 'continuous':
@@ -31,7 +31,7 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
             elif search_value_outcome2 == 'binary':
                 col_vars[2] = ['z1', 'n.z']
         elif search_value_outcome1 == 'binary':
-            col_vars[1] = ['r', 'n']
+            col_vars[1] = ['No. of events', 'No. participants']
             if search_value_outcome2 == 'continuous':
                 col_vars[2] = ['y2', 'sd2', 'n2']
             elif search_value_outcome2 == 'binary':
@@ -125,7 +125,7 @@ def __update_options(search_value_format, search_value_outcome1, search_value_ou
                                                       'margin-bottom': '2px',
                                                       'display': 'inline-block',
                                                       'color': 'black',
-                                                      'font-size': '10px'})]),
+                                                      'font-size': '10px','margin-left':'-7px'})]),
                 style={'margin-bottom': '0px'})
                 for var_name, name in zip(var_names, col_var)],
                 style={'display': 'inline-block'})

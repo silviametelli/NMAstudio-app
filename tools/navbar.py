@@ -29,7 +29,7 @@ def Navbar():
                                               #'filter': 'invert(44%) sepia(57%) saturate(3117%) hue-rotate(147deg) brightness(99%) contrast(94%)',
                                               'padding-left': '2%','padding-right': '2%',
                                               'padding-bottom':'0.4%','padding-top':'0.4%',
-                                              'margin-left':'40px'}),
+                                              'margin-left':'50px'}),
                              className="child", sm=3, md=2),
                      style={
                             #"border": "0.01px white solid",

@@ -10,6 +10,7 @@
 body {
     font-family: sans-serif;
     background-color: var(--CLR_BCKGRND);
+    margin: 8px 0 0 0;
 }
 
 
@@ -611,7 +612,6 @@ img:hover {
 
 .navbar{display: flex;
         align-items: center;
-        width: 42cm;
         margin-left: -10px;
         margin-top: -11px;
         margin-left: -1.5cm;

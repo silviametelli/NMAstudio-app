@@ -14,7 +14,7 @@ tab_league = html.Div([
                                   placement='right',
                                   target='league-expand'), ])]),
 
-        dbc.Row([dbc.Col([dcc.Upload(html.A('Upload CINeMA report 1 for efficacy',
+        dbc.Row([dbc.Col([dcc.Upload(html.A('Upload CINeMA report 1 for outcome 1',
                       style={'margin-left': '5px', 'font-size':'12px','color':'rgb(90, 135, 196)'}),
                id='datatable-secondfile-upload', multiple=False,
                style={'display': 'inline-block', 'font-size': '12px', 'padding-left': '100px'})],
@@ -53,7 +53,7 @@ tab_league = html.Div([
                        ],  style={'float': 'right', 'padding': '5px 5px 5px 5px',
                                   'display': 'inline-block', 'margin-top': '-2px' }),
         html.Br(),
-        dbc.Row([dbc.Col([dcc.Upload(html.A('Upload CINeMA report 2 for safety',
+        dbc.Row([dbc.Col([dcc.Upload(html.A('Upload CINeMA report 2 for outcome 2',
                                    style={'margin-left': '5px', 'margin-top': '1px', 'font-size': '12px',
                                           'padding-bottom': '4px','color':'rgb(90, 135, 196)'}),
                             id='datatable-secondfile-upload-2', multiple=False,

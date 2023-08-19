@@ -64,7 +64,7 @@ def __ranking_heatmap(treatments, pscores, outcomes, z_text):
     for annotation in fig.layout.annotations: annotation.font.size = 9
     fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
                       plot_bgcolor='rgba(0,0,0,0)',
-                      modebar= dict(orientation = 'h', bgcolor = 'rgba(0,0,0,0)'),
+                      modebar= dict(orientation = 'h', bgcolor = 'rgba(0,0,0,0.5)'),
                       xaxis=dict(showgrid=False, autorange=True, title='',
                                  tickmode='linear', type="category"),
                       yaxis=dict(showgrid=False, autorange=True, title='', range=[0,len(outcomes)]),
@@ -117,7 +117,7 @@ def __ranking_scatter(df, net_data, outcome_direction_1, outcome_direction_2):
                            showlegend=False,
                            paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
                            plot_bgcolor='rgba(0,0,0,0)',
-                           modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'),
+                           modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0.5)'),
                            xaxis=dict(showgrid=False, autorange=True, dtick=0.1,
                                       tickcolor='black', ticks="outside", tickwidth=1,
                                       showline=True, linewidth=1, linecolor='black',
@@ -143,7 +143,7 @@ def __ranking_scatter(df, net_data, outcome_direction_1, outcome_direction_2):
         fig2.update_yaxes(tickvals=[], ticktext=[], visible=False, zeroline=False)
         fig2.update_layout(margin=dict(l=100, r=100, t=12, b=80),
                           xaxis=dict(showgrid=False, title=''),
-                          modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'),
+                          modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0.5)'),
                           yaxis=dict(showgrid=False, title=''),
                           showlegend=False,
                           coloraxis_showscale=False,

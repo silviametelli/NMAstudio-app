@@ -163,7 +163,7 @@ def __TapNodeData_fig(data, outcome, forest_data, forest_data_out2,style,net_sto
         fig.update_xaxes(zerolinecolor='black', zerolinewidth=1, title='', visible=False)
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
         fig.update_layout(margin=dict(l=100, r=100, t=12, b=80),
-                          modebar= dict(orientation = 'v', bgcolor = 'rgba(0,0,0,0)'))
+                          modebar= dict(orientation = 'v', bgcolor = 'rgba(0,0,0,0.5)'))
         fig.update_traces(hoverinfo='skip', hovertemplate=None)
 
     return fig, style
@@ -238,7 +238,7 @@ def __TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
     fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
                   plot_bgcolor='rgba(0,0,0,0)',
                   autosize=True,
-                  modebar=dict(orientation='v', bgcolor='rgba(0,0,0,0)'),
+                  modebar=dict(orientation='v', bgcolor='rgba(0,0,0,0.5)'),
                   legend=dict(itemsizing='trace', itemclick="toggle",
                               itemdoubleclick="toggleothers", # orientation='v', xanchor='auto',
                               traceorder='normal',
@@ -284,7 +284,7 @@ def __TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
             fig.update_yaxes(tickvals=[], ticktext=[], visible=False, zeroline=False)
             fig.update_layout(margin=dict(l=100, r=100, t=12, b=80),
                                xaxis=dict(showgrid=False, title=''),
-                               modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'),
+                               modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0.5)'),
                                yaxis=dict(showgrid=False, title=''),
                                showlegend=False,
                                coloraxis_showscale=False,

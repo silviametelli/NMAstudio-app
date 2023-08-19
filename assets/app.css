@@ -1232,7 +1232,7 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
   left: 20px;
 }
 .modal-footer{display:-ms-flexbox;display:flex;-ms-flex-align:center;align-items:center;-ms-flex-pack:end;
-    justify-content:flex-end;padding:1rem;
+    justify-content:space-between;padding:1rem;
     /* border-top:1px solid black; */
 background-color: #738789;}
 .modal-footer>:not(:first-child){margin-left:.25rem}
@@ -1245,4 +1245,9 @@ background-color: #738789;}
 
 .dash-table-container{
 height: 100% !important;
+}
+
+.modebar-container,
+.modebar-container{
+    top: 30px;
 }

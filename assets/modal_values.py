@@ -165,7 +165,6 @@ modal_data = dbc.Modal([dbc.ModalHeader("Data selection"),
     dbc.ModalFooter([dbc.Col("Note:   the “Upload” button is activated only once all data selection fields are filled ",
                                style={'display': 'block',
                                        'color':'white',
-                                       'position':'relative',
                                        'left':'-60px'}),
                      dbc.Button("Upload", id="upload_modal_data", className="ml-auto", disabled=True), 
                      ],)

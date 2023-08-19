@@ -48,7 +48,7 @@ def __update_boxplot(value, edges, net_data):
                       paper_bgcolor='rgba(0,0,0,0)',
                       plot_bgcolor='rgba(0,0,0,0)',
                       font_color="black",
-                      modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'),
+                      modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0.5)'),
                       yaxis_range=[range1, range2],
                       showlegend=False,
                       autosize=True,
@@ -77,7 +77,7 @@ def __update_boxplot(value, edges, net_data):
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False, zeroline=False)
         fig.update_layout(margin=dict(l=100, r=100, t=12, b=80),
                           xaxis=dict(showgrid=False, tick0=0, title=''),
-                          modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)'),
+                          modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0.5)'),
                           yaxis=dict(showgrid=False, tick0=0, title=''),
                           annotations=[{
                               "text": "Check whether transitivity holds in the network: compare the distributions <br>"

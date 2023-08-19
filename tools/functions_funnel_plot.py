@@ -43,7 +43,7 @@ def __Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):
                           font_color="black",
                           coloraxis_showscale=False,
                           showlegend=True,
-                          modebar= dict(orientation = 'h', bgcolor = 'rgba(0,0,0,0)'),
+                          modebar= dict(orientation = 'h', bgcolor = 'rgba(0,0,0,0.5)'),
                           autosize=True,
                           margin=dict(l=10, r=5, t=20, b=60),
                           xaxis=dict(showgrid=False, autorange=False, zeroline=False,

@@ -14,7 +14,7 @@ from assets.alerts import alert_outcome_type, alert_data_type, R_errors_data, R_
 from dash_extensions import Download
 
 UP_LOGO = "/assets/logos/universite.jpeg"
-CRESS_LOGO = "/assets/logos/cress_logo.png"
+CRESS_LOGO = "/assets/logos/cress_logo2.jpeg"
 inserm_logo="/assets/logos/inserm_logo.png"
 
 def Homepage():
@@ -125,15 +125,15 @@ def home_layout():
                                 layout={'name': 'circle', 'animate': True},
                                 stylesheet=get_stylesheet()),
                         html.P('Copyright © 2020. All rights reserved.', className='__footer'),
-                        dbc.Col([
-                                 html.Img(src=UP_LOGO, height="57px"),
-                                 html.Img(src=CRESS_LOGO, height="57px"), 
-                                 html.Img(src=inserm_logo, height="57px"),
-                                 ], style={'padding-right':'1%','padding-top':'0.3%',
-                                           'padding-bottom':'0.3%','border-top':'solid',
-                                           'display': 'flex','margin-left':'10px',
-                                           'justify-content': 'space-between'},
-                    width="auto"),
+                    #     dbc.Col([
+                    #              html.Img(src=UP_LOGO, height="57px"),
+                    #              html.Img(src=CRESS_LOGO, height="57px"), 
+                    #              html.Img(src=inserm_logo, height="57px"),
+                    #              ], style={'padding-right':'1%','padding-top':'0.3%',
+                    #                        'padding-bottom':'0.3%','border-top':'solid',
+                    #                        'display': 'flex','margin-left':'10px',
+                    #                        'justify-content': 'space-between'},
+                    # width="auto"),
 
                         # html.P('Copyright © 2020. All rights reserved.', className='__footer'),
                                 ],
@@ -248,7 +248,7 @@ html.H1("NMAstudio (version 0.1)", style={'font-size':'22px',  'padding-left':'3
 dcc.Markdown('Please cite us as: Metelli S, Chaimani A. NMAstudio: a fully interactive web-application for producing and visualising network meta-analyses. *SRSM Annual Meeting 2021, Bern, Switzerland.*',
              className="markdown_style", style={"color": "black", "margin-right":"10%"}),
 
-html.Br(), html.Br(),
+html.Br(), 
 
 dcc.Markdown('NMAstudio is a web application to produce and visualise interactive outputs from network meta-analyses. NMAstudio is written in Python, and linked to the R-package netmeta for performing network meta analysis.',
              className="markdown_style",style={"color": "black", "margin-right":"10%"}),
@@ -267,7 +267,7 @@ html.Div([dcc.Markdown("Demonstration data set (class level psoriasis treatments
 dcc.Markdown("Sbidian E, Chaimani A, Garcia-Doval I, Doney L, Dressler C, Hua C, et al. Systemic pharmacological treatments for chronic plaque psoriasis: a network meta-analysis. \n Cochrane Database Syst Rev. 2021 Apr 19;4:CD011535.",
              className="markdown_style", style={"font-size":"14px", "color": "black", "margin-right":"10%"}),
 
- html.Br(), html.Br(),
+ html.Br(), 
 
 
 # dcc.Markdown('The methods are described in',className="markdown_style"),
@@ -288,14 +288,25 @@ dcc.Markdown("Sbidian E, Chaimani A, Garcia-Doval I, Doney L, Dressler C, Hua C,
                     ]),
 
 
-    html.Br(), html.Br(),
+    html.Br(), 
     dcc.Markdown(
         'The full source code is freely available at [https://github.com/silviametelli/network-meta-analysis](https://github.com/silviametelli/network-meta-analysis)'
         , className="markdown_style",style={"color": "black"}),
 
 html.Br(), html.Br(),
-    dcc.Markdown('This project has received funding from the EU H2020 research and innovation programme under the Marie Skłodowska-Curie grant agreement No 101031840 ',
+    dcc.Markdown('This project has received funding from the EU H2020 research and innovation programme under the Marie Skłodowska-Curie grant agreement No 101031840 & the French National Research Agency under the project ANR-22-CE36-0013-01',
                  className="markdown_style",style={"color": "black", "font-weight": "330", "font-size":"14px"}),
+
+    dbc.Col([
+                                 html.Img(src=UP_LOGO, height="57px"),
+                                 html.Img(src=CRESS_LOGO, height="57px"), 
+                                 html.Img(src=inserm_logo, height="57px"),
+                                 ], style={'padding-right':'1%','padding-top':'0.3%',
+                                           'padding-bottom':'0.3%','border-top':'solid',
+                                           'display': 'flex','margin-left':'10px',
+                                           'justify-content': 'space-between',
+                                           'width':'500px','margin-left': '43px'},
+                    width="auto"),
 
 
 ])
@@ -353,7 +364,7 @@ news_layout = \
                  className="markdown_style_black",
                  style={"font-size": '20px', "font-style": "italic", "margin-right":"10%", "margin-left":"30%"}),
     html.Br(),
-    dcc.Markdown('Please get in touch at silvia.metelli@u-paris.fr',
+    dcc.Markdown('Please get in touch at tianqi.yu@etu.u-paris.fr',
                  className="markdown_style_black",
                  style={"font-size": '20px', "margin-right":"10%", "margin-left":"30%", "margin-bottom":"1%"}),
 

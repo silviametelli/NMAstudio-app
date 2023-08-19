@@ -83,7 +83,7 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
                           plot_bgcolor='rgba(0,0,0,0)',
                           showlegend=False,
                           xaxis_type="log" if xlog else 'linear',
-                          modebar= dict(orientation = 'h', bgcolor = 'rgba(0,0,0,0)'),
+                          modebar= dict(orientation = 'h', bgcolor = 'rgba(0,0,0,0.5)'),
                           xaxis=dict(showgrid=False, tick0=0, title=''),
                           yaxis=dict(showgrid=False, title=''),
                           )
@@ -111,7 +111,7 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
     if edge:
         fig.update_layout(clickmode='event+select',
                               font_color="black",
-                              modebar=dict(orientation='v', bgcolor='rgba(0,0,0,0)'),
+                              modebar=dict(orientation='v', bgcolor='rgba(0,0,0,0.5)'),
                               autosize=True,
                               # width=500,
                               margin=dict(l=5, r=10, t=12, b=80),
@@ -268,7 +268,7 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
         fig.update_xaxes(zerolinecolor='black', zerolinewidth=1, title='', visible=False)
         fig.update_yaxes(tickvals=[], ticktext=[], visible=False)
         fig.update_layout(margin=dict(l=100, r=100, t=12, b=80),
-                          modebar=dict(orientation='v', bgcolor='rgba(0,0,0,0)'))
+                          modebar=dict(orientation='v', bgcolor='rgba(0,0,0,0.5)'))
         fig.update_traces(hoverinfo='skip', hovertemplate=None)
 
     return fig, style_pair

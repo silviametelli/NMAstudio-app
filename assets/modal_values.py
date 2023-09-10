@@ -366,9 +366,8 @@ modal_info = dbc.Toast([
               #                                        )
                   ],
             id="modal_info",style={'background-color':'white',
-                                   'margin-left':'-100px', 'font-size':'10.5px', 
-                                   'padding-left':'-2px',
-                                   'position':'fixed',
+                                   'font-size':'10.5px', 
+                                   'position':'absolute',
                                    'width':'200px'
                                    })
 

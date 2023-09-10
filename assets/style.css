@@ -823,10 +823,9 @@ li a {
 }
 
 #queryicon-cinima{
-    margin-top: 2cm;
+    margin-top: 5px;
     position: absolute;
-    top: 222px;
-    left: 830px;
+    margin-left: 80px;
     z-index: 1000;
     width: 16px;
 }

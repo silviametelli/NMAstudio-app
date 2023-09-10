@@ -14,16 +14,7 @@ tab_league = html.Div([
                                   placement='right',
                                   target='league-expand'), ])]),
 
-        dbc.Row([dbc.Col([dcc.Upload(html.A('Upload CINeMA report 1 for outcome 1',
-                      style={'margin-left': '5px', 'font-size':'12px','color':'rgb(90, 135, 196)'}),
-               id='datatable-secondfile-upload', multiple=False,
-               style={'display': 'inline-block', 'font-size': '12px', 'padding-left': '100px'})],
-               style={'display': 'inline-block', 'margin-top': '-10px'}),
-        dbc.Col([html.Ul(id="file2-list", style={'margin-left': '15px', 'color':'#dae8e8',
-                                                 'font-size':'11px'})],
-            style={'display': 'inline-block', 'margin-top': '-5px'}
-            ),]),
-        html.Div([html.P("Upload the CINeMA report file in its original format, with mandatory columns “Comparison” and “Confidence rating”",
+        dbc.Row([dbc.Col([html.Div([html.P("Upload the CINeMA report file in its original format, with mandatory columns “Comparison” and “Confidence rating”",
                          id='cinema-instruction',),
                      html.A(
                            html.Img(
@@ -33,7 +24,26 @@ tab_league = html.Div([
                                    "margin-top": "0px",
                                    "border-radius": "0px",
                                    "float":"right",},)),],
-                     id="queryicon-cinima",),
+                     id="queryicon-cinima",),dcc.Upload(html.A('Upload CINeMA report 1 for outcome 1',
+                      style={'margin-left': '5px', 'font-size':'12px','color':'rgb(90, 135, 196)'}),
+               id='datatable-secondfile-upload', multiple=False,
+               style={'display': 'inline-block', 'font-size': '12px', 'padding-left': '100px'})],
+               style={'display': 'inline-block', 'margin-top': '-10px'}),
+        dbc.Col([html.Ul(id="file2-list", style={'margin-left': '15px', 'color':'#dae8e8',
+                                                 'font-size':'11px'})],
+            style={'display': 'inline-block', 'margin-top': '-5px'}
+            ),]),
+       #  html.Div([html.P("Upload the CINeMA report file in its original format, with mandatory columns “Comparison” and “Confidence rating”",
+       #                   id='cinema-instruction',),
+       #               html.A(
+       #                     html.Img(
+       #                             src="/assets/icons/query.png",
+       #                             style={
+       #                             "width": "16px",
+       #                             "margin-top": "0px",
+       #                             "border-radius": "0px",
+       #                             "float":"right",},)),],
+       #               id="queryicon-cinima",),
 
         html.Div([html.P("Risk of Bias", id='cinemaswitchlabel1',
                               style={'display': 'inline-block',

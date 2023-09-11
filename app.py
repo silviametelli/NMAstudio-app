@@ -40,7 +40,7 @@ app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=devi
                 #external_stylesheets=[dbc.themes.BOOTSTRAP],
                 suppress_callback_exceptions=True)
 # app.config.suppress_callback_exceptions = True
-
+app.scripts.append_script({'external_url':'https://NMAstudio.com/assets/gtag.js'})
 
 def get_new_layout():
     SESSION_ID = get_new_session_id()

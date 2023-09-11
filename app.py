@@ -40,7 +40,37 @@ app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=devi
                 #external_stylesheets=[dbc.themes.BOOTSTRAP],
                 suppress_callback_exceptions=True)
 # app.config.suppress_callback_exceptions = True
-app.scripts.append_script({'external_url':'https://NMAstudio.com/assets/gtag.js'})
+# app.scripts.append_script({'external_url':'https://NMAstudio.com/assets/gtag.js'})
+app.index_string = '''
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y7P5T0R3ML"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-Y7P5T0R3ML');
+        </script>
+        {%metas%}
+        <title>{%title%}</title>
+        {%favicon%}
+        {%css%}
+    </head>
+    <body>
+        <div></div>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+        <div></div>
+    </body>
+</html>
+'''
 
 def get_new_layout():
     SESSION_ID = get_new_session_id()

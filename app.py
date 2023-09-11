@@ -55,7 +55,7 @@ app.index_string = '''
             gtag('config', 'G-Y7P5T0R3ML');
         </script>
         {%metas%}
-        <title>{%title%}</title>
+        <title>NMAstudio</title>
         {%favicon%}
         {%css%}
     </head>
@@ -1144,7 +1144,7 @@ def infor_overall(data):
 
 if __name__ == '__main__':
     app._favicon = ("assets/favicon.ico")
-    app.title = 'NMAstudio' #TODO: title works fine locally, does not on Heroku
+    # app.title = 'NMAstudio' #TODO: title works fine locally, does not on Heroku
     # context = generate_ssl_perm_and_key(cert_name='cert.pem', key_name='key.pem')
     # app.run_server(debug=False, ssl_context=context)
     app.run_server(port=8080, debug=True) #change port or remove if needed

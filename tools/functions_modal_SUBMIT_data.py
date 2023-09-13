@@ -1,6 +1,7 @@
 import dash
 import os
 import pandas as pd
+import numpy as np
 from assets.storage import DEFAULT_DATA
 from tools.utils import adjust_data, parse_contents
 from collections import OrderedDict
@@ -158,8 +159,20 @@ def __data_modal(open_modal_data, upload, submit, filename2,
                 data_user['effect_size2'] = var_outs['effect_size2']
                 data_user['outcome2_direction'] = var_outs['outcome2_direction']
             
-            treat_list = [{'label': '{}'.format(treat_name), 'value': treat_name}
+            if search_value_format == 'iv':
+                combined_values = np.concatenate((data_user['treat1'], data_user['treat2']))
+                unique_values = np.unique(combined_values)
+                treat_list = [{'label': '{}'.format(treat_name), 'value': treat_name}
+                   for treat_name in sorted(unique_values)]
+            elif search_value_format == 'contrast':
+                combined_values = np.concatenate((data_user['treat1'], data_user['treat2']))
+                unique_values = np.unique(combined_values)
+                treat_list = [{'label': '{}'.format(treat_name), 'value': treat_name}
+                   for treat_name in sorted(unique_values)]
+            else:
+                treat_list = [{'label': '{}'.format(treat_name), 'value': treat_name}
                    for treat_name in sorted(data_user['treat'].unique())]
+                
 
 
             try:

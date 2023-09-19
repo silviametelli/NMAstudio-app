@@ -5,16 +5,19 @@ from pandas.api.types import is_numeric_dtype
 def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_out_2,style_pair,net_storage):
     _HEIGHT_ROMB = 0.3
     slctd_comps = []
+    slctd_compsinv = []
     if edge:
         src, trgt = edge[0]['source'], edge[0]['target']
         slctd_comps += [f'{src} vs {trgt}']
+        slctd_compsinv += [f'{trgt} vs {src}']
         df = pd.read_json(forest_data_prws_out_2, orient='split') if outcome else pd.read_json(forest_data_prws, orient='split')
         df = df.reset_index(drop=True)
         net_data = pd.read_json(net_storage, orient='split')
         outcome_direction_data = net_data['outcome1_direction'].iloc[1] if not outcome else net_data['outcome2_direction'].iloc[1]
         outcome_direction = False if outcome_direction_data == 'beneficial' else True
         df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
-        df = df[df.Comparison.isin(slctd_comps)]
+        # df = df[df.Comparison.isin(slctd_comps)]
+        df = df[df['Comparison'].isin(slctd_comps) | df['Comparison'].isin(slctd_compsinv)]
         if is_numeric_dtype(df['studlab']): df['studlab'] = df['studlab'].astype('str')
         df['studlab'] += ' ' * 10
         effect_size = df.columns[0]
@@ -28,7 +31,8 @@ def __update_forest_pairwise(edge, outcome, forest_data_prws, forest_data_prws_o
         LEN_FOREST_ANNOT = 25 + len(str(I2))  + len(str(tau2))
         n = len(df)
         style_pair.update({'height': 200+20*(n-2)})
-        df['CI_width'] = df.CI_upper - df.CI_lower
+        # df['CI_width'] = df.CI_upper - df.CI_lower
+        df['CI_width'] = df.CI_upper - df[effect_size]
         df['lower_error'] = df[effect_size] - df.CI_lower
         df['CI_width_hf'] = df.CI_upper - df[effect_size]
         # df['CI_width_hf'] = df['CI_width'] / 2

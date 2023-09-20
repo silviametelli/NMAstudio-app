@@ -323,7 +323,7 @@ pairwise_forest <- function(dat){
 
   for (id in dat$ID){
     dat_temp <- dat[which(dat$ID==id), ]
-    model_temp <- metagen(TE=TE,seTE=sqrt(seTE), studlab = studlab, data=dat_temp,
+    model_temp <- metagen(TE=TE,seTE= seTE, studlab = studlab, data=dat_temp,
                          random = T, sm=sm, prediction=TRUE)
 
     studlab <- dat_temp$studlab

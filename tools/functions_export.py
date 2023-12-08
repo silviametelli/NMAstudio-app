@@ -58,14 +58,13 @@ def __generate_xlsx_league(n_clicks, leaguedata):
 
 
 
-def __generate_csv_consistency(n_nlicks, outcome2, consistencydata_all,  consistencydata_all_out2):
+def __generate_csv_consistency(n_nlicks, outcome_idx, consistencydata_all):
 
     button_trigger  = False
     triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
     if 'btn-netsplit-all.n_clicks' in triggered: button_trigger = True
 
-    df = (pd.read_json(consistencydata_all, orient='split') if not outcome2
-          else  pd.read_json(consistencydata_all_out2, orient='split') if consistencydata_all_out2 else None)
+    df = pd.read_json(consistencydata_all[outcome_idx], orient='split')
 
     if button_trigger:
         if df is not None:

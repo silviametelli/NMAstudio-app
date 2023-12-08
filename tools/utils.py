@@ -15,12 +15,12 @@ from rpy2.robjects.conversion import localconverter
 
 r = ro.r
 r['source']('R_Codes/all_R_functions.R')  # Loading the function we have defined in R.
-run_NetMeta_r = ro.globalenv['run_NetMeta']  # Get run_NetMeta from R
-league_table_r = ro.globalenv['league_rank']  # Get league_table from R
-pairwise_forest_r = ro.globalenv['pairwise_forest']  # Get pairwise_forest from R
-funnel_plot_r = ro.globalenv['funnel_funct']  # Get pairwise_forest from R
-run_pairwise_data_long_r = ro.globalenv['get_pairwise_data_long']  # Get pairwise data from long format from R
-run_pairwise_data_contrast_r = ro.globalenv['get_pairwise_data_contrast']  # Get pairwise data from contrast format from R
+run_NetMeta_r = ro.globalenv['run_NetMeta_new']  # Get run_NetMeta from R
+league_table_r = ro.globalenv['league_rank_new']  # Get league_table from R
+pairwise_forest_r = ro.globalenv['pairwise_forest_new']  # Get pairwise_forest from R
+funnel_plot_r = ro.globalenv['funnel_funct_new']  # Get pairwise_forest from R
+run_pairwise_data_long_r = ro.globalenv['get_pairwise_data_long_new']  # Get pairwise data from long format from R
+run_pairwise_data_contrast_r = ro.globalenv['get_pairwise_data_contrast_new']  # Get pairwise data from contrast format from R
 
 
 ## read R console for printing errors
@@ -51,7 +51,49 @@ def apply_r_func(func, df):
         return df_result
 
 
-def apply_r_func_two_outcomes(func, df):
+
+def apply_r_func_new(func, df, i):
+    df['rob'] = df['rob'].astype("string")
+    df['rob'] = (df['rob'].str.lower()
+                        .str.strip()
+                        .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
+                        .replace({'l': 1, 'm': 2, 'h': 3}))
+    with localconverter(ro.default_converter + pandas2ri.converter):
+        df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
+
+    func_r_res = func(dat=df_r, i=i)
+    r_result = pandas2ri.rpy2py(func_r_res)
+
+    if isinstance(r_result, ro.vectors.ListVector):
+        with localconverter(ro.default_converter + pandas2ri.converter):
+            leaguetable, pscores, consist, netsplit, netsplit_all  = (ro.conversion.rpy2py(rf) for rf in r_result)
+        return leaguetable, pscores, consist, netsplit, netsplit_all
+    else:
+        df_result = r_result.reset_index(drop=True)  # Convert back to a pandas.DataFrame.
+        return df_result
+
+# def apply_r_func_two_outcomes(func, df):
+#     df['rob'] = df['rob'].astype("string")
+#     df['rob'] = (df['rob'].str.lower()
+#                  .str.strip()
+#                  .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
+#                  .replace({'l': 1, 'm': 2, 'h': 3}))
+#     with localconverter(ro.default_converter + pandas2ri.converter):
+#         df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
+#     func_r_res = func(dat=df_r, outcome2=True)
+#     r_result = pandas2ri.rpy2py(func_r_res)
+
+#     if isinstance(r_result, ro.vectors.ListVector):
+#         with localconverter(ro.default_converter + pandas2ri.converter):
+#             leaguetable, pscores, consist, netsplit, netsplit2, netsplit_all, netsplit_all2 = (ro.conversion.rpy2py(rf) for rf in r_result)
+#         return leaguetable, pscores, consist, netsplit, netsplit2, netsplit_all, netsplit_all2
+#     else:
+#         df_result = r_result.reset_index(drop=True)  # Convert back to a pandas.DataFrame.
+#         return df_result
+
+
+
+def apply_r_func_two_outcomes(func, df, num_outcomes):
     df['rob'] = df['rob'].astype("string")
     df['rob'] = (df['rob'].str.lower()
                  .str.strip()
@@ -59,7 +101,7 @@ def apply_r_func_two_outcomes(func, df):
                  .replace({'l': 1, 'm': 2, 'h': 3}))
     with localconverter(ro.default_converter + pandas2ri.converter):
         df_r = ro.conversion.py2rpy(df.reset_index(drop=True))
-    func_r_res = func(dat=df_r, outcome2=True)
+    func_r_res = func(dat=df_r, num_outcome = num_outcomes)
     r_result = pandas2ri.rpy2py(func_r_res)
 
     if isinstance(r_result, ro.vectors.ListVector):
@@ -69,6 +111,9 @@ def apply_r_func_two_outcomes(func, df):
     else:
         df_result = r_result.reset_index(drop=True)  # Convert back to a pandas.DataFrame.
         return df_result
+
+
+
 
 # ----------------------------------------------------------------------------------
 ## -------------------------------------------------------------------------------- ##
@@ -188,6 +233,91 @@ def get_network(df):
     return cy_edges + cy_nodes
 
 
+
+def get_network_new(df, i):
+    num_classes = None
+    df = df.dropna(subset=[f'TE{i+1}', f'seTE{i+1}'])
+    if "treat1_class" and "treat2_class" in df.columns:
+        df_treat = df.treat1.dropna().append(df.treat2.dropna()).reset_index(drop=True)
+        df_class = df.treat1_class.dropna().append(df.treat2_class.dropna()).reset_index(drop=True)
+        long_df_class = pd.concat([df_treat,df_class], axis=1).reset_index(drop=True)
+        long_df_class = long_df_class.rename({long_df_class.columns[0]: 'treat', long_df_class.columns[1]: 'class'}, axis='columns')
+        if not is_numeric_dtype(long_df_class.columns[1]):
+            long_df_class["class_codes"] = long_df_class['class'].astype("category").cat.codes
+            long_df_class = long_df_class.rename({long_df_class.columns[0]: 'treat', long_df_class.columns[1]: 'class_names',
+                                                  long_df_class.columns[2]: 'class'},
+                                                  axis='columns')
+        all_nodes_class = long_df_class.drop_duplicates().sort_values(by='treat').reset_index(drop=True)
+        num_classes = all_nodes_class['class'].max()+1 
+    sorted_edges = np.sort(df[['treat1', 'treat2']], axis=1)  ## removes directionality
+    df.loc[:,['treat1', 'treat2']] = sorted_edges  
+    edges = df.groupby(['treat1', 'treat2'])[f"TE{i+1}"].count().reset_index()
+    df_n1g = df.rename(columns={'treat1': 'treat', f'n1{i+1}': 'n'}).groupby(['treat'])
+    df_n2g = df.rename(columns={'treat2': 'treat', f'n2{i+1}': 'n'}).groupby(['treat'])
+    df_n1, df_n2 = df_n1g.n.sum(), df_n2g.n.sum()
+    all_nodes_sized = df_n1.add(df_n2, fill_value=0)
+    df_n1, df_n2 = df_n1g.rob.value_counts(), df_n2g.rob.value_counts()
+    all_nodes_robs = df_n1.add(df_n2, fill_value=0).rename(('count')).unstack('rob', fill_value=0)
+    all_nodes_sized = pd.concat([all_nodes_sized, all_nodes_robs], axis=1).reset_index()
+
+    if "treat1_class" and "treat2_class" in df.columns: all_nodes_sized = pd.concat([all_nodes_sized, all_nodes_class['class']], axis=1).reset_index(drop=True)
+
+    if isinstance(all_nodes_sized.columns[2], str):
+        for c in {'1', '2', '3'}.difference(all_nodes_sized): all_nodes_sized[c] = 0
+    elif all_nodes_sized.columns[2] in {1, 2, 3}:
+        for c in {1, 2, 3}.difference(all_nodes_sized): all_nodes_sized[c] = 0
+    elif all_nodes_sized.columns[2] in {1.0, 2.0, 3.0}:
+        for c in {1.0, 2.0, 3.0}.difference(all_nodes_sized): all_nodes_sized[c] = 0
+
+    all_nodes_robs.drop(columns=[col for col in all_nodes_robs if col not in [1.0, 2.0, 3.0, 1, 2, 3, '1','2','3']], inplace=True)
+    all_nodes_sized.drop(columns=[col for col in all_nodes_sized if col not in ['treat', 'n', 'class', 1.0, 2.0, 3.0, 1, 2, 3, '1','2','3']], inplace=True)
+    # all_nodes_sized['n_2'] = all_nodes_sized['n']
+    min_size = min(all_nodes_sized['n'])
+    max_size = max(all_nodes_sized['n'])
+
+    # Calculate the range of 'size'
+    size_range = max_size - min_size
+
+    # Normalize the values in 'size' to the range of 10 to 60
+    normalized_size = [(s - min_size) / size_range for s in all_nodes_sized.n]
+    number = [int(n * 60) + 20 for n in normalized_size]
+    all_nodes_sized['n_2']=number
+
+    cy_edges = [{'data': {'source': source, 'target': target,
+                          'weight': weight * 1 if (len(edges)<100 and len(edges)>13) else weight * 0.75 if len(edges)<13  else weight * 0.7,
+                          'weight_lab': weight}}
+                for source, target, weight in edges.values]
+    # max_trsfrmd_size_nodes = np.sqrt(all_nodes_sized.iloc[:,1].max()) / 70
+    # node_size = float(node_size) if node_size is not None else 0
+
+    if "treat1_class" and "treat2_class" in df.columns:
+        cy_nodes = [{"data": {"id": target,
+                              "label": target,
+                              "n_class": num_classes,
+                            #   'size': np.power(size,1/4)*8 / (max_trsfrmd_size_nodes-node_size),
+                              'size': n2,
+                              'pie1': r1 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None,
+                              'pie2': r2 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None,
+                              'pie3': r3 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None,
+                              },'classes': f'{CMAP[cls]}'} for target, size, r1, r2, r3, cls,n2 in all_nodes_sized.values]
+    else:
+        cy_nodes = [{"data": {"id": target,
+                              "label": target,
+                              'classes': 'genesis',
+                              'size': n2,
+                            #   'size': np.power(size,1/4)*8 /( max_trsfrmd_size_nodes-node_size),
+                              'pie1': r1 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None,
+                              'pie2': r2 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None,
+                              'pie3': r3 / (r1 + r2 + r3) if not r1 + r2 + r3 == 0 else None},
+                              } for
+                    target, size, r1, r2, r3,n2 in all_nodes_sized.values]
+
+    return cy_edges + cy_nodes
+
+
+
+
+
 ## ---------------------------  Parse DATA  -------------------------------- ##
 
 def parse_contents(contents, filename):
@@ -209,7 +339,46 @@ def parse_contents(contents, filename):
 
 ## ----------------------  Reshape pd data from long to wide  --------------------------- ##
 
-def adjust_data(data, value_format, value_outcome2):
+# def adjust_data(data, value_format, value_outcome2):
+#     data['rob'] = data['rob'].astype("string")
+#     data['rob'] = (data['rob'].str.lower()
+#                       .str.strip()
+#                       .replace({'low': 'l', 'medium': 'm', 'high': 'h'})
+#                       .replace({'l': 1, 'm': 2, 'h': 3}))
+
+#     if value_format=='long':
+#         if is_numeric_dtype(data['treat']):
+#             data['treat'] = data['treat'].astype(str) + '_'
+#         try:
+#             for c in data.columns:
+#                 if data[c].dtype == object:
+#                     data[c].fillna('__NONE__', inplace=True)
+#         except:
+#             pass
+#         if value_outcome2:
+#             data = apply_r_func_two_outcomes(func=run_pairwise_data_long_r, df=data)
+#         else:
+
+#             data = apply_r_func(func=run_pairwise_data_long_r, df=data)
+#         data[data=='__NONE__'] = np.nan
+#     if value_format=='contrast':
+#         for c in data.columns:
+#             if data[c].dtype == object:
+#                 data[c].fillna('__NONE__', inplace=True)
+#         if value_outcome2:
+#             data = apply_r_func_two_outcomes(func=run_pairwise_data_contrast_r, df=data)
+#         else:
+#             data = apply_r_func(func=run_pairwise_data_contrast_r, df=data)
+#         data[data=='__NONE__'] = np.nan
+
+#     if value_format == 'iv':
+#         data = data
+#         if value_outcome2:
+#             data = data
+#     return data
+
+
+def adjust_data(data, value_format, number_outcomes):
     data['rob'] = data['rob'].astype("string")
     data['rob'] = (data['rob'].str.lower()
                       .str.strip()
@@ -225,61 +394,85 @@ def adjust_data(data, value_format, value_outcome2):
                     data[c].fillna('__NONE__', inplace=True)
         except:
             pass
-        if value_outcome2:
-            data = apply_r_func_two_outcomes(func=run_pairwise_data_long_r, df=data)
-        else:
-
-            data = apply_r_func(func=run_pairwise_data_long_r, df=data)
+        
+        data = apply_r_func_two_outcomes(func=run_pairwise_data_long_r, df=data, num_outcomes = number_outcomes)
+       
         data[data=='__NONE__'] = np.nan
     if value_format=='contrast':
         for c in data.columns:
             if data[c].dtype == object:
                 data[c].fillna('__NONE__', inplace=True)
-        if value_outcome2:
-            data = apply_r_func_two_outcomes(func=run_pairwise_data_contrast_r, df=data)
-        else:
-            data = apply_r_func(func=run_pairwise_data_contrast_r, df=data)
+        
+        data = apply_r_func_two_outcomes(func=run_pairwise_data_contrast_r, df=data, num_outcomes = number_outcomes)
+        
         data[data=='__NONE__'] = np.nan
 
     if value_format == 'iv':
         data = data
-        if value_outcome2:
-            data = data
     return data
+
+
+
 
 
 ## ----------------------  FUNCTIONS for Running data analysis in R  --------------------------- ##
 
-def data_checks(df):
+def data_checks(df, num_outcomes):
     # df = df.infer_objects()
     # types = df.applymap(type).apply(set)
     # types_sets = types[types.apply(len) > 1]
+    indict3 = 0
+    
+    # for i in range(int(num_outcomes)):
+    #     if df[f'seTE{i+1}'] > 0:
+    #         indict3 += 1 
+        
     return {
          #   'Some columns contain a mix of string and numeric characters. This can create issues in data tables. Please use numbers (with decimal separator for floats) for a numeric variable': len(types_sets) > 0,
             'Some variables are a mix of numerical and string values. This can create issues in data tables. Please use numerical (decimal sep for floats)': all(df.applymap(type).nunique() > 1),
             'Missing values present': df.isnull().sum().sum() < 1,
-            'Negative variances present': (any(df.seTE>0) if ("seTE2" not in df.columns) else (any(df.seTE > 0) or any(df.seTE2 > 0)))
+            'Negative variances present': df.isnull().sum().sum() < 1
 
             }
 
 
 ## run netmeta for nma forest plots
-def run_network_meta_analysis(df):
-    data_forest = apply_r_func(func=run_NetMeta_r, df=df)
+def run_network_meta_analysis(df,i):
+    data_forest = apply_r_func_new(func=run_NetMeta_r, df=df, i=i)
     return data_forest
 
 
+
+
 ## run metagen for pairwise forest plots
-def run_pairwise_MA(df):
-    forest_MA = apply_r_func(func=pairwise_forest_r, df=df)
+def run_pairwise_MA(df,i):
+    forest_MA = apply_r_func_new(func=pairwise_forest_r, df=df, i=i)
     return forest_MA
 
 
 ## run netmeta for league table, consistency tables and ranking plots
-def generate_league_table(df, outcome2=False):
+# def generate_league_table(df, outcome2=False):
 
-    if outcome2: leaguetable, pscores, consist, netsplit, netsplit2, netsplit_all, netsplit_all2  = apply_r_func_two_outcomes(func=league_table_r, df=df)
-    else:        leaguetable, pscores, consist, netsplit, netsplit_all = apply_r_func(func=league_table_r, df=df)
+#     if outcome2: leaguetable, pscores, consist, netsplit, netsplit2, netsplit_all, netsplit_all2  = apply_r_func_two_outcomes(func=league_table_r, df=df)
+#     else:        leaguetable, pscores, consist, netsplit, netsplit_all = apply_r_func(func=league_table_r, df=df)
+
+#     replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
+
+#     leaguetable = leaguetable.fillna('')
+
+#     leaguetable = pd.DataFrame([[replace_and_strip(col) for col in list(row)] for idx, row in leaguetable.iterrows()],
+#                                columns=leaguetable.columns,
+#                                index=leaguetable.index)
+
+#     leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
+
+#     if outcome2:
+#         return leaguetable, pscores, consist, netsplit, netsplit2, netsplit_all, netsplit_all2
+#     else:
+#         return leaguetable, pscores, consist, netsplit, netsplit_all
+def generate_league_table(df, i):
+    
+    leaguetable, pscores, consist, netsplit, netsplit_all = apply_r_func_new(func=league_table_r, df=df, i =i)
 
     replace_and_strip = lambda x: x.replace(' (', '\n(').strip()
 
@@ -291,15 +484,12 @@ def generate_league_table(df, outcome2=False):
 
     leaguetable.columns = leaguetable.index = leaguetable.values.diagonal()
 
-    if outcome2:
-        return leaguetable, pscores, consist, netsplit, netsplit2, netsplit_all, netsplit_all2
-    else:
-        return leaguetable, pscores, consist, netsplit, netsplit_all
-
+    
+    return leaguetable, pscores, consist, netsplit, netsplit_all
 
 ## run netmeta for funnel plots
-def generate_funnel_data(df):
-    funnel = apply_r_func(func=funnel_plot_r, df=df)
+def generate_funnel_data(df,i):
+    funnel = apply_r_func_new(func=funnel_plot_r,df=df, i=i)
     return funnel
 
 

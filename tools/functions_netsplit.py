@@ -1,10 +1,10 @@
 import pandas as pd
 
 
-def __netsplit(edges, outcome, net_split_data, net_split_data_out2, consistency_data):
-    df = (pd.read_json(net_split_data, orient='split') if not outcome
-          else  pd.read_json(net_split_data_out2, orient='split') if net_split_data_out2 else None)
-    consistency_data = pd.read_json(consistency_data, orient='split')
+def __netsplit(edges, outcome_idx, net_split_data, consistency_data):
+    df = (pd.read_json(net_split_data[0], orient='split') if not outcome_idx
+          else  pd.read_json(net_split_data[outcome_idx], orient='split'))
+    consistency_data = pd.read_json(consistency_data[0], orient='split')
 
     if df is not None:
         comparisons = df.comparison.str.split(':', expand=True)

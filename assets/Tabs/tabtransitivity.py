@@ -15,9 +15,10 @@ tab_trstvty = html.Div([html.Div([dbc.Row([html.P("Choose effect modifier:", cla
                                   ])], style={'margin-top':'4px'}),
                 html.Div([dcc.Graph(id='tapEdgeData-fig',
                      style={'height': '98%',
-                          'max-height': 'calc(51vw)',
+                         #  'max-height': 'calc(51vw)',
                            'width': '100%',
-                           'max-width': 'calc(52vw)'},
+                         #   'max-width': 'calc(52vw)'
+                           },
                                   config={'editable': True,
                                        #   'showEditInChartStudio': True,
                                        #   'plotlyServerURL': "https://chart-studio.plotly.com",
@@ -38,4 +39,8 @@ tab_trstvty = html.Div([html.Div([dbc.Row([html.P("Choose effect modifier:", cla
                                                                'scale': 5
                                                                },
                                           'displaylogo': False})
-                    ], style={'margin-top':'-20px'})])
+                    ], style={'margin-top':'-30px', 
+                              'width':'1000px', 'display':'grid',
+                              'justify-content':'center',
+                              'height':'500px'
+                              })])

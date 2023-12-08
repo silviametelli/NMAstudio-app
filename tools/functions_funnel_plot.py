@@ -2,15 +2,18 @@ import pandas as pd, numpy as np
 import plotly.express as px
 
 
-def __Tap_funnelplot(node, outcome2, funnel_data, funnel_data_out2):
+def __Tap_funnelplot(node, outcome_idx, funnel_data):
     EMPTY_DF = pd.DataFrame([],
                             columns=[ 'index', 'studlab', 'treat1', 'treat2', '',
                             'TE_direct', 'TE_adj', 'seTE', 'Comparison'])
     if node:
+
         treatment = node[0]['label']
-        funnel_data = pd.read_json(funnel_data, orient='split')
-        funnel_data_out2 = pd.read_json(funnel_data_out2, orient='split') if outcome2 else None #TODO: change when include dataselectors for var names
-        df = funnel_data_out2[funnel_data_out2.treat2 == treatment].copy() if outcome2 else funnel_data[funnel_data.treat2 == treatment].copy()
+        funnel_data = pd.read_json(funnel_data[outcome_idx if outcome_idx else 0], orient='split')
+        # funnel_data_out2 = pd.read_json(funnel_data_out2, orient='split') if outcome2 else None #TODO: change when include dataselectors for var names
+        # df = funnel_data_out2[funnel_data_out2.treat2 == treatment].copy() if outcome2 else funnel_data[funnel_data.treat2 == treatment].copy()
+        df = funnel_data[funnel_data.treat2 == treatment].copy()
+
         df['Comparison'] = (df['treat1'] + ' vs ' + df['treat2']).astype(str)
 
         #remove comparisons with one study only

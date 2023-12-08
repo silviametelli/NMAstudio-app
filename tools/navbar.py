@@ -9,9 +9,22 @@ UP_LOGO = "/assets/logos/logo_universite_paris.jpg"
 
 
 def Navbar():
-    home_button = dbc.NavItem(dbc.NavLink('HOME', href="/home", external_link=True,
+    realhome_button = dbc.NavItem(dbc.NavLink('HOME', href="/home", external_link=True,
                                           style = {'color':'#white','font-family': "sans-serif ",
                                                    'font-size': '13px'}))
+    home_button = dbc.NavItem(dbc.NavLink('RESULTS', href="/results", external_link=True,
+                                          style = {'color':'#white','font-family': "sans-serif ",
+                                                   'font-size': '13px'}))
+    # skt_button = dbc.NavItem(dbc.NavLink('SKT TOOL', href="/skt",external_link=True,
+    #                                      style = {'color':'#white','font-family': "sans-serif ",
+    #                                               'font-size': '13px'}, id= 'skt_button'))
+
+    # skt_button = dbc.NavItem(dbc.NavLink('SKT TOOL', n_click=0,
+    #                                      style = {'color':'#white','font-family': "sans-serif ",
+    #                                               'font-size': '13px', 'pointer-events': 'stroke',
+    #                                               'padding': 'unset',
+    #                                               'margin-top':'-7px', 'border': 'none'}, id= 'skt_button'))
+
     doc_button = dbc.NavItem(dbc.NavLink('DOCUMENTATION', href="/doc", external_link=True,
                                          style = {'color':'#white','font-family': "sans-serif ",
                                                   'font-size': '13px' }))
@@ -39,7 +52,8 @@ def Navbar():
                             }),
 
             html.Div([
-                dbc.Col(children=[dbc.Nav([home_button, doc_button, news_button, saveload_button],
+                dbc.Col(children=[dbc.Nav([realhome_button, home_button, 
+                                           doc_button, news_button, saveload_button],
                                           navbar=True, style={'text-align':'center',
                                                               'padding-right':'5%','padding-top':'2.5%',
                                                               'margin-left':'50px',

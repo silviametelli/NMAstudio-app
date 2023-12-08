@@ -52,6 +52,58 @@ run_NetMeta <- function(dat){
   return(ALL_DFs)
 }
 
+
+
+run_NetMeta_new <- function(dat, i){
+  ALL_DFs <- list()
+  sm <- dat[[paste0("effect_size", i+1)]][1] 
+
+  TE_col <- paste0("TE", i+1)  # Generating the column name dynamically
+  seTE_col <- paste0("seTE", i+1)  
+  
+  # Filtering and updating 'dat' using the dynamically generated column names
+  dat <- dat %>%
+    filter_at(vars(!!as.name(TE_col), !!as.name(seTE_col)), all_vars(!is.na(.))) %>%
+    filter(!!as.name(seTE_col) != 0)
+
+  treatments <- unique(c(dat$treat1, dat$treat2))
+  # if incorrect number of arms, then delete entire study
+  tabnarms <- table(dat$studlab)
+  sel.narms <- !iswhole((1 + sqrt(8 * tabnarms + 1)) / 2)
+  if (sum(sel.narms) >= 1){dat <- dat %>% filter(!studlab %in% names(tabnarms)[sel.narms])}
+  nma_temp <- netmeta(dat[[paste0("TE", i+1)]], dat[[paste0("seTE", i+1)]], dat$treat1, dat$treat2, dat$studlab,
+                        sm = sm,
+                        random = TRUE,
+                        backtransf = TRUE,
+                        #prediction = TRUE,
+                        reference.group = treatments[1])
+    ### Values
+  for (treatment in treatments){
+      treatment_list <- nma_temp$trts[nma_temp$trts != treatment]
+      TE <-  nma_temp$TE.random[, treatment]
+      TE_names <- names(TE)[sapply(TE, is.numeric)]
+      TE <- TE[which(TE_names != treatment)]
+      se <- nma_temp$seTE.random[, treatment]
+      se <- se[which(TE_names != treatment)]
+      ci_lo <- TE - 1.96*se
+      ci_up <- TE + 1.96*se
+      TEweights <- 1 / nma_temp$seTE.random[, treatment] # Precision
+      TEweights <- TEweights[which(TE_names != treatment)]
+      tau2 <- nma_temp$tau^2
+      if(sm=="MD" | sm=="SMD"){df <- data.frame(treatment_list, TE,  ci_lo, ci_up, TEweights, tau2)
+      }else{df <- data.frame(treatment_list, exp(TE),  exp(ci_lo),  exp(ci_up), TEweights, tau2)}
+      colnames(df) <- c("Treatment", sm, "CI_lower", "CI_upper", "WEIGHT", "tau2")
+      df['Reference'] <- treatment
+      ALL_DFs[[treatment]] <- df
+      #rm(nma_temp, TE, TE_names, se, ci_lo, ci_up, TEweights, tau2)
+  }
+  ALL_DFs <- do.call('rbind', ALL_DFs)
+  return(ALL_DFs)
+}
+
+
+
+
 #--------------------------------------- NMA league table & ranking -------------------------------------------------#
 ## league tables for either one or two outcomes
 league_rank <- function(dat, outcome2=FALSE){
@@ -222,6 +274,74 @@ league_rank <- function(dat, outcome2=FALSE){
   }
 }
 
+
+
+league_rank_new <- function(dat, i){
+    sm <- dat[[paste0("effect_size", i+1)]][1] 
+    TE_col <- paste0("TE", i+1)  # Generating the column name dynamically
+    seTE_col <- paste0("seTE", i+1)  
+    dat1 <- dat[, c("studlab", "treat1", "treat2", TE_col, seTE_col)]
+    # Filtering and updating 'dat' using the dynamically generated column names
+    dat1 <- dat1 %>%
+        filter_at(vars(!!as.name(TE_col), !!as.name(seTE_col)), all_vars(!is.na(.))) %>%
+        filter(!!as.name(seTE_col) != 0)
+    tabnarms <- table(dat1$studlab)
+    sel.narms <- !iswhole((1 + sqrt(8 * tabnarms + 1)) / 2)
+    if (sum(sel.narms) >= 1){dat1 <- dat1 %>% filter(!studlab %in% names(tabnarms)[sel.narms])}
+    sm1 <- dat[[paste0("effect_size", i+1)]][1]
+    nma_primary <- netmeta(dat1[[paste0("TE", i+1)]], dat1[[paste0("seTE", i+1)]],
+                         treat1=dat1$treat1, treat2=dat1$treat2,
+                         studlab=dat1$studlab,
+                         sm =sm1,
+                         random=TRUE, backtransf=TRUE,
+                         reference.group=dat1$treat2[1])
+    sortedseq <- sort(nma_primary$trts)
+    netleague_table <- netleague(nma_primary, digits = 2,
+                                seq=sortedseq,
+                                bracket="(",
+                                backtransf=TRUE, ci=TRUE, separator=',')
+    lt <- netleague_table$random
+    colnames(lt) <- sortedseq
+    rownames(lt) <- sortedseq
+    #p-scores
+    rank1 <- netrank(nma_primary, small.values = "bad")
+    rank <- data.frame(names(rank1$Pscore.random), as.numeric(round(rank1$Pscore.random,2)))
+    colnames(rank)  <-  c("treatment", "pscore")
+    #consistency
+    consistency <- data.frame(nma_primary$Q.inconsistency, nma_primary$df.Q.inconsistency, nma_primary$pval.Q.inconsistency)
+    colnames(consistency)  <-  c("Q", "df(Q)", "p-value")
+    #consistency node-split
+    ne <- netsplit(nma_primary)
+    comparison <- ne$compare.random$comparison[!is.na(ne$compare.random$p)]
+    direct <- exp(ne$direct.random$TE[!is.na(ne$compare.random$p)])
+    indirect <- exp(ne$indirect.random$TE[!is.na(ne$compare.random$p)])
+    p <- ne$compare.random$p[!is.na(ne$compare.random$p)]
+    df_cons <- data.frame(comparison, direct, indirect, p)
+    colnames(df_cons) <- c("comparison", "direct", "indirect", "p-value")
+    comp_all <- ne$compare.random$comparison
+    k_all <- ne$k
+    direct_all <- exp(ne$direct.random$TE)
+    nma_all <- exp(ne$random$TE)
+    indirect_all <- exp(ne$indirect.random$TE)
+    p_all <- ne$compare.random$p
+    netsplit_all <- data.frame(comp_all, k_all, direct_all, nma_all, indirect_all, p_all)
+    colnames(netsplit_all) <- c("comparison", "k", "direct", "nma", "indirect", "p-value")
+    if (all(is.na(ne$compare.random$p)) == TRUE){
+        df_cons <- data.frame(comp_all, direct_all, indirect_all, p_all)
+        colnames(df_cons) <- c("comparison", "direct", "indirect", "p-value")
+        }
+  
+    return(list(lt, rank, consistency, df_cons, netsplit_all))
+}
+
+
+
+
+
+
+
+
+
 ## comparison adjusted funnel plots
 funnel_funct <- function(dat){
   ALL_DFs <- list()
@@ -303,6 +423,100 @@ funnel_funct <- function(dat){
 }
 
 
+
+funnel_funct_new <- function(dat,i){
+
+  ALL_DFs <- list()
+  sm <- dat[[paste0("effect_size", i+1)]][1]
+
+  TE_col <- paste0("TE", i+1)  # Generating the column name dynamically
+  seTE_col <- paste0("seTE", i+1)  
+  
+  # Filtering and updating 'dat' using the dynamically generated column names
+  dat <- dat %>%
+    filter_at(vars(!!as.name(TE_col), !!as.name(seTE_col)), all_vars(!is.na(.))) %>%
+    filter(!!as.name(seTE_col) != 0)
+
+  iswhole <- function(x, tol = .Machine$double.eps^0.5) abs(x - round(x)) < tol
+
+  tabnarms <- table(dat$studlab)
+  sel.narms <- !iswhole((1 + sqrt(8 * tabnarms + 1)) / 2)
+
+  if (sum(sel.narms) >= 1){dat <- dat %>% filter(!studlab %in% names(tabnarms)[sel.narms])}
+  treatments <- unique(c(dat$treat1, dat$treat2))
+
+  x <- netmeta(dat[[paste0("TE", i+1)]], dat[[paste0("seTE", i+1)]],
+                 treat1=dat$treat1, treat2=dat$treat2,
+                 studlab=dat$studlab,
+                 sm = sm,
+                 random = TRUE,
+                 backtransf = FALSE,
+                 reference.group = treatments[1])
+  for (treatment in treatments){
+    ordered_strategies <- unique(c(dat$treat1, dat$treat2))
+    ordered_strategies <- ordered_strategies[ordered_strategies!=treatment]
+    ordered_strategies <- c(ordered_strategies, rev(treatment))
+    TE <- x$TE
+    seTE <- x$seTE
+    treat1 <- x$treat1
+    treat2 <- x$treat2
+    trts.abbr <- x$trts
+    trt1 <- as.character(factor(treat1, levels = x$trts, labels = trts.abbr))
+    trt2 <- as.character(factor(treat2, levels = x$trts, labels = trts.abbr))
+    studlab <- x$studlab
+    sep.trts <- ":"
+    comp <- paste(trt1, trt2, sep = sep.trts)
+    comp21 <- paste(trt2, trt1, sep = sep.trts)
+    comparison <- paste(treat1, treat2, sep = sep.trts)
+    comparison21 <- paste(treat2, treat1, sep = sep.trts)
+    treat1.pos <- as.numeric(factor(treat1, levels = ordered_strategies))
+    treat2.pos <- as.numeric(factor(treat2, levels = ordered_strategies))
+    wo <- treat1.pos > treat2.pos
+    if (any(wo)) {
+      TE[wo] <- -TE[wo]
+      ttreat1 <- treat1
+      treat1[wo] <- treat2[wo]
+      treat2[wo] <- ttreat1[wo]
+      ttreat1.pos <- treat1.pos
+      treat1.pos[wo] <- treat2.pos[wo]
+      treat2.pos[wo] <- ttreat1.pos[wo]
+      comp[wo] <- comp21[wo]
+      comparison[wo] <- comparison21[wo]
+    }
+    o <- order(treat1.pos, treat2.pos)
+    TE <- TE[o]
+    seTE <- seTE[o]
+    treat1 <- treat1[o]
+    treat2 <- treat2[o]
+    studlab <- studlab[o]
+    comp <- comp[o]
+    comparison <- comparison[o]
+    res <- data.frame(studlab, treat1, treat2, comparison, comp, TE, TE.direct = NA, TE.adj = NA, seTE)
+    if (is.numeric(treat1)){treat1 <- as.character(treat1)}
+    if (is.numeric(treat2)){treat2 <- as.character(treat2)}
+    if (x$fixed == TRUE){
+           for (i in seq_along(res$TE))
+               res$TE.direct[i] <- x$TE.direct.fixed[treat1[i], treat2[i]]
+    }else{
+           for (i in seq_along(res$TE))
+             res$TE.direct[i] <- x$TE.direct.random[treat1[i], treat2[i]]
+    }
+    res$TE.adj <- res$TE - res$TE.direct
+    #netfun <- funnel(nma, order=ordered_strategies)
+    funneldata <- droplevels(subset(res, treat2==treatment))
+    df <- data.frame(funneldata$studlab, funneldata$treat1, funneldata$treat2, funneldata$TE,
+                                  funneldata$TE.direct, funneldata$TE.adj, funneldata$seTE)
+    colnames(df) <- c("studlab", "treat1", "treat2", sm, "TE_direct", "TE_adj", "seTE")
+    rownames(df) <- NULL
+    ALL_DFs[[treatment]] <- df
+
+  }
+  ALL_DFs <- do.call('rbind', ALL_DFs)
+  return(ALL_DFs)
+}
+
+
+
 #------------------------------------- pairwise forest plots -------------------------------------------#
 ## pairwise forest plots for all different comparisons in df
 ## sorted_dat: dat sorted by treatemnt comparison
@@ -357,86 +571,200 @@ pairwise_forest <- function(dat){
 }
 
 
+
+pairwise_forest_new <- function(dat,i){
+    DFs_pairwise <- list()
+    sm <- dat[[paste0("effect_size", i+1)]][1]
+    TE_col <- paste0("TE", i+1)  # Generating the column name dynamically
+    seTE_col <- paste0("seTE", i+1)  
+    
+    # Filtering and updating 'dat' using the dynamically generated column names
+    dat <- dat %>%
+        filter_at(vars(!!as.name(TE_col), !!as.name(seTE_col)), all_vars(!is.na(.))) %>%
+        filter(!!as.name(seTE_col) != 0)
+    dat <- dat %>% arrange(dat, treat1, treat2)
+    dat$ID <- dat %>% group_indices(treat1, treat2)
+    dat <- dat %>%
+    mutate(
+        temp = ifelse(treat1 > treat2, treat2, treat1),
+        treat2 = ifelse(treat1 > treat2, treat1, treat2),
+        treat1 = temp
+    ) %>%
+    select(-temp)
+
+    for (id in dat$ID){
+    dat_temp <- dat[which(dat$ID==id), ]
+    model_temp <- metagen(dat_temp[[paste0("TE", i+1)]], dat_temp[[paste0("seTE", i+1)]],
+                            studlab = studlab, data=dat_temp,
+                            random = T, sm=sm, prediction=TRUE)
+
+    studlab <- dat_temp$studlab
+    t1 <- dat_temp$treat1
+    t2 <- dat_temp$treat2
+    TE <- model_temp$TE
+    TE_diamond <- model_temp$TE.random
+    se <- model_temp$seTE.random
+    ci_lo <- model_temp$lower.random
+    ci_up <- model_temp$upper.random
+    ci_lo_individual <- model_temp$lower
+    ci_up_individual <- model_temp$upper
+    predict_lo <- model_temp$lower.predict
+    predict_up <- model_temp$upper.predict
+    TEweights <- model_temp$w.random
+    tau2 <- model_temp$tau^2
+    I2 <- model_temp$I2
+    if(sm=="MD" | sm=="SMD"){df <- data.frame(TE, TE_diamond, id, studlab, t1, t2, ci_lo_individual,
+                                                ci_up_individual, ci_lo, ci_up, predict_lo, predict_up,
+                                                TEweights, tau2, I2)
+    }else{df <- data.frame(exp(TE), exp(TE_diamond), id, studlab, t1, t2, exp(ci_lo_individual),
+                            exp(ci_up_individual), exp(ci_lo), exp(ci_up), exp(predict_lo),
+                            exp(predict_up), TEweights, tau2, I2)}
+    colnames(df) <- c(sm , "TE_diamond", "id", "studlab", "treat1", "treat2", "CI_lower",
+                            "CI_upper", "CI_lower_diamond", "CI_upper_diamond", "Predict_lo",
+                            "Predict_up", "WEIGHT", "tau2", "I2")
+    DFs_pairwise[[id]] <- df
+    }
+  DFs_pairwise <- do.call('rbind', DFs_pairwise)
+  return(DFs_pairwise)
+}
+
+
+
+
+
+
+
+
 #----------------------------------- pairwise function to convert long data -----------------------------------------#
 
-get_pairwise_data_long <- function(dat, outcome2=FALSE){
-    sm1 <- dat$effect_size1[1]
-    if(sm1 %in% c('RR','OR')){
-    pairwise_dat1 <- netmeta::pairwise(data=dat,
-                                       event=r,
-                                       n=n,
+# get_pairwise_data_long <- function(dat, outcome2=FALSE){
+#     sm1 <- dat$effect_size1[1]
+#     if(sm1 %in% c('RR','OR')){
+#     pairwise_dat1 <- netmeta::pairwise(data=dat,
+#                                        event=r,
+#                                        n=n,
+#                                        studlab=studlab,
+#                                        treat=treat,
+#                                        incr=0.5,
+#                                        sm=sm1)
+#     }else{
+#       pairwise_dat1 <- netmeta::pairwise(data=dat,
+#                                          mean=y,
+#                                          sd=sd,
+#                                          n=n,
+#                                          studlab=studlab,
+#                                          treat=treat,
+#                                          incr=0.5,
+#                                          sm=sm1)}
+#     pairwise_dat <- pairwise_dat1
+
+#     names(pairwise_dat)[names(pairwise_dat) == 'rob1'] <- 'rob'
+#     names(pairwise_dat)[names(pairwise_dat) == 'year1'] <- 'year'
+
+#   if(outcome2==TRUE){
+#       sm2 <- dat$effect_size2[1]
+#       if(sm2 %in% c('RR','OR')){
+#         pairwise_dat2 <- netmeta::pairwise(data=dat,
+#                                      event=z1,
+#                                      n=nz,
+#                                      studlab=studlab,
+#                                      treat=treat,
+#                                      incr=0.5,
+#                                      sm=sm2)
+#       }else{
+#         pairwise_dat2 <- netmeta::pairwise(data=dat,
+#                                            mean=y2,
+#                                            sd=sd2,
+#                                            n=n2,
+#                                            studlab=studlab,
+#                                            treat=treat,
+#                                            incr=0.5,
+#                                            sm=sm2)
+#       }
+#       pairwise_dat <- full_join(pairwise_dat1, pairwise_dat2, by = c("studlab","treat1","treat2"))
+
+#      names(pairwise_dat)[names(pairwise_dat) == 'TE.x'] <- 'TE'
+#      names(pairwise_dat)[names(pairwise_dat) == 'seTE.x'] <- 'seTE'
+#      names(pairwise_dat)[names(pairwise_dat) == 'n1.x'] <- 'n1'
+#      names(pairwise_dat)[names(pairwise_dat) == 'n2.x'] <- 'n2'
+#      names(pairwise_dat)[names(pairwise_dat) == 'effect_size1.x'] <- 'effect_size1'
+#      names(pairwise_dat)[names(pairwise_dat) == 'effect_size2.x'] <- 'effect_size2'
+#      names(pairwise_dat)[names(pairwise_dat) == 'TE.y'] <- 'TE2'
+#      names(pairwise_dat)[names(pairwise_dat) == 'seTE.y'] <- 'seTE2'
+#      names(pairwise_dat)[names(pairwise_dat) == 'nz1.y'] <- 'n2.1'
+#      names(pairwise_dat)[names(pairwise_dat) == 'nz2.y'] <- 'n2.2'
+#      names(pairwise_dat)[names(pairwise_dat) == 'n21.x'] <- 'n2.1'
+#      names(pairwise_dat)[names(pairwise_dat) == 'n22.x'] <- 'n2.2'
+#      names(pairwise_dat)[names(pairwise_dat) == 'n21.y'] <- 'n2.1'
+#      names(pairwise_dat)[names(pairwise_dat) == 'n22.y'] <- 'n2.2'
+#      names(pairwise_dat)[names(pairwise_dat) == 'outcome1_direction.x'] <- 'outcome1_direction'
+#      names(pairwise_dat)[names(pairwise_dat) == 'outcome2_direction.x'] <- 'outcome2_direction'
+#      names(pairwise_dat)[names(pairwise_dat) == 'treat_class1.x'] <- 'treat1_class'
+#      names(pairwise_dat)[names(pairwise_dat) == 'treat_class2.x'] <- 'treat2_class'
+#      names(pairwise_dat)[names(pairwise_dat) == 'treat_class1.y'] <- 'treat1_class'
+#      names(pairwise_dat)[names(pairwise_dat) == 'treat_class2.y'] <- 'treat2_class'
+#      names(pairwise_dat)[names(pairwise_dat) == 'treat_class1.1'] <- 'treat1_class'
+#      names(pairwise_dat)[names(pairwise_dat) == 'treat_class2.1'] <- 'treat2_class'
+#      #names(pairwise_dat)[names(pairwise_dat) == 'rob.x'] <- 'rob'
+#      #names(pairwise_dat)[names(pairwise_dat) == 'year.x'] <- 'year'
+#      pairwise_dat$year <- coalesce(pairwise_dat$year.x, pairwise_dat$year.y)
+#      pairwise_dat$rob <- coalesce(pairwise_dat$rob.x, pairwise_dat$rob.y)
+#      #pairwise_dat$age <- coalesce(pairwise_dat$age.x, pairwise_dat$age.y)
+#      #pairwise_dat$male <- coalesce(pairwise_dat$male.x, pairwise_dat$male.y)
+#   }
+#   return (pairwise_dat)
+# }
+
+get_pairwise_data_long_new <- function(dat, num_outcome=1){
+   pairwise_dat <- list()
+   for (i in 1:num_outcome){
+    sm <- dat[[paste0("effect_size", i)]][1] 
+    if(sm %in% c('RR','OR')) {
+        pair_dat <- netmeta::pairwise(data=dat,
+                                       event=dat[[paste0("r", i)]],
+                                       n=dat[[paste0("n", i)]],
                                        studlab=studlab,
                                        treat=treat,
                                        incr=0.5,
-                                       sm=sm1)
-    }else{
-      pairwise_dat1 <- netmeta::pairwise(data=dat,
-                                         mean=y,
-                                         sd=sd,
-                                         n=n,
-                                         studlab=studlab,
-                                         treat=treat,
-                                         incr=0.5,
-                                         sm=sm1)}
-    pairwise_dat <- pairwise_dat1
+                                       sm=sm)
+        pairwise_dat[[i]] <- pair_dat[,1:9]
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'TE'] <- paste0("TE", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'seTE'] <- paste0("seTE", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'event1'] <- paste0("event1", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'event2'] <- paste0("event2", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'n1'] <- paste0("n1", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'n2'] <- paste0("n2", i)
+    }else {
+        
+        pair_dat <- netmeta::pairwise(data=dat,
+                                            mean=dat[[paste0("y", i)]],
+                                            sd=dat[[paste0("sd", i)]],
+                                            n=dat[[paste0("n", i)]],
+                                            studlab=studlab,
+                                            treat=treat,
+                                            incr=0.5,
+                                            sm=sm)
+        pairwise_dat[[i]] <- pair_dat[,1:9]                                   
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'TE'] <- paste0("TE", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'seTE'] <- paste0("seTE", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'event1'] <- paste0("event1", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'event2'] <- paste0("event2", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'n1'] <- paste0("n1", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'n2'] <- paste0("n2", i)
+        }
+    }
+    final_dat = reduce(pairwise_dat, full_join, by = c("studlab","treat1","treat2"))
+    add_columns <- names(pair_dat)[10:length(names(pair_dat))]
+    
+    new_cols <- pair_dat %>%
+    dplyr::select(add_columns)
 
-    names(pairwise_dat)[names(pairwise_dat) == 'rob1'] <- 'rob'
-    names(pairwise_dat)[names(pairwise_dat) == 'year1'] <- 'year'
+    final_dat1 <- cbind.data.frame(final_dat,new_cols)
 
-  if(outcome2==TRUE){
-      sm2 <- dat$effect_size2[1]
-      if(sm2 %in% c('RR','OR')){
-        pairwise_dat2 <- netmeta::pairwise(data=dat,
-                                     event=z1,
-                                     n=nz,
-                                     studlab=studlab,
-                                     treat=treat,
-                                     incr=0.5,
-                                     sm=sm2)
-      }else{
-        pairwise_dat2 <- netmeta::pairwise(data=dat,
-                                           mean=y2,
-                                           sd=sd2,
-                                           n=n2,
-                                           studlab=studlab,
-                                           treat=treat,
-                                           incr=0.5,
-                                           sm=sm2)
-      }
-      pairwise_dat <- full_join(pairwise_dat1, pairwise_dat2, by = c("studlab","treat1","treat2"))
+    names(final_dat1) <- c(names(final_dat),names(new_cols))
 
-     names(pairwise_dat)[names(pairwise_dat) == 'TE.x'] <- 'TE'
-     names(pairwise_dat)[names(pairwise_dat) == 'seTE.x'] <- 'seTE'
-     names(pairwise_dat)[names(pairwise_dat) == 'n1.x'] <- 'n1'
-     names(pairwise_dat)[names(pairwise_dat) == 'n2.x'] <- 'n2'
-     names(pairwise_dat)[names(pairwise_dat) == 'effect_size1.x'] <- 'effect_size1'
-     names(pairwise_dat)[names(pairwise_dat) == 'effect_size2.x'] <- 'effect_size2'
-     names(pairwise_dat)[names(pairwise_dat) == 'TE.y'] <- 'TE2'
-     names(pairwise_dat)[names(pairwise_dat) == 'seTE.y'] <- 'seTE2'
-     names(pairwise_dat)[names(pairwise_dat) == 'nz1.y'] <- 'n2.1'
-     names(pairwise_dat)[names(pairwise_dat) == 'nz2.y'] <- 'n2.2'
-     names(pairwise_dat)[names(pairwise_dat) == 'n21.x'] <- 'n2.1'
-     names(pairwise_dat)[names(pairwise_dat) == 'n22.x'] <- 'n2.2'
-     names(pairwise_dat)[names(pairwise_dat) == 'n21.y'] <- 'n2.1'
-     names(pairwise_dat)[names(pairwise_dat) == 'n22.y'] <- 'n2.2'
-     names(pairwise_dat)[names(pairwise_dat) == 'outcome1_direction.x'] <- 'outcome1_direction'
-     names(pairwise_dat)[names(pairwise_dat) == 'outcome2_direction.x'] <- 'outcome2_direction'
-     names(pairwise_dat)[names(pairwise_dat) == 'treat_class1.x'] <- 'treat1_class'
-     names(pairwise_dat)[names(pairwise_dat) == 'treat_class2.x'] <- 'treat2_class'
-     names(pairwise_dat)[names(pairwise_dat) == 'treat_class1.y'] <- 'treat1_class'
-     names(pairwise_dat)[names(pairwise_dat) == 'treat_class2.y'] <- 'treat2_class'
-     names(pairwise_dat)[names(pairwise_dat) == 'treat_class1.1'] <- 'treat1_class'
-     names(pairwise_dat)[names(pairwise_dat) == 'treat_class2.1'] <- 'treat2_class'
-     #names(pairwise_dat)[names(pairwise_dat) == 'rob.x'] <- 'rob'
-     #names(pairwise_dat)[names(pairwise_dat) == 'year.x'] <- 'year'
-     pairwise_dat$year <- coalesce(pairwise_dat$year.x, pairwise_dat$year.y)
-     pairwise_dat$rob <- coalesce(pairwise_dat$rob.x, pairwise_dat$rob.y)
-     #pairwise_dat$age <- coalesce(pairwise_dat$age.x, pairwise_dat$age.y)
-     #pairwise_dat$male <- coalesce(pairwise_dat$male.x, pairwise_dat$male.y)
-  }
-  return (pairwise_dat)
+    return(final_dat1)
 }
-
 
 
 #----------------------------------- pairwise function to convert contrast data -----------------------------------------#
@@ -509,3 +837,59 @@ get_pairwise_data_contrast <- function(dat, outcome2=FALSE){
   }
   return (pairwise_dat)
 }
+
+
+
+
+    
+get_pairwise_data_contrast_new <- function(dat, num_outcome=1){
+   pairwise_dat <- list()
+   for (i in 1:num_outcome){
+    sm <- dat[[paste0("effect_size", i)]][1] 
+    if(sm %in% c('RR','OR')) {
+        pair_dat <- netmeta::pairwise(data=dat,
+                                       event=list(dat[[paste0("r1", i)]], dat[[paste0("r2", i)]]),
+                                       n=list(dat[[paste0("n1", i)]], dat[[paste0("n2", i)]]),
+                                       studlab=studlab,
+                                       treat=list(treat1,treat2),
+                                       incr=0.5,
+                                       sm=sm)
+        pairwise_dat[[i]] <- pair_dat[,1:9]
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'TE'] <- paste0("TE", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'seTE'] <- paste0("seTE", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'event1'] <- paste0("event1", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'event2'] <- paste0("event2", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'n1'] <- paste0("n1", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'n2'] <- paste0("n2", i)
+    }else {
+        
+        pair_dat <- netmeta::pairwise(data=dat,
+                                            mean=list(dat[[paste0("y1", i)]], dat[[paste0("y2", i)]]),
+                                            sd=list(dat[[paste0("sd1", i)]], dat[[paste0("sd2", i)]]),
+                                            n=list(dat[[paste0("n1", i)]], dat[[paste0("n2", i)]]),
+                                            studlab=studlab,
+                                            treat=list(treat1,treat2),
+                                            incr=0.5,
+                                            sm=sm)
+        pairwise_dat[[i]] <- pair_dat[,1:9]                                   
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'TE'] <- paste0("TE", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'seTE'] <- paste0("seTE", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'event1'] <- paste0("event1", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'event2'] <- paste0("event2", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'n1'] <- paste0("n1", i)
+        names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'n2'] <- paste0("n2", i)
+        }
+    }
+    final_dat = reduce(pairwise_dat, full_join, by = c("studlab","treat1","treat2"))
+    add_columns <- names(pair_dat)[10:length(names(pair_dat))]
+    
+    new_cols <- pair_dat %>%
+    dplyr::select(add_columns)
+
+    final_dat1 <- cbind.data.frame(final_dat,new_cols)
+
+    names(final_dat1) <- c(names(final_dat),names(new_cols))
+
+    return(final_dat1)
+}
+ 

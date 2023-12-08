@@ -21,8 +21,6 @@ tab_league = html.Div([
                                    src="/assets/icons/query.png",
                                    style={
                                    "width": "16px",
-                                   "margin-top": "0px",
-                                   "border-radius": "0px",
                                    "float":"right",},)),],
                      id="queryicon-cinima",),dcc.Upload(html.A('Upload CINeMA report 1 for outcome 1',
                       style={'margin-left': '5px', 'font-size':'12px','color':'rgb(90, 135, 196)'}),
@@ -33,6 +31,20 @@ tab_league = html.Div([
                                                  'font-size':'11px'})],
             style={'display': 'inline-block', 'margin-top': '-5px'}
             ),]),
+       dbc.Col(dbc.Row(
+              [html.P(f"Select outcomes",className="selectbox", style={'display': 'inline-block', "text-align": 'right',
+                                                               'margin-left': '0px', 'font-size': '12px'}),
+              dcc.Dropdown(id='league_outcome_select', searchable=True, placeholder="...", className="box",
+                            clearable=False, value=0,
+                            style={'width': '80px',  # 'height': '30px',
+                                   "height": '30px',
+                                   'vertical-align': 'middle',
+                                   "font-family": "sans-serif",
+                                   'margin-bottom': '2px',
+                                   'display': 'inline-block',
+                                   'color': 'black',
+                                   'font-size': '10px','margin-left':'-7px'})]),
+                                   style={'margin-bottom': '0px'}),
        #  html.Div([html.P("Upload the CINeMA report file in its original format, with mandatory columns “Comparison” and “Confidence rating”",
        #                   id='cinema-instruction',),
        #               html.A(
@@ -50,6 +62,7 @@ tab_league = html.Div([
                                      'font-size': '12px',
                                      'padding-left': '10px'}),
                        daq.ToggleSwitch(id='rob_vs_cinema',
+                                        value=False,
                                         color='', size=30,
                                         labelPosition="bottom",
                                         style={'display': 'inline-block',

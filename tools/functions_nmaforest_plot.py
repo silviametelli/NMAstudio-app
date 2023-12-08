@@ -2,20 +2,27 @@ import numpy as np, pandas as pd
 import plotly.express as px, plotly.graph_objects as go
 
 
-def __TapNodeData_fig(data, outcome, forest_data, forest_data_out2,style,net_storage):
+def __TapNodeData_fig(data, outcome_idx, forest_data,style,net_storage):
 
 
     if data:
         treatment = data[0]['label']
-        forest_data = pd.read_json(forest_data_out2, orient='split') if outcome else pd.read_json(forest_data, orient='split')
+        if outcome_idx:
+             i = int(outcome_idx)
+             forest_data = forest_data[i]
+             forest_data = pd.read_json(forest_data[i], orient='split')
+        else:          
+            i = 0
+            forest_data = pd.read_json(forest_data[i], orient='split')
+                
         df = forest_data[forest_data.Reference == treatment]
-        net_data = pd.read_json(net_storage, orient='split')
-        outcome_direction_data = net_data['outcome1_direction'].iloc[1] if not outcome else net_data['outcome2_direction'].iloc[1]
+        net_data = pd.read_json(net_storage[0], orient='split')
+        outcome_direction_data = net_data[f'outcome{i+1}_direction'].iloc[1]
         outcome_direction = False if outcome_direction_data == 'beneficial' else True
         effect_size = df.columns[1]
         tau2 = round(df['tau2'].iloc[1], 2)
         df['Treatment'] += ' ' * 23
-        df['CI_width'] = df.CI_upper - df.CI_lower
+        df['CI_width'] = (df.CI_upper - df.CI_lower)/2
         df['lower_error'] = df[effect_size] - df.CI_lower
         df['CI_width_hf'] = df.CI_upper - df[effect_size] 
         # df['CI_width_hf'] = df['CI_width'] / 2
@@ -174,37 +181,44 @@ def __TapNodeData_fig(data, outcome, forest_data, forest_data_out2,style,net_sto
 
 ###### BIDIMENSIONAL PLOT
 
-def __TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
+def __TapNodeData_fig_bidim(data, forest_data_store,out_idx1, out_idx2):
     """If click on node uses node as reference to produce both forest plots."""
     ##  ranking data used to check if second outcome is present (easier to check than using dataselectors)
-    df_ranking = pd.read_json(ranking_data, orient='split')
-    df_ranking = df_ranking.loc[:, ~df_ranking.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+    # df_ranking = pd.read_json(ranking_data, orient='split')
+    # df_ranking = df_ranking.loc[:, ~df_ranking.columns.str.contains('^Unnamed')]  # Remove unnamed columns
+    if not out_idx1:
+         out_idx1 =0
+    if not out_idx2:
+         out_idx2 = 0
+
 
     if data:
-        if "pscore2" in df_ranking.columns:
-            forest_data = pd.read_json(forest_data, orient='split')
-            forest_data_out2 = pd.read_json(forest_data_out2, orient='split')
-            treatment = data[0]['label']
-            df = forest_data[forest_data.Reference == treatment]
-            effect_size = df.columns[1]
-            df['CI_width'] = df.CI_upper - df.CI_lower
-            df['lower_error_1'] = df[effect_size] - df.CI_lower
-            df['CI_width_hf'] = df['CI_width'] / 2
-            df['WEIGHT'] = round(df['WEIGHT'], 3)
-            df = df.sort_values(by=effect_size, ascending=False)
-            #second outcome
-            df_second = forest_data_out2[forest_data_out2.Reference == treatment]
+        # if "pscore2" in df_ranking.columns:
 
-            effect_size_2 = df_second.columns[1]
-            df_second['CI_width'] = df_second.CI_upper - df_second.CI_lower
-            df_second['lower_error_2'] = df_second[effect_size] - df_second.CI_lower
-            df_second['CI_width_hf'] = df_second['CI_width'] / 2
-        else:
-            effect_size = effect_size_2 = ''
-            df = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
-                                                  'CI_width', 'CI_width_hf'])
-            df_second = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
-                                                         'CI_width', 'CI_width_hf'])
+        forest_data  = pd.read_json(forest_data_store[out_idx1], orient='split')
+        forest_data_out2 = pd.read_json(forest_data_store[out_idx2], orient='split')
+        treatment = data[0]['label']
+        df = forest_data[forest_data.Reference == treatment]
+        
+        effect_size = df.columns[1]
+        df['CI_width'] = df.CI_upper - df.CI_lower
+        df['lower_error_1'] = df[effect_size] - df.CI_lower
+        df['CI_width_hf'] = df['CI_width'] / 2
+        df['WEIGHT'] = round(df['WEIGHT'], 3)
+        df = df.sort_values(by=effect_size, ascending=False)
+        #second outcome
+        df_second = forest_data_out2[forest_data_out2.Reference == treatment]
+        
+        effect_size_2 = df_second.columns[1]
+        df_second['CI_width'] = df_second.CI_upper - df_second.CI_lower
+        df_second['lower_error_2'] = df_second[effect_size] - df_second.CI_lower
+        df_second['CI_width_hf'] = df_second['CI_width'] / 2
+        # else:
+        #     effect_size = effect_size_2 = ''
+        #     df = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
+        #                                           'CI_width', 'CI_width_hf'])
+        #     df_second = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
+        #                                                  'CI_width', 'CI_width_hf'])
     else:
             effect_size = effect_size_2 = ''
             df = pd.DataFrame([[0] * 7], columns=['Treatment', effect_size, 'CI_lower', 'CI_upper', 'WEIGHT',
@@ -277,27 +291,27 @@ def __TapNodeData_fig_bidim(data, forest_data, forest_data_out2, ranking_data):
             fig.update_layout(margin=dict(l=100, r=100, t=12, b=80),
                              coloraxis_showscale=False)  ## remove visible=False to show initial axes
             fig.update_traces(hoverinfo='skip', hovertemplate=None)
-    if data and  "pscore2" not in df_ranking.columns:
-            fig = px.scatter(df, x=df[effect_size], y=df_second[effect_size_2])
-            fig.update_shapes(dict(xref='x', yref='y'))
-            fig.update_xaxes(tickvals=[], ticktext=[], visible=False, zeroline=False)
-            fig.update_yaxes(tickvals=[], ticktext=[], visible=False, zeroline=False)
-            fig.update_layout(margin=dict(l=100, r=100, t=12, b=80),
-                               xaxis=dict(showgrid=False, title=''),
-                               modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0.5)'),
-                               yaxis=dict(showgrid=False, title=''),
-                               showlegend=False,
-                               coloraxis_showscale=False,
-                               paper_bgcolor='rgba(0,0,0,0)',
-                               plot_bgcolor='rgba(0,0,0,0)',
-                               autosize=True,
-                               annotations=[
-                                   {"text": "Please provide a second outcome in data upload to display bi-dimensional plot",
-                                    "font": {"size": 15, "color": "black", 'family': 'sans-serif'},
-                                    "xref": "paper", "yref": "paper",
-                                    "showarrow": False},
-                                   ]
-                               ),
-            fig.update_annotations(align="center")
-            fig.update_traces(hoverinfo='skip', hovertemplate=None)
+    # if data and  "pscore2" not in df_ranking.columns:
+    #         fig = px.scatter(df, x=df[effect_size], y=df_second[effect_size_2])
+    #         fig.update_shapes(dict(xref='x', yref='y'))
+    #         fig.update_xaxes(tickvals=[], ticktext=[], visible=False, zeroline=False)
+    #         fig.update_yaxes(tickvals=[], ticktext=[], visible=False, zeroline=False)
+    #         fig.update_layout(margin=dict(l=100, r=100, t=12, b=80),
+    #                            xaxis=dict(showgrid=False, title=''),
+    #                            modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0.5)'),
+    #                            yaxis=dict(showgrid=False, title=''),
+    #                            showlegend=False,
+    #                            coloraxis_showscale=False,
+    #                            paper_bgcolor='rgba(0,0,0,0)',
+    #                            plot_bgcolor='rgba(0,0,0,0)',
+    #                            autosize=True,
+    #                            annotations=[
+    #                                {"text": "Please provide a second outcome in data upload to display bi-dimensional plot",
+    #                                 "font": {"size": 15, "color": "black", 'family': 'sans-serif'},
+    #                                 "xref": "paper", "yref": "paper",
+    #                                 "showarrow": False},
+    #                                ]
+    #                            ),
+    #         fig.update_annotations(align="center")
+    #         fig.update_traces(hoverinfo='skip', hovertemplate=None)
     return fig

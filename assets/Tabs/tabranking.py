@@ -12,6 +12,7 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                                  'align-items': 'center',
                                                  'font-size': '12px', 'padding': '0'},
                                  children=[
+                                     
                                      dcc.Loading(
                                          dcc.Graph(
                                              id='tab-rank1',
@@ -59,6 +60,34 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                                  'align-items': 'center',
                                                  'font-size': '12px', 'padding': '0'},
                                  children=[
+                                     dbc.Col(dbc.Row(
+                                                 [html.P(f"Select outcome 1",className="selectbox", style={'display': 'inline-block', "text-align": 'right',
+                                                                                                  'margin-left': '0px', 'font-size': '12px'}),
+                                                 dcc.Dropdown(id='ranking_outcome_select1', searchable=True, placeholder="...", className="box", value=0,
+                                                               clearable=False, 
+                                                               style={'width': '80px',  # 'height': '30px',
+                                                                      "height": '30px',
+                                                                      'vertical-align': 'middle',
+                                                                      "font-family": "sans-serif",
+                                                                      'margin-bottom': '2px',
+                                                                      'display': 'inline-block',
+                                                                      'color': 'black',
+                                                                      'font-size': '10px','margin-left':'-7px'}),
+                                                html.P(f"Select outcome 2",className="selectbox", style={'display': 'inline-block', "text-align": 'right',
+                                                                                                  'margin-left': '0px', 'font-size': '12px'}),
+                                                 dcc.Dropdown(id='ranking_outcome_select2', searchable=True, placeholder="...", className="box", value=1,
+                                                               clearable=False, 
+                                                               style={'width': '80px',  # 'height': '30px',
+                                                                      "height": '30px',
+                                                                      'vertical-align': 'middle',
+                                                                      "font-family": "sans-serif",
+                                                                      'margin-bottom': '2px',
+                                                                      'display': 'inline-block',
+                                                                      'color': 'black',
+                                                                      'font-size': '10px','margin-left':'-7px'})
+                                                                      ]),
+                                                                      style={'margin-bottom': '0px'}),
+
                                      dcc.Loading(
                                          dcc.Graph(
                                              id='tab-rank2',

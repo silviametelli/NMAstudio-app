@@ -7,6 +7,7 @@ import dash_table, dash_daq as daq
 from assets.COLORS import *
 import dash_cytoscape as cyto
 from assets.cytoscape_styleesheeet import get_stylesheet
+from assets.Tabs.tabtransitivity import tab_trstvty
 
 from assets.storage import USER_ELEMENTS
 
@@ -75,6 +76,39 @@ file_upload_controls = [html.Br(),
                               width="auto", style={'display': 'inline-block'})
                        ]
 
+
+file_upload_controls2 = [html.Br(),
+                       dbc.Row([html.P("Select the format of your dataset:", className="selcect_title",),
+                               html.Div(dcc.RadioItems(id='radio-format', options=options_format, inline=True, className='upload_radio'))], 
+                                        style={'display': 'grid', 
+                                               'background-color': 'beige',
+                                                'width': '500px',
+                                                'justify-content': 'center'
+                                               }),
+                     #   html.Br(),
+                     #   dbc.Row([html.P(["Select the type of the 1",html.Sup("st"), " outcome:"], className="selcect_title",),
+                     #       html.Div(dcc.RadioItems(id='radio-outcome1', options=options_outcomes,inline=True,className='upload_radio'))],
+                     #                   style={'display': 'grid',
+                     #                          'background-color': 'antiquewhite',
+                     #                          'width': '500px',
+                     #                          'justify-content': 'center'
+                     #                          }),
+                     #   html.Br(),
+                     #   dbc.Row([html.P(["Select the type of the2",html.Sup("nd"), " outcome (optional):"], className="selcect_optional",),
+                     #   html.Div(dcc.RadioItems(id='radio-outcome2', options=options_outcomes,inline=True, className='upload_radio'))],
+                     #             style={'display': 'grid',
+                     #                    'background-color': 'khaki',
+                     #                    'width': '500px',
+                     #                    'justify-content': 'center'
+                     #                    })
+                       ]
+
+
+
+model_transitivity = dbc.Modal([dbc.ModalHeader("Transitivity Check", style={'width':'1000px'}),
+                                dbc.ModalBody(children=[tab_trstvty], style={'width':'1000px','display':'grid', 'justify-content':'center'}),
+                                dbc.ModalFooter([dbc.Button('Go to the results', id='trans_to_results')],style={'width':'1000px'})
+                                ], is_open=False , id='modal_transitivity', contentClassName="transitivity_class")
 
 modal_data = dbc.Modal([dbc.ModalHeader("Data selection"),
                         dbc.ModalBody([
@@ -215,7 +249,7 @@ modal_checks = dbc.Modal(is_open=False, children=[
                                                       }),
 
                                   html.Br()]),
-                   dbc.ModalFooter([dbc.Button("Submit", id="submit_modal_data", n_clicks=0, className="ml-auto", disabled=True)])
+                   dbc.ModalFooter([dbc.Button("Submit", id="submit_modal_data", className="ml-auto", disabled=True)])
                         ], id="modal_data_checks", centered=False, style={'background-color':'#40515e',"max-width": "none", "width": "50%"})
 
 
@@ -316,7 +350,18 @@ modal_league_table = dbc.Modal([
                      id="modal_league_table", centered=False, style={'background-color': '#40515e',
                      "max-width": "none", "width": "90%"})
 
-
+cytoscape_main = cyto.Cytoscape(id='cytoscape', responsive=True, autoRefreshLayout=False,
+                                        
+                                elements=[],
+                                style={ 
+                                    'height': '70vh', 'width': '100%', 
+                                       'margin-top': '10px',
+                                        'margin-left': '-10px','margin-right': '-10px',  'z-index': '999',
+                                        'padding-left': '-10px', 
+                                        'max-width': 'calc(52vw)',
+                                       },
+                                layout={'animate': False},
+                                stylesheet=get_stylesheet())
 
 modal_network = dbc.Modal([
                      dbc.ModalBody([html.Div(id='network-expand-body'),

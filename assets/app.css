@@ -431,6 +431,9 @@ p, ul, ol {margin-bottom: 0.75rem;}
 }
 
 
+.cell-span {
+    background-color: #00e5ff;
+}
 /* Misc
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 hr {
@@ -1247,7 +1250,7 @@ background-color: #738789;}
 height: 100% !important;
 }
 
-.modebar-container,
+
 .modebar-container{
     top: 30px;
 }

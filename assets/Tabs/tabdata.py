@@ -38,24 +38,24 @@ def tab_data(years=YEARS_DEFAULT):
 
     return html.Div(
         [
+            # html.Button(
+            #     "Upload your data",
+            #     "upload_your_data",
+            #     n_clicks=0,
+            #     style={
+            #         "margin-left": "5px",
+            #         "padding": "4px 4px 4px 4px",
+            #         "margin-top": "15px",
+            #         "color": "#5a87c4",
+            #         "fontSize": 12,
+            #         "font-weight": "900",
+            #         "font-family": "sans-serif",
+            #         "display": "inline-block",
+            #         "vertical-align": "middle",
+            #     },
+            # ),
             html.Button(
                 "Upload your data",
-                "upload_your_data",
-                n_clicks=0,
-                style={
-                    "margin-left": "5px",
-                    "padding": "4px 4px 4px 4px",
-                    "margin-top": "15px",
-                    "color": "#5a87c4",
-                    "fontSize": 12,
-                    "font-weight": "900",
-                    "font-family": "sans-serif",
-                    "display": "inline-block",
-                    "vertical-align": "middle",
-                },
-            ),
-            html.Button(
-                "test_upload",
                 "test_upload",
                 n_clicks=0,
                 style={

@@ -86,7 +86,7 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                                                       'color': 'black',
                                                                       'font-size': '10px','margin-left':'-7px'})
                                                                       ]),
-                                                                      style={'margin-bottom': '0px'}),
+                                                                      style={'margin-bottom': '0px', 'justify-content': 'end', 'display': 'flex'}),
 
                                      dcc.Loading(
                                          dcc.Graph(

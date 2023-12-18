@@ -29,6 +29,7 @@ from tools.functions_netsplit import __netsplit
 from tools.functions_build_league_data_table import __update_output, __update_output_new
 from tools.functions_generate_stylesheet import __generate_stylesheet
 from tools.functions_export import __generate_xlsx_netsplit, __generate_xlsx_league, __generate_csv_consistency
+from tools.functions_show_forest_plot import __show_forest_plot
 from dash import ctx, no_update
 # --------------------------------------------------------------------------------------------------------------------#
 create_sessions_folders()
@@ -98,6 +99,7 @@ app.layout = get_new_layout()
 
 HOMEPAGE = Homepage()
 RealHomepage = realHomepage()
+SKTPAGE = Sktpage()
 # SKT = Sktpage()
 
 # Update the index
@@ -106,9 +108,9 @@ RealHomepage = realHomepage()
 def display_page(pathname):
     if pathname == '/home':  return RealHomepage
     elif pathname == '/results':  return HOMEPAGE
-    elif pathname == '/doc': return doc_layout
+    elif pathname == '/skt':  return SKTPAGE
+    # elif pathname == '/doc': return doc_layout
     elif pathname == '/news': return news_layout
-    # elif pathname == '/skt': return SKT
 
     else:  return HOMEPAGE
 
@@ -143,18 +145,8 @@ def result_page(click, click_back, click_trans):
 
 
 
-# @app.callback(Output('results_page', 'children'),
-#               [Input('skt_button', 'n_clicks')])
-
-# def results_page(click):
-#     if click:
-#         children = [Navbar(), skt_layout()]
-#     else:
-#         children = [Navbar(), home_layout()]
-#     return children
 
 
-# Update active link in the navbar
 @app.callback(Output('homepage-link', 'active'),
               [Input('url', 'pathname')])
 def set_homepage_active(pathname):
@@ -201,7 +193,8 @@ def update_options(search_value_format, search_value_outcome1, search_value_outc
 
 
 @app.callback([Output("outcomes_type", "children"),
-              Output("arrow_step_4", "style")
+              Output("arrow_step_4", "style"),
+              Output("select-out-type", "style")
               ],
               [Input("number-outcomes", "value"),
                Input("num_outcomes_button", "n_clicks"),
@@ -214,7 +207,8 @@ def update_options(number_outcomes, click):
 
 
 @app.callback([Output("variable_selection", "children"),
-              Output("arrow_step_5", "style")
+              Output("arrow_step_5", "style"),
+              Output("select_variables", "style"),
               ],
               [Input("number-outcomes", "value"),
                Input({'type': 'outcometype', 'index': ALL}, "value"),
@@ -240,10 +234,11 @@ def update_options(number_outcomes, outcometype, data_format, contents, filename
 def next_outcome(number_outcomes, effect, direction, variables):
     if number_outcomes and effect:
         number_outcomes = int(number_outcomes)
-        disables = [True] * number_outcomes  # Initialize with True for all outcomes
+        disables = [True] * (number_outcomes)  # Initialize with True for all outcomes
         for i in range(number_outcomes):
             if effect[i] and direction[i] and variables[i]:
                 disables[i] = False  # Enable the outcome button if all conditions are met
+        disables[number_outcomes-1]= True
         return [disables]
     return [[True] * number_outcomes]
                 
@@ -255,18 +250,29 @@ def next_outcome(number_outcomes, effect, direction, variables):
 @app.callback(
     [Output({'type': 'displayvariable', 'index': ALL}, "style")],
     [Input("number-outcomes", "value"),
-     Input({'type': 'outcomebutton', 'index': ALL}, "n_clicks")],
+     Input({'type': 'outcomebutton', 'index': ALL}, "n_clicks"),
+     Input({'type': 'outcomeprevious', 'index': ALL}, "n_clicks")
+     ],
     [State({'type': 'displayvariable', 'index': ALL}, "style")]
 )
-def next_outcome(number_outcomes, click, style):
+def next_outcome(number_outcomes, click, click_previous,style):
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+
     if number_outcomes:
         number_outcomes = int(number_outcomes)
         if number_outcomes > 0:
             style = [{'display': 'grid' if i==0 else 'none'} for i in range(number_outcomes)]
-            for i in range(number_outcomes-1):
-                if click and click[i]:
+            for i in range(number_outcomes-1):    
+                if click[i]>0 and "outcomebutton" in changed_id and f'{i}' in changed_id:
+                    style = [{'display': 'none'} for _ in range(number_outcomes)]
                     style[i]= {'display': 'none'}
                     style[i+1] = {'display': 'grid'}
+            
+            for i in range(1,number_outcomes):
+                if click_previous[i]>0 and "outcomeprevious" in changed_id and f'{i}' in changed_id:
+                    style = [{'display': 'none'} for _ in range(number_outcomes)]
+                    style[i-1]= {'display': 'grid'}
+                    style[i] = {'display': 'none'}
             return [style]
     
     return style
@@ -274,9 +280,9 @@ def next_outcome(number_outcomes, click, style):
 
 
 
-
 @app.callback([Output("select-box-1", "children"),
-              Output("arrow_step_2", "style")],
+              Output("arrow_step_2", "style"),
+              Output("select-overall", "style")],
               [Input("radio-format", "value")],
               [State('datatable-upload2', 'contents'),
               State('datatable-upload2', 'filename')]
@@ -390,17 +396,27 @@ def is_data_file_uploaded(filename):
               Output("ranking_outcome_select1", "options"),
               Output("ranking_outcome_select2", "options"),
               Input("number-outcomes", "value"),
+              Input({'type': 'nameoutcomes', 'index': ALL}, "value"),
               State("forest_outcome_select", "options")
              )
 
-def update_options(number_outcomes, options_var):
+def update_options(number_outcomes, nameoutcomes, options_var):
+    out_names = ['PASI90',"Death"]
+    if not nameoutcomes or not all(nameoutcomes):
+        if number_outcomes:
+            number_outcomes = int(number_outcomes)
+            options_var = [{'label': f'outcome{i+1}', 'value': i} for i in range(number_outcomes)]
+            return (options_var,) * 9
+        options_var = [{'label': f'{out_names[i]}', 'value': i} for i in range(2)]
+        return (options_var,) * 9
+    
     if number_outcomes:
         number_outcomes = int(number_outcomes)
-        options_var = [{'label': f'outcome{i+1}', 'value': i} for i in range(number_outcomes)]
+        options_var = [{'label': f'{nameoutcomes[i]}', 'value': i} for i in range(number_outcomes)]
         return (options_var,) * 9
-    options_var = [{'label': f'outcome{i+1}', 'value': i} for i in range(2)]
-    return (options_var,) * 9
     
+    options_var = [{'label': f'{out_names[i]}', 'value': i} for i in range(2)]
+    return (options_var,) * 9
 
 
 ### --- update graph layout with dropdown: graph layout --- ###
@@ -433,15 +449,16 @@ def update_cytoscape_layout(layout):
                Input('dd_nds', 'children'),
                Input('dd_egs', 'children'),
                Input("btn-get-png", "n_clicks"),
+               Input("btn-get-png-modal", "n_clicks"),
                Input("net_download_activation", "data")
                ]
               )
 def generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                         dd_nclr, dd_eclr, custom_nd_clr, custom_edg_clr, label_size,treat_name,dd_nds, dd_egs,
-                        dwld_button, net_download_activation):
+                        dwld_button, dwld_button2,net_download_activation):
     return __generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                         dd_nclr, dd_eclr, custom_nd_clr, custom_edg_clr, label_size,treat_name,dd_nds, dd_egs,
-                        dwld_button, net_download_activation)
+                        dwld_button, dwld_button2,net_download_activation)
 
 ### ----- save network plot as png ------ ###
 @app.callback([Output("cytoscape", "generateImage"),
@@ -1113,17 +1130,19 @@ def data_trans(
 
 
 @app.callback([Output("select_effect_modifier", "style"),
-              Output("arrow_step3", "style")],
+              Output("arrow_step3", "style"),
+              Output("effect_modifier_select", "style")
+              ],
               Input({'type': 'variableselectors', 'index': ALL}, 'value'),
               )
 def modal_ENABLE_UPLOAD_button(variableselectors):
     if len(variableselectors):
         if all(variableselectors):
-            return {"display": 'grid', 'justify-content': 'center'}, {'display':'grid', 'justify-content': 'center'}
+            return {"display": 'grid', 'justify-content': 'center'}, {'display':'grid', 'justify-content': 'center'},{'display':'grid', 'justify-content': 'center'}
         else:
-            return {"display": 'none'}, {'display':'none', 'justify-content': 'center'}
+            return {"display": 'none'}, {'display':'none', 'justify-content': 'center'}, {'display':'none', 'justify-content': 'center'}
     else:
-        return {"display": 'none'}, {'display':'none', 'justify-content': 'center'}
+        return {"display": 'none'}, {'display':'none', 'justify-content': 'center'}, {'display':'none', 'justify-content': 'center'}
 
 
 
@@ -1797,6 +1816,228 @@ def infor_overall(data):
 
     return [num_study],[num_treat],[num_com],[num_com_without]
     
+
+####################################################################
+####################################################################
+############################ SKT TOOL ##############################
+
+@app.callback(
+    [Output("quickstart-grid", "rowData"),
+    Output("quickstart-grid", "style")],
+    [Input("ref_selected", "value"),
+    Input("base_risk_input", "value")],
+)
+
+def selected(value, value_risk):
+    # pw_data = pd.read_csv('db/forest_data_pairwise.csv')
+    # slctd_comps = []
+    # slctd_compsinv = []
+
+    dfc = df.copy()
+    round(dfc,2)
+    dfc = dfc[dfc['Reference'] == value]
+    dfc = dfc.sort_values(by='RR')
+    dfc.reset_index(drop=True, inplace=True)  
+    dfc['Reference'] = [f'{value} \n {value_risk} per 1000'] + [''] * (dfc.shape[0] - 1)
+    value_risk = int(value_risk)
+    for i in range(dfc.shape[0]):
+        risk_treat = value_risk*dfc['RR'].loc[i]
+        risk_treat =int(risk_treat)
+        abrisk = risk_treat-value_risk
+        dfc.loc[i,'Treatment'] = f"{dfc.loc [i,'Treatment']}" + f"\n{risk_treat} per 1000"
+        dfc.loc[i,'RR'] = str(dfc.loc[i,'RR'])+ '\n(' + str(dfc.loc[i,'CI_lower']) + ', ' + str(dfc.loc[i,'CI_upper']) + ')'
+        dfc.loc[i,'RR'] = f"{dfc.loc [i,'RR']}" + (f"\n{abrisk} more per 1000" if abrisk > 0 else f"\n{abs(abrisk)} less per 1000")
+        dfc.loc[i,'direct'] = f"{dfc.loc [i,'direct']}" + f"\n({dfc.loc[i,'direct_low']}, {dfc.loc[i,'direct_up']})" if pd.notna(dfc['direct'].iloc[i]) else ""
+        dfc.loc[i,'indirect'] = f"{dfc.loc[i,'indirect']}" + f"\n({dfc.loc[i,'indirect_low']}, {dfc.loc[i,'indirect_up']})" if pd.notna(dfc['indirect'].iloc[i]) else ""
+    
+    dfc = pd.DataFrame(dfc)
+    n_row = dfc.shape[0]
+    style = { "width": "100%",'height':f'{48 + 95 * n_row}px'}
+    return dfc.to_dict("records"), style
+
+
+@app.callback(
+    Output("modal_forest", "is_open"), 
+    Input("quickstart-grid", "cellClicked"),
+    Input("close_forest", "n_clicks"),
+)
+
+def display_forestplot(cell, _):
+    if ctx.triggered_id == "close_forest":
+        return False
+    if cell is not None and cell['value'] is not None and 'colId' in cell and cell['colId'] == "direct":
+        return True
+    return no_update
+
+
+@app.callback(
+    Output("skt_modal_copareinfo", "is_open"), 
+    Input("quickstart-grid", "cellClicked"),
+    Input("close_compare", "n_clicks"),
+)
+
+def display_forestplot(cell, _):
+    if ctx.triggered_id == "close_compare":
+        return False
+    if (cell is not None and 'colId' in cell and cell['colId'] == "Treatment"):
+        return True
+    return no_update
+
+
+
+@app.callback(
+   [ Output('forest-fig-pairwise', 'figure'),
+    Output('forest-fig-pairwise', 'style')],
+    [Input("quickstart-grid", "cellClicked"),
+    Input("ref_selected", "value"),
+    Input("quickstart-grid", "selectedRows"),
+    Input('forest-fig-pairwise', 'style')]
+)
+
+def show_forest_plot(cell, reference, row_select, style_pair):
+    return __show_forest_plot(cell, reference, row_select, style_pair)
+
+
+
+
+@app.callback(
+    [Output('grid_type', 'children'),
+     Output('treatment_toast', 'children')],
+    Input('toggle_grid_select','value')
+)
+def display_grid(value):
+    if value:
+        return [grid2],[checklist, button_clear]
+    return [grid, model_skt_stand1, model_skt_stand2],[radio_treattment]
+
+
+@app.callback(
+    Output('checklist_treat','value'),
+    Input('clear-val','n_clicks'),
+    State('checklist_treat','value')
+)
+def clear_treat(click, orig_value):
+    if click:
+        value = df_league.columns[1:].values
+    else:
+        value = orig_value
+    return value
+
+
+
+@app.callback(
+    [Output('grid2', 'rowData'),
+    Output('grid2', 'columnDefs'),
+    Output("grid2", "style")],
+    [Input('checklist_treat','value'),
+    Input("base_risk_input", "value")]
+)
+def display_only_selected(values, absolute_risk):
+    values = sorted(values)
+    absolute_risk = int(absolute_risk)
+    values_t = ['Treatment'] + values
+    df_league_c = df_league.copy()
+    df_league_c = df_league_c[df_league_c['Treatment'].isin (values)]
+    df_league_c =df_league_c[values_t]
+    # df_league_c =df_league_c.sort_index(axis=1)
+    n_row2 = len(values)
+    column_update = df_league_c.columns.tolist()
+
+    for idx, column in enumerate(column_update):
+        if idx < 2:
+            pass   
+        for row_idx in range(idx-1):
+            treat1 = column
+            treat2 = df_league_c['Treatment'].iloc[row_idx]
+            absolute_info = df[(df['Treatment'] == treat2) & (df['Reference'] == treat1)]
+            absolute_risk = int(absolute_risk)
+            absolute = int(absolute_info['RR'].iloc[0]*absolute_risk)-20
+            text_ab1 = f"{treat2} VS. {treat1} \n{absolute} more per 1000" if absolute > 0 else f"{treat2} VS. {treat1} \n{abs(absolute)} less per 1000"
+            text_ab2 = "\n Randomize control studies: 3\n Total participants in arm: xxx \n Mean age: xxx \nMean male percentage: XXX"
+            text_ab = text_ab1 + text_ab2
+            df_league_c.iloc[row_idx,idx] = text_ab
+            
+
+    column1 = ['ADA','ADA', 'BIME']
+    column2 = ['ETA', 'FUM', 'GUSEL']
+
+    column_low1 = ['PBO','PBO', 'SECU']
+    column_low2 = ['RISAN', 'IFX', 'IFX']
+
+    # # # Number of pairs to select (in this case, 6 pairs)
+    
+    treatments_list = df_league_c['Treatment'].tolist()
+
+
+    columnDefs=[
+    {"field": "Treatment", 
+    "headerName": "Treatment",
+     "tooltipField": 'ticker',
+     "tooltipComponentParams": { "color": '#d8f0d3' },
+    "sortable": False,
+    "filter": True, 
+    'cellStyle': {'font-weight':'bold',
+                    'background-color':'#B85042','color':'white','font-size':'12px', **default_style}}  
+    ]+[{"field": i,
+        "cellRenderer": "DCC_GraphClickData",
+        "maxWidth": 500,
+        "minWidth": 300,
+        "tooltipField": 'ticker',
+        "tooltipComponentParams": { "color": '#d8f0d3' },
+        'cellStyle': {"styleConditions":[{"condition": f"params.value === '{i}'", 
+                                    "style": {"backgroundColor": "antiquewhite", **default_style}},
+                                    {
+                                    "condition": f"{column1}.includes('{i}') &&" 
+                                    f"{[treatments_list.index(column2[index]) if (i in column1) and (column2[index] in treatments_list) else -1 for index, item in enumerate(column1)]}.includes(params.rowIndex)",
+                                    "style": {"backgroundColor": "rgb(0, 128, 0, 0.5)", **default_style}
+                                    },
+
+                                    {
+                                    "condition": f"{column2}.includes('{i}') &&" 
+                                    f"{[treatments_list.index(column1[index]) if (i in column2) and (column1[index] in treatments_list) else -1 for index, item in enumerate(column2)]}.includes(params.rowIndex)",
+                                    "style": {"backgroundColor": "rgb(0, 128, 0, 0.5)", **default_style}
+                                    },
+
+                                    {
+                                    "condition": f"{column_low1}.includes('{i}') &&" 
+                                    f"{[treatments_list.index(column_low2[index]) if (i in column_low1) and (column_low2[index] in treatments_list) else -1 for index, item in enumerate(column_low1)]}.includes(params.rowIndex)",
+                                    "style": {"backgroundColor": "rgb(184, 80, 66, 0.5)", **default_style}
+                                    },
+
+                                    {
+                                    "condition": f"{column_low2}.includes('{i}') &&" 
+                                    f"{[treatments_list.index(column_low1[index]) if (i in column_low2) and (column_low1[index] in treatments_list) else -1 for index, item in enumerate(column_low2)]}.includes(params.rowIndex)",
+                                    "style": {"backgroundColor": "rgb(184, 80, 66, 0.5)", **default_style}
+                                    },
+
+                                    {"condition": f"params.value !== '{i}'", 
+                                    "style": {**default_style}},
+                                    ]},}  for i in values]
+    style={'width': '1200px','height': f'{48 + 163 * n_row2}px'}
+
+
+    return df_league_c.to_dict("records"), columnDefs, style
+
+
+@app.callback(
+    Output('pass_model','is_open'),
+    Output('skt_all','style'),
+    Input('password_ok','n_clicks'),
+    Input('password','value'),
+    State('pass_model','is_open'),
+    State('skt_all','style'),
+)
+def clear_treat(click, password, pass_model, skt_style):
+    if password =='777' and click:
+        skt_style = {'diaplay': 'block'}
+        return not pass_model, skt_style
+    else:
+        return pass_model, skt_style
+
+
+
+
+
 
 
 

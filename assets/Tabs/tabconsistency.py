@@ -48,7 +48,7 @@ def tab_consistency(consistency_data=CONSISTENCY_DATA):
                                    'display': 'inline-block',
                                    'color': 'black',
                                    'font-size': '10px','margin-left':'-7px'})]),
-                                   style={'margin-bottom': '0px'}),
+                                   style={'margin-bottom': '0px', 'justify-content': 'end', 'display': 'flex'}),
 
         html.P("Design-by-treatment interaction model", style={'font-size': '12px', 'margin-top': '-0.6%'},
                      className="box__title")]),

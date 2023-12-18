@@ -77,7 +77,7 @@ file_upload_controls = [html.Br(),
                        ]
 
 
-file_upload_controls2 = [html.Br(),
+file_upload_controls2 = [
                        dbc.Row([html.P("Select the format of your dataset:", className="selcect_title",),
                                html.Div(dcc.RadioItems(id='radio-format', options=options_format, inline=True, className='upload_radio'))], 
                                         style={'display': 'grid', 
@@ -110,100 +110,100 @@ model_transitivity = dbc.Modal([dbc.ModalHeader("Transitivity Check", style={'wi
                                 dbc.ModalFooter([dbc.Button('Go to the results', id='trans_to_results')],style={'width':'1000px'})
                                 ], is_open=False , id='modal_transitivity', contentClassName="transitivity_class")
 
-modal_data = dbc.Modal([dbc.ModalHeader("Data selection"),
-                        dbc.ModalBody([
-                            dbc.Row([dbc.Col([html.Br(),
-                                                         html.Div(dcc.Upload(['Drag and Drop or ', html.A('Select a File')],
-                                                                id='datatable-upload', multiple=False,
-                                                                className='control-upload',
-                                                                style={'width': '100%','height': '60px',
-                                                                       'lineHeight': '60px','borderWidth': '1px',
-                                                                       'borderStyle': 'dashed','borderRadius': '5px',
-                                                                       'textAlign': 'center', 'margin': '10px',
-                                                                       'color':'black'},
-                                                                ), style={'display': 'inline-block'}),
-                                                         html.Div([html.P('', style={'padding-left':'10px'}),
-                                                         html.P('',id='uploaded_datafile', style={'color':'violet', 'padding-left':"20px"})],
-                                                                    style={'font-family':'italic', 'display': 'inline-block'})
-                                                         ],style={'display': 'inline-block'}),
-                                           dbc.Col([html.Br(),html.Ul(id="file-list", style={'margin-left': '15px', 'color':'white','opacity':'60%'})],
-                                                   style={'display': 'inline-block'})
-                                                 ]),
-                                  html.Div(dbc.Row(file_upload_controls),
-                                          style={'display': 'none'},
-                                          id="dropdowns-DIV",), 
-                                   html.Div([html.P("outcome 2 is optional",
-                                              id='outcome2-instruction',),
-                                              html.A(
-                                               html.Img(
-                                                 src="/assets/icons/query.png",
-                                                 style={
-                                                  "width": "12px",
-                                                  "margin-top": "0px",
-                                                  "border-radius": "0px",
-                                                  "float":"right",},)),
-                                                         ],
-                                                         style={'display': 'none'},
-                                                         id="queryicon-outcome2",), 
-                                   html.Div([ html.P("Data should be uploaded as CSV",
-                                              id='dataformat-instruction',),
-                                              html.A(
-                                               html.Img(
-                                                 src="/assets/icons/query.png",
-                                                 style={
-                                                  "width": "16px",
-                                                  "margin-top": "0px",
-                                                  "border-radius": "0px",
-                                                  "float":"right",
-                                                  'position':'relative'},)),
-                                                         ],id="queryicon-dataformat",),                            
-                                  html.Div(id='second-selection'),
-                                  html.Div([ html.P("study name or ID for each trial (numeric or string)",
-                                              id='studlb-instruction',),
-                                              html.A(
-                                               html.Img(
-                                                 src="/assets/icons/query.png",
-                                                 style={
-                                                  "width": "12px",
-                                                  "margin-top": "0px",
-                                                  "border-radius": "0px",
-                                                  "float":"right",},)),
-                                                         ],style={'display': 'none'},id="queryicon-studlb",),
-                                   html.Div([ html.P("study-level year of publication (numeric)",
-                                              id='year-instruction',),
-                                              html.A(
-                                               html.Img(
-                                                 src="/assets/icons/query.png",
-                                                 style={
-                                                  "width": "12px",
-                                                  "margin-top": "0px",
-                                                  "border-radius": "0px",
-                                                  "float":"right",},)),
-                                                         ],style={'display': 'none'},id="queryicon-year",),
-                                   html.Div([ html.P("should be encoded in your data file as either {1,2,3}, {l,m,h} or {L,M,H}",
-                                              id='rob-instruction',),
-                                              html.A(
-                                               html.Img(
-                                                 src="/assets/icons/query.png",
-                                                 style={
-                                                  "width": "12px",
-                                                  "margin-top": "0px",
-                                                  "border-radius": "0px",
-                                                  "float":"right",},)),
-                                                         ],style={'display': 'none'},id="queryicon-rob",),
-                                  html.Div(id='third-selection'),
-                                  ]),
+# modal_data = dbc.Modal([dbc.ModalHeader("Data selection"),
+#                         dbc.ModalBody([
+#                             dbc.Row([dbc.Col([html.Br(),
+#                                                          html.Div(dcc.Upload(['Drag and Drop or ', html.A('Select a File')],
+#                                                                 id='datatable-upload', multiple=False,
+#                                                                 className='control-upload',
+#                                                                 style={'width': '100%','height': '60px',
+#                                                                        'lineHeight': '60px','borderWidth': '1px',
+#                                                                        'borderStyle': 'dashed','borderRadius': '5px',
+#                                                                        'textAlign': 'center', 'margin': '10px',
+#                                                                        'color':'black'},
+#                                                                 ), style={'display': 'inline-block'}),
+#                                                          html.Div([html.P('', style={'padding-left':'10px'}),
+#                                                          html.P('',id='uploaded_datafile', style={'color':'violet', 'padding-left':"20px"})],
+#                                                                     style={'font-family':'italic', 'display': 'inline-block'})
+#                                                          ],style={'display': 'inline-block'}),
+#                                            dbc.Col([html.Br(),html.Ul(id="file-list", style={'margin-left': '15px', 'color':'white','opacity':'60%'})],
+#                                                    style={'display': 'inline-block'})
+#                                                  ]),
+#                                   html.Div(dbc.Row(file_upload_controls),
+#                                           style={'display': 'none'},
+#                                           id="dropdowns-DIV",), 
+#                                    html.Div([html.P("outcome 2 is optional",
+#                                               id='outcome2-instruction',),
+#                                               html.A(
+#                                                html.Img(
+#                                                  src="/assets/icons/query.png",
+#                                                  style={
+#                                                   "width": "12px",
+#                                                   "margin-top": "0px",
+#                                                   "border-radius": "0px",
+#                                                   "float":"right",},)),
+#                                                          ],
+#                                                          style={'display': 'none'},
+#                                                          id="queryicon-outcome2",), 
+#                                    html.Div([ html.P("Data should be uploaded as CSV",
+#                                               id='dataformat-instruction',),
+#                                               html.A(
+#                                                html.Img(
+#                                                  src="/assets/icons/query.png",
+#                                                  style={
+#                                                   "width": "16px",
+#                                                   "margin-top": "0px",
+#                                                   "border-radius": "0px",
+#                                                   "float":"right",
+#                                                   'position':'relative'},)),
+#                                                          ],id="queryicon-dataformat",),                            
+#                                   html.Div(id='second-selection'),
+#                                   html.Div([ html.P("study name or ID for each trial (numeric or string)",
+#                                               id='studlb-instruction',),
+#                                               html.A(
+#                                                html.Img(
+#                                                  src="/assets/icons/query.png",
+#                                                  style={
+#                                                   "width": "12px",
+#                                                   "margin-top": "0px",
+#                                                   "border-radius": "0px",
+#                                                   "float":"right",},)),
+#                                                          ],style={'display': 'none'},id="queryicon-studlb",),
+#                                    html.Div([ html.P("study-level year of publication (numeric)",
+#                                               id='year-instruction',),
+#                                               html.A(
+#                                                html.Img(
+#                                                  src="/assets/icons/query.png",
+#                                                  style={
+#                                                   "width": "12px",
+#                                                   "margin-top": "0px",
+#                                                   "border-radius": "0px",
+#                                                   "float":"right",},)),
+#                                                          ],style={'display': 'none'},id="queryicon-year",),
+#                                    html.Div([ html.P("should be encoded in your data file as either {1,2,3}, {l,m,h} or {L,M,H}",
+#                                               id='rob-instruction',),
+#                                               html.A(
+#                                                html.Img(
+#                                                  src="/assets/icons/query.png",
+#                                                  style={
+#                                                   "width": "12px",
+#                                                   "margin-top": "0px",
+#                                                   "border-radius": "0px",
+#                                                   "float":"right",},)),
+#                                                          ],style={'display': 'none'},id="queryicon-rob",),
+#                                   html.Div(id='third-selection'),
+#                                   ]),
 
        
 
-    dbc.ModalFooter([dbc.Col("Note:   the “Upload” button is activated only once all data selection fields are filled ",
-                               style={'display': 'block',
-                                       'color':'white',
-                                       'left':'-60px'}),
-                     dbc.Button("Upload", id="upload_modal_data", className="ml-auto", disabled=True), 
-                     ],)
-                  ], 
-                  id="modal_data", centered=False, style={'background-color':'#40515e',"max-width": "none", "width": "50%"})
+#     dbc.ModalFooter([dbc.Col("Note:   the “Upload” button is activated only once all data selection fields are filled ",
+#                                style={'display': 'block',
+#                                        'color':'white',
+#                                        'left':'-60px'}),
+#                      dbc.Button("Upload", id="upload_modal_data", className="ml-auto", disabled=True), 
+#                      ],)
+#                   ], 
+#                   id="modal_data", centered=False, style={'background-color':'#40515e',"max-width": "none", "width": "50%"})
 
 
 modal_checks = dbc.Modal(is_open=False, children=[
@@ -330,8 +330,11 @@ modal_league_table = dbc.Modal([
                                       ], style={'width': '100%', "max-width": "none"}), # Closes Header
                      dbc.ModalBody([html.Div(id='league-expand-body'),
                                     html.Div(id='modal_league_table_legend',
-                                             style={'float': 'right',
-                                             'padding': '5px 5px 5px 5px'}),
+                                             style={
+                                                 'display': 'flex',
+                                                 'width':'100%',
+                                                 'justify-content': 'end',
+                                                 'padding': '5px 5px 5px 5px'}),
                                     html.Br(),
                                     html.Div(id='modal_league_table_data')
                                   ]),

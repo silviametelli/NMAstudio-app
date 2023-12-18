@@ -275,14 +275,14 @@ def __second_options(search_value_format, search_value_outcome1, search_value_ou
 
 def __selectbox1_options(search_value_format, contents, filename):
 
-    if search_value_format is None: return None, {'display':'none', 'justify-content': 'center'}
+    if search_value_format is None: return None, {'display':'none', 'justify-content': 'center'}, {'display':'none', 'justify-content': 'center'}
     
 
     data_user = parse_contents(contents, filename)
 
     options_var = [{'label': '{}'.format(col, col), 'value': col} for col in data_user.columns]
 
-    if search_value_format is None: return None, {'display':'none', 'justify-content': 'center'}
+    if search_value_format is None: return None, {'display':'none', 'justify-content': 'center'}, {'display':'none', 'justify-content': 'center'}
     col_vars = [[]] 
     if search_value_format == 'long':
         col_vars[0] = ['study ID', 'treat', 'rob', 'year']
@@ -321,7 +321,7 @@ def __selectbox1_options(search_value_format, contents, filename):
         ])], className='upload_second_select')
 
 
-    return selectors_ef, {'display':'grid', 'justify-content': 'center'}
+    return selectors_ef, {'display':'grid', 'justify-content': 'center'}, {'display':'grid', 'justify-content': 'center'}
 
 
 def __outcomes_type(number_outcomes, click):
@@ -334,12 +334,17 @@ def __outcomes_type(number_outcomes, click):
                         [
                             html.P(f"Select the type of outcome {i+1}:", className="selcect_title"),
                             html.Div(
-                                dcc.RadioItems(
+                                [dcc.RadioItems(
                                     id={'type': 'outcometype', 'index': f"{i}"},
                                     options=options_outcomes,
                                     inline=True,
                                     className='upload_radio'
-                                )
+                                ),
+                                dcc.Input(id={'type': 'nameoutcomes', 'index': f"{i}"}, 
+                                          placeholder="outcome name",
+                                          className='upload_radio', 
+                                          style={'width':'150px'})
+                                ]
                             )
                         ],
                         style={
@@ -355,15 +360,15 @@ def __outcomes_type(number_outcomes, click):
             ) for i in range(number_outcomes)
         ]
         
-        return outcomes_type_selection, {'display': 'grid', 'justify-content': 'center'}
+        return outcomes_type_selection, {'display': 'grid', 'justify-content': 'center'}, {'display': 'grid', 'justify-content': 'center'}
     
-    return None, {'display': 'none', 'justify-content': 'center'}
+    return None, {'display': 'none', 'justify-content': 'center'}, {'display': 'none', 'justify-content': 'center'}
 
 
 
 def __variable_selection(number_outcomes,outcometype, data_format, contents, filename):
 
-    if not outcometype or not all(outcometype): return None, {'display':'none', 'justify-content': 'center'}
+    if not outcometype or not all(outcometype): return None, {'display':'none', 'justify-content': 'center'}, {'display':'none', 'justify-content': 'center'}
 
     data_user = parse_contents(contents, filename)
     number_outcomes = int(number_outcomes)
@@ -458,20 +463,32 @@ def __variable_selection(number_outcomes,outcometype, data_format, contents, fil
         )
         ]),
         html.Br(),
-        dbc.Button("Next outcome", n_clicks=0, id={'type': 'outcomebutton', 'index': f'{i}'},disabled=True,
+        dbc.Row([
+                dbc.Button("Previous", n_clicks=0, id={'type': 'outcomeprevious', 'index': f'{i}'},disabled=True if i == 0 else False,
                                     style={'color': 'white',
                                             'background-color':'orange',
                                             'display': 'inline-block',
                                             'justify-self':'center',
                                             'border': 'unset',
-                                            'padding': '4px'})
+                                            'padding': '4px',
+                                            'width': '90px',
+                                            'margin': '10px'}),
+                dbc.Button("Next", n_clicks=0, id={'type': 'outcomebutton', 'index': f'{i}'},disabled=True,
+                                    style={'color': 'white',
+                                            'background-color':'orange',
+                                            'display': 'inline-block',
+                                            'justify-self':'center',
+                                            'border': 'unset',
+                                            'padding': '4px',
+                                            'width': '90px',
+                                            'margin': '10px'})], style={'justify-content': 'center'})
 
         ], className='upload_second_select', 
         style={'display':'grid' if i==0 else 'none'}, 
         id={'type': 'displayvariable', 'index': f'{i}'}) for i in range(number_outcomes)]
 
 
-    return selectors_ef, {'display':'grid', 'justify-content': 'center'}
+    return selectors_ef, {'display':'grid', 'justify-content': 'center'}, {'display':'grid', 'justify-content': 'center'}
 
 
 
@@ -499,7 +516,7 @@ def __effect_modifier_options(search_value_format,contents, filename):
                                             'grid-template-columns': '1fr 1fr 1fr', 
                                             'width': '400px', 'justify-content': 'center'}),
                     dcc.Checklist(id='no_effect_modifier',
-                                    options=[{'label':'No effect modifires', 'value':'no'}], className="",
+                                    options=[{'label':'Skip', 'value':'no'}], className="",
                                     style={'display': 'grid','color': 'green', 'font-weight':'bold'})
                     ],
                                             style={'justify-content': 'center'}

@@ -4,7 +4,7 @@ from assets.cytoscape_styleesheeet import get_stylesheet
 
 def __generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                         dd_nclr, dd_eclr, custom_nd_clr, custom_edg_clr, label_size,treat_name,dd_nds, dd_egs,
-                        dwld_button, net_download_activation):
+                        dwld_button,dwld_button2, net_download_activation):
 
     nodes_color = (custom_nd_clr or DFLT_ND_CLR) if dd_nclr != 'Default' else DFLT_ND_CLR
     edges_color = (custom_edg_clr or None) if dd_eclr != 'Default' else None

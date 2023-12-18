@@ -6,7 +6,20 @@ tab_funnel = html.Div([dbc.Row([dbc.Col(html.P("Click on a node to choose refere
                                          style={'display': 'inline-block',
                                                 'verticalAlign':"top",
                                                 'font-size': '12px',
-                                                'margin-bottom': '-10px'}))
+                                                'margin-bottom': '-10px'})),
+                                dbc.Col(
+                                        [html.P(f"Select outcomes",className="selectbox", style={'display': 'inline-block', "text-align": 'right',
+                                                                                        'margin-left': '0px', 'font-size': '12px'}),
+                                        dcc.Dropdown(id='funnel_outcome_select', searchable=True, placeholder="...", className="box",
+                                                        clearable=False, value=0,
+                                                        style={'width': '80px',  # 'height': '30px',
+                                                            "height": '30px',
+                                                            'vertical-align': 'middle',
+                                                            "font-family": "sans-serif",
+                                                            'margin-bottom': '2px',
+                                                            'display': 'inline-block',
+                                                            'color': 'black',
+                                                            'font-size': '10px','margin-left':'-7px'})], style={'display': 'flex', 'align-items': 'center'}),
                                 ]),
               #       dbc.Col([
               #                html.P(
@@ -37,20 +50,7 @@ tab_funnel = html.Div([dbc.Row([dbc.Col(html.P("Click on a node to choose refere
               #                      'display': 'flex', 'margin-left': '70%',
               #                      'font-size': '0.8em', 'margin-top': '-5.5%'},
               #                ),
-              dbc.Col(dbc.Row(
-              [html.P(f"Select outcomes",className="selectbox", style={'display': 'inline-block', "text-align": 'right',
-                                                               'margin-left': '0px', 'font-size': '12px'}),
-              dcc.Dropdown(id='funnel_outcome_select', searchable=True, placeholder="...", className="box",
-                            clearable=False, value=0,
-                            style={'width': '80px',  # 'height': '30px',
-                                   "height": '30px',
-                                   'vertical-align': 'middle',
-                                   "font-family": "sans-serif",
-                                   'margin-bottom': '2px',
-                                   'display': 'inline-block',
-                                   'color': 'black',
-                                   'font-size': '10px','margin-left':'-7px'})]),
-                                   style={'margin-bottom': '0px'}),
+              
                        dcc.Loading(
                            dcc.Graph(
                                id='funnel-fig',

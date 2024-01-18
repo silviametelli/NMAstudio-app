@@ -105,10 +105,10 @@ file_upload_controls2 = [
 
 
 
-model_transitivity = dbc.Modal([dbc.ModalHeader("Transitivity Check", style={'width':'1000px'}),
-                                dbc.ModalBody(children=[tab_trstvty], style={'width':'1000px','display':'grid', 'justify-content':'center'}),
-                                dbc.ModalFooter([dbc.Button('Go to the results', id='trans_to_results')],style={'width':'1000px'})
-                                ], is_open=False , id='modal_transitivity', contentClassName="transitivity_class")
+# model_transitivity = dbc.Modal([dbc.ModalHeader("Transitivity Check", style={'width':'1000px'}),
+#                                 dbc.ModalBody(children=[tab_trstvty], style={'width':'1000px','display':'grid', 'justify-content':'center'}),
+#                                 dbc.ModalFooter([dbc.Button('Go to the results', id='trans_to_results')],style={'width':'1000px'})
+#                                 ], is_open=False , id='modal_transitivity', contentClassName="transitivity_class")
 
 # modal_data = dbc.Modal([dbc.ModalHeader("Data selection"),
 #                         dbc.ModalBody([

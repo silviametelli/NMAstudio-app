@@ -154,10 +154,23 @@ def real_homelayout():
                                                     'padding': '4px'}), style={"display": 'grid'}),
                                     html.Br(), html.Br(),html.Br(),
 
+                                    dcc.Markdown('Any questions?',
+                                    className="markdown_style_main",
+                                    style={
+                                        "font-size": '25px',
+                                        'text-align': 'center',
+                                        'color':'#5c7780',
+                                            }),
+                                    html.Br(),
+                                    html.Span('Please get in touch at tianqi.yu@etu.u-paris.fr', style={ 'justify-self': 'center'}),
+                                    html.Br(), html.Br(),html.Br(),
+                                     
                                     html.Footer([html.P('Copyright © 2020. All rights reserved.', 
                                          style={'color':'white', 'margin-left':'45px'}),
                                          dcc.Markdown('This project has received funding from the EU H2020 research and innovation programme under the Marie Skłodowska-Curie grant agreement No 101031840 & the French National Research Agency under the project ANR-22-CE36-0013-01',
                                          className="markdown_style",style={"color": "white", "font-weight": "330", "font-size":"14px"}),
+                                         dcc.Markdown('Project team members: \nAnna Chaimani  Silvia Metelli  Tianqi Yu',
+                                         className="markdown_style",style={"color": "white", "font-weight": "330", "font-size":"14px", 'white-space': 'pre'}),
 
                                      dbc.Col([
                                                 html.Img(src=UP_LOGO, height="57px"),
@@ -177,8 +190,7 @@ def real_homelayout():
 def Homepage():
     return html.Div([Navbar(), home_layout(), upload_data()], id='')
 
-
-
+OPTIONS_results = [{'label': col, 'value': idx} for idx, col in enumerate(['Data&Transitivity', 'Forest plot', 'League table', 'Consistency&reporting bias', 'ranking'])]
 def home_layout():
     return html.Div(id='result_page',className="app__container", children=STORAGE+[
                         html.Div(dataupload_error, style={'vertical-align': "top"}),
@@ -187,6 +199,37 @@ def home_layout():
                         html.Div(R_errors_pair, style={'vertical-align': "top"}),
                         html.Div(R_errors_league, style={'vertical-align': "top"}),
                         html.Div(R_errors_funnel, style={'vertical-align': "top"}),
+                        html.Br(), html.Br(),
+                        dbc.Row([
+                                html.Span('Select results to display:', style={'justify-self':'center','align-self': 'center', 'font-size': 'medium'}),
+                                dcc.Dropdown(placeholder="...", options=OPTIONS_results, value = 0,
+                                            style={'display': 'grid', 'justify-items': 'center', 'width':'100px'},
+                                            id='result_selected'
+                                                 ),
+                                html.Span('or', style={'justify-self':'center','align-self': 'center'}),
+                                html.Button(
+                                        "Upload your data",
+                                        "test_upload",
+                                        n_clicks=0,
+                                        ),
+                                html.Div([html.A(html.Img(src="/assets/icons/reset.png",
+                                                     style={'width': '40px', 'filter': 'invert()'}), ##DIV RESET  BUTTON
+                                  id="reset_project", style={'display': 'grid', 'justify-items': 'center'}),
+                                     dbc.Tooltip("Reset project - uploaded data will be lost",
+                                                 style={'color': 'black', 'font-size': 9,
+                                                        # "margin-left": "5px",
+                                                        'letter-spacing': '0.2rem'},
+                                                 placement='right',
+                                                 target='reset_project'),
+                                      ], style={"display":'inline-block', 'margin-left':'20px',
+                                                'margin-bottom':'2px'}),
+
+                                ], style={"display": 'grid', 'width':'700px', 'justify-self':'center','grid-template-columns': '0.7fr 0.2fr 0.2fr 0.5fr 0.5fr'}),
+
+                        html.Br(), html.Br(),
+                        html.Hr(style = {'size' : '50', 'borderColor':'orange','borderHeight': "10vh", "width": "100%",'border-top': '3px solid #E1E1E1'}),
+                        html.Br(), html.Br(),
+
         html.Div(id='main_page',
                         ### LEFT HALF OF THE PAGE
                          children=[
@@ -285,25 +328,64 @@ def home_layout():
                                        },
                                 layout={'name':'grid','animate': False, 'fit':True },
                                 stylesheet=get_stylesheet())
-                        # html.P('Copyright © 2020. All rights reserved.', className='__footer'),
-                    #     dbc.Col([
-                    #              html.Img(src=UP_LOGO, height="57px"),
-                    #              html.Img(src=CRESS_LOGO, height="57px"), 
-                    #              html.Img(src=inserm_logo, height="57px"),
-                    #              ], style={'padding-right':'1%','padding-top':'0.3%',
-                    #                        'padding-bottom':'0.3%','border-top':'solid',
-                    #                        'display': 'flex','margin-left':'10px',
-                    #                        'justify-content': 'space-between'},
-                    # width="auto"),
-
-                        # html.P('Copyright © 2020. All rights reserved.', className='__footer'),
                                 ],
-                          className="one-half column",
+                          className="one-half column", id='one-half-1',
                   ),
                     ### RIGHT HALF OF THE PAGE
-                     html.Div(className ="one-half-2 column", style={'margin-top': '20px'},
+                     html.Div(id='one-half-2', className ="one-half-2 column",
                        children=[html.Div(  # Information box
-                                  [html.Div([dbc.Row([
+                                  [
+                                html.Div(
+                                        dbc.Col([
+                                         html.A(
+                                                html.Img(
+                                                    src="/assets/icons/expand.png",
+                                                    style={
+                                                        "width": "34px",
+                                                        "margin-top": "15px",
+                                                        "border-radius": "1px",
+                                                    },
+                                                ),
+                                                id="data-expand",
+                                                style={"display": "inline-block", "margin-left": "10px"},
+                                            ),
+                                            dbc.Tooltip(
+                                                "expand window",
+                                                style={
+                                                    "color": "black",
+                                                    "font-size": 9,
+                                                    "margin-left": "10px",
+                                                    "letter-spacing": "0.3rem",
+                                                },
+                                                placement="right",
+                                                target="data-expand",
+                                            ),
+                                            html.A(
+                                                html.Img(
+                                                    src="/assets/icons/zoomout.png",
+                                                    style={
+                                                        "width": "34px",
+                                                        "margin-top": "15px",
+                                                        "border-radius": "1px",
+                                                    },
+                                                ),
+                                                id="data-zoomout",
+                                                style={"display": "none", "margin-left": "10px"},
+                                            ),
+                                            dbc.Tooltip(
+                                                "Zoom out window",
+                                                style={
+                                                    "color": "black",
+                                                    "font-size": 9,
+                                                    "margin-left": "10px",
+                                                    "letter-spacing": "0.3rem",
+                                                },
+                                                placement="right",
+                                                target="data-zoomout",
+                                            )], style={'display':'inline-block'}
+                                     ),
+                           ),   
+                                  html.Div([dbc.Row([
                                                   html.H6("CLICK + SHIFT to select multiple network items", className="box__title2",
                                                          ),
                                                   ]),
@@ -313,25 +395,41 @@ def home_layout():
                                         )], className="info__container",style={'background-color':'#9fb5bd'}),
                            # html.Div([html.Button('Reset Project', id='reset_project', n_clicks=0, className="reset",
                            #                       style={"font-type": "sans-serif"}),
-                           html.Div([html.A(html.Img(src="/assets/icons/reset.png",
-                                                     style={'width': '40px', 'filter': 'invert()',
-                                                            "margin-bottom":"15px", "margin-left":"10px"}), ##DIV RESET  BUTTON
-                                  id="reset_project", style={'display': 'inline-block'}),
-                                     dbc.Tooltip("Reset project - uploaded data will be lost",
-                                                 style={'color': 'black', 'font-size': 9,
-                                                        "margin-left": "5px",
-                                                        'letter-spacing': '0.2rem'},
-                                                 placement='right',
-                                                 target='reset_project'),
-                                      ], style={"display":'inline-block', 'margin-left':'20px',
-                                                'margin-bottom':'2px'}),
+                        #    html.Div([html.A(html.Img(src="/assets/icons/reset.png",
+                        #                              style={'width': '40px', 'filter': 'invert()',
+                        #                                     "margin-bottom":"15px", "margin-left":"10px"}), ##DIV RESET  BUTTON
+                        #           id="reset_project", style={'display': 'inline-block'}),
+                        #              dbc.Tooltip("Reset project - uploaded data will be lost",
+                        #                          style={'color': 'black', 'font-size': 9,
+                        #                                 "margin-left": "5px",
+                        #                                 'letter-spacing': '0.2rem'},
+                        #                          placement='right',
+                        #                          target='reset_project'),
+                        #               ], style={"display":'inline-block', 'margin-left':'20px',
+                        #                         'margin-bottom':'2px'}),
+                        
+                           html.Div(
+                                dbc.Col(
+                                        [html.P(f"Select outcome",className="selectbox", style={'display': 'inline-block', "text-align": 'right',
+                                                                                        'margin-left': '0px', 'font-size': '12px'}),
+                                        dcc.Dropdown(id='_outcome_select', searchable=True, placeholder="...", className="box",
+                                                        clearable=False, value=0,
+                                                        style={'width': '80px',  # 'height': '30px',
+                                                            "height": '30px',
+                                                            'vertical-align': 'middle',
+                                                            "font-family": "sans-serif",
+                                                            'margin-bottom': '2px',
+                                                            'display': 'inline-block',
+                                                            'color': 'black',
+                                                            'font-size': '10px','margin-left':'-7px'})], style={'display': 'flex', 'align-items': 'center'}),
+                                    style={'display':'inline-block', 'margin-left': '20px'}),
 
                 html.Div(
-                    id='all-control-tabs',style={'background-color':'#e6e9eb'},
+                    id='all-control-tabs',style={'background-color':'white'},
                     children=[
-                        dcc.Tabs(id='', persistence=True, children=[
+                        dcc.Tabs(id='results_tabs', persistence=True, children=[
 
-                            dcc.Tab(style={'color':'grey','display': 'flex', 'justify-content':'center', 'align-items':'center'},
+                            dcc.Tab(id='data_tab', value= 'data_tab',style={'color':'grey','display': 'none', 'justify-content':'center', 'align-items':'center'},
                                     selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
                                                     'align-items': 'center'},
                                     label='Data',
@@ -349,35 +447,115 @@ def home_layout():
                             #         children=html.Div(className='control-tab', children=[tab_trstvty])
                             #        ),
 
-                            dcc.Tab(value='mainTabForest',
-                                    style={'color':'grey', 'display': 'flex', 'justify-content':'center', 'align-items':'center'},
+                            dcc.Tab(id='forest_tab',value= 'forest_tab',
+                                    style={'color':'grey', 'display': 'none', 'justify-content':'center', 'align-items':'center'},
                                     selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
                                                     'align-items': 'center'},
                                     label='Forest plots', children=html.Div(className='control-tab', children=[tab_forests])
                             ),
-                            dcc.Tab(style={'color':'grey', 'display': 'flex', 'justify-content':'center', 'align-items':'center'},
+                            dcc.Tab(id='league_tab',value= 'league_tab',style={'color':'grey', 'display': 'none', 'justify-content':'center', 'align-items':'center'},
                                     selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
                                                     'align-items': 'center'},
                                     label='League Table',
                                     children=html.Div(className='control-tab', children=[tab_league])
                             ),
-                            dcc.Tab(style={'color': 'grey', 'display': 'flex', 'justify-content': 'center', 'align-items': 'center'},
+                            dcc.Tab(id='consis_tab',value= 'consis_tab',style={'color': 'grey', 'display': 'none', 'justify-content': 'center', 'align-items': 'center'},
                                     selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
                                                     'align-items': 'center'},
                                     label='Consistency checks',
                                     children=html.Div(className='control-tab', children=[tab_consistency()])
                                     ),
-                            dcc.Tab(style={'color':'grey','display': 'flex', 'justify-content':'center', 'align-items':'center'},
-                                    selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
-                                                    'align-items': 'center'},
-                                    label='Funnel plots',
-                                    children=html.Div(className='control-tab', children=[tab_funnel])
-                            ),
-                            dcc.Tab(style={'color':'grey', 'display': 'flex', 'justify-content':'center', 'align-items':'center'},
+                        #     dcc.Tab(style={'color':'grey','display': 'flex', 'justify-content':'center', 'align-items':'center'},
+                        #             selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
+                        #                             'align-items': 'center'},
+                        #             label='Funnel plots',
+                        #             children=html.Div(className='control-tab', children=[tab_funnel])
+                        #     ),
+                            dcc.Tab(id='ranking_tab',value= 'ranking_tab',style={'color':'grey', 'display': 'none', 'justify-content':'center', 'align-items':'center'},
                                     selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
                                                     'align-items': 'center'},
                                     label='Ranking plots',
                                     children=html.Div(className='control-tab', children=[tab_ranking])
+                            ),
+
+
+                        ],  colors={ "border": 'grey', "primary": "grey", "background": 'white',
+                                #     "background": '#e8eaeb',
+                                   }
+                        ) #change border to CLR_BCKGRND to remove tabs borders
+                    ]),
+
+                ]),
+                html.Br(),
+            html.Div(id='one-half-3',className ="one-half-3 column", 
+                       children=[
+
+                html.Div(
+                    id='all-control-tabs2',style={'background-color':'white'},
+                    children=[
+                        dbc.Col([
+                                html.A(
+                                html.Img(
+                                        src="/assets/icons/expand.png",
+                                        style={
+                                        "width": "34px",
+                                        "margin-top": "15px",
+                                        "border-radius": "1px",
+                                        },
+                                ),
+                                id="data-expand1",
+                                style={"display": "none"},
+                                ),
+                                dbc.Tooltip(
+                                "expand window",
+                                style={
+                                        "color": "black",
+                                        "font-size": 9,
+                                        "margin-left": "10px",
+                                        "letter-spacing": "0.3rem",
+                                },
+                                placement="right",
+                                target="data-expand1",
+                                ),
+                                html.A(
+                                html.Img(
+                                        src="/assets/icons/zoomout.png",
+                                        style={
+                                        "width": "34px",
+                                        "margin-top": "15px",
+                                        "border-radius": "1px",
+                                        },
+                                ),
+                                id="data-zoomout1",
+                                style={"display": "inline-block"},
+                                ),
+                                dbc.Tooltip(
+                                "Zoom out window",
+                                style={
+                                        "color": "black",
+                                        "font-size": 9,
+                                        "margin-left": "10px",
+                                        "letter-spacing": "0.3rem",
+                                },
+                                placement="right",
+                                target="data-zoomout1",
+                                )], style={'display':'inline-block'}
+                                     ),
+                        dcc.Tabs(id='results_tabs2', persistence=True, children=[
+                            dcc.Tab(id='trans_tab', value= 'trans_tab', style={'color':'grey', 'display': 'none', 'justify-content':'center', 'align-items':'center'},
+                                    selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
+                                                    'align-items': 'center'},
+                                    label='Transitivity checks',
+                                    children=html.Div(className='control-tab', children=[tab_trstvty])
+                                   ),
+                            dcc.Tab(style={'color':'grey', 'display': 'none'},
+                                    label=''
+                                   ),
+                            dcc.Tab(id='funnel_tab',value= 'funnel_tab',style={'color':'grey','display': 'none', 'justify-content':'center', 'align-items':'center'},
+                                    selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
+                                                    'align-items': 'center'},
+                                    label='Funnel plots',
+                                    children=html.Div(className='control-tab', children=[tab_funnel])
                             ),
 
 
@@ -386,7 +564,7 @@ def home_layout():
                         ) #change border to CLR_BCKGRND to remove tabs borders
                     ]),
 
-                ])
+                ])    
             ]),
           ],
     )
@@ -521,8 +699,8 @@ def upload_data():
                         'border': 'unset',
                         'padding': '4px'}), style={"display": 'none'}, id='run_button'),
         html.Br(),html.Br(),
-        html.Div(model_transitivity,
-                 style={'display': 'circle', 'justify-content': 'center'}),
+        # html.Div(model_transitivity,
+        #          style={'display': 'circle', 'justify-content': 'center'}),
         
     ],)
 

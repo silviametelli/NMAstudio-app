@@ -1,12 +1,14 @@
 import dash_core_components as dcc, dash_html_components as html, dash_bootstrap_components as dbc
 from assets.storage import OPTIONS_VAR
 
+OPTIONS = [{'label': '{}'.format(col), 'value': col} for col in ['age', 'male', 'bmi', 'weight']]
+
 tab_trstvty = html.Div([html.Div([dbc.Row([html.P("Choose effect modifier:", className="graph__title2",
                                          style={'display': 'inline-block',
                                                 'verticalAlign':"top",
                                                 'font-size': '12px',
                                                 'margin-bottom': '-10px'}),
-                                  dcc.Dropdown(id='dropdown-effectmod', #options=OPTIONS_VAR,
+                                  dcc.Dropdown(id='dropdown-effectmod', options=OPTIONS,
                                                clearable=True, placeholder="",
                                                className="tapEdgeData-fig-class",
                                                style={'width': '150px', 'height': '30px',
@@ -16,7 +18,7 @@ tab_trstvty = html.Div([html.Div([dbc.Row([html.P("Choose effect modifier:", cla
                 html.Div([dcc.Graph(id='tapEdgeData-fig',
                      style={'height': '98%',
                          #  'max-height': 'calc(51vw)',
-                           'width': '100%',
+                             'width': '-webkit-fill-available'
                          #   'max-width': 'calc(52vw)'
                            },
                                   config={'editable': True,
@@ -40,7 +42,8 @@ tab_trstvty = html.Div([html.Div([dbc.Row([html.P("Choose effect modifier:", cla
                                                                },
                                           'displaylogo': False})
                     ], style={'margin-top':'-30px', 
-                              'width':'1000px', 'display':'grid',
-                              'justify-content':'center',
-                              'height':'500px'
+                              # 'width':'1000px', 
+                            #   'display':'grid',
+                            #   'justify-content':'center',
+                              'height':'500px',
                               })])

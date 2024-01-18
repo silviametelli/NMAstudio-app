@@ -110,7 +110,7 @@ def display_page(pathname):
     elif pathname == '/results':  return HOMEPAGE
     elif pathname == '/skt':  return SKTPAGE
     # elif pathname == '/doc': return doc_layout
-    elif pathname == '/news': return news_layout
+    # elif pathname == '/news': return news_layout
 
     else:  return HOMEPAGE
 
@@ -128,7 +128,7 @@ def display_page(pathname):
               Output('upload_page', 'style'),],
               [Input('test_upload', 'n_clicks_timestamp'),
                Input('back_plot', 'n_clicks_timestamp'),
-               Input('trans_to_results','n_clicks_timestamp')
+               Input('submit_modal_data','n_clicks_timestamp')
                ]
                )
 def result_page(click, click_back, click_trans):
@@ -138,7 +138,7 @@ def result_page(click, click_back, click_trans):
     if ctx.triggered_id == "test_upload":
         return {'display':'none'}, {'display':'grid'}
     
-    if ctx.triggered_id == "trans_to_results":
+    if ctx.triggered_id == "submit_modal_data":
         return {'display':'grid'}, {'display':'none'}
 
     return no_update, no_update
@@ -386,18 +386,47 @@ def is_data_file_uploaded(filename):
 
 ### -------------------------- ALL CYTOSCAPE CALLBACKS  ------------------------------- ###
 
-@app.callback(Output("forest_outcome_select", "options"),
-              Output("forestpaire_outcome_select", "options"),
-              Output("league_outcome_select", "options"),
-              Output("consistency_outcome_select", "options"),
-              Output("funnel_outcome_select", "options"),
+# @app.callback(Output("forest_outcome_select", "options"),
+#               Output("forestpaire_outcome_select", "options"),
+#               Output("league_outcome_select", "options"),
+#               Output("consistency_outcome_select", "options"),
+#               Output("funnel_outcome_select", "options"),
+#               Output("biforest_outcome_select1", "options"),
+#               Output("biforest_outcome_select2", "options"),
+#               Output("ranking_outcome_select1", "options"),
+#               Output("ranking_outcome_select2", "options"),
+#               Input("number-outcomes", "value"),
+#               Input({'type': 'nameoutcomes', 'index': ALL}, "value"),
+#               State("forest_outcome_select", "options")
+#              )
+
+# def update_options(number_outcomes, nameoutcomes, options_var):
+#     out_names = ['PASI90',"Death"]
+#     if not nameoutcomes or not all(nameoutcomes):
+#         if number_outcomes:
+#             number_outcomes = int(number_outcomes)
+#             options_var = [{'label': f'outcome{i+1}', 'value': i} for i in range(number_outcomes)]
+#             return (options_var,) * 9
+#         options_var = [{'label': f'{out_names[i]}', 'value': i} for i in range(2)]
+#         return (options_var,) * 9
+    
+#     if number_outcomes:
+#         number_outcomes = int(number_outcomes)
+#         options_var = [{'label': f'{nameoutcomes[i]}', 'value': i} for i in range(number_outcomes)]
+#         return (options_var,) * 9
+    
+#     options_var = [{'label': f'{out_names[i]}', 'value': i} for i in range(2)]
+#     return (options_var,) * 9
+
+@app.callback(
+              Output("_outcome_select", "options"),
               Output("biforest_outcome_select1", "options"),
               Output("biforest_outcome_select2", "options"),
               Output("ranking_outcome_select1", "options"),
               Output("ranking_outcome_select2", "options"),
               Input("number-outcomes", "value"),
               Input({'type': 'nameoutcomes', 'index': ALL}, "value"),
-              State("forest_outcome_select", "options")
+              State("_outcome_select", "options")
              )
 
 def update_options(number_outcomes, nameoutcomes, options_var):
@@ -406,17 +435,17 @@ def update_options(number_outcomes, nameoutcomes, options_var):
         if number_outcomes:
             number_outcomes = int(number_outcomes)
             options_var = [{'label': f'outcome{i+1}', 'value': i} for i in range(number_outcomes)]
-            return (options_var,) * 9
+            return (options_var,) * 5
         options_var = [{'label': f'{out_names[i]}', 'value': i} for i in range(2)]
-        return (options_var,) * 9
+        return (options_var,) * 5
     
     if number_outcomes:
         number_outcomes = int(number_outcomes)
         options_var = [{'label': f'{nameoutcomes[i]}', 'value': i} for i in range(number_outcomes)]
-        return (options_var,) * 9
+        return (options_var,) * 5
     
     options_var = [{'label': f'{out_names[i]}', 'value': i} for i in range(2)]
-    return (options_var,) * 9
+    return (options_var,) * 5
 
 
 ### --- update graph layout with dropdown: graph layout --- ###
@@ -524,20 +553,60 @@ def get_image(net_download_activation, export):
 #     return elements, elements
 
 
+# @app.callback([Output('cytoscape', 'elements'),
+#                Output('modal-cytoscape', 'elements'),],
+#               [
+#                Input('net_data_STORAGE', 'data'),
+#                Input('slider-year', 'value'),
+#                Input('forest_outcome_select', 'value'),
+#                Input('forestpaire_outcome_select', 'value'),
+#                Input('consistency_outcome_select', 'value'),
+#                Input('funnel_outcome_select', 'value'),
+#                Input("league_outcome_select", "value"),
+#                Input('reset_project', 'n_clicks'),
+#             #    Input('node_size_input', 'value'),
+#                ])
+# def update_layout_year_slider(net_data, slider_year, out_nma, out_pair, out_cons, out_fun, out_league,reset_btn,):
+    
+#     YEARS_DEFAULT = np.array([1963, 1990, 1997, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010,
+#                               2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021])
+#     years_dft_max = YEARS_DEFAULT.max()
+
+
+#     reset_btn_triggered = False
+#     triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
+#     if 'reset_project.n_clicks' in triggered: reset_btn_triggered = True
+
+#     try:
+#         net_datajs = pd.read_json(net_data[0], orient='split')
+#     except:
+#         net_datajs = pd.read_json(net_data[0], orient='split', encoding = 'utf-8')
+    
+#     outcome = out_nma or out_pair or out_cons or out_fun or out_league
+#     if outcome:
+#         outcome = int(outcome)
+#         net_data = pd.read_json(net_data[0], orient='split')
+#         net_datajs2 = net_data[net_data.year <= slider_year] if not reset_btn_triggered else net_data[net_data.year <= years_dft_max]
+#         elements = get_network_new(df=net_datajs2, i = outcome )
+
+#     else:
+#         net_datajs = net_datajs[net_datajs.year <= slider_year] if not reset_btn_triggered else net_datajs[net_datajs.year <= years_dft_max]
+#         elements = get_network_new(df=net_datajs,i = 0)
+
+#     return elements, elements
+
+
+
 @app.callback([Output('cytoscape', 'elements'),
                Output('modal-cytoscape', 'elements'),],
               [
                Input('net_data_STORAGE', 'data'),
                Input('slider-year', 'value'),
-               Input('forest_outcome_select', 'value'),
-               Input('forestpaire_outcome_select', 'value'),
-               Input('consistency_outcome_select', 'value'),
-               Input('funnel_outcome_select', 'value'),
-               Input("league_outcome_select", "value"),
+               Input('_outcome_select', 'value'),
                Input('reset_project', 'n_clicks'),
             #    Input('node_size_input', 'value'),
                ])
-def update_layout_year_slider(net_data, slider_year, out_nma, out_pair, out_cons, out_fun, out_league,reset_btn,):
+def update_layout_year_slider(net_data, slider_year, out_fun,reset_btn):
     
     YEARS_DEFAULT = np.array([1963, 1990, 1997, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010,
                               2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021])
@@ -553,7 +622,7 @@ def update_layout_year_slider(net_data, slider_year, out_nma, out_pair, out_cons
     except:
         net_datajs = pd.read_json(net_data[0], orient='split', encoding = 'utf-8')
     
-    outcome = out_nma or out_pair or out_cons or out_fun or out_league
+    outcome = out_fun 
     if outcome:
         outcome = int(outcome)
         net_data = pd.read_json(net_data[0], orient='split')
@@ -640,7 +709,7 @@ def TapEdgeData(edge):
 @app.callback(Output('tapNodeData-fig', 'figure'),
               Output('tapNodeData-fig', 'style'),
               [Input('cytoscape', 'selectedNodeData'),
-               Input('forest_outcome_select', 'value'),
+               Input('_outcome_select', 'value'),
                Input("forest_data_STORAGE", "data"),
                Input('tapNodeData-fig', 'style')
                ],
@@ -668,7 +737,7 @@ def TapNodeData_fig_bidim(data, forest_data_store, out_idx1, out_idx2):
 @app.callback([Output('tapEdgeData-fig-pairwise', 'figure'),
               Output('tapEdgeData-fig-pairwise', 'style')],
               [Input('cytoscape', 'selectedEdgeData'),
-               Input("forestpaire_outcome_select", "value"),
+               Input("_outcome_select", "value"),
                Input('forest_data_prws_STORAGE', 'data'),
                Input('tapEdgeData-fig-pairwise', 'style')],
               State("net_data_STORAGE", "data")
@@ -798,7 +867,7 @@ def update_boxplot(value, edges, net_data):
                Input("forest_data_STORAGE", "data"),
                Input('reset_project', 'n_clicks'),
             #    Input('ranking_data_STORAGE','data'),
-               Input('league_outcome_select','value'),
+               Input('_outcome_select','value'),
                 ],
                State('net_data_STORAGE', 'data'),
               prevent_initial_call=True)
@@ -834,7 +903,7 @@ def update_output(slider_value, store_node,store_edge,net_data, toggle_cinema, t
                Output('consistency-table', 'data'),
                Output('consistency-table', 'columns')],
               [Input('cytoscape', 'selectedEdgeData'),
-               Input("consistency_outcome_select", "value"),
+               Input("_outcome_select", "value"),
                Input('net_split_data_STORAGE', 'data'),
                Input('consistency_data_STORAGE', 'data'),]
               )
@@ -892,7 +961,7 @@ def TapNodeData_info(data):
 ############ - Funnel plot  - ###############
 @app.callback(Output('funnel-fig', 'figure'),
               [Input('cytoscape', 'selectedNodeData'),
-               Input("funnel_outcome_select", "value"),
+               Input("_outcome_select", "value"),
                Input("funnel_data_STORAGE", "data")]
                )
 def Tap_funnelplot(node, outcome_idx, funnel_data):
@@ -1077,7 +1146,7 @@ def toggle_modal_edge(open_t, close):
 
 @app.callback([
             #   Output("modal_data", "is_open"),
-               Output("modal_transitivity", "is_open"),
+            #    Output("modal_transitivity", "is_open"),
                Output("modal_data_checks", "is_open"),
                Output("TEMP_net_data_STORAGE", "data"),
                Output("uploaded_datafile_to_disable_cinema", "data"),
@@ -1086,7 +1155,7 @@ def toggle_modal_edge(open_t, close):
                Output('dropdown-intervention', 'options'),
                ],
               [
-               Input('trans_to_results', 'n_clicks_timestamp'),
+            #    Input('trans_to_results', 'n_clicks_timestamp'),
                Input("upload_modal_data2", "n_clicks_timestamp"),
                Input('uploaded_datafile_to_disable_cinema','data'),
                Input("submit_modal_data", "n_clicks_timestamp")
@@ -1099,7 +1168,7 @@ def toggle_modal_edge(open_t, close):
                State({'type': 'effectselectors', 'index': ALL}, 'value'),
                State({'type': 'directionselectors', 'index': ALL}, 'value'),
                State({'type': 'variableselectors', 'index': ALL}, 'value'),
-               State("modal_transitivity", "is_open"),
+            #    State("modal_transitivity", "is_open"),
                State("modal_data_checks", "is_open"),
                State('datatable-upload2', 'contents'),
                State('datatable-upload2', 'filename'),
@@ -1107,21 +1176,21 @@ def toggle_modal_edge(open_t, close):
                ]
               )
 def data_trans( 
-             trans_to_results,
+            #  trans_to_results,
               upload, filename2,
               submit,
                search_value_format, overall_variables, number_outcomes, outcome_type,
-               effectselectors, directionselectors, variableselectors,modal_transitivity_is_open,
+               effectselectors, directionselectors, variableselectors,
                modal_data_checks_is_open,
                contents, filename, 
                TEMP_net_data_STORAGE
                ):
     return __data_trans( 
-         trans_to_results,
+        #  trans_to_results,
               upload,  filename2,
               submit,
                search_value_format, overall_variables, number_outcomes,outcome_type,
-               effectselectors, directionselectors, variableselectors,modal_transitivity_is_open,
+               effectselectors, directionselectors, variableselectors,
                modal_data_checks_is_open,
                contents, filename, 
                TEMP_net_data_STORAGE
@@ -1338,14 +1407,18 @@ def modal_SUBMIT_button(
 
 @app.callback(Output("dropdown-effectmod", "options"),
               [Input("effect_modifier_checkbox", "value"),
-              Input("no_effect_modifier", "value")]
+              Input("no_effect_modifier", "value")],
+              State("dropdown-effectmod", "options")
               )
-def update_dropdown_effect_mod(effect_modifier, no_effect_modifier):
+def update_dropdown_effect_mod(effect_modifier, no_effect_modifier, origin_effctm):
     if effect_modifier:
         options_modifier = [{'label': '{}'.format(modifier), 'value': modifier} 
                                 for modifier in effect_modifier]
         return options_modifier
-    return None
+    if no_effect_modifier:
+
+        return []
+    return origin_effctm
     
 
 ##################bugs
@@ -1539,28 +1612,80 @@ def modal_submit_button(para_check_data_DATA, para_anls_data_DATA, para_prw_data
 ### -------------------------------------------- EXPAND CALLBACKS ----------------------------------------------- ###
 
 # ----- data expand modal -----#
+# @app.callback(
+#     Output("modal_data_table", "is_open"),
+#     [Input("data-expand", "n_clicks"),
+#      Input("close-data-expanded", "n_clicks")],
+#     [State("modal_data_table", "is_open")],
+# )
+# def toggle_modal(open, close, is_open):
+#     if open or close:
+#         return not is_open
+#     return is_open
+
 @app.callback(
-    Output("modal_data_table", "is_open"),
-    [Input("data-expand", "n_clicks"),
-     Input("close-data-expanded", "n_clicks")],
-    [State("modal_data_table", "is_open")],
+    Output("one-half-1", "style"),
+    Output("one-half-2", "style"),
+    Output('data-expand', 'style'),
+    Output('data-zoomout', 'style'),
+    Output('data-expand1', 'style'),
+    Output('data-zoomout1', 'style'),
+    Output("one-half-3", "style"),
+    Output("cytoscape", "style"),
+    Input("data-expand", "n_clicks_timestamp"),
+    Input("data-zoomout", "n_clicks_timestamp"),
+    Input("data-expand1", "n_clicks_timestamp"),
+    Input("data-zoomout1", "n_clicks_timestamp")
 )
-def toggle_modal(open, close, is_open):
-    if open or close:
-        return not is_open
-    return is_open
+def toggle_modal(expand, zoomout, expand1, zoomout1):
+    style_display = {'display': 'block'}
+    style_no_display = {'display': 'none'}
+    style_expand_width = {'width': '93.4%', 'margin-left': '3.3%'}
+    style_width = {'width': '50.6%'}
+    style = {"display": "inline-block"}
+    style_no = {"display": "none"}
+    style_height = {'display': 'block','height': '100%'}
+    style_neplot={
+            'height': '70vh', 'width': '610px', 
+                'margin-top': '10px',
+                'margin-left': '-10px','margin-right': '-10px',  'z-index': '999',
+                'padding-left': '-10px'}
+    style_neplot_down={
+        'height': '140vh', 'width': '610px', 
+            'margin-top': '10px',
+            'margin-left': '-10px','margin-right': '-10px',  'z-index': '999',
+            'padding-left': '-10px'}
+
+    if not ctx.triggered_id:
+        return style_display, style_width, style, style_no, style_no, style,style_expand_width,style_neplot
+
+    triggered_button_id = ctx.triggered_id.split(".")[0]
+
+    if triggered_button_id =='data-expand':
+        return style_no_display, style_expand_width, style_no, style, style_no, style_no, style_expand_width,style_neplot
+    
+    elif triggered_button_id =='data-zoomout':
+        return style_display, style_width, style, style_no, style_no, style, style_expand_width,style_neplot
+    
+    elif triggered_button_id =='data-zoomout1':
+        return style_height, style_width, style, style_no, style, style_no, style_width, style_neplot_down 
+    elif triggered_button_id =='data-expand1':
+        return style_display, style_width, style, style_no, style_no, style, style_expand_width, style_neplot
+
+
+
 
 # ----- league expand modal -----#
-@app.callback(
-    Output("modal_league_table", "is_open"),
-    [Input("league-expand", "n_clicks"),
-     Input("close-league-expanded", "n_clicks")],
-    [State("modal_league_table", "is_open")],
-)
-def toggle_modal(open, close, is_open):
-    if open or close:
-        return not is_open
-    return is_open
+# @app.callback(
+#     Output("modal_league_table", "is_open"),
+#     [Input("league-expand", "n_clicks"),
+#      Input("close-league-expanded", "n_clicks")],
+#     [State("modal_league_table", "is_open")],
+# )
+# def toggle_modal(open, close, is_open):
+#     if open or close:
+#         return not is_open
+#     return is_open
 
 # ----- network expand modal -----# #TODO: this needs fixing: eg. node coloring and options not working in expand mode
 @app.callback(
@@ -1815,7 +1940,37 @@ def infor_overall(data):
     num_com_without = f"Number of comparisons without direct evidence: {n_com_without}"
 
     return [num_study],[num_treat],[num_com],[num_com_without]
-    
+
+###########################results selection###########################################
+@app.callback([
+              Output('data_tab', 'style'),
+              Output('trans_tab', 'style'),
+              Output('forest_tab', 'style'),
+              Output('league_tab', 'style'),
+              Output('consis_tab', 'style'),
+              Output('funnel_tab', 'style'),
+              Output('ranking_tab', 'style'),
+              Output('results_tabs', 'value'),
+              Output('results_tabs2', 'value')
+              ],
+              Input('result_selected', 'value'))
+def results_display(selected):
+    style_display = {'color':'grey','display': 'flex', 'justify-content':'center', 'align-items':'center'}
+    style_no_display = {'color':'grey','display': 'none', 'justify-content':'center', 'align-items':'center'}
+
+    if selected == 0:
+        return [style_display] * 2 + [style_no_display] * 5 +['data_tab']+['trans_tab']
+    if selected == 1:
+        return [style_no_display]*2 + [style_display] + [style_no_display]*4 +['forest_tab']+['']
+    if selected == 2:
+        return [style_no_display]*3 + [style_display] + [style_no_display]*3+['league_tab']+['']
+    if selected == 3:
+        return [style_no_display]*4 + [style_display]*2 + [style_no_display]+['consis_tab']+['funnel_tab']
+    if selected == 4:
+        return [style_no_display]*6 + [style_display]+['ranking_tab']+['']
+
+
+   
 
 ####################################################################
 ####################################################################

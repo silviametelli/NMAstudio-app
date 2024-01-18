@@ -28,9 +28,9 @@ def Navbar():
     # doc_button = dbc.NavItem(dbc.NavLink('DOCUMENTATION', href="/doc", external_link=True,
     #                                      style = {'color':'#white','font-family': "sans-serif ",
     #                                               'font-size': '13px' }))
-    news_button = dbc.NavItem(dbc.NavLink('NEWS', href="/news", external_link=True,
-                                         style = {'color':'#white','font-family': "sans-serif ",
-                                                  'font-size': '13px' }))
+    # news_button = dbc.NavItem(dbc.NavLink('NEWS', href="/news", external_link=True,
+    #                                      style = {'color':'#white','font-family': "sans-serif ",
+    #                                               'font-size': '13px' }))
 
 
     saveload_button = saveload_modal
@@ -53,7 +53,7 @@ def Navbar():
 
             html.Div([
                 dbc.Col(children=[dbc.Nav([realhome_button, home_button, skt_button,
-                                          news_button, saveload_button],
+                                          saveload_button],
                                           navbar=True, style={'text-align':'center',
                                                               'padding-right':'5%','padding-top':'2.5%',
                                                               'margin-left':'50px',

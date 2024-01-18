@@ -35,21 +35,23 @@ def tab_consistency(consistency_data=CONSISTENCY_DATA):
        #                             'display': 'flex', 'margin-left': '70%',
        #                             'font-size': '0.8em', 'margin-top': '2%'},
        #                       ),
-       dbc.Col(dbc.Row(
-              [html.P(f"Select outcomes",className="selectbox", style={'display': 'inline-block', "text-align": 'right',
-                                                               'margin-left': '0px', 'font-size': '12px'}),
-              dcc.Dropdown(id='consistency_outcome_select', searchable=True, placeholder="...", className="box",
-                            clearable=False, value=0,
-                            style={'width': '80px',  # 'height': '30px',
-                                   "height": '30px',
-                                   'vertical-align': 'middle',
-                                   "font-family": "sans-serif",
-                                   'margin-bottom': '2px',
-                                   'display': 'inline-block',
-                                   'color': 'black',
-                                   'font-size': '10px','margin-left':'-7px'})]),
-                                   style={'margin-bottom': '0px', 'justify-content': 'end', 'display': 'flex'}),
-
+       # dbc.Col(
+       #  dbc.Row(
+       #        [html.P(f"Select outcomes",className="selectbox", style={'display': 'inline-block', "text-align": 'right',
+       #                                                         'margin-left': '0px', 'font-size': '12px'}),
+       #        dcc.Dropdown(id='consistency_outcome_select', searchable=True, placeholder="...", className="box",
+       #                      clearable=False, value=0,
+       #                      style={'width': '80px',  # 'height': '30px',
+       #                             "height": '30px',
+       #                             'vertical-align': 'middle',
+       #                             "font-family": "sans-serif",
+       #                             'margin-bottom': '2px',
+       #                             'display': 'inline-block',
+       #                             'color': 'black',
+       #                             'font-size': '10px','margin-left':'-7px'})]),
+       #                             style={'margin-bottom': '0px', 'justify-content': 'end', 'display': 'flex'}
+       #                             ),
+        html.Br(), html.Br(),
         html.P("Design-by-treatment interaction model", style={'font-size': '12px', 'margin-top': '-0.6%'},
                      className="box__title")]),
         dash_table.DataTable(

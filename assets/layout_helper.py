@@ -51,6 +51,7 @@ def app_page_layout(page_layout,
                     font_color="#F3F6FA"):
     return html.Div(
         id='main_page',
+        style={'width': '-webkit-fill-available'},
         children=[
             dcc.Location(id='url', refresh=False),
             html.Div(

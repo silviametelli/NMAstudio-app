@@ -18,9 +18,10 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                              id='tab-rank1',
                                              style={'height': '99%',
                                                     'max-height': 'calc(51vh)',
-                                                    'width': '99%',
+                                                    'width': '100%',
                                                     'margin-top': '5%',
-                                                    'max-width': 'calc(52vw)'},
+                                                    # 'max-width': 'calc(52vw)'
+                                                    },
                                              config={'editable': True,
                                                 #     'showEditInChartStudio': True,
                                                 #     'plotlyServerURL': "https://chart-studio.plotly.com",
@@ -47,7 +48,7 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                                          'scale': 5
                                                          # Multiply title/legend/axis/canvas sizes by this factor
                                                      },
-                                                     'displaylogo': False}))
+                                                     'displaylogo': False}), style={'display':'grid', 'justify-content':'center'})
 
                                  ]),
 
@@ -93,9 +94,10 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                              id='tab-rank2',
                                              style={'height': '99%',
                                                     'max-height': 'calc(51vh)',
-                                                    'width': '96%',
+                                                    'width': '100%',
                                                     'margin-top': '5%',
-                                                    'max-width': 'calc(52vw)'},
+                                                    # 'max-width': 'calc(52vw)'
+                                                    },
                                              config={'editable': True,
                                                   #   'showEditInChartStudio': True,
                                                   #   'plotlyServerURL': "https://chart-studio.plotly.com",
@@ -121,7 +123,7 @@ tab_ranking= dcc.Tabs(id='subtabs-rank1', value='subtab-rank1', vertical=False, 
                                                          'filename': 'custom_image',
                                                          'scale': 5                                                         # Multiply title/legend/axis/canvas sizes by this factor
                                                      },
-                                                     'displaylogo': False}))
+                                                     'displaylogo': False}), style={'display':'grid', 'justify-content':'center'})
 
                                  ]),
 

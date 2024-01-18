@@ -210,11 +210,11 @@ def __data_modal(
 
 
 def __data_trans(
-         trans_to_results,
+        #  trans_to_results,
               upload,  filename2,
               submit,
                search_value_format, overall_variables, number_outcomes,outcome_type,
-               effectselectors, directionselectors, variableselectors, modal_transitivity_is_open,
+               effectselectors, directionselectors, variableselectors, 
                modal_data_checks_is_open,
                contents, filename, 
                TEMP_net_data_STORAGE
@@ -381,23 +381,23 @@ def __data_trans(
             TEMP_net_data_STORAGE = []
             error = Rconsole_error_data
         
-            return modal_transitivity_is_open, modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, str(error), True, treat_list
+            return  modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, str(error), True, treat_list
 
 
 
-        return modal_transitivity_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, '', False, treat_list
+        return  not modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, '', False, treat_list
 
     # if  ctx.triggered_id == "submit_modal_data":
     if submit and button_id == 'submit_modal_data':
 
-        return  not modal_transitivity_is_open, not modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, '', False, treat_list 
+        return   not modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, '', False, treat_list 
     
     # if  ctx.triggered_id == "trans_to_results":
-    if trans_to_results and button_id == 'trans_to_results':
+    # if trans_to_results and button_id == 'trans_to_results':
         
-        return not modal_transitivity_is_open, modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, '', False, treat_list
+    #     return  modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, '', False, treat_list
 
-    return modal_transitivity_is_open, modal_data_checks_is_open , TEMP_net_data_STORAGE, filename_exists, '', False, treat_list
+    return  modal_data_checks_is_open , TEMP_net_data_STORAGE, filename_exists, '', False, treat_list
     # else:
     #     return modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE, filename_exists, '', False, treat_list
 

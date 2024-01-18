@@ -118,7 +118,8 @@ Grid
     .one-third.column {width: 30.6666666667%;}
     .two-thirds.column {width: 65.3333333333%;}
     .one-half.column {width: 42%;}
-    .one-half-2.column {width: 53%;}
+    .one-half-2.column {width: 50.6%;}
+    .one-half-3.column {width: 93.3%; }
 
     .one-half-news-1.column {width: 40%; margin-left: 2.66666666667%}
     .one-half-news-2.column {width: 20%; margin-top: 48.66666666667%; margin-left: 25%; margin-right: 15%}

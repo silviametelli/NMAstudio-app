@@ -102,7 +102,9 @@ def __ranking_plot(ranking_data, out_number, out_idx1, out_idx2,net_data):
 
     ######################### scatter plot #########################
     if out_number < 2:
-        fig2 = None
+        fig2 = px.scatter()
+        fig2.update_layout(paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
+                    plot_bgcolor='rgba(0,0,0,0)')
     else:
         fig2 = __ranking_scatter(df, net_data, outcome_direction[out_idx1], outcome_direction[out_idx2], out_idx1, out_idx2)
 

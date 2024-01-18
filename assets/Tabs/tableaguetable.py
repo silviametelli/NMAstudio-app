@@ -2,17 +2,68 @@ from assets.dropdowns_values import *
 
 
 tab_league = html.Div([
-    dbc.Row([dbc.Col([html.A(html.Img(src="/assets/icons/expand.png",
-                                      style={'width': '34px',
-                                             'margin-top': '0px',
-                                             'margin-bottom': '2px',
-                                             'border-radius': '1px', }),
-                             id="league-expand",
-                             style={'margin-left': '10px'}),
-                      dbc.Tooltip("expand table", style={'color': 'black', 'font-size': 9,
-                                                         'margin-left': '10px', 'letter-spacing': '0.3rem'},
-                                  placement='bottom',
-                                  target='league-expand'), ])]),
+    dbc.Row([
+       #   dbc.Col([
+       #        html.A(
+       #               html.Img(
+       #                      src="/assets/icons/expand.png",
+       #                      style={
+       #                      "width": "34px",
+       #                      "margin-top": "15px",
+       #                      "border-radius": "1px",
+       #                      },
+       #               ),
+       #               id="data-expand2",
+       #               style={"display": "inline-block", "margin-left": "10px"},
+       #               ),
+       #               dbc.Tooltip(
+       #               "expand window",
+       #               style={
+       #                      "color": "black",
+       #                      "font-size": 9,
+       #                      "margin-left": "10px",
+       #                      "letter-spacing": "0.3rem",
+       #               },
+       #               placement="right",
+       #               target="data-expand",
+       #               ),
+       #               html.A(
+       #               html.Img(
+       #                      src="/assets/icons/zoomout.png",
+       #                      style={
+       #                      "width": "34px",
+       #                      "margin-top": "15px",
+       #                      "border-radius": "1px",
+       #                      },
+       #               ),
+       #               id="data-zoomout2",
+       #               style={"display": "none", "margin-left": "10px"},
+       #               ),
+       #               dbc.Tooltip(
+       #               "Zoom out window",
+       #               style={
+       #                      "color": "black",
+       #                      "font-size": 9,
+       #                      "margin-left": "10px",
+       #                      "letter-spacing": "0.3rem",
+       #               },
+       #               placement="right",
+       #               target="data-zoomout",
+       #               )], style={'display':'inline-block'}
+       #                               ),
+       #  dbc.Col([
+       #      html.A(html.Img(src="/assets/icons/expand.png",
+       #                                style={'width': '34px',
+       #                                       'margin-top': '0px',
+       #                                       'margin-bottom': '2px',
+       #                                       'border-radius': '1px', }),
+       #                       id="league-expand",
+       #                       style={'margin-left': '10px'}),
+       #                dbc.Tooltip("expand table", style={'color': 'black', 'font-size': 9,
+       #                                                   'margin-left': '10px', 'letter-spacing': '0.3rem'},
+       #                            placement='bottom',
+       #                            target='league-expand'), ])
+                                  ]),
 
         dbc.Row([dbc.Col([html.Div([html.P("Upload the CINeMA report file in its original format, with mandatory columns “Comparison” and “Confidence rating”",
                          id='cinema-instruction',),
@@ -33,20 +84,20 @@ tab_league = html.Div([
                                                  'font-size':'11px'})],
             style={'display': 'inline-block', 'margin-top': '-5px'}
             ),
-              dbc.Col(
-                     [html.P(f"Select outcomes",className="selectbox", style={'display': 'inline-block', "text-align": 'right',
-                                                               'margin-left': '0px', 'font-size': '12px'}),
-                      dcc.Dropdown(id='league_outcome_select', searchable=True, placeholder="...", className="box",
-                            clearable=False, value=0,
-                            style={'width': '80px',  # 'height': '30px',
-                                   "height": '30px',
-                                   'vertical-align': 'middle',
-                                   "font-family": "sans-serif",
-                                   'margin-bottom': '2px',
-                                   'display': 'inline-block',
-                                   'color': 'black',
-                                   'font-size': '10px','margin-left':'-7px'})]
-                                   )
+              # dbc.Col(
+              #        [html.P(f"Select outcomes",className="selectbox", style={'display': 'inline-block', "text-align": 'right',
+              #                                                  'margin-left': '0px', 'font-size': '12px'}),
+              #         dcc.Dropdown(id='league_outcome_select', searchable=True, placeholder="...", className="box",
+              #               clearable=False, value=0,
+              #               style={'width': '80px',  # 'height': '30px',
+              #                      "height": '30px',
+              #                      'vertical-align': 'middle',
+              #                      "font-family": "sans-serif",
+              #                      'margin-bottom': '2px',
+              #                      'display': 'inline-block',
+              #                      'color': 'black',
+              #                      'font-size': '10px','margin-left':'-7px'})]
+              #                      )
             ]),
        # dbc.Col(dbc.Row(
        #        [html.P(f"Select outcomes",className="selectbox", style={'display': 'inline-block', "text-align": 'right',

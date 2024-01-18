@@ -3,9 +3,9 @@ import dash_daq as daq
 from assets.COLORS import *
 
 
-tab_forests = dcc.Tabs(id='', value='subtab1', vertical=False, persistence=True,
+tab_forests = dcc.Tabs(id='', value='tab1', vertical=False, persistence=True,
                              children=[
-                         dcc.Tab(label='NMA', id='tab1', value='Tab1', className='control-tab',
+                         dcc.Tab(label='NMA', id='tab1', value='tab1', className='control-tab',
                                  style={'height': '30%', 'display': 'flex', 'justify-content': 'center',
                                         'align-items': 'center',
                                         'font-size': '12px', 'color': 'black', 'padding': '0'},
@@ -13,25 +13,75 @@ tab_forests = dcc.Tabs(id='', value='subtab1', vertical=False, persistence=True,
                                                  'align-items': 'center',
                                                  'font-size': '12px', 'padding': '0'},
                                  children=[html.Div([dbc.Row([
+                                    #  dbc.Col([
+                                    #      html.A(
+                                    #             html.Img(
+                                    #                 src="/assets/icons/expand.png",
+                                    #                 style={
+                                    #                     "width": "34px",
+                                    #                     "margin-top": "15px",
+                                    #                     "border-radius": "1px",
+                                    #                 },
+                                    #             ),
+                                    #             id="data-expand1",
+                                    #             style={"display": "inline-block", "margin-left": "10px"},
+                                    #         ),
+                                    #         dbc.Tooltip(
+                                    #             "expand window",
+                                    #             style={
+                                    #                 "color": "black",
+                                    #                 "font-size": 9,
+                                    #                 "margin-left": "10px",
+                                    #                 "letter-spacing": "0.3rem",
+                                    #             },
+                                    #             placement="right",
+                                    #             target="data-expand",
+                                    #         ),
+                                    #         html.A(
+                                    #             html.Img(
+                                    #                 src="/assets/icons/zoomout.png",
+                                    #                 style={
+                                    #                     "width": "34px",
+                                    #                     "margin-top": "15px",
+                                    #                     "border-radius": "1px",
+                                    #                 },
+                                    #             ),
+                                    #             id="data-zoomout1",
+                                    #             style={"display": "none", "margin-left": "10px"},
+                                    #         ),
+                                    #         dbc.Tooltip(
+                                    #             "Zoom out window",
+                                    #             style={
+                                    #                 "color": "black",
+                                    #                 "font-size": 9,
+                                    #                 "margin-left": "10px",
+                                    #                 "letter-spacing": "0.3rem",
+                                    #             },
+                                    #             placement="right",
+                                    #             target="data-zoomout",
+                                    #         )], style={'display':'inline-block'}
+                                    #  ),
                                      dbc.Col(html.P(id='tapNodeData-info', className="box__title",
                                                     style={'font-size':'12px', 'margin-top':'0.8%',
                                                            'display': 'inline-block','flex-flow' : 'row nowrap',
                                                            'flex-grow': '0', 'justify-content': 'flex-start'}), style={'display': 'inline-block'}),
-                                     dbc.Col(dbc.Row(
-                                                 [html.P(f"Select outcomes",className="selectbox", 
-                                                         style={'display': 'flex', "text-align": 'right','align-items': 'center',
-                                                                'margin-right': '10px', 'font-size': 'small'}),
-                                                 dcc.Dropdown(id='forest_outcome_select', searchable=True, placeholder="...", className="box", value=0,
-                                                               clearable=False, 
-                                                               style={'width': '80px',  # 'height': '30px',
-                                                                      "height": '30px',
-                                                                      'vertical-align': 'middle',
-                                                                      "font-family": "sans-serif",
-                                                                      'margin-bottom': '2px',
-                                                                      'display': 'inline-block',
-                                                                      'color': 'black',
-                                                                      'font-size': '10px','margin-left':'-7px'})], className='slect-out-row'),
-                                                                      className='slect-out-dropdown')],
+                                    
+                                    #  dbc.Col(dbc.Row(
+                                    #              [html.P(f"Select outcomes",className="selectbox", 
+                                    #                      style={'display': 'flex', "text-align": 'right','align-items': 'center',
+                                    #                             'margin-right': '10px', 'font-size': 'small'}),
+                                    #              dcc.Dropdown(id='forest_outcome_select', searchable=True, placeholder="...", className="box", value=0,
+                                    #                            clearable=False, 
+                                    #                            style={'width': '80px',  # 'height': '30px',
+                                    #                                   "height": '30px',
+                                    #                                   'vertical-align': 'middle',
+                                    #                                   "font-family": "sans-serif",
+                                    #                                   'margin-bottom': '2px',
+                                    #                                   'display': 'inline-block',
+                                    #                                   'color': 'black',
+                                    #                                   'font-size': '10px','margin-left':'-7px'})], className='slect-out-row'),
+                                    #                                   className='slect-out-dropdown')
+                                                                      ],
 
                                                                 className='tab_row_all'),
                                     html.Div([
@@ -84,22 +134,22 @@ tab_forests = dcc.Tabs(id='', value='subtab1', vertical=False, persistence=True,
                                           dbc.Col(html.P(
                                              id='tapEdgeData-info', style={'font-size':'12px', 'margin-top':'0.8%'},
                                              className="box__title"),style={'display': 'inline-block'}),
-                                          dbc.Col(dbc.Row(
-                                                 [html.P(f"Select outcomes",className="selectbox", style={'display': 'flex', 
-                                                                                                          "text-align": 'right',
-                                                                                                          'align-items': 'center',
-                                                                                                          'margin-right': '10px', 'font-size': 'small'}),
-                                                 dcc.Dropdown(id='forestpaire_outcome_select', searchable=True, placeholder="...", className="box", value=0,
-                                                               clearable=False, 
-                                                               style={'width': '80px',  # 'height': '30px',
-                                                                      "height": '30px',
-                                                                      'vertical-align': 'middle',
-                                                                      "font-family": "sans-serif",
-                                                                      'margin-bottom': '2px',
-                                                                      'display': 'inline-block',
-                                                                      'color': 'black',
-                                                                      'font-size': '10px','margin-left':'-7px'})], className='slect-out-row'),
-                                                                      className='slect-out-dropdown'),
+                                        #   dbc.Col(dbc.Row(
+                                        #          [html.P(f"Select outcomes",className="selectbox", style={'display': 'flex', 
+                                        #                                                                   "text-align": 'right',
+                                        #                                                                   'align-items': 'center',
+                                        #                                                                   'margin-right': '10px', 'font-size': 'small'}),
+                                        #          dcc.Dropdown(id='forestpaire_outcome_select', searchable=True, placeholder="...", className="box", value=0,
+                                        #                        clearable=False, 
+                                        #                        style={'width': '80px',  # 'height': '30px',
+                                        #                               "height": '30px',
+                                        #                               'vertical-align': 'middle',
+                                        #                               "font-family": "sans-serif",
+                                        #                               'margin-bottom': '2px',
+                                        #                               'display': 'inline-block',
+                                        #                               'color': 'black',
+                                        #                               'font-size': '10px','margin-left':'-7px'})], className='slect-out-row'),
+                                        #                               className='slect-out-dropdown'),
                                                                       html.Br()], className='tab_row_all')], style={'height':'35px'}),
                                              dcc.Loading(
                                                  html.Div([
@@ -109,7 +159,8 @@ tab_forests = dcc.Tabs(id='', value='subtab1', vertical=False, persistence=True,
                                                                 'max-height': 'calc(52vw)',
                                                                 'width': '99%',
                                                                 'margin-top': '-2.5%',
-                                                                'max-width': 'calc(52vw)'},
+                                                                'max-width': 'calc(52vw)'
+                                                                },
                                                          config={'editable': True,
                                                                #  'showEditInChartStudio': True,
                                                                #  'plotlyServerURL': "https://chart-studio.plotly.com",

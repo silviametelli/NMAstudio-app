@@ -9,7 +9,7 @@ def __TapNodeData_fig(data, outcome_idx, forest_data,style,net_storage):
         treatment = data[0]['label']
         if outcome_idx:
              i = int(outcome_idx)
-             forest_data = forest_data[i]
+            #  forest_data = forest_data[i]
              forest_data = pd.read_json(forest_data[i], orient='split')
         else:          
             i = 0

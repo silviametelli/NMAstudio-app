@@ -427,7 +427,7 @@ def __update_output_new(slider_value, store_node,store_edge,net_data, toggle_cin
         robs = comprs_conf
     # Filter according to cytoscape selection
 
-    if store_node:
+    if store_node and any('id' in nd for nd in store_node):
         slctd_trmnts = [nd['id'] for nd in store_node]
         if len(slctd_trmnts) > 0:
             forest_data = pd.read_json(forest_data[outcome_idx], orient='split')
@@ -603,8 +603,9 @@ def build_league_table(data, columns, style_data_conditional, tooltip_values, mo
                                                                   'header_index': 0},
                                                            'fontWeight': 'bold'}],
                                 style_table={'overflow': 'auto', 'width': '100%',
-                                             'max-height': 'calc(50vh)',
-                                             'max-width': 'calc(52vw)'} if not modal else {
+                                            #  'max-height': 'calc(50vh)',
+                                            #  'max-width': 'calc(52vw)'
+                                             } if not modal else {
                                     'overflowX': 'scroll',
                                     'overflowY': 'scroll',
                                     'height': '99%',

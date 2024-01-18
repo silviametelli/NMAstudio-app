@@ -4,9 +4,10 @@ import plotly.graph_objects as go
 def __update_boxplot(value, edges, net_data):
     active, non_active = '#1B58E2', '#313539'  # '#4C5353'
     if value:
-        net_data  = pd.read_json(net_data, orient='split')
-        df = net_data[['treat1', 'treat2', value]].copy()
-        df = df.dropna(subset=[value])
+        net_data  = pd.read_json(net_data[0], orient='split')
+        df = net_data[['treat1', 'treat2', f"{value}1", f"{value}2"]].copy()
+        df = df.dropna(subset=[f"{value}1", f"{value}2"])
+        df[value] = round((df[f"{value}1"] + df[f"{value}2"])/2, 2)
         df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']
         df = df.sort_values(by='Comparison').reset_index()
         if isinstance(df[value], str): df[value] = pd.to_numeric(df[value], errors='coerce')

@@ -40,7 +40,7 @@ def tab_data(years=YEARS_DEFAULT):
         [
             # html.Button(
             #     "Upload your data",
-            #     "upload_your_data",
+            #     "test_upload",
             #     n_clicks=0,
             #     style={
             #         "margin-left": "5px",
@@ -54,45 +54,7 @@ def tab_data(years=YEARS_DEFAULT):
             #         "vertical-align": "middle",
             #     },
             # ),
-            html.Button(
-                "Upload your data",
-                "test_upload",
-                n_clicks=0,
-                style={
-                    "margin-left": "5px",
-                    "padding": "4px 4px 4px 4px",
-                    "margin-top": "15px",
-                    "color": "#5a87c4",
-                    "fontSize": 12,
-                    "font-weight": "900",
-                    "font-family": "sans-serif",
-                    "display": "inline-block",
-                    "vertical-align": "middle",
-                },
-            ),
-            html.A(
-                html.Img(
-                    src="/assets/icons/expand.png",
-                    style={
-                        "width": "34px",
-                        "margin-top": "15px",
-                        "border-radius": "1px",
-                    },
-                ),
-                id="data-expand",
-                style={"display": "inline-block", "margin-left": "10px"},
-            ),
-            dbc.Tooltip(
-                "expand table",
-                style={
-                    "color": "black",
-                    "font-size": 9,
-                    "margin-left": "10px",
-                    "letter-spacing": "0.3rem",
-                },
-                placement="right",
-                target="data-expand",
-            ),
+            
             html.Div([
                 dcc.Slider(
                     min=y_min,
@@ -141,7 +103,7 @@ def tab_data(years=YEARS_DEFAULT):
             #     )),
             #     ],id="query-icon",),
 
-            html.Br(),
+            html.Br(),html.Br(),html.Br(),
             dash_table.DataTable(
                 id="datatable-upload-container",
                 editable=False,
@@ -150,7 +112,7 @@ def tab_data(years=YEARS_DEFAULT):
                 # export_format="csv",
                 fixed_rows={"headers": True, "data": 0},
                 style_cell={
-                    "backgroundColor": "rgba(0,0,0,0.1)",
+                    "backgroundColor": "white",
                     "color": "black",
                     "minWidth": "45px",
                     "maxWidth": "60px",
@@ -163,7 +125,7 @@ def tab_data(years=YEARS_DEFAULT):
                     "fontSize": 11,
                 },
                 style_data_conditional=[
-                    {"if": {"row_index": "odd"}, "backgroundColor": "rgba(0,0,0,0.2)"},
+                    {"if": {"row_index": "odd"}, "backgroundColor": "rgba(0,0,0,0.1)"},
                     {
                         "if": {"state": "active"},
                         "backgroundColor": "rgba(0, 116, 217, 0.3)",

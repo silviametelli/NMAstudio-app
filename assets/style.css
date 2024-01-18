@@ -20,7 +20,10 @@ footer{
 
 h6 {margin-top: 0;}
 
-.app__container {margin: 2% 2% 2% 2%;
+.app__container {
+    margin: 2% 2% 2% 2%;
+    display: grid;
+    justify-items: center;
 }
 
 
@@ -154,7 +157,7 @@ h6 {margin-top: 0;}
     font-family: "sans-serif" !important;
     /* margin-left: 10px; */
     background-color: rgb(92, 119, 128);
-    height: 150px;
+    height: 200px;
 }
 .slider {padding: 15px;}
 
@@ -347,6 +350,14 @@ h6 {margin-top: 0;}
 }
 
 
+#test_upload{
+    background-color: orange;
+    border: unset;
+    color: white;
+    display: inline-block;
+    justify-self: center;
+    padding: 4px;
+}
 
 /* style for scalable transation tool */
 
@@ -842,6 +853,7 @@ h6 {margin-top: 0;}
 .tab-content{
     /* background-color: #5c7780; #6a868f; !*#3d515e*! */
     color: #0a0909;
+    background-color: #e6e9eb
     /* padding:5px; */
 }
 
@@ -1679,4 +1691,8 @@ li a {
 #modal_transitivity{
     display: grid;
     justify-content: center;
+}
+
+#main_page{
+    width: -webkit-fill-available;
 }

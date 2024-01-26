@@ -217,7 +217,8 @@ def __data_trans(
                effectselectors, directionselectors, variableselectors, 
                modal_data_checks_is_open,
                contents, filename, 
-               TEMP_net_data_STORAGE
+               TEMP_net_data_STORAGE,
+               TEMP_raw_data_STORAGE
                ):
 
     
@@ -241,7 +242,7 @@ def __data_trans(
 
         try:
             data_user = parse_contents(contents, filename)
-            
+            TEMP_raw_data_STORAGE = [data_user.to_json(orient='split')]
 
         except:
             raise ValueError('Data upload failed: likely UnicodeDecodeError or MultipleTypeError, check variable characters and type')
@@ -373,6 +374,7 @@ def __data_trans(
 
             TEMP_net_data_STORAGE = [data.to_json(orient='split')]
             
+            
         #except:
                 #TEMP_net_data_STORAGE = {}
                 #raise ValueError('Data conversion failed')
@@ -381,23 +383,23 @@ def __data_trans(
             TEMP_net_data_STORAGE = []
             error = Rconsole_error_data
         
-            return  modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, str(error), True, treat_list
+            return  modal_data_checks_is_open,TEMP_raw_data_STORAGE, TEMP_net_data_STORAGE, filename_exists, str(error), True, treat_list
 
 
 
-        return  not modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, '', False, treat_list
+        return  not modal_data_checks_is_open,TEMP_raw_data_STORAGE, TEMP_net_data_STORAGE, filename_exists, '', False, treat_list
 
     # if  ctx.triggered_id == "submit_modal_data":
     if submit and button_id == 'submit_modal_data':
 
-        return   not modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, '', False, treat_list 
+        return   not modal_data_checks_is_open,TEMP_raw_data_STORAGE, TEMP_net_data_STORAGE, filename_exists, '', False, treat_list 
     
     # if  ctx.triggered_id == "trans_to_results":
     # if trans_to_results and button_id == 'trans_to_results':
         
     #     return  modal_data_checks_is_open, TEMP_net_data_STORAGE, filename_exists, '', False, treat_list
 
-    return  modal_data_checks_is_open , TEMP_net_data_STORAGE, filename_exists, '', False, treat_list
+    return  modal_data_checks_is_open ,TEMP_raw_data_STORAGE, TEMP_net_data_STORAGE, filename_exists, '', False, treat_list
     # else:
     #     return modal_data_is_open, modal_data_checks_is_open and (modal_data_is_open), TEMP_net_data_STORAGE, filename_exists, '', False, treat_list
 
@@ -559,7 +561,10 @@ def __modal_SUBMIT_button(submit,  reset_btn,
                         else data
                         for label, data in DEFAULT_DATA.items()][:-2] + [u"\u274C" + 'Token not found: please double-check']
 
-
+def generate_password(length=8):
+    while '_' in (password := secrets.token_urlsafe(length)):
+        pass
+    return password
 
 
 def __modal_SUBMIT_button_new(submit,  reset_btn,
@@ -568,6 +573,7 @@ def __modal_SUBMIT_button_new(submit,  reset_btn,
                         token_data_load, token_load_btn,
                         filename,
                         input_token,
+                        TEMP_raw_data_STORAGE,
                         TEMP_net_data_STORAGE,
                         TEMP_consistency_data_STORAGE,
                         # TEMP_user_elements_STORAGE,
@@ -588,13 +594,14 @@ def __modal_SUBMIT_button_new(submit,  reset_btn,
     if 'button-token.n_clicks' in triggered: token_btn_triggered = True
     load_btn_triggered = False
     if 'load-project.n_clicks' in triggered: load_btn_triggered = True
-    OUT_DATA = [TEMP_net_data_STORAGE, TEMP_consistency_data_STORAGE,
+    OUT_DATA = [TEMP_raw_data_STORAGE,
+                TEMP_net_data_STORAGE, TEMP_consistency_data_STORAGE,
                 # TEMP_user_elements_STORAGE, 
                 TEMP_forest_data_STORAGE, TEMP_forest_data_prws_STORAGE,
                 TEMP_ranking_data_STORAGE, TEMP_funnel_data_STORAGE, 
                 TEMP_league_table_data_STORAGE, TEMP_net_split_data_STORAGE,
                 TEMP_net_split_ALL_data_STORAGE]
-    OUT_DATA_NAMES = ["TEMP_net_data_STORAGE",  "TEMP_consistency_data_STORAGE",
+    OUT_DATA_NAMES = ['TEMP_raw_data_STORAGE',"TEMP_net_data_STORAGE",  "TEMP_consistency_data_STORAGE",
                 # "TEMP_user_elements_STORAGE", 
                 "TEMP_forest_data_STORAGE", "TEMP_forest_data_prws_STORAGE", 
                 "TEMP_ranking_data_STORAGE", "TEMP_funnel_data_STORAGE",
@@ -607,7 +614,7 @@ def __modal_SUBMIT_button_new(submit,  reset_btn,
     else:  # Must be triggered by reset_project.n_clicks
         if token_btn_triggered and filename and input_token:
             if len(input_token) >= 6:
-                password = secrets.token_urlsafe(8)
+                password = generate_password()
                 token = input_token + "-" + password + '_'+ str(num_out)
                 token_data = {'token': token}
                 if token_btn > 0 :
@@ -658,6 +665,7 @@ def __modal_SUBMIT_button_new(submit,  reset_btn,
                 
                 foldername = os.listdir(parent_dir_load)
                 if usr_token_load_ in foldername:
+                    RAW_DATA_USR = [pd.read_csv(f'{path}/TEMP_raw_data_STORAGE_0.csv')]
                     NET_DATA_USR = [pd.read_csv(f'{path}/TEMP_net_data_STORAGE_0.csv')]
                     # DEFAULT_ELEMENTS_USR = USER_ELEMENTS_USR = get_network_new(df=NET_DATA_USR[0], i=0)
                     FOREST_DATA_USR = [pd.read_csv(f'{path}/TEMP_forest_data_STORAGE_{i}.csv') for i in range(out_num)]
@@ -677,7 +685,8 @@ def __modal_SUBMIT_button_new(submit,  reset_btn,
                     RANKING_DATA_USR = [pd.read_csv(f'{path}/TEMP_ranking_data_STORAGE_{i}.csv')for i in range(out_num)]
                     FUNNEL_DATA_USR = [pd.read_csv(f'{path}/TEMP_funnel_data_STORAGE_{i}.csv')for i in range(out_num)]
 
-                    USER_DATA = OrderedDict(net_data_STORAGE=NET_DATA_USR,
+                    USER_DATA = OrderedDict(raw_data_STORAGE=RAW_DATA_USR,
+                                            net_data_STORAGE=NET_DATA_USR,
                                             consistency_data_STORAGE=CONSISTENCY_DATA_USR,
                                             # user_elements_STORAGE=USER_ELEMENTS_USR,
                                             forest_data_STORAGE=FOREST_DATA_USR,

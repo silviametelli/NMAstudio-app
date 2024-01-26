@@ -15,10 +15,12 @@ def Navbar():
     home_button = dbc.NavItem(dbc.NavLink('RESULTS', href="/results", external_link=True,
                                           style = {'color':'#white','font-family': "sans-serif ",
                                                    'font-size': '13px'}))
-    skt_button = dbc.NavItem(dbc.NavLink('SKT TOOL(test)', href="/skt",external_link=True,
-                                         style = {'color':'#white','font-family': "sans-serif ",
+    skt_button = dbc.NavItem(dbc.NavLink('Knowledge Translation (under construction)', href="/skt",external_link=True,
+                                         style = {'color':'lightsteelblue','font-family': "sans-serif ",
                                                   'font-size': '13px'}, id= 'skt_button'))
-
+    setup_button = dbc.NavItem(dbc.NavLink('Setup Analysis (under construction)', href="/setup",external_link=True,
+                                         style = {'color':'lightsteelblue','font-family': "sans-serif ",
+                                                  'font-size': '13px'}, id= ''))
     # skt_button = dbc.NavItem(dbc.NavLink('SKT TOOL', n_click=0,
     #                                      style = {'color':'#white','font-family': "sans-serif ",
     #                                               'font-size': '13px', 'pointer-events': 'stroke',
@@ -33,7 +35,7 @@ def Navbar():
     #                                               'font-size': '13px' }))
 
 
-    saveload_button = saveload_modal
+    # saveload_button = saveload_modal
 
     navbar = dbc.Navbar([
             html.Div(dbc.Col(html.Img(src=NMASTUDIO_LOGO, height="53px",
@@ -52,8 +54,7 @@ def Navbar():
                             }),
 
             html.Div([
-                dbc.Col(children=[dbc.Nav([realhome_button, home_button, skt_button,
-                                          saveload_button],
+                dbc.Col(children=[dbc.Nav([realhome_button, home_button, setup_button, skt_button],
                                           navbar=True, style={'text-align':'center',
                                                               'padding-right':'5%','padding-top':'2.5%',
                                                               'margin-left':'50px',

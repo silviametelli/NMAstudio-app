@@ -420,9 +420,9 @@ def is_data_file_uploaded(filename):
 
 @app.callback(
               Output("_outcome_select", "options"),
-              Output("biforest_outcome_select1", "options"),
+            #   Output("biforest_outcome_select1", "options"),
               Output("biforest_outcome_select2", "options"),
-              Output("ranking_outcome_select1", "options"),
+            #   Output("ranking_outcome_select1", "options"),
               Output("ranking_outcome_select2", "options"),
               Input("number-outcomes", "value"),
               Input({'type': 'nameoutcomes', 'index': ALL}, "value"),
@@ -435,17 +435,17 @@ def update_options(number_outcomes, nameoutcomes, options_var):
         if number_outcomes:
             number_outcomes = int(number_outcomes)
             options_var = [{'label': f'outcome{i+1}', 'value': i} for i in range(number_outcomes)]
-            return (options_var,) * 5
+            return (options_var,) * 3
         options_var = [{'label': f'{out_names[i]}', 'value': i} for i in range(2)]
-        return (options_var,) * 5
+        return (options_var,) * 3
     
     if number_outcomes:
         number_outcomes = int(number_outcomes)
         options_var = [{'label': f'{nameoutcomes[i]}', 'value': i} for i in range(number_outcomes)]
-        return (options_var,) * 5
+        return (options_var,) * 3
     
     options_var = [{'label': f'{out_names[i]}', 'value': i} for i in range(2)]
-    return (options_var,) * 5
+    return (options_var,) * 3
 
 
 ### --- update graph layout with dropdown: graph layout --- ###
@@ -725,7 +725,7 @@ def TapNodeData_fig(data, outcome_idx, forest_data, style,net_storage):
 @app.callback(Output('tapNodeData-fig-bidim', 'figure'),
               [Input('cytoscape', 'selectedNodeData'),
                Input('forest_data_STORAGE', 'data'),
-               Input('biforest_outcome_select1', 'value'),
+               Input('_outcome_select', 'value'),
                Input('biforest_outcome_select2', 'value'),
                ]
               )
@@ -853,12 +853,15 @@ def update_boxplot(value, edges, net_data):
                Output('slider-year', 'min'),
                Output('slider-year', 'max'),
                Output('slider-year', 'marks'),
-               Output('data_and_league_table_DATA', 'data')],
+               Output('data_and_league_table_DATA', 'data'),
+               Output('datatable-raw-container', 'data')
+               ],
               [               
                Input('slider-year', 'value'),
                Input('cytoscape', 'selectedNodeData'),
                Input('cytoscape', 'selectedEdgeData'),
                Input('net_data_STORAGE', 'data'),
+               Input('raw_data_STORAGE', 'data'),
                Input('rob_vs_cinema', 'value'),
                Input('rob_vs_cinema_modal', 'value'),
                Input('league_table_data_STORAGE', 'data'),
@@ -870,13 +873,14 @@ def update_boxplot(value, edges, net_data):
                Input('_outcome_select','value'),
                 ],
                State('net_data_STORAGE', 'data'),
+               State('raw_data_STORAGE', 'data'),
               prevent_initial_call=True)
-def update_output(slider_value, store_node,store_edge,net_data, toggle_cinema, toggle_cinema_modal,
+def update_output(slider_value, store_node,store_edge,net_data, raw_data,toggle_cinema, toggle_cinema_modal,
                   league_table_data, cinema_net_data, data_and_league_table_DATA,
-                  forest_data,  reset_btn,  outcome_idx, net_storage):
-    return __update_output_new(slider_value, store_node,store_edge,net_data, toggle_cinema, toggle_cinema_modal,
+                  forest_data,  reset_btn,  outcome_idx, net_storage, raw_storage):
+    return __update_output_new(slider_value, store_node,store_edge,net_data,raw_data, toggle_cinema, toggle_cinema_modal,
                   league_table_data, cinema_net_data, data_and_league_table_DATA,
-                  forest_data,  reset_btn,  outcome_idx, net_storage)
+                  forest_data,  reset_btn,  outcome_idx, net_storage,raw_storage)
 
 
 
@@ -980,7 +984,7 @@ def Tap_funnelplot(node, outcome_idx, funnel_data):
               Input('ranking_data_STORAGE', 'data'),
               Input('number-outcomes', 'value'),
             #   Input("submit_modal_data", "n_clicks_timestamp"),
-              Input("ranking_outcome_select1", "value"),
+              Input("_outcome_select", "value"),
               Input("ranking_outcome_select2", "value"),
               State('net_data_STORAGE', 'data'))
 def ranking_plot(ranking_data, out_number, out_idx1, out_idx2,net_data):
@@ -1148,6 +1152,7 @@ def toggle_modal_edge(open_t, close):
             #   Output("modal_data", "is_open"),
             #    Output("modal_transitivity", "is_open"),
                Output("modal_data_checks", "is_open"),
+               Output("TEMP_raw_data_STORAGE", "data"),
                Output("TEMP_net_data_STORAGE", "data"),
                Output("uploaded_datafile_to_disable_cinema", "data"),
                Output('Rconsole-error-data', 'children'),
@@ -1172,7 +1177,8 @@ def toggle_modal_edge(open_t, close):
                State("modal_data_checks", "is_open"),
                State('datatable-upload2', 'contents'),
                State('datatable-upload2', 'filename'),
-               State("TEMP_net_data_STORAGE", "data")
+               State("TEMP_net_data_STORAGE", "data"),
+               State("TEMP_raw_data_STORAGE", "data")
                ]
               )
 def data_trans( 
@@ -1183,7 +1189,8 @@ def data_trans(
                effectselectors, directionselectors, variableselectors,
                modal_data_checks_is_open,
                contents, filename, 
-               TEMP_net_data_STORAGE
+               TEMP_net_data_STORAGE,
+               TEMP_raw_data_STORAGE
                ):
     return __data_trans( 
         #  trans_to_results,
@@ -1193,7 +1200,8 @@ def data_trans(
                effectselectors, directionselectors, variableselectors,
                modal_data_checks_is_open,
                contents, filename, 
-               TEMP_net_data_STORAGE
+               TEMP_net_data_STORAGE,
+               TEMP_raw_data_STORAGE
                )
 
 
@@ -1329,6 +1337,7 @@ def modal_SUBMIT_button(submit, reset_btn,
                         token_data_load, token_load_btn,
                         filename,
                         input_token,
+                        TEMP_raw_data_STORAGE,
                         TEMP_net_data_STORAGE,
                         TEMP_consistency_data_STORAGE,
                         # TEMP_user_elements_STORAGE,
@@ -1347,6 +1356,7 @@ def modal_SUBMIT_button(submit, reset_btn,
                         token_data_load, token_load_btn,
                         filename,
                         input_token,
+                        TEMP_raw_data_STORAGE,
                         TEMP_net_data_STORAGE,
                         TEMP_consistency_data_STORAGE,
                         # TEMP_user_elements_STORAGE,
@@ -1630,14 +1640,19 @@ def modal_submit_button(para_check_data_DATA, para_anls_data_DATA, para_prw_data
     Output('data-zoomout', 'style'),
     Output('data-expand1', 'style'),
     Output('data-zoomout1', 'style'),
+    Output('network-expand', 'style'),
+    Output('network-zoomout', 'style'),
     Output("one-half-3", "style"),
     Output("cytoscape", "style"),
     Input("data-expand", "n_clicks_timestamp"),
     Input("data-zoomout", "n_clicks_timestamp"),
     Input("data-expand1", "n_clicks_timestamp"),
-    Input("data-zoomout1", "n_clicks_timestamp")
+    Input("data-zoomout1", "n_clicks_timestamp"),
+    Input("network-expand", "n_clicks_timestamp"),
+    Input("network-zoomout", "n_clicks_timestamp"),
+
 )
-def toggle_modal(expand, zoomout, expand1, zoomout1):
+def toggle_modal(expand, zoomout, expand1, zoomout1, expand_plot, zoomout_plot):
     style_display = {'display': 'block'}
     style_no_display = {'display': 'none'}
     style_expand_width = {'width': '93.4%', 'margin-left': '3.3%'}
@@ -1646,31 +1661,41 @@ def toggle_modal(expand, zoomout, expand1, zoomout1):
     style_no = {"display": "none"}
     style_height = {'display': 'block','height': '100%'}
     style_neplot={
-            'height': '70vh', 'width': '610px', 
+            'height': '70vh', 'width': '100%', 
                 'margin-top': '10px',
                 'margin-left': '-10px','margin-right': '-10px',  'z-index': '999',
-                'padding-left': '-10px'}
+                'padding-left': '-10px', 'border-right': '3px solid rgb(165 74 97)'}
+    style_neplot_expand={
+            'height': '70vh', 'width': '100%', 
+                'margin-top': '10px',
+                'margin-left': '-10px','margin-right': '-10px',  'z-index': '999',
+                'padding-left': '-10px', 'border-right': '3px solid rgb(165 74 97)'}
     style_neplot_down={
-        'height': '140vh', 'width': '610px', 
+        'height': '140vh', 'width': '100%', 
             'margin-top': '10px',
             'margin-left': '-10px','margin-right': '-10px',  'z-index': '999',
-            'padding-left': '-10px'}
+            'padding-left': '-10px', 'border-right': '3px solid rgb(165 74 97)'}
 
     if not ctx.triggered_id:
-        return style_display, style_width, style, style_no, style_no, style,style_expand_width,style_neplot
+        return style_display, style_width, style, style_no, style_no, style, style, style_no,style_expand_width,style_neplot
 
     triggered_button_id = ctx.triggered_id.split(".")[0]
-
+    if triggered_button_id =='network-expand':
+        return style_expand_width, style_no_display, style, style_no, style_no, style, style_no, style, style_expand_width,style_neplot_expand
+    
+    if triggered_button_id =='network-zoomout':
+        return style_display, style_width, style, style_no, style_no, style, style, style_no, style_expand_width,style_neplot
+    
     if triggered_button_id =='data-expand':
-        return style_no_display, style_expand_width, style_no, style, style_no, style_no, style_expand_width,style_neplot
+        return style_no_display, style_expand_width, style_no, style, style_no, style_no, style, style_no,style_expand_width,style_neplot
     
     elif triggered_button_id =='data-zoomout':
-        return style_display, style_width, style, style_no, style_no, style, style_expand_width,style_neplot
+        return style_display, style_width, style, style_no, style_no, style, style, style_no,style_expand_width,style_neplot
     
     elif triggered_button_id =='data-zoomout1':
-        return style_height, style_width, style, style_no, style, style_no, style_width, style_neplot_down 
+        return style_height, style_width, style, style_no, style, style_no, style, style_no,style_width, style_neplot_down 
     elif triggered_button_id =='data-expand1':
-        return style_display, style_width, style, style_no, style_no, style, style_expand_width, style_neplot
+        return style_display, style_width, style, style_no, style_no, style, style, style_no,style_expand_width, style_neplot
 
 
 
@@ -1688,16 +1713,16 @@ def toggle_modal(expand, zoomout, expand1, zoomout1):
 #     return is_open
 
 # ----- network expand modal -----# #TODO: this needs fixing: eg. node coloring and options not working in expand mode
-@app.callback(
-    Output("modal_network", "is_open"),
-    [Input("network-expand", "n_clicks"),
-     Input("close-network-expanded", "n_clicks")],
-    [State("modal_network", "is_open")],
-)
-def toggle_modal(open, close, is_open):
-    if open or close:
-        return not is_open
-    return is_open
+# @app.callback(
+#     Output("modal_network", "is_open"),
+#     [Input("network-expand", "n_clicks"),
+#      Input("close-network-expanded", "n_clicks")],
+#     [State("modal_network", "is_open")],
+# )
+# def toggle_modal(open, close, is_open):
+#     if open or close:
+#         return not is_open
+#     return is_open
 
 
 @app.callback(
@@ -1946,6 +1971,7 @@ def infor_overall(data):
               Output('data_tab', 'style'),
               Output('trans_tab', 'style'),
               Output('forest_tab', 'style'),
+              Output('tab2', 'style'),
               Output('league_tab', 'style'),
               Output('consis_tab', 'style'),
               Output('funnel_tab', 'style'),
@@ -1959,15 +1985,15 @@ def results_display(selected):
     style_no_display = {'color':'grey','display': 'none', 'justify-content':'center', 'align-items':'center'}
 
     if selected == 0:
-        return [style_display] * 2 + [style_no_display] * 5 +['data_tab']+['trans_tab']
+        return [style_display] * 2 + [style_no_display] * 6 +['data_tab']+['trans_tab']
     if selected == 1:
-        return [style_no_display]*2 + [style_display] + [style_no_display]*4 +['forest_tab']+['']
+        return [style_no_display]*2 + [style_display]*2 + [style_no_display]*4 +['forest_tab']+['tab2']
     if selected == 2:
-        return [style_no_display]*3 + [style_display] + [style_no_display]*3+['league_tab']+['']
+        return [style_no_display]*4 + [style_display] + [style_no_display]*3+['league_tab']+['']
     if selected == 3:
-        return [style_no_display]*4 + [style_display]*2 + [style_no_display]+['consis_tab']+['funnel_tab']
+        return [style_no_display]*5 + [style_display]*2 + [style_no_display]+['consis_tab']+['funnel_tab']
     if selected == 4:
-        return [style_no_display]*6 + [style_display]+['ranking_tab']+['']
+        return [style_no_display]*7 + [style_display]+['ranking_tab']+['']
 
 
    

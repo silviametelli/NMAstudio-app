@@ -276,7 +276,9 @@ modal_data_table = dbc.Modal([
                                           {'if': {'state': 'active'},
                                            'backgroundColor': 'rgba(0, 116, 217, 0.3)',
                                            'border': '1px solid rgb(0, 116, 217)'}],
-                                      style_header={'backgroundColor': '#738789',
+                                      style_header={
+                                                 #    'backgroundColor': '#738789',
+                                                    'backgroundColor': 'rgb(248, 161, 152)',
                                                     'fontWeight': 'bold',
                                                     'border': '1px solid #5d6d95'},
                                       style_table={'overflowX': 'scroll',

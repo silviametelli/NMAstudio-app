@@ -48,6 +48,7 @@ PLotly.js
     --app-background-color:#e8eaeb; /*#1b242b;*/
     --dropdownmenu-hover-background-color: #798d8f;
     --blue: #2c3e50;
+    /* --blue: #f19628; */
     --indigo: #6610f2;
     --purple: #6f42c1;
     --pink: #e83e8c;
@@ -1255,3 +1256,7 @@ height: 100% !important;
 .modebar-container{
     top: 30px;
 }
+
+.Select.has-value.is-clearable.Select--single > .Select-control .Select-value {
+    padding-right: 0px;
+  }

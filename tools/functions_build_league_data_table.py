@@ -325,9 +325,9 @@ def __update_output(store_node, net_data, store_edge, toggle_cinema, toggle_cine
 
 
 
-def __update_output_new(slider_value, store_node,store_edge,net_data, toggle_cinema, toggle_cinema_modal,
+def __update_output_new(slider_value, store_node,store_edge,net_data,raw_data, toggle_cinema, toggle_cinema_modal,
                   league_table_data, cinema_net_data, data_and_league_table_DATA,
-                  forest_data,  reset_btn,  outcome_idx, net_storage):
+                  forest_data,  reset_btn,  outcome_idx, net_storage, raw_storage):
     # if outcome_idx:
     #     outcome_idx = outcome_idx
     # else:
@@ -341,7 +341,7 @@ def __update_output_new(slider_value, store_node,store_edge,net_data, toggle_cin
     if 'reset_project.n_clicks' in triggered: reset_btn_triggered = True
 
     net_data = pd.read_json(net_data[0], orient='split').round(3)
-   
+    raw_data = pd.read_json(raw_data[0], orient='split').round(3)
 
     years = net_data.year #if (not reset_btn_triggered) else YEARS_DEFAULT
     slider_min, slider_max = years.min(), years.max()
@@ -563,8 +563,9 @@ def __update_output_new(slider_value, store_node,store_edge,net_data, toggle_cin
 
     data_and_league_table_DATA['FULL_DATA'] = net_data.to_json( orient='split')
     data_and_league_table_DATA['OUTPUT'] = _output
+    data_raw_output = raw_data.to_dict('records')
 
-    return  _output + _out_slider + [data_and_league_table_DATA]
+    return  _output + _out_slider + [data_and_league_table_DATA] +[data_raw_output]
 
 
 

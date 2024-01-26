@@ -11,3 +11,5 @@ CINEMA_g, CINEMA_y, CINEMA_lb, CINEMA_r = '#5aa469', '#f8d49d', '#75cfb8', '#d35
 
 CX1 = '#738789'
 CX2 = '#d6d6d6'
+
+CX1_new = '#f5c198'

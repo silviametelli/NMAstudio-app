@@ -5,7 +5,7 @@ from tools.utils import get_network, get_network_new
 from tools.PATHS import SESSION_TYPE
 from collections import OrderedDict
 
-
+RAW_DATA = pd.read_csv('db/psoriasis_long_complete.csv', encoding='iso-8859-1')
 NET_DATA = pd.read_csv('db/psoriasis_wide_complete.csv', encoding='iso-8859-1')
 NET_DATA2 = NET_DATA.drop(["TE1", "seTE1", "n11", "n21"], axis=1)
 # NET_DATA2 = NET_DATA2.rename(columns={"TE2": "TE2", "seTE2": "seTE2", "n12": "n1", "n22": "n2"})
@@ -40,7 +40,8 @@ FUNNEL_DATA = pd.read_csv('db/funnel/funnel_data.csv')
 FUNNEL_DATA_OUT2 = pd.read_csv('db/funnel/funnel_data_out2.csv')
 
 
-DEFAULT_DATA = OrderedDict(net_data_STORAGE=[NET_DATA],
+DEFAULT_DATA = OrderedDict(raw_data_STORAGE = [RAW_DATA],
+                           net_data_STORAGE=[NET_DATA],
                         #    net_data_out2_STORAGE=NET_DATA2,
                            consistency_data_STORAGE= [CONSISTENCY_DATA],
                            # user_elements_STORAGE=[USER_ELEMENTS, USER_ELEMENTS2],

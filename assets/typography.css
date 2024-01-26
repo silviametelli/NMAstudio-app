@@ -18,10 +18,11 @@ width: auto;
 }
 
 .tab--selected{
-  background-color: #40515e !important;
+  /* background-color: #40515e !important; */
+  background-color: #f5c198 ;
   border-top-color: #751225 !important;
-  border-left-color: #40515e !important;
-  border-right-color: #40515e !important;
-  color: rgba(255, 255, 255, 1) !important;
+  /* border-left-color: #40515e !important;
+  border-right-color: #40515e !important; */
+  color: black !important;
 }
 

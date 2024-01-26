@@ -133,7 +133,72 @@ def tab_data(years=YEARS_DEFAULT):
                     },
                 ],
                 style_header={
-                    "backgroundColor": "#738789",
+                    # "backgroundColor": "#738789",
+                    'backgroundColor': '#f5c198',
+                    "fontWeight": "bold",
+                    "border": "1px solid #5d6d95",
+                },
+                style_table={
+                    "overflowX": "auto",
+                    "overflowY": "auto",
+                    "height": "99%",
+                    "max-height": "420px",
+                    "minWidth": "100%",
+                    "width": "99%",
+                    "max-width": "calc(52vw)",
+                    "padding": "5px 5px 5px 5px",
+                },
+                css=[
+                    {
+                        "selector": "tr:hover",
+                        "rule": "background-color: rgba(0, 0, 0, 0);",
+                    },
+                    {
+                        "selector": "td:hover",
+                        "rule": "background-color: rgba(0, 116, 217, 0.3) !important;",
+                    },
+                ],
+            ),
+        ],
+        style={"overflowX": "scroll", "overflowY": "scroll"},
+    )
+
+
+def raw_data():
+
+    return html.Div(
+        [   html.Br(),html.Br(),html.Br(),
+            dash_table.DataTable(
+                id="datatable-raw-container",
+                editable=False,
+                # data = default_data.to_dict('records'),
+                # columns=[{"name": c, "id": c} for c in default_data.columns],
+                # export_format="csv",
+                fixed_rows={"headers": True, "data": 0},
+                style_cell={
+                    "backgroundColor": "white",
+                    "color": "black",
+                    "minWidth": "45px",
+                    "maxWidth": "60px",
+                    "textAlign": "center",
+                    "border": "1px solid #5d6d95",
+                    "overflow": "hidden",
+                    "whiteSpace": "no-wrap",
+                    "textOverflow": "ellipsis",
+                    "font-family": "sans-serif",
+                    "fontSize": 11,
+                },
+                style_data_conditional=[
+                    {"if": {"row_index": "odd"}, "backgroundColor": "rgba(0,0,0,0.1)"},
+                    {
+                        "if": {"state": "active"},
+                        "backgroundColor": "rgba(0, 116, 217, 0.3)",
+                        "border": "1px solid rgb(0, 116, 217)",
+                    },
+                ],
+                style_header={
+                    # "backgroundColor": "#738789",
+                    'backgroundColor': '#f5c198',
                     "fontWeight": "bold",
                     "border": "1px solid #5d6d95",
                 },

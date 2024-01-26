@@ -3,11 +3,11 @@ from dash import html, dcc
 
 saveload_modal = html.Div(
         [
-            dbc.Button("Save/Load Project", id="open_saveload", n_clicks=0, style={'margin-top':'-8.5px', 'padding-top':'0px'}),
+            dbc.Button("Save/Load Project", id="open_saveload", n_clicks=0, style={'margin-top':'-8.5px', 'padding-top':'0px', 'background-color': '#00ab9c'}),
             dbc.Modal(dcc.Tabs(id='all-tabs-saveload', persistence=True, children=[
 
                             dcc.Tab(style={'color':'grey','display': 'flex', 'justify-content':'center', 'align-items':'center'},
-                                    selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
+                                    selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center','background-color': '#738788',
                                                     'align-items': 'center'},
                                     label='Save Project',
                                     children=html.Div(className='control-tab', children=[
@@ -60,7 +60,7 @@ saveload_modal = html.Div(
 
                 dcc.Tab(
                     style={'color': 'grey', 'display': 'flex', 'justify-content': 'center', 'align-items': 'center'},
-                    selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',
+                    selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center','background-color': '#738788',
                                     'align-items': 'center'},
                     label='Load Project',
                     children=html.Div(className='control-tab', children=[
@@ -121,5 +121,5 @@ saveload_modal = html.Div(
                             "color": "black",'font-family':'sans-serif',
                              "background-color": "#d7dbda"},
             ),
-        ]
+        ], style={"display":'grid', 'align-items': 'center'}
     )

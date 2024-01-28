@@ -79,7 +79,7 @@ file_upload_controls = [html.Br(),
 
 file_upload_controls2 = [
                        dbc.Row([html.P("Select the format of your dataset:", className="selcect_title",),
-                               html.Div(dcc.RadioItems(id='radio-format', options=options_format, inline=True, className='upload_radio'))], 
+                               html.Div(dcc.RadioItems(id='radio-format', options=options_format,  className='upload_radio'))], 
                                         style={'display': 'grid', 
                                                'background-color': 'beige',
                                                 'width': '500px',

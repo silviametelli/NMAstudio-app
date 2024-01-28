@@ -664,7 +664,7 @@ grid2 = dag.AgGrid(
     style={'width': '1200px','height': f'{48 + 163 * n_row}px'},
 )
 
-checklist = dcc.Checklist(df_league.columns[1:], df_league.columns[1:3].values, 
+checklist = dcc.Checklist(options= df_league.columns[1:], value= df_league.columns[1:3].values, 
                           id='checklist_treat', style={'display': 'contents'})
 button_clear=html.Button('select all', id='clear-val', n_clicks=0)
 

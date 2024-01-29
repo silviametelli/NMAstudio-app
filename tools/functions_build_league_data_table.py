@@ -564,8 +564,9 @@ def __update_output_new(slider_value, store_node,store_edge,net_data,raw_data, t
     data_and_league_table_DATA['FULL_DATA'] = net_data.to_json( orient='split')
     data_and_league_table_DATA['OUTPUT'] = _output
     data_raw_output = raw_data.to_dict('records')
+    data_raw_cols = [{"name": c, "id": c} for c in raw_data.columns]
 
-    return  _output + _out_slider + [data_and_league_table_DATA] +[data_raw_output]
+    return  _output + _out_slider + [data_and_league_table_DATA] +[data_raw_output, data_raw_cols]
 
 
 

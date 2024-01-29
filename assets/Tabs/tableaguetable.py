@@ -65,7 +65,16 @@ tab_league = html.Div([
        #                            target='league-expand'), ])
                                   ]),
 
-        dbc.Row([dbc.Col([html.Div([html.P("Upload the CINeMA report file in its original format, with mandatory columns “Comparison” and “Confidence rating”",
+        dbc.Row([html.Div([
+                             html.Button('Export', id='league-export', n_clicks=0, className="btn-export",
+                                                   style={'margin-left': '5px', 'padding': '4px 4px 4px 4px',
+                                                           'fontSize': 11, 'text-align': 'left',
+                                                          'font-weight': '900', 'font-family': 'sans-serif',
+                                                          'display': 'inline-block', 'vertical-align': 'top'}),
+                             dcc.Download(id="download_leaguetable")
+
+                                  ]),
+              dbc.Col([html.Div([html.P("Upload the CINeMA report file in its original format, with mandatory columns “Comparison” and “Confidence rating”",
                          id='cinema-instruction',),
                      html.A(
                            html.Img(
@@ -78,12 +87,22 @@ tab_league = html.Div([
                       style={'margin-left': '5px', 'font-size':'12px','color':'rgb(90, 135, 196)'}),
                id='datatable-secondfile-upload', 
                multiple=False,
-               style={'display': 'inline-block', 'font-size': '12px', 'padding-left': '100px'})],
-               style={'display': 'inline-block', 'margin-top': '-10px'}),
+               style={'display': 'inline-block', 'font-size': '12px', 'padding-left': '45px'})],
+               style={'display': 'inline-block'}),
               dbc.Col([html.Ul(id="file2-list", style={'margin-left': '15px', 'color':'#dae8e8',
                                                  'font-size':'11px'})],
-            style={'display': 'inline-block', 'margin-top': '-5px'}
+            style={'display': 'inline-block'}
             ),
+            dbc.Col([dcc.Upload(html.A('Upload CINeMA report 2 for outcome 2',
+                                   style={'margin-left': '5px', 'margin-top': '1px', 'font-size': '12px',
+                                          'padding-bottom': '4px','color':'rgb(90, 135, 196)'}),
+                            id='datatable-secondfile-upload-2', multiple=False,
+                            style={'display': 'inline-block', 'font-size': '12px'})],
+                style={'display': 'inline-block'}),
+            dbc.Col([html.Ul(id="file2-list-2", style={'margin-left': '15px', 'color': '#dae8e8',
+                                                       'font-size': '11px', 'vertical-alignment':'middle'})],
+                style={'display': 'inline-block', 'margin-top': '0px', 'margin-bottom': '0px'}
+                )
               # dbc.Col(
               #        [html.P(f"Select outcomes",className="selectbox", style={'display': 'inline-block', "text-align": 'right',
               #                                                  'margin-left': '0px', 'font-size': '12px'}),
@@ -132,17 +151,17 @@ tab_league = html.Div([
                                      'padding-right': '0px'})
                        ],  style={'float': 'right', 'padding': '5px 5px 5px 5px',
                                   'display': 'inline-block', 'margin-top': '-2px' }),
-        html.Br(),
-        dbc.Row([dbc.Col([dcc.Upload(html.A('Upload CINeMA report 2 for outcome 2',
-                                   style={'margin-left': '5px', 'margin-top': '1px', 'font-size': '12px',
-                                          'padding-bottom': '4px','color':'rgb(90, 135, 196)'}),
-                            id='datatable-secondfile-upload-2', multiple=False,
-                            style={'display': 'inline-block', 'font-size': '12px', 'padding-left': '144px'})],
-                style={'display': 'inline-block', 'margin-top': '-4px'}),
-            dbc.Col([html.Ul(id="file2-list-2", style={'margin-left': '15px', 'color': '#dae8e8',
-                                                       'font-size': '11px', 'vertical-alignment':'middle'})],
-                style={'display': 'inline-block', 'margin-top': '0px', 'margin-bottom': '0px'}
-                ),]),
+       #  html.Br(),
+       #  dbc.Row([dbc.Col([dcc.Upload(html.A('Upload CINeMA report 2 for outcome 2',
+       #                             style={'margin-left': '5px', 'margin-top': '1px', 'font-size': '12px',
+       #                                    'padding-bottom': '4px','color':'rgb(90, 135, 196)'}),
+       #                      id='datatable-secondfile-upload-2', multiple=False,
+       #                      style={'display': 'inline-block', 'font-size': '12px', 'padding-left': '100px'})],
+       #          style={'display': 'inline-block', 'margin-top': '-4px'}),
+       #      dbc.Col([html.Ul(id="file2-list-2", style={'margin-left': '15px', 'color': '#dae8e8',
+       #                                                 'font-size': '11px', 'vertical-alignment':'middle'})],
+       #          style={'display': 'inline-block', 'margin-top': '0px', 'margin-bottom': '0px'}
+       #          ),]),
 
     html.Div(id='league_table_legend',
               style={

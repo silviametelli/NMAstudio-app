@@ -112,7 +112,7 @@ def display_page(pathname):
     # elif pathname == '/doc': return doc_layout
     # elif pathname == '/news': return news_layout
 
-    else:  return HOMEPAGE
+    else:  return RealHomepage
 
 # @app.callback(Output('results_page', 'children'),
 #               [Input('test_upload', 'n_clicks_timestamp'),
@@ -430,7 +430,7 @@ def is_data_file_uploaded(filename):
              )
 
 def update_options(number_outcomes, nameoutcomes, options_var):
-    out_names = ['PASI90',"Death"]
+    out_names = ['PASI90',"SAE"]
     if not nameoutcomes or not all(nameoutcomes):
         if number_outcomes:
             number_outcomes = int(number_outcomes)
@@ -854,7 +854,8 @@ def update_boxplot(value, edges, net_data):
                Output('slider-year', 'max'),
                Output('slider-year', 'marks'),
                Output('data_and_league_table_DATA', 'data'),
-               Output('datatable-raw-container', 'data')
+               Output('datatable-raw-container', 'data'),
+               Output('datatable-raw-container', 'columns')
                ],
               [               
                Input('slider-year', 'value'),

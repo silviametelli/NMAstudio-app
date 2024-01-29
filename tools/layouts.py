@@ -45,6 +45,14 @@ def real_homelayout():
                                     #        'color':'#5c7780',
                                     #        'font-family':'sans-serif'}, 
                                            className='container'), 
+                     html.Br(),html.Br(),html.Br(),
+                     dcc.Markdown('Warning: Please, avoid using Firefox because some features might not work well. Preferred browsers are Safari and Chrome.',
+                                                className="markdown_style_main",
+                                                style={
+                                                    "font-size": '20px',
+                                                    'text-align': 'center',
+                                                    'color':'rgb(222 132 83)',
+                                                       }),
                      html.Br(),
                     #  dcc.Markdown('NMAstudio serves as an interactive web application designed to simplifies the whole Network Meta-Analysis (NMA) procedures and enhances the visualization of results.',
                     #                 className="markdown_style", style={"color": "black", "margin-right":"10%"}),
@@ -150,6 +158,7 @@ def real_homelayout():
                                                                      external_link=True,className='upload_data', n_clicks=0, id='upload_homepage'),
                                              style={'color': 'white',
                                                     'background-color':'orange',
+                                                    'height': 'fit-content',
                                                     'display': 'inline-block',
                                                     'justify-self':'center',
                                                     'border': 'unset',
@@ -164,10 +173,13 @@ def real_homelayout():
                                         'color':'#5c7780',
                                             }),
                                     html.Br(),
-                                    html.Span('Please get in touch at tianqi.yu@etu.u-paris.fr', style={ 'justify-self': 'center'}),
+                                    html.Span('Please get in touch at tianqi.yu@etu.u-paris.fr', 
+                                              style={ 'justify-self': 'center',
+                                                     'font-weight': 'bold',
+                                                     'font-size': 'large'}),
                                     html.Br(), html.Br(),html.Br(),
                                     dbc.Row([dbc.Col([
-                                                dcc.Markdown('Contributor',
+                                                dcc.Markdown('Contributors',
                                                 className="markdown_style_main",
                                                 style={
                                                         "font-size": '20px',
@@ -178,19 +190,19 @@ def real_homelayout():
                                                         'height': 'fit-content',
                                                         'margin-right': '20px'
                                                         }),
-                                                dcc.Link('Tianqi Yu', href='https://www.cer-methods.com/tianqi-yu/',
+                                                dbc.NavLink('Tianqi Yu', href='https://www.cer-methods.com/tianqi-yu/',external_link=True,
                                                         style={'color': '#5b7780',
                                                                 'text-decoration': 'unset',
                                                                 'font-size': 'large',
                                                                 'display': 'block',
                                                                 'margin-right': '20px' }),
-                                                dcc.Link('Anna Chaimani', href='https://www.cer-methods.com/anna/',
+                                                dbc.NavLink('Anna Chaimani', href='https://www.cer-methods.com/anna/',external_link=True,
                                                         style={'color': '#5b7780',
                                                                 'text-decoration': 'unset',
                                                                 'font-size': 'large',
                                                                 'display': 'block',
                                                                 'margin-right': '20px'}),
-                                                dcc.Link('Silvia Metelli', href='https://www.cer-methods.com/team/',
+                                                dbc.NavLink('Silvia Metelli', href='https://www.cer-methods.com/team/',external_link=True,
                                                         style={'color': '#5b7780',
                                                                 'text-decoration': 'unset',
                                                                 'font-size': 'large',
@@ -213,40 +225,44 @@ def real_homelayout():
                                                         'border-bottom': '2px solid',
                                                         'font-weight': 'bold',
                                                         'height': 'fit-content',
-                                                        'margin-left': '20px',
-                                                        'width': '95%',
+                                                        # 'margin-left': '20px',
+                                                        'width': '100%',
                                                         'margin-top': '0'
                                                         }),
-                                                dcc.Markdown('Please cite us as: Tianqi Y, Chaimani A. NMAstudio: a fully interactive web-application for producing and visualising network meta-analyses. *Cochrane Colloquium 2023, London, UK.*',
+                                                dcc.Markdown('Please cite us as: Tianqi Y, Silvia M, Chaimani A. NMAstudio: a fully interactive web-application for producing and visualising network meta-analyses. *Cochrane Colloquium 2023, London, UK.*',
                                                                 className="markdown_style", style={"color": "black", "margin-right":"10%"}),
                                                 html.Br(), 
 
                                                 dcc.Markdown('NMAstudio is a web application to produce and visualise interactive outputs from network meta-analyses. NMAstudio is written in Python, and linked to the R-package netmeta for performing network meta analysis.',
                                                         className="markdown_style",style={"color": "black", "margin-right":"10%"}),
 
-                                                dcc.Markdown('Balduzzi, S., Rücker, G., Nikolakopoulou, A., Papakonstantinou, T., Salanti, G., Efthimiou, O. and Schwarzer, G., 2023. netmeta: An R package for network meta-analysis using frequentist methods.'
-                                                        ,className="markdown_style", style={"font-size":"14px", "color": "black"}),
+                                                dbc.NavLink('Balduzzi, S., Rücker, G., Nikolakopoulou, A., Papakonstantinou, T., Salanti, G., Efthimiou, O., & Schwarzer, G. (2023). netmeta: An R Package for Network Meta-Analysis Using Frequentist Methods. Journal of Statistical Software, 106(2), 1-40. https://doi.org/10.18637/jss.v106.i02'
+                                                        , href='https://www.jstatsoft.org/article/view/v106i02', external_link=True,className="markdown_style", style={"font-size":"14px", "color": "#3498db"}),
 
-                                                html.Br(),
-
-                                                html.Div([dcc.Markdown("Demonstration data set (class level psoriasis treatments):",
-                                                        className="markdown_style", style={'margin-right':'0px', 'display':'inline-block',"color": "black"}) ,
-                                                html.Button("Download data", id="demodata", style={'display': 'inline-block',
-                                                                                                'padding': '1px', 'margin-left':'-23px'}),
-                                                                Download(id="download-demodata")]),
-
-                                                dcc.Markdown("Sbidian E, Chaimani A, Garcia-Doval I, Doney L, Dressler C, Hua C, et al. Systemic pharmacological treatments for chronic plaque psoriasis: a network meta-analysis. \n Cochrane Database Syst Rev. 2021 Apr 19;4:CD011535.",
-                                                        className="markdown_style", style={"font-size":"14px", "color": "black", "margin-right":"10%"}),
                                                 html.Br(),html.Br(),
 
-                                                ], style={ 'width': '80%'}),],
+                                                html.Div([dcc.Markdown("Embedded and demonstration datasets taken from:",
+                                                        className="markdown_style", style={'margin-right':'0px', 'display':'inline-block',"color": "black"}) ,
+                                                html.Button("Download demonstration data", id="demodata", style={'display': 'inline-block',
+                                                                                                'padding': '1px'}),
+                                                                Download(id="download-demodata")]),
+
+                                                dbc.NavLink("Sbidian E, Chaimani A, Garcia-Doval I, Doney L, Dressler C, Hua C, et al. Systemic pharmacological treatments for chronic plaque psoriasis: a network meta-analysis. \n Cochrane Database Syst Rev. 2021 Apr 19;4:CD011535.",
+                                                        href='https://www.cochranelibrary.com/cdsr/doi/10.1002/14651858.CD011535.pub4/full',
+                                                        className="markdown_style", external_link=True,style={"font-size":"14px", "color": "#3498db", "margin-right":"10%"}),
+                                                html.Br(),html.Br(),
+
+                                                ], style={ 'width': '80%', 'padding-left': '3%'}),],
                                               style={'height':'fit-content', 'background-color':'antiquewhite', 'justify-content': 'center'}),
                                     
                                 #     html.Br(), html.Br(),html.Br(),
                                     html.Footer([html.P('Copyright © 2020. All rights reserved.', 
                                          style={'color':'white', 'margin-left':'45px', 'margin-top': '2%'}),
                                          dcc.Markdown('This project has received funding from the EU H2020 research and innovation programme under the Marie Skłodowska-Curie grant agreement No 101031840 & the French National Research Agency under the project ANR-22-CE36-0013-01',
-                                         className="markdown_style",style={"color": "white", "font-weight": "330", "font-size":"14px"}),
+                                         className="markdown_style",style={"color": "white", 
+                                                                           "font-weight": "330", 
+                                                                           "font-size":"14px",
+                                                                           'padding-left': '3%'}),
                                         #  dcc.Markdown('Project team members: \nAnna Chaimani  Silvia Metelli  Tianqi Yu',
                                         #  className="markdown_style",style={"color": "white", "font-weight": "330", "font-size":"14px", 'white-space': 'pre'}),
 
@@ -268,7 +284,7 @@ def real_homelayout():
 def Homepage():
     return html.Div([Navbar(), home_layout(), upload_data()], id='')
 
-OPTIONS_results = [{'label': col, 'value': idx} for idx, col in enumerate(['Data & Transitivity', 'Forest plot', 'League table', 'Consistency & reporting bias', 'ranking'])]
+OPTIONS_results = [{'label': col, 'value': idx} for idx, col in enumerate(['Data & Transitivity', 'Forest plots', 'League tables', 'Consistency & Reporting bias', 'Ranking'])]
 def home_layout():
     return html.Div(id='result_page',className="app__container", children=STORAGE+[
                         html.Div(dataupload_error, style={'vertical-align': "top"}),
@@ -279,9 +295,9 @@ def home_layout():
                         html.Div(R_errors_funnel, style={'vertical-align': "top"}),
                         html.Br(), html.Br(),
                         dbc.Row([
-                                html.Span('Select results to display:', style={'justify-self':'center','align-self': 'center', 'font-size': 'medium'}),
+                                html.Span('Select results to display:', style={'justify-self':'center','align-self': 'center', 'font-size': 'large', 'font-weight': 'bold'}),
                                 dcc.Dropdown(placeholder="", options=OPTIONS_results, value = 0,
-                                            style={'display': 'grid', 'justify-items': 'center', 'width':'160px'},
+                                            style={'display': 'grid', 'justify-items': 'center', 'width':'230px'},
                                             id='result_selected'
                                                  ),
                                 html.Span('or', style={'justify-self':'center','align-self': 'center'}),
@@ -303,10 +319,10 @@ def home_layout():
                                                 'margin-bottom':'2px'}),
                                 saveload_modal,
 
-                                ], style={"display": 'grid', 'width':'850px', 'justify-self':'center','grid-template-columns': '0.9fr 0.2fr 0.2fr 0.5fr 0.5fr 0.5fr'}),
+                                ], style={"display": 'grid', 'width':'1000px', 'justify-self':'center','grid-template-columns': '0.7fr 0.7fr 0.2fr 0.4fr 0.4fr 0.4fr'}),
 
                         html.Br(), html.Br(),
-                        html.Span('Click Setup Analysis button to upload your own dataset, otherwise the embedded example is shown below.', 
+                        html.Span('Click the Setup Analysis button to upload your own dataset, otherwise the embedded example is shown below.', 
                                   style={'justify-self':'center',
                                          'align-self': 'center', 
                                          'font-size': 'medium', 'color': 'chocolate'}),
@@ -415,7 +431,7 @@ def home_layout():
 
                                            ], style={'margin-left': '-20px'}),
                          cyto.Cytoscape(id='cytoscape', responsive=False, autoRefreshLayout=True,
-                                        minZoom=0.3,  maxZoom=1.5,      
+                                        minZoom=0.6,  maxZoom=1.2,     
                                 elements=[],
                                 style={ 
                                     'height': '70vh', 'width': '100%', 
@@ -579,19 +595,31 @@ def home_layout():
                                     style={'color':'grey', 'display': 'none', 'justify-content':'center', 'align-items':'center'},
                                     selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center','background-color': '#f5c198',
                                                     'align-items': 'center'},
-                                    label='Forest plots', children=html.Div(className='control-tab', children=[tab_forests])
+                                    label='Forest plots', children=html.Div(className='control-tab', children=[tab_forests],
+                                                                            style={'overflowX': 'auto',
+                                                                                        'overflowY': 'auto',
+                                                                                        'height': '99%',
+                                                                                                })
                             ),
                             dcc.Tab(id='league_tab',value= 'league_tab',style={'color':'grey', 'display': 'none', 'justify-content':'center', 'align-items':'center'},
                                     selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center','background-color': '#f5c198',
                                                     'align-items': 'center'},
-                                    label='League Table',
-                                    children=html.Div(className='control-tab', children=[tab_league])
+                                    label='League Tables',
+                                    children=html.Div(className='control-tab', children=[tab_league],  
+                                                                                style={'overflowX': 'unset',
+                                                                                        'overflowY': 'unset',
+                                                                                        'height': '99%',
+                                                                                                })
                             ),
                             dcc.Tab(id='consis_tab',value= 'consis_tab',style={'color': 'grey', 'display': 'none', 'justify-content': 'center', 'align-items': 'center'},
                                     selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center','background-color': '#f5c198',
                                                     'align-items': 'center'},
                                     label='Consistency checks',
-                                    children=html.Div(className='control-tab', children=[tab_consistency()])
+                                    children=html.Div(className='control-tab', children=[tab_consistency()], 
+                                                      style={'overflowX': 'auto',
+                                                        'overflowY': 'auto',
+                                                        'height': '99%',
+                                                             })
                                     ),
                         #     dcc.Tab(style={'color':'grey','display': 'flex', 'justify-content':'center', 'align-items':'center'},
                         #             selected_style={'color': 'grey', 'display': 'flex', 'justify-content': 'center',

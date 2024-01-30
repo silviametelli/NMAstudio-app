@@ -132,7 +132,7 @@ def tab_consistency(consistency_data=CONSISTENCY_DATA):
             #export_format="csv", #xlsx
             #columns=[{"name": i, "id": i} for i in df.columns],
             #data=df.to_dict('records'),
-            style_cell={'backgroundColor': 'rgba(0,0,0,0.1)',
+            style_cell={'backgroundColor': 'rgba(0,0,0,0)',
                 'color': 'black',
                 'textAlign': 'center',
                 'minWidth': '35px',
@@ -150,7 +150,7 @@ def tab_consistency(consistency_data=CONSISTENCY_DATA):
             },
             {'if': {'filter_query': '{p-value} > 0.05 && {p-value} <= 0.10',
             'column_id': 'p-value'},
-             'color': 'orange',
+             'color': '#f2940',
              'fontWeight': 'bold'
              },
              {'if': {'filter_query': '{p-value} > 0.10 && {p-value} <= 0.15',
@@ -159,7 +159,7 @@ def tab_consistency(consistency_data=CONSISTENCY_DATA):
                   'fontWeight': 'bold'
              },
             {'if': {'row_index': 'odd'},
-            'backgroundColor': 'rgba(0,0,0,0.2)'},
+            'backgroundColor': 'rgba(0,0,0,0.1)'},
             {'if': {'state': 'active'},
             'backgroundColor': 'rgba(0, 116, 217, 0.3)',
             'border': '1px solid rgb(0, 116, 217)'}],

@@ -1,0 +1,207 @@
+,studlab,treat1,treat2,TE1,seTE1,event11,n11,event21,n21,incr,allstudies,studlab.orig,year,rob,age,effect_size1,outcome1_direction,treat.orig1,treat.orig2,n12,r11,r12,No_randomised11,No_randomised12,No_randomised21,No_randomised22,Responders21,Responders22
+0,Quera-Salva2010 (CL3-20098-056),agomelatine,escitalopram,0.3388210339,0.3461215857,44,71,36,67,0.0,0,Quera-Salva2010 (CL3-20098-056),2023,1,44,OR,harmful,agomelatine,escitalopram,67,44,36,71,67,71,67,44,36
+1,0600A-326,venlafaxine,clomipramine,-0.5843084005,0.37597144790000003,32,60,41,61,0.0,0,0600A-326,2023,1,32,OR,harmful,venlafaxine,clomipramine,61,32,41,60,61,60,61,32,41
+2,0600A-332,venlafaxine,fluoxetine,-0.43671765160000003,0.5710774257,14,27,15,24,0.0,0,0600A-332,2023,1,32,OR,harmful,venlafaxine,fluoxetine,24,14,15,27,24,27,24,14,15
+3,0600A-626,venlafaxine,fluoxetine,0.0540672213,0.3207398557,38,79,36,77,0.0,0,0600A-626,2023,1,32,OR,harmful,venlafaxine,fluoxetine,77,38,36,79,77,79,77,38,36
+4,0600A1-372,venlafaxine,fluoxetine,0.25849578770000003,0.22857744330000002,86,156,74,152,0.0,0,0600A1-372,2023,1,86,OR,harmful,venlafaxine,fluoxetine,152,86,74,156,152,156,152,86,74
+5,0600B1-367,paroxetine,venlafaxine,-0.207003138,0.2736489622,44,81,98,165,0.0,0,0600B1-367,2023,1,86,OR,harmful,paroxetine,venlafaxine,165,44,98,81,165,81,165,44,98
+6,0600B1-402,venlafaxine,sertraline,0.0815528482,0.1671410217,174,295,167,293,0.0,0,0600B1-402,2023,1,86,OR,harmful,venlafaxine,sertraline,293,174,167,295,293,295,293,174,167
+7,29060/299,paroxetine,amitriptyline,0.056165857900000005,0.2718028149,53,109,51,108,0.0,0,29060/299,2023,1,53,OR,harmful,paroxetine,amitriptyline,108,53,51,109,108,109,108,53,51
+8,29060/356,paroxetine,fluoxetine,0.11300975690000001,0.3412334221,33,68,32,70,0.0,0,29060/356,2023,1,33,OR,harmful,paroxetine,fluoxetine,70,33,32,68,70,68,70,33,32
+9,Aberg-Wisted2000,paroxetine,sertraline,0.00896867,0.2206961966,112,177,111,176,0.0,0,Aberg-Wisted2000,2023,1,112,OR,harmful,paroxetine,sertraline,176,112,111,177,176,177,176,112,111
+10,Aguglia1993,sertraline,fluoxetine,0.8652355611,0.398986002,35,52,26,56,0.0,0,Aguglia1993,2023,1,35,OR,harmful,sertraline,fluoxetine,56,35,26,52,56,52,56,35,26
+11,Allard2004,citalopram,venlafaxine,0.09716374850000001,0.3427027871,50,75,49,76,0.0,0,Allard2004,2023,1,50,OR,harmful,citalopram,venlafaxine,76,50,49,75,76,75,76,50,49
+12,Altamura1989b,amitriptyline,trazodone,-0.0645385211,0.47371379750000003,21,37,21,36,0.0,0,Altamura1989b,2023,1,50,OR,harmful,amitriptyline,trazodone,36,21,21,37,36,37,36,21,21
+13,Alves1999,fluoxetine,venlafaxine,0.0083682497,0.6032707305,40,47,34,40,0.0,0,Alves1999,2023,1,50,OR,harmful,fluoxetine,venlafaxine,40,40,34,47,40,47,40,40,34
+14,Amini2005,mirtazapine,fluoxetine,0.9162907319,0.6892024376,12,18,8,18,0.0,0,Amini2005,2023,1,50,OR,harmful,mirtazapine,fluoxetine,18,12,8,18,18,18,18,12,8
+15,Andersen1986,citalopram,clomipramine,-0.5667569752,0.3789586106,23,57,31,57,0.0,0,Andersen1986,2023,1,50,OR,harmful,citalopram,clomipramine,57,23,31,57,57,57,57,23,31
+16,Ansseau1989a,milnacipran,amitriptyline,-0.6836684366,0.37772668470000004,53,95,35,49,0.0,0,Ansseau1989a,2023,1,50,OR,harmful,milnacipran,amitriptyline,49,53,35,95,49,95,49,53,35
+17,Ansseau1989b,milnacipran,amitriptyline,0.5130957723,0.4373646977,28,44,22,43,0.0,0,Ansseau1989b,2023,1,50,OR,harmful,milnacipran,amitriptyline,43,28,22,44,43,44,43,28,22
+18,Ansseau1991,milnacipran,fluvoxamine,0.5114523866,0.38784794170000003,56,85,22,41,0.0,0,Ansseau1991,2023,1,50,OR,harmful,milnacipran,fluvoxamine,41,56,22,85,41,85,41,56,22
+19,Ansseau1994a (MY-1005/BRL-029060/1/CPMS-112),paroxetine,fluvoxamine,0.2795848622,0.3741412056,24,55,24,65,0.0,0,Ansseau1994a (MY-1005/BRL-029060/1/CPMS-112),2023,1,50,OR,harmful,paroxetine,fluvoxamine,65,24,24,55,65,55,65,24,24
+20,Ansseau1994b,milnacipran,fluoxetine,-0.5578284774,0.2998173266,32,97,43,93,0.0,0,Ansseau1994b,2023,1,50,OR,harmful,milnacipran,fluoxetine,93,32,43,97,93,97,93,32,43
+21,Ansseau1994c,nefazodone,amitriptyline,-1.1749852675,0.4065293427,21,55,34,51,0.0,0,Ansseau1994c,2023,1,50,OR,harmful,nefazodone,amitriptyline,51,21,34,55,51,55,51,21,34
+22,Armitage1997,nefazodone,fluoxetine,-0.0953101798,0.6105139415,11,22,11,21,0.0,0,Armitage1997,2023,1,50,OR,harmful,nefazodone,fluoxetine,21,11,11,22,21,22,21,11,11
+23,Baldwin1996,nefazodone,paroxetine,-0.088947486,0.2810963684,58,105,58,101,0.0,0,Baldwin1996,2023,1,50,OR,harmful,nefazodone,paroxetine,101,58,58,105,101,105,101,58,58
+24,Baldwin2006a (97-CRBX-052 - Study 052),reboxetine,paroxetine,-0.40293666180000004,0.2242983348,80,159,100,166,0.0,0,Baldwin2006a (97-CRBX-052 - Study 052),2023,1,50,OR,harmful,reboxetine,paroxetine,166,80,100,159,166,159,166,80,100
+25,Baldwin2006b (Study 99505),paroxetine,escitalopram,0.1088143657,0.2393521094,111,159,112,166,0.0,0,Baldwin2006b (Study 99505),2023,1,50,OR,harmful,paroxetine,escitalopram,166,111,112,159,166,159,166,111,112
+26,Beasley1991,trazodone,fluoxetine,0.1997519999,0.3577734368,34,61,33,65,0.0,0,Beasley1991,2023,1,50,OR,harmful,trazodone,fluoxetine,65,34,33,61,65,61,65,34,33
+27,"Behnke2003 (E-1690, Kjernisted2002)",mirtazapine,sertraline,-0.0262102668,0.2283095131,117,176,114,170,0.0,0,"Behnke2003 (E-1690, Kjernisted2002)",2023,1,50,OR,harmful,mirtazapine,sertraline,170,117,114,176,170,176,170,117,114
+28,Benkert2000 (E-1559),mirtazapine,paroxetine,0.1885183233,0.24152713790000002,74,139,66,136,0.0,0,Benkert2000 (E-1559),2023,1,50,OR,harmful,mirtazapine,paroxetine,136,74,66,139,136,139,136,74,66
+29,Benkert2006(C-1763),mirtazapine,venlafaxine,0.3440961617,0.2430777638,70,140,56,135,0.0,0,Benkert2006(C-1763),2023,1,50,OR,harmful,mirtazapine,venlafaxine,135,70,56,140,135,140,135,70,56
+30,Bennie1995,sertraline,fluoxetine,0.3076673648,0.2375080602,73,142,63,144,0.0,0,Bennie1995,2023,1,50,OR,harmful,sertraline,fluoxetine,144,73,63,142,144,142,144,73,63
+31,Berlanga1997,nefazodone,fluoxetine,-0.10845170820000001,0.4658440339,17,37,18,37,0.0,0,Berlanga1997,2023,1,50,OR,harmful,nefazodone,fluoxetine,37,17,18,37,37,37,37,17,18
+32,Berlanga2006,reboxetine,citalopram,0.0363676442,0.4086898788,28,46,33,55,0.0,0,Berlanga2006,2023,1,50,OR,harmful,reboxetine,citalopram,55,28,33,46,55,46,55,28,33
+33,Bersani1994,sertraline,amitriptyline,0.11778303570000001,0.48549213630000004,18,34,17,34,0.0,0,Bersani1994,2023,1,50,OR,harmful,sertraline,amitriptyline,34,18,17,34,34,34,34,18,17
+34,Bielski2004 (SCT-MD-12),escitalopram,venlafaxine,0.47870427050000003,0.28381999690000004,59,101,47,101,0.0,0,Bielski2004 (SCT-MD-12),2023,1,50,OR,harmful,escitalopram,venlafaxine,101,59,47,101,101,101,101,59,47
+35,Bignamini1992 (PAR 29060/078),paroxetine,amitriptyline,-0.28107096740000004,0.2298405506,82,156,91,153,0.0,0,Bignamini1992 (PAR 29060/078),2023,1,50,OR,harmful,paroxetine,amitriptyline,153,82,91,156,153,156,153,82,91
+36,Blacker1988,amitriptyline,trazodone,0.5877866649,0.3700125986,29,44,58,112,0.0,0,Blacker1988,2023,1,50,OR,harmful,amitriptyline,trazodone,112,29,58,44,112,44,112,29,58
+37,Bosc1997b (Study 016 - Massana 1999),reboxetine,fluoxetine,0.14179791190000002,0.35010591620000003,59,79,64,89,0.0,0,Bosc1997b (Study 016 - Massana 1999),2023,1,50,OR,harmful,reboxetine,fluoxetine,89,59,64,79,89,79,89,59,64
+38,Bougerol1997 (Study 91302 - FDA),fluoxetine,citalopram,0.1999064616,0.23925622170000002,109,158,102,158,0.0,0,Bougerol1997 (Study 91302 - FDA),2023,1,50,OR,harmful,fluoxetine,citalopram,158,109,102,158,158,158,158,109,102
+39,Boulenger2006 (Study 10351),escitalopram,paroxetine,0.2355660713,0.1903197071,144,232,128,227,0.0,0,Boulenger2006 (Study 10351),2023,1,50,OR,harmful,escitalopram,paroxetine,227,144,128,232,227,232,227,144,128
+40,Caligiuri2003,bupropion,sertraline,-0.0645385211,1.0165300455,3,7,4,9,0.0,0,Caligiuri2003,2023,1,50,OR,harmful,bupropion,sertraline,9,3,4,7,9,7,9,3,4
+41,Casabona2002 (0600B 428),paroxetine,venlafaxine,-0.9816909506,0.4017988007,29,56,43,58,0.0,0,Casabona2002 (0600B 428),2023,1,50,OR,harmful,paroxetine,venlafaxine,58,29,43,56,58,56,58,29,43
+42,Cassano2002 (29060/421),paroxetine,fluoxetine,0.4970323016,0.2723505473,50,123,35,119,0.0,0,Cassano2002 (29060/421),2023,1,50,OR,harmful,paroxetine,fluoxetine,119,50,35,123,119,123,119,50,35
+43,Chang 2015,fluoxetine,venlafaxine,0.0153612852,0.4147644666,41,58,38,54,0.0,0,Chang 2015,2023,1,50,OR,harmful,fluoxetine,venlafaxine,54,41,38,58,54,58,54,41,38
+44,Chouinard1985,fluoxetine,amitriptyline,-0.896872646,0.5722003784,8,25,15,28,0.0,0,Chouinard1985,2023,1,50,OR,harmful,fluoxetine,amitriptyline,28,8,15,25,28,25,28,8,15
+45,Chouinard1999 (29060/131),paroxetine,fluoxetine,-0.0289875369,0.2963679125,67,102,67,101,0.0,0,Chouinard1999 (29060/131),2023,1,50,OR,harmful,paroxetine,fluoxetine,101,67,67,102,101,102,101,67,67
+46,Christiansen1996,paroxetine,amitriptyline,-0.0425596144,0.3501035044,46,71,48,73,0.0,0,Christiansen1996,2023,1,50,OR,harmful,paroxetine,amitriptyline,73,46,48,71,73,71,73,46,48
+47,CL3-20098-036,agomelatine,venlafaxine,0.207099617,0.3066072273,113,137,111,140,0.0,0,CL3-20098-036,2023,1,50,OR,harmful,agomelatine,venlafaxine,140,113,111,137,140,137,140,113,111
+48,CL3-20098-048,agomelatine,paroxetine,0.0136043204,0.20080382970000002,127,213,118,199,0.0,0,CL3-20098-048,2023,1,50,OR,harmful,agomelatine,paroxetine,199,127,118,213,199,213,199,127,118
+49,CL3-20098-062,agomelatine,duloxetine,-0.2747857488,0.2100644149,131,202,153,216,0.0,0,CL3-20098-062,2023,1,50,OR,harmful,agomelatine,duloxetine,216,131,153,202,216,202,216,131,153
+50,Clerc1994,fluoxetine,venlafaxine,-0.8754687374000001,0.5092285592,17,34,24,34,0.0,0,Clerc1994,2023,1,50,OR,harmful,fluoxetine,venlafaxine,34,17,24,34,34,34,34,17,24
+51,Clerc2001,fluvoxamine,milnacipran,-0.5679840376,0.39590427640000003,32,56,40,57,0.0,0,Clerc2001,2023,1,50,OR,harmful,fluvoxamine,milnacipran,57,32,40,56,57,56,57,32,40
+52,Cohn1990,sertraline,amitriptyline,0.087011377,0.2736636163,84,161,40,80,0.0,0,Cohn1990,2023,1,50,OR,harmful,sertraline,amitriptyline,80,84,40,161,80,161,80,84,40
+53,Colonna2005 (Study 99022),escitalopram,citalopram,0.2717101269,0.21387955790000002,104,175,96,182,0.0,0,Colonna2005 (Study 99022),2023,1,50,OR,harmful,escitalopram,citalopram,182,104,96,175,182,175,182,104,96
+54,Corruble2013 (CL3-20098-063),agomelatine,escitalopram,0.1103480572,0.282592498,134,164,128,160,0.0,0,Corruble2013 (CL3-20098-063),2023,1,50,OR,harmful,agomelatine,escitalopram,160,134,128,164,160,164,160,134,128
+55,Costaesilva1998,fluoxetine,venlafaxine,-0.3437715391,0.2849260771,153,186,170,196,0.0,0,Costaesilva1998,2023,1,50,OR,harmful,fluoxetine,venlafaxine,196,153,170,186,196,186,196,153,170
+56,Dalery2003,fluvoxamine,fluoxetine,0.0592694085,0.2990208522,53,90,54,94,0.0,0,Dalery2003,2023,1,50,OR,harmful,fluvoxamine,fluoxetine,94,53,54,90,94,90,94,53,54
+57,"Debonnel2000 (Blier2009, iQWIG E-1639)",mirtazapine,paroxetine,-1.1592369105,0.7094138241,4,21,9,21,0.0,0,"Debonnel2000 (Blier2009, iQWIG E-1639)",2023,1,50,OR,harmful,mirtazapine,paroxetine,21,4,9,21,21,21,21,4,9
+58,Debus1988,fluoxetine,trazodone,-0.08004270770000001,0.618448569,9,22,9,21,0.0,0,Debus1988,2023,1,50,OR,harmful,fluoxetine,trazodone,21,9,9,22,21,22,21,9,9
+59,Demyttenaere1998 ,amitriptyline,fluoxetine,-0.2006706955,0.5048328980000001,18,31,22,35,0.0,0,Demyttenaere1998 ,2023,1,50,OR,harmful,amitriptyline,fluoxetine,35,18,22,31,35,31,35,18,22
+60,DeRonchi1998,fluoxetine,amitriptyline,-0.1823215568,0.49721446300000005,16,32,18,33,0.0,0,DeRonchi1998,2023,1,50,OR,harmful,fluoxetine,amitriptyline,33,16,18,32,33,32,33,16,18
+61,DeWilde1983a,fluvoxamine,clomipramine,-0.4660897299,0.7334781497,16,22,17,21,0.0,0,DeWilde1983a,2023,1,50,OR,harmful,fluvoxamine,clomipramine,21,16,17,22,21,22,21,16,17
+62,DeWilde1993,paroxetine,fluoxetine,-0.0392207132,0.4022373327,25,49,26,50,0.0,0,DeWilde1993,2023,1,50,OR,harmful,paroxetine,fluoxetine,50,25,26,49,50,49,50,25,26
+63,Dierick1996,fluoxetine,venlafaxine,-0.4799652884,0.23824935630000002,95,161,107,153,0.0,0,Dierick1996,2023,1,50,OR,harmful,fluoxetine,venlafaxine,153,95,107,161,153,161,153,95,107
+64,DUAG1990,paroxetine,clomipramine,-0.6662177687,0.37204084190000003,23,62,31,58,0.0,0,DUAG1990,2023,1,50,OR,harmful,paroxetine,clomipramine,58,23,31,62,58,62,58,23,31
+65,E-1569,mirtazapine,paroxetine,-0.3829922523,0.3364125454,40,73,48,75,0.0,0,E-1569,2023,1,50,OR,harmful,mirtazapine,paroxetine,75,40,48,73,75,73,75,40,48
+66,Ekselius1997,citalopram,sertraline,-0.06982826660000001,0.2157907051,136,200,139,200,0.0,0,Ekselius1997,2023,1,50,OR,harmful,citalopram,sertraline,200,136,139,200,200,200,200,136,139
+67,Falk1989,trazodone,fluoxetine,-1.0986122887,0.8079466429000001,4,13,8,14,0.0,0,Falk1989,2023,1,50,OR,harmful,trazodone,fluoxetine,14,4,8,13,14,13,14,4,8
+68,Fava2002,sertraline,fluoxetine,0.5026954977,0.3144241418,70,96,57,92,0.0,0,Fava2002,2023,1,50,OR,harmful,sertraline,fluoxetine,92,70,57,96,92,96,92,70,57
+69,Fava2002,sertraline,paroxetine,0.2972515235,0.3156299301,70,96,64,96,0.0,0,Fava2002,2023,1,50,OR,harmful,sertraline,paroxetine,96,70,64,96,96,96,96,70,64
+70,Fava2002,fluoxetine,paroxetine,-0.20544397420000002,0.30494309010000004,57,92,64,96,0.0,0,Fava2002,2023,1,50,OR,harmful,fluoxetine,paroxetine,96,57,64,92,96,92,96,57,64
+71,Fawcett1989,amitriptyline,fluoxetine,-0.2135741003,0.6543038691,7,20,8,20,0.0,0,Fawcett1989,2023,1,50,OR,harmful,amitriptyline,fluoxetine,20,7,8,20,20,20,20,7,8
+72,Feiger1996,nefazodone,sertraline,0.1541506798,0.3168087584,42,78,41,82,0.0,0,Feiger1996,2023,1,50,OR,harmful,nefazodone,sertraline,82,42,41,78,82,78,82,42,41
+73,Feighner1991,fluoxetine,bupropion,-0.1733528868,0.3664725901,35,62,37,61,0.0,0,Feighner1991,2023,1,50,OR,harmful,fluoxetine,bupropion,61,35,37,62,61,62,61,35,37
+74,Fudge1990,fluoxetine,trazodone,-1.2739651761,0.7196055641,10,21,13,17,0.0,0,Fudge1990,2023,1,50,OR,harmful,fluoxetine,trazodone,17,10,13,21,17,21,17,10,13
+75,Gagiano1993,paroxetine,fluoxetine,0.2876820725,0.43885372570000003,30,45,27,45,0.0,0,Gagiano1993,2023,1,50,OR,harmful,paroxetine,fluoxetine,45,30,27,45,45,45,45,30,27
+76,Gentil2000,venlafaxine,amitriptyline,0.0460033533,0.4290434999,43,57,44,59,0.0,0,Gentil2000,2023,1,50,OR,harmful,venlafaxine,amitriptyline,59,43,44,57,59,57,59,43,44
+77,Geretsegger1995 (MY-060/BRL-029060/1),paroxetine,amitriptyline,-0.1335313926,0.41981214370000003,21,44,24,47,0.0,0,Geretsegger1995 (MY-060/BRL-029060/1),2023,1,50,OR,harmful,paroxetine,amitriptyline,47,21,24,44,47,44,47,21,24
+78,Gillin1997,nefazodone,fluoxetine,0.4054651081,0.6123724357,12,24,8,20,0.0,0,Gillin1997,2023,1,50,OR,harmful,nefazodone,fluoxetine,20,12,8,24,20,24,20,12,8
+79,Ginestet1989,fluoxetine,clomipramine,0.48835276790000004,0.6266392644000001,22,28,18,26,0.0,0,Ginestet1989,2023,1,50,OR,harmful,fluoxetine,clomipramine,26,22,18,28,26,28,26,22,18
+80,Grunebaum2011 (NCT00429169),bupropion,paroxetine,0.021978906700000002,0.4629380025,16,40,15,38,0.0,0,Grunebaum2011 (NCT00429169),2023,1,50,OR,harmful,bupropion,paroxetine,38,16,15,40,38,40,38,16,15
+81,Guelfi1998,milnacipran,fluoxetine,0.1404830411,0.24531475560000002,109,200,51,100,0.0,0,Guelfi1998,2023,1,50,OR,harmful,milnacipran,fluoxetine,100,109,51,200,100,200,100,109,51
+82,Guillibert1989 (PAR 290 MDF 29060 1727 M),clomipramine,paroxetine,0.315270029,0.4863265225,28,39,26,40,0.0,0,Guillibert1989 (PAR 290 MDF 29060 1727 M),2023,1,50,OR,harmful,clomipramine,paroxetine,40,28,26,39,40,39,40,28,26
+83,Hackett1998,fluvoxamine,venlafaxine,-0.8605801249,0.4204101133,14,34,48,77,0.0,0,Hackett1998,2023,1,50,OR,harmful,fluvoxamine,venlafaxine,77,14,48,34,77,34,77,14,48
+84,Hale2010 (CL3-20098-045),agomelatine,fluoxetine,0.3539150413,0.1875676463,177,252,164,263,0.0,0,Hale2010 (CL3-20098-045),2023,1,50,OR,harmful,agomelatine,fluoxetine,263,177,164,252,263,252,263,177,164
+85,Hao2014,duloxetine,paroxetine,0.3659907759,0.24204402930000002,86,140,74,141,0.0,0,Hao2014,2023,1,50,OR,harmful,duloxetine,paroxetine,141,86,74,140,141,140,141,86,74
+86,Harris1991,fluvoxamine,amitriptyline,-1.0056661762,0.49691020010000003,13,35,21,34,0.0,0,Harris1991,2023,1,50,OR,harmful,fluvoxamine,amitriptyline,34,13,21,35,34,35,34,13,21
+87,Heller2009(NCT00909155),venlafaxine,fluoxetine,0.11778303570000001,0.7546154282,9,15,8,14,0.0,0,Heller2009(NCT00909155),2023,1,50,OR,harmful,venlafaxine,fluoxetine,14,9,8,15,14,15,14,9,8
+88,Hicks2002,nefazodone,paroxetine,-1.1856236657,0.7173006357,11,20,16,20,0.0,0,Hicks2002,2023,1,50,OR,harmful,nefazodone,paroxetine,20,11,16,20,20,20,20,11,16
+89,Hong2003 (22521),mirtazapine,fluoxetine,0.3036824138,0.34919994870000004,35,66,30,66,0.0,0,Hong2003 (22521),2023,1,50,OR,harmful,mirtazapine,fluoxetine,66,35,30,66,66,66,66,35,30
+90,Hosseini2015 (IRCT201203048513N1.),venlafaxine,citalopram,-1.9459101491,0.6659222034000001,12,28,21,25,0.0,0,Hosseini2015 (IRCT201203048513N1.),2023,1,50,OR,harmful,venlafaxine,citalopram,25,12,21,28,25,28,25,12,21
+91,"Hoyberg1996 (Organon 88013, FDA88013)",mirtazapine,amitriptyline,-0.6800994652,0.38953904970000003,30,56,41,59,0.0,0,"Hoyberg1996 (Organon 88013, FDA88013)",2023,1,50,OR,harmful,mirtazapine,amitriptyline,59,30,41,56,59,56,59,30,41
+92,Hsu2011,citalopram,sertraline,0.6286086594,0.6247221605000001,9,25,6,26,0.0,0,Hsu2011,2023,1,50,OR,harmful,citalopram,sertraline,26,9,6,25,26,25,26,9,6
+93,Hu2009,escitalopram,citalopram,0.10008345860000001,0.7747584311,21,25,19,23,0.0,0,Hu2009,2023,1,50,OR,harmful,escitalopram,citalopram,23,21,19,25,23,25,23,21,19
+94,Hutchinson1992,amitriptyline,paroxetine,-0.4734698372,0.44336060660000004,15,32,34,58,0.0,0,Hutchinson1992,2023,1,50,OR,harmful,amitriptyline,paroxetine,58,15,34,32,58,32,58,15,34
+95,Jiang2009,escitalopram,citalopram,-0.7259370034,1.2512359481,30,32,31,32,0.0,0,Jiang2009,2023,1,50,OR,harmful,escitalopram,citalopram,32,30,31,32,32,32,32,30,31
+96,Judd1993,fluoxetine,amitriptyline,0.2876820725,0.5283622495,15,30,12,28,0.0,0,Judd1993,2023,1,50,OR,harmful,fluoxetine,amitriptyline,28,15,12,30,28,30,28,15,12
+97,Kamijima2013 (japicCTI-090733),milnacipran,paroxetine,-0.0345795193,0.1423314417,338,604,171,301,0.0,0,Kamijima2013 (japicCTI-090733),2023,1,50,OR,harmful,milnacipran,paroxetine,301,338,171,604,301,604,301,338,171
+98,Kasper2005b,paroxetine,trazodone,0.33647223660000003,0.6200998384,48,53,48,55,0.0,0,Kasper2005b,2023,1,50,OR,harmful,paroxetine,trazodone,55,48,48,53,55,53,55,48,48
+99,Kavoussi1997,bupropion,sertraline,-0.0112393966,0.2708321837,82,122,85,126,0.0,0,Kavoussi1997,2023,1,50,OR,harmful,bupropion,sertraline,126,82,85,122,126,122,126,82,85
+100,Keegan1991,fluoxetine,amitriptyline,-0.5753641449,0.6614378278,12,20,16,22,0.0,0,Keegan1991,2023,1,50,OR,harmful,fluoxetine,amitriptyline,22,12,16,20,22,20,22,12,16
+101,Keller2007 (NCT00046020),fluoxetine,venlafaxine,0.09832223030000001,0.1629883311,210,275,612,821,0.0,0,Keller2007 (NCT00046020),2023,1,50,OR,harmful,fluoxetine,venlafaxine,821,210,612,275,821,275,821,210,612
+102,Kennedy2005 (SCT-MD-16),escitalopram,fluoxetine,-0.0569534748,0.285756369,61,102,63,103,0.0,0,Kennedy2005 (SCT-MD-16),2023,1,50,OR,harmful,escitalopram,fluoxetine,103,61,63,102,103,102,103,61,63
+103,Kerkhofs1990,fluoxetine,amitriptyline,0.1823215568,0.7187952884000001,6,16,6,18,0.0,0,Kerkhofs1990,2023,1,50,OR,harmful,fluoxetine,amitriptyline,18,6,6,16,18,16,18,6,6
+104,Kerr1984,amitriptyline,trazodone,0.23111172100000002,0.46887233850000004,18,38,15,36,0.0,0,Kerr1984,2023,1,50,OR,harmful,amitriptyline,trazodone,36,18,15,38,36,38,36,18,15
+105,Khan2007 (SCT-MD-23) (NCT00108979),escitalopram,duloxetine,0.2445295894,0.24476590180000002,61,140,52,138,0.0,0,Khan2007 (SCT-MD-23) (NCT00108979),2023,1,50,OR,harmful,escitalopram,duloxetine,138,61,52,140,138,140,138,61,52
+106,Kiev1997,fluvoxamine,paroxetine,0.134732594,0.5193025879000001,17,30,16,30,0.0,0,Kiev1997,2023,1,50,OR,harmful,fluvoxamine,paroxetine,30,17,16,30,30,30,30,17,16
+107,Kuhs1989 (MDUK_29060_III_85_043),paroxetine,amitriptyline,1.0296194172,0.8472645058,7,12,4,12,0.0,0,Kuhs1989 (MDUK_29060_III_85_043),2023,1,50,OR,harmful,paroxetine,amitriptyline,12,7,4,12,12,12,12,7,4
+108,Kyle1998 (Study 92032 - FDA),citalopram,amitriptyline,0.1259798029,0.20994651320000002,98,179,96,186,0.0,0,Kyle1998 (Study 92032 - FDA),2023,1,50,OR,harmful,citalopram,amitriptyline,186,98,96,179,186,179,186,98,96
+109,Laakman1988 ,fluoxetine,amitriptyline,-0.0357180826,0.5345331401,55,63,57,65,0.0,0,Laakman1988 ,2023,1,50,OR,harmful,fluoxetine,amitriptyline,65,55,57,63,65,63,65,55,57
+110,Lalit2004,escitalopram,citalopram,0.3249262456,0.524033563,62,69,64,74,0.0,0,Lalit2004,2023,1,50,OR,harmful,escitalopram,citalopram,74,62,64,69,74,69,74,62,64
+111,Lalit2004,escitalopram,sertraline,-1.359735088,0.8206576197000001,62,69,69,71,0.0,0,Lalit2004,2023,1,50,OR,harmful,escitalopram,sertraline,71,62,69,69,71,69,71,62,69
+112,Lalit2004,citalopram,sertraline,-1.6846613337,0.7937995677,64,74,69,71,0.0,0,Lalit2004,2023,1,50,OR,harmful,citalopram,sertraline,71,64,69,74,71,74,71,64,69
+113,Lee2007 (F1J-AA-HMCV) (NCT00489775),duloxetine,paroxetine,-0.2108866802,0.1897376131,144,238,157,240,0.0,0,Lee2007 (F1J-AA-HMCV) (NCT00489775),2023,1,50,OR,harmful,duloxetine,paroxetine,240,144,157,238,240,238,240,144,157
+114,Leinonen1997,milnacipran,clomipramine,0.1397619424,0.3949408321,32,52,32,55,0.0,0,Leinonen1997,2023,1,50,OR,harmful,milnacipran,clomipramine,55,32,32,52,55,52,55,32,32
+115,Leinonen1999 (Agren1995),mirtazapine,citalopram,-0.2805174592,0.3567726809,116,137,117,133,0.0,0,Leinonen1999 (Agren1995),2023,1,50,OR,harmful,mirtazapine,citalopram,133,116,117,137,133,137,133,116,117
+116,Lemoine2007 (CL3-20098-035),agomelatine,venlafaxine,0.37903185100000003,0.2479999092,126,165,115,167,0.0,0,Lemoine2007 (CL3-20098-035),2023,1,50,OR,harmful,agomelatine,venlafaxine,167,126,115,165,167,165,167,126,115
+117,Lepine2000,sertraline,clomipramine,0.015209418700000001,0.3243494027,53,82,54,84,0.0,0,Lepine2000,2023,1,50,OR,harmful,sertraline,clomipramine,84,53,54,82,84,82,84,53,54
+118,Li2006,escitalopram,citalopram,0.5520685823,0.6130774031,22,28,19,28,0.0,0,Li2006,2023,1,50,OR,harmful,escitalopram,citalopram,28,22,19,28,28,28,28,22,19
+119,Li2010,escitalopram,citalopram,0.2744368457,0.7433919417,20,24,19,24,0.0,0,Li2010,2023,1,50,OR,harmful,escitalopram,citalopram,24,20,19,24,24,24,24,20,19
+120,Lv2013,escitalopram,citalopram,0.1625189295,0.7558594641,16,20,17,22,0.0,0,Lv2013,2023,1,50,OR,harmful,escitalopram,citalopram,22,16,17,20,22,20,22,16,17
+121,Manna1989,fluoxetine,clomipramine,0.3746934494,0.8703882798,12,15,11,15,0.0,0,Manna1989,2023,1,50,OR,harmful,fluoxetine,clomipramine,15,12,11,15,15,15,15,12,11
+122,Mao2008,fluoxetine,escitalopram,-0.0195670927,0.3034325251,89,117,94,123,0.0,0,Mao2008,2023,1,50,OR,harmful,fluoxetine,escitalopram,123,89,94,117,123,117,123,89,94
+123,Marchesi1998 ,fluoxetine,amitriptyline,-0.5893286853,0.3835699678,45,67,59,75,0.0,0,Marchesi1998 ,2023,1,50,OR,harmful,fluoxetine,amitriptyline,75,45,59,67,75,67,75,45,59
+124,Masco1985,fluoxetine,amitriptyline,0.1923718926,0.6207685038,12,21,11,21,0.0,0,Masco1985,2023,1,50,OR,harmful,fluoxetine,amitriptyline,21,12,11,21,21,21,21,12,11
+125,McPartlin1998,paroxetine,venlafaxine,-0.2459424663,0.22693762,117,178,130,183,0.0,0,McPartlin1998,2023,1,50,OR,harmful,paroxetine,venlafaxine,183,117,130,178,183,178,183,117,130
+126,MDF/29060/III/070/88/MC,paroxetine,clomipramine,1.1939224685,0.533238628,22,32,12,30,0.0,0,MDF/29060/III/070/88/MC,2023,1,50,OR,harmful,paroxetine,clomipramine,30,22,12,32,30,32,30,22,12
+127,Mehtonen2000,sertraline,venlafaxine,-0.3541388979,0.3398794053,41,72,49,75,0.0,0,Mehtonen2000,2023,1,50,OR,harmful,sertraline,venlafaxine,75,41,49,72,75,72,75,41,49
+128,Miura2000,paroxetine,amitriptyline,-0.2816197778,0.2695144353,42,109,54,119,0.0,0,Miura2000,2023,1,50,OR,harmful,paroxetine,amitriptyline,119,42,54,109,119,109,119,42,54
+129,Moises1981,amitriptyline,trazodone,1.0986122887,0.6454972244,12,22,6,21,0.0,0,Moises1981,2023,1,50,OR,harmful,amitriptyline,trazodone,21,12,6,22,21,22,21,12,6
+130,"Moller1993 (Stuppaeck1994, MY-059.073/29060/1)",paroxetine,amitriptyline,-0.2554935123,0.3287082773,43,78,46,75,0.0,0,"Moller1993 (Stuppaeck1994, MY-059.073/29060/1)",2023,1,50,OR,harmful,paroxetine,amitriptyline,75,43,46,78,75,78,75,43,46
+131,Moller1998 (Hegerl1997),amitriptyline,sertraline,0.4514022033,0.3198424439,40,79,32,81,0.0,0,Moller1998 (Hegerl1997),2023,1,50,OR,harmful,amitriptyline,sertraline,81,40,32,79,81,79,81,40,32
+132,Moller2000,sertraline,amitriptyline,-0.5349496007,0.2606624064,51,116,71,124,0.0,0,Moller2000,2023,1,50,OR,harmful,sertraline,amitriptyline,124,51,71,116,124,116,124,51,71
+133,Montgomery2004a (Study 99067),escitalopram,venlafaxine,-0.0896121587,0.2784251131,113,148,113,145,0.0,0,Montgomery2004a (Study 99067),2023,1,50,OR,harmful,escitalopram,venlafaxine,145,113,113,148,145,148,145,113,113
+134,Montgomery2004b (CL3-20098-030),agomelatine,paroxetine,-0.3637255019,0.23450814820000002,106,167,120,168,0.0,0,Montgomery2004b (CL3-20098-030),2023,1,50,OR,harmful,agomelatine,paroxetine,168,106,120,167,168,167,168,106,120
+135,Moon1994,sertraline,clomipramine,0.0875110023,0.3900472326,28,51,29,55,0.0,0,Moon1994,2023,1,50,OR,harmful,sertraline,clomipramine,55,28,29,51,55,51,55,28,29
+136,Moore2005,escitalopram,citalopram,0.7515215888,0.2518525458,105,142,87,152,0.0,0,Moore2005,2023,1,50,OR,harmful,escitalopram,citalopram,152,105,87,142,152,142,152,105,87
+137,Mullin1996,mirtazapine,amitriptyline,-0.2060390352,0.3207398557,38,79,41,77,0.0,0,Mullin1996,2023,1,50,OR,harmful,mirtazapine,amitriptyline,77,38,41,79,77,79,77,38,41
+138,Munizza2006,sertraline,trazodone,-0.5806289775,0.3933756707,37,60,46,62,0.0,0,Munizza2006,2023,1,50,OR,harmful,sertraline,trazodone,62,37,46,60,62,60,62,37,46
+139,Murasaki1998,fluvoxamine,amitriptyline,0.0352149063,0.262604791,51,113,54,122,0.0,0,Murasaki1998,2023,1,50,OR,harmful,fluvoxamine,amitriptyline,122,51,54,113,122,113,122,51,54
+140,"Murasaki2010a (iQWIG22532, Schoemaker2002)",mirtazapine,fluvoxamine,-0.34347343210000003,0.2872392721,61,104,70,105,0.0,0,"Murasaki2010a (iQWIG22532, Schoemaker2002)",2023,1,50,OR,harmful,mirtazapine,fluvoxamine,105,61,70,104,105,104,105,61,70
+141,"Murasaki2010b (iQWIG9902, Schoemaker2002)",mirtazapine,fluvoxamine,0.6250937173000001,0.2952692369,71,101,57,102,0.0,0,"Murasaki2010b (iQWIG9902, Schoemaker2002)",2023,1,50,OR,harmful,mirtazapine,fluvoxamine,102,71,57,101,102,101,102,71,57
+142,Nemeroff1995,fluvoxamine,sertraline,0.2881760216,0.40739396580000004,27,49,23,48,0.0,0,Nemeroff1995,2023,1,50,OR,harmful,fluvoxamine,sertraline,48,27,23,49,48,49,48,27,23
+143,Newhouse2000,sertraline,fluoxetine,0.1014466163,0.2889479129,85,117,84,119,0.0,0,Newhouse2000,2023,1,50,OR,harmful,sertraline,fluoxetine,119,85,84,117,119,117,119,85,84
+144,Noguera1991,clomipramine,fluoxetine,-0.3418923041,0.3707688952,32,60,37,60,0.0,0,Noguera1991,2023,1,50,OR,harmful,clomipramine,fluoxetine,60,32,37,60,60,60,60,32,37
+145,Ontiveros1994 (MY-0144/BRL 29060/1/CPMS-135 (PAR135)),paroxetine,fluoxetine,0.5096218921,0.3776642536,41,60,35,62,0.0,0,Ontiveros1994 (MY-0144/BRL 29060/1/CPMS-135 (PAR135)),2023,1,50,OR,harmful,paroxetine,fluoxetine,62,41,35,60,62,60,62,41,35
+146,OntiverosSanchez1998 ,fluoxetine,amitriptyline,0.22314355130000002,0.6690433825000001,7,21,6,21,0.0,0,OntiverosSanchez1998 ,2023,1,50,OR,harmful,fluoxetine,amitriptyline,21,7,6,21,21,21,21,7,6
+147,Ottevanger1995,fluvoxamine,clomipramine,-0.7672551527,0.7295753695,13,20,16,20,0.0,0,Ottevanger1995,2023,1,50,OR,harmful,fluvoxamine,clomipramine,20,13,16,20,20,20,20,13,16
+148,Ou2010,citalopram,escitalopram,0.161477862,0.2843809118,87,120,83,120,0.0,0,Ou2010,2023,1,50,OR,harmful,citalopram,escitalopram,120,87,83,120,120,120,120,87,83
+149,PAR 29060.310 (HP 81/85A),paroxetine,amitriptyline,-0.9162907319,0.9746794345,2,10,5,13,0.0,0,PAR 29060.310 (HP 81/85A),2023,1,50,OR,harmful,paroxetine,amitriptyline,13,2,5,10,13,10,13,2,5
+150,PAR 29060.318 (HP/82/64A),paroxetine,amitriptyline,0.8754687374000001,0.9457507306,4,9,3,12,0.0,0,PAR 29060.318 (HP/82/64A),2023,1,50,OR,harmful,paroxetine,amitriptyline,12,4,3,9,12,9,12,4,3
+151,PAR 29060/281,paroxetine,amitriptyline,-0.70032854,0.3206975889,30,82,43,80,0.0,0,PAR 29060/281,2023,1,50,OR,harmful,paroxetine,amitriptyline,80,30,43,82,80,82,80,30,43
+152,PAR MDUK 032,paroxetine,amitriptyline,0.20252426410000002,0.5215590183000001,15,29,14,30,0.0,0,PAR MDUK 032,2023,1,50,OR,harmful,paroxetine,amitriptyline,30,15,14,29,30,29,30,15,14
+153,Patris1996 (Study 91301 - FDA),fluoxetine,citalopram,-0.11588933800000001,0.2274308286,123,184,120,173,0.0,0,Patris1996 (Study 91301 - FDA),2023,1,50,OR,harmful,fluoxetine,citalopram,173,123,120,184,173,184,173,123,120
+154,Pelicier1993 (PAR MDED/29060/III/86/1728M291),clomipramine,paroxetine,-0.4967266994,0.4654456159,25,42,29,41,0.0,0,Pelicier1993 (PAR MDED/29060/III/86/1728M291),2023,1,50,OR,harmful,clomipramine,paroxetine,41,25,29,42,41,42,41,25,29
+155,Perahia2008a (HMBU) (NCT00071695),duloxetine,venlafaxine,-0.1451692912,0.22007437200000002,85,166,91,166,0.0,0,Perahia2008a (HMBU) (NCT00071695),2023,1,50,OR,harmful,duloxetine,venlafaxine,166,85,91,166,166,166,166,85,91
+156,Perahia2008b (HMCQ) (NCT00067912),venlafaxine,duloxetine,0.073203404,0.1902304908,170,340,79,164,0.0,0,Perahia2008b (HMCQ) (NCT00067912),2023,1,50,OR,harmful,venlafaxine,duloxetine,164,170,79,340,164,340,164,170,79
+157,Preskorn1991,fluoxetine,amitriptyline,0.6505875661,0.5544070254,12,30,8,31,0.0,0,Preskorn1991,2023,1,50,OR,harmful,fluoxetine,amitriptyline,31,12,8,30,31,30,31,12,8
+158,Rapaport1996,fluvoxamine,fluoxetine,-0.0148886125,0.4067371873,30,51,29,49,0.0,0,Rapaport1996,2023,1,50,OR,harmful,fluvoxamine,fluoxetine,49,30,29,51,49,51,49,30,29
+159,Ravindran1997 (MY-1055/BRL-029060/1/CPMS-245 PAR 245),paroxetine,clomipramine,0.055503024500000005,0.1299990974,328,513,317,506,0.0,0,Ravindran1997 (MY-1055/BRL-029060/1/CPMS-245 PAR 245),2023,1,50,OR,harmful,paroxetine,clomipramine,506,328,317,513,506,513,506,328,317
+160,Remick1994,amitriptyline,fluvoxamine,-1.1267831656,0.7330085861000001,5,17,9,16,0.0,0,Remick1994,2023,1,50,OR,harmful,amitriptyline,fluvoxamine,16,5,9,17,16,17,16,5,9
+161,Ropert1989 ,fluoxetine,clomipramine,0.6499586505,0.3390288938,42,71,31,72,0.0,0,Ropert1989 ,2023,1,50,OR,harmful,fluoxetine,clomipramine,72,42,31,71,72,71,72,42,31
+162,Rossini2005,fluvoxamine,sertraline,0.6329283206,0.45946287690000004,29,40,28,48,0.0,0,Rossini2005,2023,1,50,OR,harmful,fluvoxamine,sertraline,48,29,28,40,48,40,48,29,28
+163,"Rouillon1991 (Limosin2006, 029060/1/CPMS 069 1991)",paroxetine,clomipramine,0.4480247225,0.42158927900000004,27,45,23,47,0.0,0,"Rouillon1991 (Limosin2006, 029060/1/CPMS 069 1991)",2023,1,50,OR,harmful,paroxetine,clomipramine,47,27,23,45,47,45,47,27,23
+164,Rush2001,bupropion,sertraline,0.1126965547,0.25867624840000003,74,122,73,126,0.0,0,Rush2001,2023,1,50,OR,harmful,bupropion,sertraline,126,74,73,122,126,122,126,74,73
+165,Sacchetti2002 (BRL-29060/109),paroxetine,amitriptyline,0.31314867890000003,0.3822253531,22,64,18,65,0.0,0,Sacchetti2002 (BRL-29060/109),2023,1,50,OR,harmful,paroxetine,amitriptyline,65,22,18,64,65,64,65,22,18
+166,Samuelian1998,venlafaxine,clomipramine,0.7156200364,0.40264278480000004,30,52,20,50,0.0,0,Samuelian1998,2023,1,50,OR,harmful,venlafaxine,clomipramine,50,30,20,52,50,52,50,30,20
+167,Sauer2003,venlafaxine,amitriptyline,-0.3083013597,0.3257644072,30,79,35,77,0.0,0,Sauer2003,2023,1,50,OR,harmful,venlafaxine,amitriptyline,77,30,35,79,77,79,77,30,35
+168,Schatzberg2002 (003-901),mirtazapine,paroxetine,0.3466246081,0.2521194431,72,128,60,126,0.0,0,Schatzberg2002 (003-901),2023,1,50,OR,harmful,mirtazapine,paroxetine,126,72,60,128,126,128,126,72,60
+169,Schoene1993 (Geretsegger1994 MY1021/BRC),paroxetine,fluoxetine,1.0938390099,0.4784665926,19,54,8,52,0.0,0,Schoene1993 (Geretsegger1994 MY1021/BRC),2023,1,50,OR,harmful,paroxetine,fluoxetine,52,19,8,54,52,54,52,19,8
+170,Schwartz2002 (iQWIG),reboxetine,venlafaxine,0.0436750635,0.311878197,45,80,48,87,0.0,0,Schwartz2002 (iQWIG),2023,1,50,OR,harmful,reboxetine,venlafaxine,87,45,48,80,87,80,87,45,48
+171,Sechter1999,sertraline,fluoxetine,0.5100089639000001,0.27469106660000003,48,118,35,120,0.0,0,Sechter1999,2023,1,50,OR,harmful,sertraline,fluoxetine,120,48,35,118,120,118,120,48,35
+172,Sechter2004,milnacipran,paroxetine,-0.0725125516,0.2337070091,86,149,91,153,0.0,0,Sechter2004,2023,1,50,OR,harmful,milnacipran,paroxetine,153,86,91,149,153,149,153,86,91
+173,SER-CHN-1,paroxetine,amitriptyline,0.8544153282,0.3195084761,94,113,80,118,0.0,0,SER-CHN-1,2023,1,50,OR,harmful,paroxetine,amitriptyline,118,94,80,113,118,113,118,94,80
+174,Shaw1986,citalopram,amitriptyline,-0.10821358460000001,0.630522004,15,24,13,20,0.0,0,Shaw1986,2023,1,50,OR,harmful,citalopram,amitriptyline,20,15,13,24,20,24,20,15,13
+175,Shelton2006 (NCT00179283),venlafaxine,sertraline,0.32877989100000005,0.3227075629,49,78,45,82,0.0,0,Shelton2006 (NCT00179283),2023,1,50,OR,harmful,venlafaxine,sertraline,82,49,45,78,82,78,82,49,45
+176,"Shu2014 (CL3-20098-052, ChiCTR-TRC-11001668)",agomelatine,fluoxetine,-0.0567118049,0.1684068265,205,314,209,314,0.0,0,"Shu2014 (CL3-20098-052, ChiCTR-TRC-11001668)",2023,1,50,OR,harmful,agomelatine,fluoxetine,314,205,209,314,314,314,314,205,209
+177,Sir2005,venlafaxine,sertraline,-0.1967102942,0.338979103,56,84,56,79,0.0,0,Sir2005,2023,1,50,OR,harmful,venlafaxine,sertraline,79,56,56,84,79,84,79,56,56
+178,Smeraldi1998,venlafaxine,clomipramine,0.2760070409,0.419969488,41,55,40,58,0.0,0,Smeraldi1998,2023,1,50,OR,harmful,venlafaxine,clomipramine,58,41,40,55,58,55,58,41,40
+179,Smeraldi1998,venlafaxine,trazodone,0.756061006,0.4096199608,41,55,33,57,0.0,0,Smeraldi1998,2023,1,50,OR,harmful,venlafaxine,trazodone,57,41,33,55,57,55,57,41,33
+180,Smeraldi1998,clomipramine,trazodone,0.48005396510000004,0.39054481500000005,40,58,33,57,0.0,0,Smeraldi1998,2023,1,50,OR,harmful,clomipramine,trazodone,57,40,33,58,57,58,57,40,33
+181,Staner1995 (063),paroxetine,amitriptyline,-0.5877866649,0.6522245207,7,21,9,19,0.0,0,Staner1995 (063),2023,1,50,OR,harmful,paroxetine,amitriptyline,19,7,9,21,19,21,19,7,9
+182,Studie032 (M2020/0032),reboxetine,fluoxetine,-0.23757525240000002,0.43495221910000004,21,43,23,42,0.0,0,Studie032 (M2020/0032),2023,1,50,OR,harmful,reboxetine,fluoxetine,42,21,23,43,42,43,42,21,23
+183,Study 043,reboxetine,citalopram,-0.5478923242,0.21317966530000002,77,183,98,176,0.0,0,Study 043,2023,1,50,OR,harmful,reboxetine,citalopram,176,77,98,183,176,183,176,77,98
+184,Szegedi2006,mirtazapine,venlafaxine,0.2787434655,0.2498215675,72,130,62,128,0.0,0,Szegedi2006,2023,1,50,OR,harmful,mirtazapine,venlafaxine,128,72,62,130,128,130,128,72,62
+185,Thase2006 (WELL 100368),bupropion,venlafaxine,0.1588536841,0.2147418231,86,171,82,177,0.0,0,Thase2006 (WELL 100368),2023,1,50,OR,harmful,bupropion,venlafaxine,177,86,82,171,177,171,177,86,82
+186,Tignol1993 (29060/087),paroxetine,fluoxetine,-0.10570351,0.30897775180000003,53,89,54,87,0.0,0,Tignol1993 (29060/087),2023,1,50,OR,harmful,paroxetine,fluoxetine,87,53,54,89,87,89,87,53,54
+187,Timmerman1993 (Study 89422 - FDA and Haffmans 1996),fluvoxamine,citalopram,-0.1017410701,0.2978505346,31,109,33,108,0.0,0,Timmerman1993 (Study 89422 - FDA and Haffmans 1996),2023,1,50,OR,harmful,fluvoxamine,citalopram,108,31,33,109,108,109,108,31,33
+188,Tsutsui2000,paroxetine,trazodone,0.5947822308,0.26988827460000003,65,116,45,109,0.0,0,Tsutsui2000,2023,1,50,OR,harmful,paroxetine,trazodone,109,65,45,116,109,116,109,65,45
+189,Tylee1997,fluoxetine,venlafaxine,-0.21835758100000002,0.2251903828,58,170,67,171,0.0,0,Tylee1997,2023,1,50,OR,harmful,fluoxetine,venlafaxine,171,58,67,170,171,170,171,58,67
+190,Tzanakaki2000,fluoxetine,venlafaxine,-0.3523876919,0.4038086141,33,54,38,55,0.0,0,Tzanakaki2000,2023,1,50,OR,harmful,fluoxetine,venlafaxine,55,33,38,54,55,54,55,33,38
+191,vanMoffaert1995a,sertraline,fluoxetine,0.0206192872,0.3163305645,49,83,48,82,0.0,0,vanMoffaert1995a,2023,1,50,OR,harmful,sertraline,fluoxetine,82,49,48,83,82,83,82,49,48
+192,vanMoffaert1995b,mirtazapine,trazodone,0.40730688340000004,0.2864445403,61,100,51,100,0.0,0,vanMoffaert1995b,2023,1,50,OR,harmful,mirtazapine,trazodone,100,61,51,100,100,100,100,61,51
+193,Ventura2007 (SCT-MD-18),escitalopram,sertraline,0.0740476421,0.29581854500000004,75,107,74,108,0.0,0,Ventura2007 (SCT-MD-18),2023,1,50,OR,harmful,escitalopram,sertraline,108,75,74,107,108,107,108,75,74
+194,Versiani1999,fluoxetine,amitriptyline,0.0779184371,0.3608874955,57,77,58,80,0.0,0,Versiani1999,2023,1,50,OR,harmful,fluoxetine,amitriptyline,80,57,58,77,80,77,80,57,58
+195,Versiani2005,mirtazapine,fluoxetine,0.16214903860000002,0.258674689,106,145,104,149,0.0,0,Versiani2005,2023,1,50,OR,harmful,mirtazapine,fluoxetine,149,106,104,145,149,145,149,106,104
+196,Wade2003 (E-1721),mirtazapine,paroxetine,-0.23197146540000002,0.2940030746,35,99,40,98,0.0,0,Wade2003 (E-1721),2023,1,50,OR,harmful,mirtazapine,paroxetine,98,35,40,99,98,99,98,35,40
+197,Wade2007 (Study 10990),escitalopram,duloxetine,0.4853178642,0.2393108672,94,144,81,151,0.0,0,Wade2007 (Study 10990),2023,1,50,OR,harmful,escitalopram,duloxetine,151,94,81,144,151,144,151,94,81
+198,"Wang2015 (NCT01571453, KCT0000432, 13926A)",vortioxetine,venlafaxine,0.332574396,0.1961825612,139,213,132,230,0.0,0,"Wang2015 (NCT01571453, KCT0000432, 13926A)",2023,1,50,OR,harmful,vortioxetine,venlafaxine,230,139,132,213,230,213,230,139,132
+199,Weisler1994,bupropion,trazodone,0.7396671962,0.36912790640000004,33,63,21,61,0.0,0,Weisler1994,2023,1,50,OR,harmful,bupropion,trazodone,61,33,21,63,61,63,61,33,21
+200,WELL AK140016,bupropion,paroxetine,0.0008166599,0.3381307434,35,69,36,71,0.0,0,WELL AK140016,2023,1,50,OR,harmful,bupropion,paroxetine,71,35,36,69,71,69,71,35,36
+201,Wheatley1998,mirtazapine,fluoxetine,0.6990819161,0.35218372200000003,39,66,28,67,0.0,0,Wheatley1998,2023,1,50,OR,harmful,mirtazapine,fluoxetine,67,39,28,66,67,66,67,39,28
+202,Winokur2003,mirtazapine,fluoxetine,2.8332133441,1.5573501104,8,8,6,12,0.5,0,Winokur2003,2023,1,50,OR,harmful,mirtazapine,fluoxetine,12,8,6,8,12,8,12,8,6
+203,Yang2003,milnacipran,sertraline,0.735706795,0.9138626415000001,4,27,2,26,0.0,0,Yang2003,2023,1,50,OR,harmful,milnacipran,sertraline,26,4,2,27,26,27,26,4,2
+204,Yevtushenko2007,escitalopram,citalopram,1.3388921222,0.4873258824,103,109,90,110,0.0,0,Yevtushenko2007,2023,1,50,OR,harmful,escitalopram,citalopram,110,103,90,109,110,109,110,103,90
+205,"Zivkov1995 (Organon 85146, FDA85146)",mirtazapine,amitriptyline,-0.3311958586,0.28072491980000003,53,103,62,104,0.0,0,"Zivkov1995 (Organon 85146, FDA85146)",2023,1,50,OR,harmful,mirtazapine,amitriptyline,104,53,62,103,104,103,104,53,62

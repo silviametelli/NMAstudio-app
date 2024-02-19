@@ -17,7 +17,7 @@ from tools.utils import *
 from tools.PATHS import SESSION_PICKLE, get_session_pickle_path, TODAY, SESSION_TYPE, get_new_session_id
 from tools.layouts import *
 from tools.skt_layout import *
-from tools.functions_modal_SUBMIT_data import __modal_SUBMIT_button,__modal_SUBMIT_button_new, __data_modal, __data_trans
+from tools.functions_modal_SUBMIT_data import __modal_SUBMIT_button_new, __data_modal, __data_trans
 from tools.functions_NMA_runs import __modal_submit_checks_DATACHECKS, __modal_submit_checks_NMA,__modal_submit_checks_NMA_new, __modal_submit_checks_PAIRWISE,__modal_submit_checks_PAIRWISE_new, __modal_submit_checks_LT,__modal_submit_checks_LT_new, __modal_submit_checks_FUNNEL,__modal_submit_checks_FUNNEL_new
 from tools.functions_ranking_plots import __ranking_plot
 from tools.functions_funnel_plot import __Tap_funnelplot

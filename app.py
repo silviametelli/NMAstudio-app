@@ -2006,26 +2006,28 @@ def results_display(selected):
 @app.callback(
     [Output("quickstart-grid", "rowData"),
     Output("quickstart-grid", "style")],
-    [Input("ref_selected", "value"),
+    [
+    # Input("ref_selected", "value"),
     Input("base_risk_input", "value")],
 )
 
-def selected(value, value_risk):
+def selected(value_risk):
     # pw_data = pd.read_csv('db/forest_data_pairwise.csv')
     # slctd_comps = []
     # slctd_compsinv = []
 
     dfc = df.copy()
     round(dfc,2)
-    dfc = dfc[dfc['Reference'] == value]
-    dfc = dfc.sort_values(by='RR')
+    # dfc = dfc[dfc['Reference'] == value]
+    # dfc = dfc.sort_values(by='RR')
     dfc.reset_index(drop=True, inplace=True)  
-    dfc['Reference'] = [f'{value} \n {value_risk} per 1000'] + [''] * (dfc.shape[0] - 1)
+    # dfc['Reference'] = [f'{value} \n {value_risk} per 1000'] + [''] * (dfc.shape[0] - 1)
     value_risk = int(value_risk)
-    for i in range(dfc.shape[0]):
+    for i in range(1,dfc.shape[0]):
         risk_treat = value_risk*dfc['RR'].loc[i]
         risk_treat =int(risk_treat)
-        abrisk = risk_treat-value_risk
+        abrisk = risk_treat-value_risk 
+        dfc.loc[i,'Reference'] = f"{dfc.loc [i,'Reference']}" + f"\n{value_risk} per 1000"
         dfc.loc[i,'Treatment'] = f"{dfc.loc [i,'Treatment']}" + f"\n{risk_treat} per 1000"
         dfc.loc[i,'RR'] = str(dfc.loc[i,'RR'])+ '\n(' + str(dfc.loc[i,'CI_lower']) + ', ' + str(dfc.loc[i,'CI_upper']) + ')'
         dfc.loc[i,'RR'] = f"{dfc.loc [i,'RR']}" + (f"\n{abrisk} more per 1000" if abrisk > 0 else f"\n{abs(abrisk)} less per 1000")
@@ -2047,7 +2049,7 @@ def selected(value, value_risk):
 def display_forestplot(cell, _):
     if ctx.triggered_id == "close_forest":
         return False
-    if cell is not None and cell['value'] is not None and 'colId' in cell and cell['colId'] == "direct":
+    if cell is not None and cell['value']!='' and 'colId' in cell and cell['colId'] == "direct":
         return True
     return no_update
 
@@ -2071,13 +2073,13 @@ def display_forestplot(cell, _):
    [ Output('forest-fig-pairwise', 'figure'),
     Output('forest-fig-pairwise', 'style')],
     [Input("quickstart-grid", "cellClicked"),
-    Input("ref_selected", "value"),
+    # Input("ref_selected", "value"),
     Input("quickstart-grid", "selectedRows"),
     Input('forest-fig-pairwise', 'style')]
 )
 
-def show_forest_plot(cell, reference, row_select, style_pair):
-    return __show_forest_plot(cell, reference, row_select, style_pair)
+def show_forest_plot(cell,  row_select, style_pair):
+    return __show_forest_plot(cell, row_select, style_pair)
 
 
 
@@ -2201,20 +2203,20 @@ def display_only_selected(values, absolute_risk):
     return df_league_c.to_dict("records"), columnDefs, style
 
 
-@app.callback(
-    Output('pass_model','is_open'),
-    Output('skt_all','style'),
-    Input('password_ok','n_clicks'),
-    Input('password','value'),
-    State('pass_model','is_open'),
-    State('skt_all','style'),
-)
-def clear_treat(click, password, pass_model, skt_style):
-    if password =='777' and click:
-        skt_style = {'diaplay': 'block'}
-        return not pass_model, skt_style
-    else:
-        return pass_model, skt_style
+# @app.callback(
+#     Output('pass_model','is_open'),
+#     Output('skt_all','style'),
+#     Input('password_ok','n_clicks'),
+#     Input('password','value'),
+#     State('pass_model','is_open'),
+#     State('skt_all','style'),
+# )
+# def clear_treat(click, password, pass_model, skt_style):
+#     if password =='777' and click:
+#         skt_style = {'diaplay': 'block'}
+#         return not pass_model, skt_style
+#     else:
+#         return pass_model, skt_style
 
 
 

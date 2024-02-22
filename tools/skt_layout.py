@@ -19,7 +19,7 @@ pw_data = pd.read_csv('db/skt/forest_data_pairwise.csv')
 
 df = pd.DataFrame(data)
 
-out_list = [['PASI90',"Death"]]
+out_list = [['PASI90',"SAE"]]
 
 outcome_list = [{'label': '{}'.format(out_name), 'value': out_name} for out_name in np.unique(out_list)]
 
@@ -63,7 +63,10 @@ df['Graph'] = ''
 
 for j in range(0, 380, 19):
     data_ex = df[j:j + 19]
-    up_rng, low_rng = data_ex.CI_upper.max(), data_ex.CI_lower.min()
+    up_rng_max, low_rng_min = data_ex.CI_upper.mean(), data_ex.CI_lower.mean()
+    up_mix_max, low_mix_min = data_ex.RR.max(), data_ex.RR.min()
+    up_direct_max, low_direct_min = data_ex.direct.max(), data_ex.direct.min()
+    up_indirect_max, low_indirect_min = data_ex.indirect.max(), data_ex.indirect.min()
     # up_rng = 10**np.floor(np.log10(up_rng))
     # low_rng = 10 ** np.floor(np.log10(low_rng))
 
@@ -93,6 +96,13 @@ for j in range(0, 380, 19):
         up_rng = 10**np.floor(np.log10(up_rng))
 
         colors = ['#ABB2B9', '#707B7C', 'red','black']
+
+        hovert_template=['indirect estimate with CI'+'<extra></extra>',
+                 'direct estimate with CI'+'<extra></extra>',
+                 'mixed estimate with CI & PI'+'<extra></extra>',
+                 'mixed estimate with CI & PI'+'<extra></extra>'
+                ]
+
         fig = go.Figure()
         for idx in range(filter_df.shape[0]):
             data_point = filter_df.iloc[idx]
@@ -104,13 +114,16 @@ for j in range(0, 380, 19):
                             # error_x_minus=dict(type='data',color = colors[i],array='lower_error',visible=True),
                             error_x=dict(type='data',color = colors[idx],array=[data_point['lower_error'],data_point['CI_width_hf']],visible=True),
                             marker=dict(color=colors[idx], size=12),
-                            showlegend=False
+                            showlegend=False,
+                            hovertemplate= hovert_template[idx] 
                         ))
         
         fig.update_layout(
             barmode='group',
             bargap=0.25,
-            # xaxis=dict(range=[min(low_rng, 0.1), max(up_rng, 10)]),
+            xaxis=dict(range=[min(low_rng_min, -1, low_mix_min,low_direct_min,low_indirect_min,), 
+                              max(up_rng_max, 2.25, up_mix_max+1, up_direct_max+1,up_indirect_max+1)]),
+            # xaxis=dict(range=[min(low_rng_min, -10), up_rng_max]),
             showlegend=False,
             yaxis_visible=False,
             yaxis_showticklabels=False,
@@ -136,6 +149,16 @@ for j in range(0, 380, 19):
                 ),]
             # template="plotly_dark",
         )
+     
+        fig.add_trace(go.Scatter(
+            x=[0.8, 1.25],  # x-coordinate in the middle of the shape
+            y=[0, 0],    # y-coordinate (doesn't matter, since it's vertical shape)
+            mode='markers',
+            marker=dict(color='rgba(0, 0, 0, 0)', size=5),
+            hovertemplate = '<b>Range of equivalence</b>: %{x} <extra></extra>',
+            hoverlabel=dict(bgcolor="rgba(255, 165, 0, 0.4)")
+        ))
+            
         fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
                         plot_bgcolor='rgba(0,0,0,0)')
 
@@ -147,15 +170,73 @@ for j in range(0, 380, 19):
         df.at[i, "Graph"] = fig
 
 style_certainty = {'white-space': 'pre','display': 'grid','text-align': 'center','align-items': 'center'}
+
+new_row = pd.DataFrame(columns=df.columns)
+new_row.loc[0, 'Treatment'] = 'Instruction'
+
+data_ex = df[1:20]
+up_rng_max, low_rng_min = data_ex.CI_upper.mean(), data_ex.CI_lower.mean()
+up_mix_max, low_mix_min = data_ex.RR.max(), data_ex.RR.min()
+up_direct_max, low_direct_min = data_ex.direct.max(), data_ex.direct.min()
+up_indirect_max, low_indirect_min = data_ex.indirect.max(), data_ex.indirect.min()
+# up_rng = 10**np.floor(np.log10(up_rng))
+# low_rng = 10 ** np.floor(np.log10(low_rng))
+
+# colors = ['#ABB2B9', '#707B7C', 'red','black']
+fig = go.Figure(go.Scatter(
+    # mode = "lines+markers",
+    y = [],
+    x = []))
+
+fig.update_layout(
+    xaxis=dict(range=[min(low_rng_min, -1, low_mix_min,low_direct_min,low_indirect_min,), 
+                      max(up_rng_max, 2.25, up_mix_max+1, up_direct_max+1,up_indirect_max+1)]),
+    showlegend=False,
+    yaxis_visible=False,
+    yaxis_showticklabels=False,
+    autosize=True,
+    # xaxis_visible=True,
+    # xaxis_showticklabels=True,
+    paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
+    plot_bgcolor='rgba(0,0,0,0)',
+    height=95,
+    margin=dict(l=0, r=0)
+    )
+fig.update_xaxes(ticks="outside",
+                showgrid=False,
+                autorange=True, showline=True,
+                # tickcolor='rgba(0,0,0,0)',
+                linecolor='black'
+                )
+
+
+new_row.loc[0, 'Graph'] = fig
+
+# new_row.loc[0, 'Graph'] = df.iloc[1]['Graph']
+df = pd.concat([new_row, df], ignore_index=True)
+
 columnDefs1 =  [
-    {
+   
+    {"field": "Treatment", 
+     "headerName": 'Treatment',
+     "sortable": False,
+     "filter": 'agSetColumnFilter',
+     "width": 130,
+     'headerTooltip': 'Treatment',
+      "resizable": True ,
+      'cellStyle': {
+        #   'font-weight':'bold'
+          }},
+     {
         "field": "Reference",
-        "headerName": "Ref",
+        "headerName": "Comparison",
         "width": 100,
-        "rowSpan": {"function": "rowSpan(params)"},
-        "cellClassRules": {
-        "cell-span": "params.value !==''"
-        },
+        "resizable": True,
+        "filter": 'agSetColumnFilter',
+        # "rowSpan": {"function": "rowSpan(params)"},
+        # "cellClassRules": {
+        # "cell-span": "params.value !==''"
+        # },
         'cellStyle': {'border-right': 'solid 0.8px',
                       'text-align': 'center',
                       'align-items': 'center',
@@ -166,16 +247,10 @@ columnDefs1 =  [
                       },
         "width": '100%'
     },
-    {"field": "Treatment", 
-     "headerName": "Treatment",
-     "sortable": False,
-      "filter": True, "width": 130,
-      'cellStyle': {
-        #   'font-weight':'bold'
-          }},
     {"field": "RR", 
      "headerName": "Mixed effect\n95%CI",
      "width": 180,
+     "resizable": True,
      'cellStyle': {'border-left': 'solid 0.8px',
                    'backgroud-color':'white',
                    'line-height': '20px',
@@ -186,6 +261,7 @@ columnDefs1 =  [
         "cellRenderer": "DCC_GraphClickData",
         "headerName": "Forest plot",
         "width": 300,
+        "resizable": True,
         # "maxWidth": 500,
         # "minWidth": 250,
         'cellStyle': {'border-left': 'solid 0.8px',
@@ -195,26 +271,31 @@ columnDefs1 =  [
     {"field": "direct",
      "headerName": "Direct effect\n(95%CI)",
       "width": 170,
+      "resizable": True,
       'cellStyle': {'color': '#707B7C'}},
     {"field": "indirect",
      "headerName": "Indirect effect\n(95%CI)",
       "width": 170,
+      "resizable": True,
       'cellStyle': {'color': '#ABB2B9'}},
     {"field": "p-value",
      "headerName": "p-value\n(Consistency)",
-      "width": 140},
+      "width": 140,
+      "resizable": True},
     {"field": "Certainty", 
      "headerName": "Certainty",
      "width": 110,
+     "resizable": True,
      "tooltipField": 'Certainty',
      "tooltipComponentParams": { "color": '#d8f0d3' },
+     "tooltipComponent": "CustomTooltip",
      'cellStyle':{
         "styleConditions": [
         {"condition": "params.value == 'High'", "style": {"backgroundColor": "rgb(90, 164, 105)", **style_certainty}},   
         {"condition": "params.value == 'Low'", "style": {"backgroundColor": "#B85042", **style_certainty}},
         {"condition": "params.value == 'Moderate'", "style": {"backgroundColor": "rgb(248, 212, 157)", **style_certainty}},       
     ]}},
-    {"field": "Comments", "width": 120, 
+    {"field": "Comments", "width": 120, "resizable": True,
      'cellStyle': {'border-left': 'solid 0.5px' }},
     
     ]
@@ -240,12 +321,16 @@ grid = dag.AgGrid(
                                   'align-items': 'center',
                                   'border-bottom': 'solid 0.5px'
                                   },
-                    "tooltipComponent": "CustomTooltip"
+                    # "tooltipComponent": "CustomTooltip"
                     },
     columnSize="sizeToFit", 
     dashGridOptions = {'suppressRowTransform': True,
                        "rowSelection": "multiple",
-                       "tooltipShowDelay": 100}, 
+                       "tooltipShowDelay": 100,
+                       "rowDragManaged": True,
+                       "rowDragMultiRow": True,
+                       "rowDragEntireRow": True
+                       }, 
     # style={ "width": "100%",'height':f'{48 + 83 * n_row}px'}
     
 )
@@ -318,7 +403,7 @@ model_password = dbc.Modal(
                 html.Br(),
                 dbc.Button( "OK", id="password_ok",n_clicks=0, style={'background-color':'grey'})
                 ]),
-    ],id="pass_model", is_open=True, contentClassName="pass_content", style={'display':'grid'})
+    ],id="pass_model", is_open=True, contentClassName="pass_content", style={'display':'none'})
 ####################################################################################################################################################################
 ####################################################################################################################################################################
 # instruct_plot = ('/assets/figure/instruction_skt1.png')
@@ -338,7 +423,8 @@ def Sktpage():
     return html.Div([Navbar(), skt_layout()])
 
 def skt_layout():
-    return html.Div([model_password,
+    return html.Div([
+        # model_password,
     html.Div(id='skt_all',children=[dcc.Markdown('Scalable Knowledge Translation Tool',
                                                 className="markdown_style_main",
                                                 style={
@@ -376,7 +462,7 @@ def skt_layout():
                                                         'font-size': '0.8em', 'margin-top': '2%'},
                                                 ),
                                             html.Br(),html.Br(),
-                                            html.Div([dbc.Row([dbc.Col(html.Span('Title', className='title_first'),className='title_col1'), 
+                                            html.Div([dbc.Row([dbc.Col(html.Span('Project Title', className='title_first'),className='title_col1'), 
                                                               dbc.Col(dcc.Input(id='title_skt',
                                                                             value='Systemic pharmacological treatments for chronic plaque psoriasis: a network meta-analysis', 
                                                                             style={'width':'800px'}
@@ -387,7 +473,8 @@ def skt_layout():
                                                                      html.Span('Patients: patients with psoriasis',className='skt_span1'),
                                                                               html.Span('Primary outcome: PASI90',className='skt_span1'), 
                                                                               html.Span('Study design: randomized control study', className='skt_span1'),
-                                                                              ], className='tab1',headerClassName='headtab1',bodyClassName='bodytab1'),],className='tab1_col'),
+                                                                              ], className='tab1',headerClassName='headtab1',bodyClassName='bodytab1')
+                                                                              ],className='tab1_col'),
 
                                                                 dbc.Col([
                                                                          dbc.Row([html.Span('Interventions', className='inter_label'),
@@ -420,7 +507,7 @@ def skt_layout():
                                                                     value=20,
                                                                     placeholder="e.g. 20",) 
                                                                               ],className='skt_studyinfo2', bodyClassName='slect_body',headerClassName='headtab1'),],
-                                                                                style={'width':'220px'}),
+                                                                                style={'width':'15%'}),
                                                             dbc.Col(dbc.Toast(
                                                                               [html.Span('Data Source', className='study_design'),
                                                                               html.Span('Number of studies: 96',className='skt_span1'),
@@ -433,8 +520,8 @@ def skt_layout():
                                                                             #   html.Br(),
                                                                               html.Span('Mean age: 45.3',className='skt_span1'),
                                                                               html.Span('Mean male percentage: 43.4%',className='skt_span1'),
-                                                                              ], className='skt_studyinfo',headerClassName='headtab1'), style={'width':'400px'}) ,
-                                                            dbc.Col(empty,style={'width':'560px','margin-left': '20px', 'border': '1px dashed rgb(184, 80, 66)','display':'grid'})    
+                                                                              ], className='skt_studyinfo',headerClassName='headtab1'), style={'width':'35%'}) ,
+                                                            dbc.Col(empty,style={'width':'38%','margin-left': '2%', 'border': '1px dashed rgb(184, 80, 66)','display':'grid'})    
                                                                           
                                                                           ], className='row_skt'),
                                                     #   dbc.Row([dbc.Toast([html.Span('Number of studies: 96',className='skt_span1'),
@@ -451,7 +538,7 @@ def skt_layout():
                                                                               ],className='skt_rowtable'),
                                                       html.Br(), html.Br(),
                                                       dbc.Row(),
-                                                                              ]),], style={'display':'none'})])
+                                                                              ]),], style={'display':'block'})])
 
 ####################################################################################################################################################################
 ####################################################################################################################################################################

@@ -11,7 +11,8 @@ def __show_forest_plot(cell, row_select, style_pair):
     slctd_comps = []
     slctd_compsinv = []
 
-    if row_select and cell is not None:
+    if row_select and cell is not None and 'colId' in cell and cell['colId'] == "Treatment":
+        
         # selected_treatment = [s["Treatment"] for s in row_select]
         # row_select[0]['Treatment']
         # src, trgt = reference.split('\n')[0], row_select[0]['Treatment'].split('\n')[0]

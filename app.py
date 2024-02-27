@@ -30,6 +30,7 @@ from tools.functions_build_league_data_table import __update_output, __update_ou
 from tools.functions_generate_stylesheet import __generate_stylesheet
 from tools.functions_export import __generate_xlsx_netsplit, __generate_xlsx_league, __generate_csv_consistency
 from tools.functions_show_forest_plot import __show_forest_plot
+from tools.functions_skt_forestplot import __skt_all_forstplot, __skt_PI_forstplot, __skt_direct_forstplot, __skt_indirect_forstplot, __skt_PIdirect_forstplot, __skt_PIindirect_forstplot,__skt_directin_forstplot, __skt_mix_forstplot
 from dash import ctx, no_update
 # --------------------------------------------------------------------------------------------------------------------#
 create_sessions_folders()
@@ -2003,18 +2004,93 @@ def results_display(selected):
 ####################################################################
 ############################ SKT TOOL ##############################
 
+# @app.callback(
+#     [Output("quickstart-grid", "rowData"),
+#     Output("quickstart-grid", "style")],
+#     [
+#     # Input("ref_selected", "value"),
+#     Input("base_risk_input", "value")],
+# )
+
+# def selected(value_risk):
+
+#     dfc = df.copy()
+#     round(dfc,2)
+#     dfc.reset_index(drop=True, inplace=True)  
+#     # dfc['Reference'] = [f'{value} \n {value_risk} per 1000'] + [''] * (dfc.shape[0] - 1)
+#     value_risk = int(value_risk)
+#     for i in range(1,dfc.shape[0]):
+#         risk_treat = value_risk*dfc['RR'].loc[i]
+#         risk_treat =int(risk_treat)
+#         abrisk = risk_treat-value_risk 
+#         dfc.loc[i,'Reference'] = f"{dfc.loc [i,'Reference']}" + f"\n{value_risk} per 1000"
+#         dfc.loc[i,'Treatment'] = f"{dfc.loc [i,'Treatment']}" + f"\n{risk_treat} per 1000"
+#         dfc.loc[i,'RR'] = str(dfc.loc[i,'RR'])+ '\n(' + str(dfc.loc[i,'CI_lower']) + ', ' + str(dfc.loc[i,'CI_upper']) + ')'
+#         dfc.loc[i,'RR'] = f"{dfc.loc [i,'RR']}" + (f"\n{abrisk} more per 1000" if abrisk > 0 else f"\n{abs(abrisk)} less per 1000")
+#         dfc.loc[i,'direct'] = f"{dfc.loc [i,'direct']}" + f"\n({dfc.loc[i,'direct_low']}, {dfc.loc[i,'direct_up']})" if pd.notna(dfc['direct'].iloc[i]) else ""
+#         dfc.loc[i,'indirect'] = f"{dfc.loc[i,'indirect']}" + f"\n({dfc.loc[i,'indirect_low']}, {dfc.loc[i,'indirect_up']})" if pd.notna(dfc['indirect'].iloc[i]) else ""
+    
+#     dfc = pd.DataFrame(dfc)
+#     n_row = dfc.shape[0]
+#     style = { "width": "100%",'height':f'{48 + 95 * n_row}px'}
+#     return dfc.to_dict("records"), style
+
+ 
+
 @app.callback(
     [Output("quickstart-grid", "rowData"),
     Output("quickstart-grid", "style")],
     [
-    # Input("ref_selected", "value"),
+    Input("checklist_effects", "value"),
     Input("base_risk_input", "value")],
 )
 
-def selected(value_risk):
-    # pw_data = pd.read_csv('db/forest_data_pairwise.csv')
-    # slctd_comps = []
-    # slctd_compsinv = []
+def selected(value_effect, value_risk):
+
+    data = pd.read_csv('db/skt/final_all.csv')
+    df = pd.DataFrame(data)
+    certainty_values = ['High', 'Low', 'Moderate']
+    df['Certainty'] = np.random.choice(certainty_values, size=df.shape[0])
+    df['Comments'] = ['' for _ in range(df.shape[0])]
+    df['CI_width_hf'] = df.CI_upper - df['RR']
+    df['lower_error'] = df['RR'] - df.CI_lower
+    df['weight'] = 1/df['CI_width_hf']
+    df = df.round(2)
+    df['Graph'] = ''
+
+    # if value_effect==[]:
+    #         df = __skt_mix_forstplot(df)
+    # elif all(effect in value_effect for effect in ['PI', 'direct', 'indirect']):
+    #         df = __skt_all_forstplot(df)
+    # elif all(effect in ['PI'] for effect in value_effect):
+    #         df = __skt_PI_forstplot(df)
+    # elif all(effect in ['direct'] for effect in value_effect):
+    #         df = __skt_direct_forstplot(df)
+    # elif all(effect in ['indirect'] for effect in value_effect):
+    #         df = __skt_indirect_forstplot(df)
+    # elif all(effect in ['PI', 'direct'] for effect in value_effect):
+    #         df = __skt_PIdirect_forstplot(df)
+    # elif all(effect in ['PI', 'indirect'] for effect in value_effect):
+    #         df = __skt_PIindirect_forstplot(df)
+    # elif all(effect in ['direct', 'indirect'] for effect in value_effect):
+    #         df = __skt_directin_forstplot(df)
+    
+    if value_effect==[]:
+            df = df_mix
+    elif all(effect in value_effect for effect in ['PI', 'direct', 'indirect']):
+            df = df_all
+    elif all(effect in ['PI'] for effect in value_effect):
+            df = df_PI
+    elif all(effect in ['direct'] for effect in value_effect):
+            df = df_direct
+    elif all(effect in ['indirect'] for effect in value_effect):
+            df = df_indirect
+    elif all(effect in ['PI', 'direct'] for effect in value_effect):
+            df = df_PIdirect
+    elif all(effect in ['PI', 'indirect'] for effect in value_effect):
+            df = df_PIindirect
+    elif all(effect in ['direct', 'indirect'] for effect in value_effect):
+            df = df_directin
 
     dfc = df.copy()
     round(dfc,2)
@@ -2038,6 +2114,7 @@ def selected(value_risk):
     n_row = dfc.shape[0]
     style = { "width": "100%",'height':f'{48 + 95 * n_row}px'}
     return dfc.to_dict("records"), style
+
 
 
 @app.callback(
@@ -2092,7 +2169,7 @@ def show_forest_plot(cell,  row_select, style_pair):
 def display_grid(value):
     if value:
         return [grid2],[checklist, button_clear]
-    return [grid, model_skt_stand1, model_skt_stand2],[radio_treattment]
+    return [grid, model_skt_stand1, model_skt_stand2],display_treatment
 
 
 @app.callback(

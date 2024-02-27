@@ -411,7 +411,7 @@ h6 {margin-top: 0;}
 
 .skt_studyinfo{
     
-    height: 240px;
+    height: 160px;
     display: grid;
     background-color: #E7E8D1;
 }
@@ -419,10 +419,18 @@ h6 {margin-top: 0;}
 
 .skt_studyinfo2{
     width: 200px;
-    height: 240px;
+    height: auto;
     /* justify-content: center; */
     display: grid;
     background-color:  antiquewhite;
+}
+
+.option_select{
+    display: grid;
+    justify-self: center;
+    font-size: medium;
+    font-weight: bold;
+    color: rgb(184, 80, 66)
 }
 
 #select_dropdown{
@@ -432,7 +440,7 @@ h6 {margin-top: 0;}
 
 .tab1{
     width: 350px;
-    height: 125px;
+    height: auto;
     justify-content: start;
     display: grid;
     background-color: #E7E8D1;
@@ -468,6 +476,7 @@ h6 {margin-top: 0;}
 }
 
 .tab2_col{
+    display: grid;
     background-color: antiquewhite;
     width: 66%;
     margin-left: 4%
@@ -501,6 +510,7 @@ h6 {margin-top: 0;}
 }
 
 .skt_intervention{
+    justify-self: center;
     width: 830px;
     height: 90px;
     display: grid;
@@ -526,6 +536,7 @@ h6 {margin-top: 0;}
     width: 200px;
     align-items: center;
     font-weight: bold;
+    font-size: 13px
 }
 .slect_body{
     justify-content: center;
@@ -632,20 +643,22 @@ h6 {margin-top: 0;}
 
 
 .ag-theme-alpine {
-    --ag-foreground-color: black;
-    /* --ag-background-color: rgb(249, 245, 227); */
     --ag-header-foreground-color: white;
     --ag-header-background-color: #B85042;
-    --ag-odd-row-background-color: white;
-    /* --ag-odd-row-background-color: rgb(0, 0, 0, 0.03); */
     --ag-header-column-resize-handle-color: #933f34;
-
     --ag-font-size: 15px;
-    /* --ag-font-family: monospace; */
+    --ag-header-cell-hover-background-color: #d55f4f;
 }
 
+/* .ag-theme-alpine .ag-header {
+    font-size: 15px;
+    background-color: #B85042;  
+} */
 
-
+/* .ag-theme-alpine .ag-header-cell {
+    font-size: 15px;
+    background-color: #B85042;
+} */
 
 
 

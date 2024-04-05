@@ -41,4 +41,4 @@ tzdata==2021.5
 tzlocal==4.1
 Werkzeug==2.0.2
 XlsxWriter==3.0.2
-dash-ag-grid>=2.4.0
+dash-ag-grid==31.0.1

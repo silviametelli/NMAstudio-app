@@ -9,11 +9,11 @@ import numpy as np
 import plotly.express as px, plotly.graph_objects as go
 import dash_daq as daq
 from tools.functions_skt_forestplot import __skt_all_forstplot, __skt_PI_forstplot, __skt_direct_forstplot, __skt_indirect_forstplot, __skt_PIdirect_forstplot, __skt_PIindirect_forstplot,__skt_directin_forstplot, __skt_mix_forstplot
-
+import os
 
 
 data = pd.read_csv('db/skt/final_all.csv')
-pw_data = pd.read_csv('db/skt/forest_data_pairwise.csv')
+pw_data = pd.read_csv('db/skt/forest_data_prws.csv')
 df = pd.DataFrame(data)
 
 out_list = [['PASI90',"SAE"]]
@@ -56,6 +56,7 @@ def update_indirect_direct(row):
     return row
 
 df['Graph'] = ''
+df['risk'] = ''
 
 df_mix = __skt_mix_forstplot(df)
 df_all = __skt_all_forstplot(df)
@@ -65,15 +66,48 @@ df_indirect = __skt_indirect_forstplot(df)
 df_PIdirect = __skt_PIdirect_forstplot(df)
 df_PIindirect = __skt_PIindirect_forstplot(df)
 df_directin = __skt_directin_forstplot(df)
+df = df_mix
+
+grouped = df.groupby(["Reference", "risk"])
+rowData = []
+for (ref, risk), group in grouped:
+    treatments = []
+    for _, row in group.iterrows():
+        treatment_data = {"Treatment": row["Treatment"], 
+                          "RR": row["RR"], "direct": row["direct"],
+                          "Graph": row["Graph"], "indirect": row["indirect"],
+                          "p-value": row["p-value"], "Certainty": row["Certainty"],
+                          "Comments": row["Comments"],
+                          }
+        treatments.append(treatment_data)
+    rowData.append({"Reference": ref, "risk": risk, "Treatments": treatments})
+
+rowData = pd.DataFrame(rowData)
+
 
 style_certainty = {'white-space': 'pre','display': 'grid','text-align': 'center','align-items': 'center'}
 
-
-
-columnDefs1 =  [
+masterColumnDefs = [
+    {
+        "headerName": "Reference",
+        "field": "Reference",
+        "cellRenderer": "agGroupCellRenderer",
+        'cellStyle': {'border-left': 'solid 0.8px',
+                      'border-right': 'solid 0.8px'}
+        # "cellRendererParams": {
+        #     'innerRenderer': "DCC_GraphClickData",
+        # },
+    },
+    {"headerName": "Risk per 1000", 
+     "field": "risk",
+     "editable": True,
+     }
+]
+detailColumnDefs = [
    
     {"field": "Treatment", 
      "headerName": 'Treatment',
+     "checkboxSelection": True,
      "sortable": False,
      "filter": True,
      "width": 130,
@@ -82,34 +116,15 @@ columnDefs1 =  [
       'cellStyle': {
         #   'font-weight':'bold'
           }},
-     {
-        "field": "Reference",
-        "headerName": "Comparison",
-        "width": 100,
-        "resizable": True,
-        "filter": True,
-        # "filter": "agSetColumnFilter",
-        # "rowSpan": {"function": "rowSpan(params)"},
-        # "cellClassRules": {
-        # "cell-span": "params.value !==''"
-        # },
-        'cellStyle': {'border-right': 'solid 0.8px',
-                      'text-align': 'center',
-                      'align-items': 'center',
-                      'display': 'grid',
-                      'padding':0,
-                      'white-space': 'pre',
-                      'font-weight':'bold'
-                      },
-        "width": '100%'
-    },
+
     {"field": "RR", 
      "headerName": "Mixed effect\n95%CI",
      "width": 180,
      "resizable": True,
      'cellStyle': {'border-left': 'solid 0.8px',
                    'backgroud-color':'white',
-                   'line-height': '20px',
+                #    'line-height': '20px',
+                   "text-align":'center'
                    }
        },
     {
@@ -118,8 +133,6 @@ columnDefs1 =  [
         "headerName": "Forest plot",
         "width": 300,
         "resizable": True,
-        # "maxWidth": 500,
-        # "minWidth": 250,
         'cellStyle': {'border-left': 'solid 0.8px',
                       'border-right': 'solid 0.8px' ,'backgroud-color':'white'}
 
@@ -128,12 +141,12 @@ columnDefs1 =  [
      "headerName": "Direct effect\n(95%CI)",
       "width": 170,
       "resizable": True,
-      'cellStyle': {'color': '#707B7C'}},
+      'cellStyle': {'color': '#707B7C', "text-align":'center'}},
     {"field": "indirect",
      "headerName": "Indirect effect\n(95%CI)",
       "width": 170,
       "resizable": True,
-      'cellStyle': {'color': '#ABB2B9'}},
+      'cellStyle': {'color': '#ABB2B9', "text-align":'center'}},
     {"field": "p-value",
      "headerName": "p-value\n(Consistency)",
       "width": 140,
@@ -153,19 +166,28 @@ columnDefs1 =  [
     ]}},
     {"field": "Comments", "width": 120, "resizable": True,
      'editable': True,
-     'cellStyle': {'border-left': 'solid 0.5px' }},
+     'cellStyle': {'border-left': 'solid 0.5px',"text-align":'center'}},
     
     ]
 
 
 # n_row = df.shape[0]
 
-
 grid = dag.AgGrid(
     id="quickstart-grid",
-    className="ag-theme-alpine color-fonts ",
-    rowData=df.to_dict("records"),
-    columnDefs =  columnDefs1,
+    className="ag-theme-alpine color-fonts",
+    enableEnterpriseModules=True,
+    licenseKey=os.environ["AG_GRID_KEY"],
+    columnDefs=masterColumnDefs,
+    rowData = rowData.to_dict("records"),
+    masterDetail=True,
+    detailCellRendererParams={
+                "detailGridOptions": {
+                "columnDefs": detailColumnDefs,
+                },
+                "detailColName": "Treatments",
+                "suppressCallback": True,
+            },
     dangerously_allow_code=True,
     defaultColDef={
                     # "resizable": True, 
@@ -186,9 +208,11 @@ grid = dag.AgGrid(
                        "tooltipShowDelay": 100,
                        "rowDragManaged": True,
                        "rowDragMultiRow": True,
-                       "rowDragEntireRow": True
+                       "rowDragEntireRow": True,
+                       "detailRowAutoHeight": f'{48 + 83 *19}px',
                        }, 
-    # style={ "width": "100%",'height':f'{48 + 83 * n_row}px'}
+    getRowId='params.data.Reference',
+    style={ "width": "100%",'height':f'{70 + 83 *19}px'}
     
 )
 

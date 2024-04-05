@@ -246,7 +246,7 @@ def __data_trans(
 
         except:
             raise ValueError('Data upload failed: likely UnicodeDecodeError or MultipleTypeError, check variable characters and type')
-        
+              
         var_dict = dict()
         var_outcomes = dict()
         number_outcomes = int(number_outcomes)
@@ -255,6 +255,7 @@ def __data_trans(
 
 
         if search_value_format == 'iv':
+            
             studlab, treat1, treat2, rob, year = overall_variables[0:]
             var_dict1 = {studlab: 'studlab', treat1: 'treat1', treat2: 'treat2', rob: 'rob', year: 'year'}
             iv_data = [[] for _ in range(number_outcomes)]  # Initialize as a list of lists

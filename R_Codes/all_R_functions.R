@@ -65,6 +65,7 @@ run_NetMeta_new <- function(dat, i){
   dat <- dat %>%
     filter_at(vars(!!as.name(TE_col), !!as.name(seTE_col)), all_vars(!is.na(.))) %>%
     filter(!!as.name(seTE_col) != 0)
+  
 
   treatments <- unique(c(dat$treat1, dat$treat2))
   # if incorrect number of arms, then delete entire study
@@ -521,57 +522,6 @@ funnel_funct_new <- function(dat,i){
 ## pairwise forest plots for all different comparisons in df
 ## sorted_dat: dat sorted by treatemnt comparison
 
-pairwise_forest <- function(dat){
-  sm <- dat$effect_size1[1]
-  DFs_pairwise <- list()
-  dat <- dat %>% filter_at(vars(TE, seTE), all_vars(!is.na(.))) %>% filter(seTE!=0)
-  dat <- dat %>% arrange(dat, treat1, treat2)
-  dat$ID <- dat %>% group_indices(treat1, treat2)
-  dat <- dat %>%
-  mutate(
-    temp = ifelse(treat1 > treat2, treat2, treat1),
-    treat2 = ifelse(treat1 > treat2, treat1, treat2),
-    treat1 = temp
-  ) %>%
-  select(-temp)
-
-  for (id in dat$ID){
-    dat_temp <- dat[which(dat$ID==id), ]
-    model_temp <- metagen(TE=TE,seTE= seTE, studlab = studlab, data=dat_temp,
-                         random = T, sm=sm, prediction=TRUE)
-
-    studlab <- dat_temp$studlab
-    t1 <- dat_temp$treat1
-    t2 <- dat_temp$treat2
-    TE <- model_temp$TE
-    TE_diamond <- model_temp$TE.random
-    se <- model_temp$seTE.random
-    ci_lo <- model_temp$lower.random
-    ci_up <- model_temp$upper.random
-    ci_lo_individual <- model_temp$lower
-    ci_up_individual <- model_temp$upper
-    predict_lo <- model_temp$lower.predict
-    predict_up <- model_temp$upper.predict
-    TEweights <- model_temp$w.random
-    tau2 <- model_temp$tau^2
-    I2 <- model_temp$I2
-    if(sm=="MD" | sm=="SMD"){df <- data.frame(TE, TE_diamond, id, studlab, t1, t2, ci_lo_individual,
-                                              ci_up_individual, ci_lo, ci_up, predict_lo, predict_up,
-                                              TEweights, tau2, I2)
-    }else{df <- data.frame(exp(TE), exp(TE_diamond), id, studlab, t1, t2, exp(ci_lo_individual),
-                           exp(ci_up_individual), exp(ci_lo), exp(ci_up), exp(predict_lo),
-                           exp(predict_up), TEweights, tau2, I2)}
-    colnames(df) <- c(sm , "TE_diamond", "id", "studlab", "treat1", "treat2", "CI_lower",
-                           "CI_upper", "CI_lower_diamond", "CI_upper_diamond", "Predict_lo",
-                           "Predict_up", "WEIGHT", "tau2", "I2")
-    DFs_pairwise[[id]] <- df
-  }
-  DFs_pairwise <- do.call('rbind', DFs_pairwise)
-  return(DFs_pairwise)
-}
-
-
-
 pairwise_forest_new <- function(dat,i){
     DFs_pairwise <- list()
     sm <- dat[[paste0("effect_size", i+1)]][1]
@@ -583,14 +533,17 @@ pairwise_forest_new <- function(dat,i){
         filter_at(vars(!!as.name(TE_col), !!as.name(seTE_col)), all_vars(!is.na(.))) %>%
         filter(!!as.name(seTE_col) != 0)
     dat <- dat %>% arrange(dat, treat1, treat2)
-    dat$ID <- dat %>% group_indices(treat1, treat2)
+
     dat <- dat %>%
-    mutate(
-        temp = ifelse(treat1 > treat2, treat2, treat1),
-        treat2 = ifelse(treat1 > treat2, treat1, treat2),
-        treat1 = temp
-    ) %>%
+      mutate(
+          !!as.name(TE_col) := ifelse(treat1 > treat2, -!!as.name(TE_col), !!as.name(TE_col)),
+          temp = ifelse(treat1 > treat2, treat2, treat1),
+          treat2 = ifelse(treat1 > treat2, treat1, treat2),
+          treat1 = temp
+      ) %>%
     select(-temp)
+
+    dat$ID <- dat %>% group_indices(treat1, treat2)
 
     for (id in dat$ID){
     dat_temp <- dat[which(dat$ID==id), ]
@@ -720,6 +673,7 @@ get_pairwise_data_long_new <- function(dat, num_outcome=1){
    for (i in 1:num_outcome){
     sm <- dat[[paste0("effect_size", i)]][1] 
     if(sm %in% c('RR','OR')) {
+
         pair_dat <- netmeta::pairwise(data=dat,
                                        event=dat[[paste0("r", i)]],
                                        n=dat[[paste0("n", i)]],
@@ -773,6 +727,7 @@ get_pairwise_data_long_new <- function(dat, num_outcome=1){
 get_pairwise_data_contrast <- function(dat, outcome2=FALSE){
     sm1 <- dat$effect_size1[1]
     if(sm1 %in% c('RR','OR')){
+
     pairwise_dat1 <- netmeta::pairwise(data=dat,
                                        event=list(r1,r2),
                                        n=list(n1,n2),

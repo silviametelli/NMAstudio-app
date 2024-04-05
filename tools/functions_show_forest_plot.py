@@ -5,18 +5,23 @@ import numpy as np
 import plotly.express as px, plotly.graph_objects as go
 
 
-def __show_forest_plot(cell, row_select, style_pair):
+def __show_forest_plot(cell, style_pair):
     
-    df = pd.read_csv('db/skt/forest_data_pairwise.csv')
+    df = pd.read_csv('db/skt/forest_data_prws.csv')
     slctd_comps = []
     slctd_compsinv = []
-
-    if row_select and cell is not None and 'colId' in cell and cell['colId'] == "Treatment":
-        
+    data = pd.read_csv('db/skt/final_all.csv')
+    grouped = data.groupby(["Reference"])
+    if  cell is not None and len(cell) != 0 and 'colId' in cell and cell['colId'] == "direct" and cell['value'] is not None:
+        dic_data =cell
         # selected_treatment = [s["Treatment"] for s in row_select]
         # row_select[0]['Treatment']
         # src, trgt = reference.split('\n')[0], row_select[0]['Treatment'].split('\n')[0]
-        src, trgt = row_select[0]['Reference'].split('\n')[0], row_select[0]['Treatment'].split('\n')[0]
+        idx = dic_data['rowIndex']
+        src = dic_data['rowId'].split('_')[1].split(' ')[0]
+        trgt = grouped.get_group(src).iloc[idx]
+        trgt = trgt['Treatment']
+
         slctd_comps += [f'{src} vs {trgt}']
         slctd_compsinv += [f'{trgt} vs {src}']
         df['Comparison'] = df['treat1'] + ' vs ' + df['treat2']

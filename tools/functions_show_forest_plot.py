@@ -19,7 +19,7 @@ def __show_forest_plot(cell, style_pair):
         # src, trgt = reference.split('\n')[0], row_select[0]['Treatment'].split('\n')[0]
         idx = dic_data['rowIndex']
         src = dic_data['rowId'].split('_')[1].split(' ')[0]
-        trgt = grouped.get_group(src).iloc[idx]
+        trgt = grouped.get_group(src).iloc[idx-1]
         trgt = trgt['Treatment']
 
         slctd_comps += [f'{src} vs {trgt}']

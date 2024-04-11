@@ -21,37 +21,6 @@ def __modal_submit_checks_DATACHECKS(modal_data_checks_is_open, num_outcomes,TEM
 
 
 
-def __modal_submit_checks_NMA(modal_data_checks_is_open, TEMP_net_data_STORAGE,
-                            TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE):
-    if modal_data_checks_is_open:
-        net_data = pd.read_json(TEMP_net_data_STORAGE[0], orient='split')
-        try:
-            TEMP_user_elements_STORAGE = get_network(df=net_data)
-            TEMP_user_elements_out2_STORAGE = []
-            NMA_data = run_network_meta_analysis(net_data)
-            TEMP_forest_data_STORAGE = NMA_data.to_json( orient='split')
-
-            if "TE2" in net_data.columns:
-                net_data_out2 = net_data.drop(["TE", "seTE",  "n1",  "n2", "effect_size1"], axis=1)
-                net_data_out2 = net_data_out2.rename(columns={"TE2": "TE", "seTE2": "seTE", "effect_size2": 'effect_size1',
-                                                              "n2.1": "n1", "n2.2": "n2"})
-
-                TEMP_user_elements_out2_STORAGE = get_network(df=net_data_out2)
-                NMA_data2 = run_network_meta_analysis(net_data_out2)
-                TEMP_forest_data_out2_STORAGE = NMA_data2.to_json(orient='split')
-
-            return (False, '', html.P(u"\u2713" + " Network meta-analysis run successfully.", style={"color":"green"}),
-                    '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE, TEMP_user_elements_out2_STORAGE)
-
-
-        except Exception as Rconsole_error_nma:
-            return (True, str(Rconsole_error_nma), html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
-                        '__Para_Done__', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, TEMP_user_elements_STORAGE, TEMP_user_elements_out2_STORAGE)
-
-    else:
-        return False, '', None, '', TEMP_forest_data_STORAGE, TEMP_forest_data_out2_STORAGE, None, None
-
-
 
 
 def __modal_submit_checks_NMA_new(modal_data_checks_is_open, num_outcome,TEMP_net_data_STORAGE,
@@ -84,31 +53,6 @@ def __modal_submit_checks_NMA_new(modal_data_checks_is_open, num_outcome,TEMP_ne
         return False, '', None, '', TEMP_forest_data_STORAGE
 
 
-
-
-def __modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, TEMP_net_data_STORAGE, TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2):
-    if modal_data_checks_is_open:
-
-        data = pd.read_json(TEMP_net_data_STORAGE[0], orient='split')
-        try:
-            PAIRWISE_data = run_pairwise_MA(data)
-            TEMP_forest_data_prws_STORAGE = PAIRWISE_data.to_json( orient='split')
-            TEMP_forest_data_prws_out2 = []
-
-            if "TE2" in data.columns:
-                pair_data_out2 = data.drop(["TE", "seTE",  "n1",  "n2"], axis=1)
-                pair_data_out2 = pair_data_out2.rename(columns={"TE2": "TE", "seTE2": "seTE", "n2.1": "n1", "n2.2": "n2"})
-                PAIRWISE_data2 = run_pairwise_MA(pair_data_out2)
-                TEMP_forest_data_prws_out2 = PAIRWISE_data2.to_json(orient='split')
-
-            return (False, '', html.P(u"\u2713" + " Pairwise meta-analysis run successfully.", style={"color":"green"}),
-                               '__Para_Done__', TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2)
-        except Exception as Rconsole_error_pw:
-                return (True, str(Rconsole_error_pw), html.P(u"\u274C" + " An error occurred when computing analyses in R: check your data", style={"color":"red"}),
-                              '__Para_Done__', TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2)
-
-    else:
-        return False, '', None, '', TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2
 
 
 def __modal_submit_checks_PAIRWISE_new(nma_data_ts,num_outcome, modal_data_checks_is_open, TEMP_net_data_STORAGE, TEMP_forest_data_prws_STORAGE):

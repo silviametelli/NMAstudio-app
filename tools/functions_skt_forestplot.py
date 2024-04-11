@@ -1017,18 +1017,53 @@ def __skt_directin_forstplot(df):
 
 
 def __skt_mix_forstplot(df):
-    for j in range(0, 380, 19):
-        data_ex = df[j:j + 19]
+    new_rows = pd.DataFrame(columns=df.columns)
+    for idx in range(0, 380, 19):
+        new_rows.loc[idx/19, 'Reference'] = df.loc[idx, 'Reference']
+    new_rows['Treatment'] = 'Instruction'
+    new_rows['risk'] = 'Enter a number'
+    interval = 19
+    insert_index = 0
+    for _, row in new_rows.iterrows():
+        df = pd.concat([df.iloc[:insert_index], row.to_frame().T, df.iloc[insert_index:]]).reset_index(drop=True)
+        insert_index += interval + 1  # Move to the next insertion position
+
+    for j in range(0, 400, 20):
+
+        data_ex = df[j+1:j + 20]
         up_rng_max, low_rng_min = data_ex.CI_upper.mean(), data_ex.CI_lower.mean()
         up_mix_max, low_mix_min = data_ex.RR.max(), data_ex.RR.min()
     # up_rng = 10**np.floor(np.log10(up_rng))
     # low_rng = 10 ** np.floor(np.log10(low_rng))
      
         range_scale=[min(low_rng_min, -1, low_mix_min), 
-                              max(up_rng_max, 2.25, up_mix_max+1)]
+                              max(up_rng_max, 2.25, up_mix_max+1)]  
+        
+        fig = go.Figure(go.Scatter( y = [],x = []))
+        fig.update_layout(
+        xaxis=dict(range=range_scale,
+                    tickvals=[i for i in range(int(min(low_rng_min, -1, low_mix_min)+1),
+                                        int(max(up_rng_max, 2.25, up_mix_max+1)-1))],
+                        ),
+        showlegend=False,
+        yaxis_visible=False,
+        yaxis_showticklabels=False,
+        autosize=True,
+        paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
+        plot_bgcolor='rgba(0,0,0,0)',
+        height=100,
+        margin=dict(l=0, r=0)
+        )
+        fig.update_xaxes(ticks="outside",
+                        showgrid=False,
+                        autorange=True, showline=True,
+                        # tickcolor='rgba(0,0,0,0)',
+                        linecolor='black'
+                        )
 
+        df.at[j, "Graph"] = fig
 
-        for i in range(j, j + 19):
+        for i in range(j+1, j + 20):
             filterDf = df.iloc[i]
             filter_df = pd.DataFrame([filterDf])
             filter_df = filter_df.apply(update_indirect_direct, axis=1)
@@ -1102,42 +1137,6 @@ def __skt_mix_forstplot(df):
                 
 
             df.at[i, "Graph"] = fig
-    new_row = pd.DataFrame(columns=df.columns)
-    new_row.loc[0, 'Treatment'] = 'Instruction'
-    data_ex = df[1:20]
-    up_rng_max, low_rng_min = data_ex.CI_upper.mean(), data_ex.CI_lower.mean()
-    up_mix_max, low_mix_min = data_ex.RR.max(), data_ex.RR.min()
-    range_scale2=[min(low_rng_min, -1, low_mix_min), 
-                              max(up_rng_max, 2.25, up_mix_max+1)]  
-    
-    fig = go.Figure(go.Scatter( y = [],x = []))
-
-    fig.update_layout(
-        xaxis=dict(range=range_scale2,
-                    tickvals=[i for i in range(int(min(low_rng_min, -1, low_mix_min)+1),
-                                        int(max(up_rng_max, 2.25, up_mix_max+1)-1))],
-                        ),
-        showlegend=False,
-        yaxis_visible=False,
-        yaxis_showticklabels=False,
-        autosize=True,
-        # xaxis_visible=True,
-        # xaxis_showticklabels=True,
-        paper_bgcolor='rgba(0,0,0,0)',  # transparent bg
-        plot_bgcolor='rgba(0,0,0,0)',
-        height=95,
-        margin=dict(l=0, r=0)
-        )
-    fig.update_xaxes(ticks="outside",
-                    showgrid=False,
-                    autorange=True, showline=True,
-                    # tickcolor='rgba(0,0,0,0)',
-                    linecolor='black'
-                    )
-
-
-    new_row.loc[0, 'Graph'] = fig
 
     # new_row.loc[0, 'Graph'] = df.iloc[1]['Graph']
-    df = pd.concat([new_row, df], ignore_index=True)
     return df

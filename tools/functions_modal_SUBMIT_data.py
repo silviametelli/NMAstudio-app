@@ -348,6 +348,8 @@ def __data_trans(
         var_outs = pd.Series(var_outcomes, index=var_outcomes.keys())
         
         
+        # data_user.to_csv('USR_DATASETS/test.csv', encoding='utf-8')
+
         for i_out in range(number_outcomes):
             data_user[f'effect_size{i_out+1}'] = var_outs[f'effect_size{i_out+1}']
             data_user[f'outcome{i_out+1}_direction'] = var_outs[f'outcome{i_out+1}_direction']

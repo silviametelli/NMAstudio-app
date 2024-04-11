@@ -56,7 +56,7 @@ def update_indirect_direct(row):
     return row
 
 df['Graph'] = ''
-df['risk'] = ''
+df['risk'] = 'Enter a number'
 
 df_mix = __skt_mix_forstplot(df)
 df_all = __skt_all_forstplot(df)
@@ -77,12 +77,46 @@ for (ref, risk), group in grouped:
                           "RR": row["RR"], "direct": row["direct"],
                           "Graph": row["Graph"], "indirect": row["indirect"],
                           "p-value": row["p-value"], "Certainty": row["Certainty"],
+                          "direct_low": row["direct_low"],"direct_up": row["direct_up"],
+                          "indirect_low": row["indirect_low"],"indirect_up": row["indirect_up"],
+                          "CI_lower": row["CI_lower"],"CI_upper": row["CI_upper"],
                           "Comments": row["Comments"],
                           }
         treatments.append(treatment_data)
     rowData.append({"Reference": ref, "risk": risk, "Treatments": treatments})
 
-rowData = pd.DataFrame(rowData)
+row_data = pd.DataFrame(rowData)
+
+
+row_data_default = []
+for (ref, risk), group in grouped:
+    treatments = []
+    for _, row in group.iterrows():
+        treatment_data = {"Treatment": row["Treatment"], 
+                          "RR": row["RR"], "direct": row["direct"],
+                          "Graph": row["Graph"], "indirect": row["indirect"],
+                          "p-value": row["p-value"], "Certainty": row["Certainty"],
+                          "direct_low": row["direct_low"],"direct_up": row["direct_up"],
+                          "indirect_low": row["indirect_low"],"indirect_up": row["indirect_up"],
+                          "CI_lower": row["CI_lower"],"CI_upper": row["CI_upper"],
+                          "Comments": row["Comments"],
+                          }
+        treatments.append(treatment_data)
+    row_data_default.append({"Reference": ref, "risk": risk, "Treatments": treatments})
+
+row_data_default = pd.DataFrame(row_data_default)
+
+for j in range(0, row_data_default.shape[0]):
+    
+    detail_data = row_data_default.loc[j, 'Treatments']
+    detail_data = pd.DataFrame(detail_data)
+    
+    for i in range(1,detail_data.shape[0]):
+        row_data_default.loc[j,'Treatments'][i]['RR'] = str(row_data_default.loc[j,'Treatments'][i]['RR'])+ '\n(' + str(row_data_default.loc[j,'Treatments'][i]['CI_lower']) + ', ' + str(row_data_default.loc[j,'Treatments'][i]['CI_upper']) + ')'
+        row_data_default.loc[j,'Treatments'][i]['direct'] = f"{row_data_default.loc[j,'Treatments'][i]['direct']}" + f"\n({row_data_default.loc[j,'Treatments'][i]['direct_low']}, {row_data_default.loc[j,'Treatments'][i]['direct_up']})" if pd.notna(row_data_default.loc[j,'Treatments'][i]['direct']) else ""
+        row_data_default.loc[j,'Treatments'][i]['indirect'] = f"{row_data_default.loc[j,'Treatments'][i]['indirect']}" + f"\n({row_data_default.loc[j,'Treatments'][i]['indirect_low']}, {row_data_default.loc[j,'Treatments'][i]['indirect_up']})" if pd.notna(row_data_default.loc[j,'Treatments'][i]['indirect']) else ""
+        
+
 
 
 style_certainty = {'white-space': 'pre','display': 'grid','text-align': 'center','align-items': 'center'}
@@ -101,20 +135,26 @@ masterColumnDefs = [
     {"headerName": "Risk per 1000", 
      "field": "risk",
      "editable": True,
+     'cellStyle': {
+        'color': 'grey'}
      }
 ]
 detailColumnDefs = [
    
     {"field": "Treatment", 
      "headerName": 'Treatment',
-     "checkboxSelection": True,
+     "checkboxSelection": {"function": "params.data.Treatment !== 'Instruction'"},
      "sortable": False,
      "filter": True,
      "width": 130,
      'headerTooltip': 'Treatment',
       "resizable": True ,
       'cellStyle': {
-        #   'font-weight':'bold'
+        'display': 'grid',
+        "text-align":'center',
+        'white-space': 'pre',
+        'line-height': 'normal',
+        'align-items': 'center'
           }},
 
     {"field": "RR", 
@@ -124,7 +164,11 @@ detailColumnDefs = [
      'cellStyle': {'border-left': 'solid 0.8px',
                    'backgroud-color':'white',
                 #    'line-height': '20px',
-                   "text-align":'center'
+                   "text-align":'center',
+                   'white-space': 'pre',
+                   'display': 'grid',
+                   'line-height': 'normal',
+                   'align-items': 'center'
                    }
        },
     {
@@ -141,16 +185,21 @@ detailColumnDefs = [
      "headerName": "Direct effect\n(95%CI)",
       "width": 170,
       "resizable": True,
-      'cellStyle': {'color': '#707B7C', "text-align":'center'}},
+      'cellStyle': {'color': '#707B7C', "text-align":'center', 'display': 'grid',
+                    'white-space': 'pre', 'line-height': 'normal', 'align-items': 'center'}},
     {"field": "indirect",
      "headerName": "Indirect effect\n(95%CI)",
       "width": 170,
       "resizable": True,
-      'cellStyle': {'color': '#ABB2B9', "text-align":'center'}},
+      'cellStyle': {'color': '#ABB2B9', "text-align":'center','display': 'grid',
+                    'white-space': 'pre', 'line-height': 'normal', 'align-items': 'center'}},
     {"field": "p-value",
      "headerName": "p-value\n(Consistency)",
       "width": 140,
-      "resizable": True},
+      "resizable": True,
+      'cellStyle': {"text-align":'center', 'display': 'grid',
+                    'white-space': 'pre', 'align-items': 'center'}
+      },
     {"field": "Certainty", 
      "headerName": "Certainty",
      "width": 110,
@@ -166,7 +215,7 @@ detailColumnDefs = [
     ]}},
     {"field": "Comments", "width": 120, "resizable": True,
      'editable': True,
-     'cellStyle': {'border-left': 'solid 0.5px',"text-align":'center'}},
+     'cellStyle': {'border-left': 'solid 0.5px',"text-align":'center', 'display': 'grid'}},
     
     ]
 
@@ -179,11 +228,16 @@ grid = dag.AgGrid(
     enableEnterpriseModules=True,
     licenseKey=os.environ["AG_GRID_KEY"],
     columnDefs=masterColumnDefs,
-    rowData = rowData.to_dict("records"),
+    rowData = row_data_default.to_dict("records"),
     masterDetail=True,
     detailCellRendererParams={
                 "detailGridOptions": {
                 "columnDefs": detailColumnDefs,
+                "rowHeight": 60,
+                "rowDragManaged": True,
+                "rowDragMultiRow": True,
+                "rowDragEntireRow": True,
+                "rowSelection": "multiple",
                 },
                 "detailColName": "Treatments",
                 "suppressCallback": True,
@@ -198,21 +252,25 @@ grid = dag.AgGrid(
                                   'display': 'grid',
                                   'text-align': 'center',
                                   'align-items': 'center',
-                                  'border-bottom': 'solid 0.5px'
+                                  'border-bottom': 'solid 0.5px',
                                   },
                     # "tooltipComponent": "CustomTooltip"
                     },
     columnSize="sizeToFit", 
     dashGridOptions = {'suppressRowTransform': True,
+                    #    "domLayout":'print',
                        "rowSelection": "multiple",
                        "tooltipShowDelay": 100,
                        "rowDragManaged": True,
                        "rowDragMultiRow": True,
                        "rowDragEntireRow": True,
-                       "detailRowAutoHeight": f'{48 + 83 *19}px',
+                    #    "detailRowHeight": 70+83*19,
+                       "detailRowAutoHeight": True,
                        }, 
     getRowId='params.data.Reference',
-    style={ "width": "100%",'height':f'{70 + 83 *19}px'}
+    style={ "width": "100%",
+           'height':f'{45.5 *20}px'
+           }
     
 )
 
@@ -324,6 +382,9 @@ def skt_layout():
                                                     'text-align': 'center',
                                                     'color':'#5c7780',
                                                        }),
+                                    html.Button("Export to Excel", id="btn-excel-export"),
+                                    html.Button("print", id="grid-printer-layout-btn"),
+                                    html.Button("regular", id="grid-regular-layout-btn"),
                                             dbc.Col([
                                                 html.P(
                                                 "Standard skt",

@@ -11,6 +11,7 @@ warnings.filterwarnings("ignore")
 import dash
 import itertools
 import json
+from dash import clientside_callback
 from dash.dependencies import Input, Output, State, ALL
 from dash_extensions.snippets import send_file
 from tools.utils import *
@@ -18,7 +19,7 @@ from tools.PATHS import SESSION_PICKLE, get_session_pickle_path, TODAY, SESSION_
 from tools.layouts import *
 from tools.skt_layout import *
 from tools.functions_modal_SUBMIT_data import __modal_SUBMIT_button_new, __data_modal, __data_trans
-from tools.functions_NMA_runs import __modal_submit_checks_DATACHECKS, __modal_submit_checks_NMA,__modal_submit_checks_NMA_new, __modal_submit_checks_PAIRWISE,__modal_submit_checks_PAIRWISE_new, __modal_submit_checks_LT,__modal_submit_checks_LT_new, __modal_submit_checks_FUNNEL,__modal_submit_checks_FUNNEL_new
+from tools.functions_NMA_runs import __modal_submit_checks_DATACHECKS,__modal_submit_checks_NMA_new,__modal_submit_checks_PAIRWISE_new, __modal_submit_checks_LT_new, __modal_submit_checks_FUNNEL_new
 from tools.functions_ranking_plots import __ranking_plot
 from tools.functions_funnel_plot import __Tap_funnelplot
 from tools.functions_nmaforest_plot import __TapNodeData_fig, __TapNodeData_fig_bidim
@@ -1480,22 +1481,6 @@ def modal_submit_checks_NMA_new(modal_data_checks_is_open,num_outcome, TEMP_net_
 
 
 
-# @app.callback([Output('R-alert-pair', 'is_open'),
-#                Output('Rconsole-error-pw', 'children'),
-#                Output("para-pairwise-data", "children"),
-#                Output('para-pairwise-data', 'data'),
-#                Output("TEMP_forest_data_prws_STORAGE", "data"),
-#                Output("TEMP_forest_data_prws_out2_STORAGE", "data")],
-#                Input('TEMP_forest_data_STORAGE', 'modified_timestamp'),
-#                State("modal_data_checks", "is_open"),
-#                State("TEMP_net_data_STORAGE", "data"),
-#                State("TEMP_forest_data_prws_STORAGE", "data"),
-#                State("TEMP_forest_data_prws_out2_STORAGE", "data"),
-#               )
-# def modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, TEMP_net_data_STORAGE, TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2):
-#     return __modal_submit_checks_PAIRWISE(nma_data_ts, modal_data_checks_is_open, TEMP_net_data_STORAGE, TEMP_forest_data_prws_STORAGE, TEMP_forest_data_prws_out2)
-
-
 
 @app.callback([Output('R-alert-pair', 'is_open'),
                Output('Rconsole-error-pw', 'children'),
@@ -1510,40 +1495,6 @@ def modal_submit_checks_NMA_new(modal_data_checks_is_open,num_outcome, TEMP_net_
               )
 def modal_submit_checks_PAIRWISE(nma_data_ts, num_outcome, modal_data_checks_is_open, TEMP_net_data_STORAGE, TEMP_forest_data_prws_STORAGE):
     return __modal_submit_checks_PAIRWISE_new(nma_data_ts, num_outcome, modal_data_checks_is_open, TEMP_net_data_STORAGE, TEMP_forest_data_prws_STORAGE)
-
-
-# @app.callback([Output('R-alert-league', 'is_open'),
-#                Output('Rconsole-error-league', 'children'),
-#                Output("para-LT-data", "children"),
-#                Output('para-LT-data', 'data'),
-#                Output('TEMP_league_table_data_STORAGE', 'data'),
-#                Output('TEMP_ranking_data_STORAGE', 'data'),
-#                Output('TEMP_consistency_data_STORAGE', 'data'),
-#                Output('TEMP_net_split_data_STORAGE', 'data'),
-#                Output('TEMP_net_split_data_out2_STORAGE', 'data'),
-#                Output('TEMP_net_split_ALL_data_STORAGE', 'data'),
-#                Output('TEMP_net_split_ALL_data_out2_STORAGE', 'data')
-#                ],
-#                Input('TEMP_forest_data_prws_STORAGE', 'modified_timestamp'),
-#                State("modal_data_checks", "is_open"),
-#                State("TEMP_net_data_STORAGE", "data"),
-#                State('TEMP_league_table_data_STORAGE', 'data'),
-#                State('TEMP_ranking_data_STORAGE', 'data'),
-#                State('TEMP_consistency_data_STORAGE', 'data'),
-#                State('TEMP_net_split_data_STORAGE', 'data'),
-#                State('TEMP_net_split_data_out2_STORAGE', 'data'),
-#                State('TEMP_net_split_ALL_data_STORAGE', 'data'),
-#                State('TEMP_net_split_ALL_data_out2_STORAGE', 'data'),
-#                State({'type': 'dataselectors', 'index': ALL}, 'value')
-#               )
-# def modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
-#                            TEMP_net_data_STORAGE, LEAGUETABLE_data,
-#                            ranking_data, consistency_data, net_split_data, net_split_data2,
-#                            netsplit_all, netsplit_all2, dataselectors):
-#     return  __modal_submit_checks_LT(pw_data_ts, modal_data_checks_is_open,
-#                            TEMP_net_data_STORAGE, LEAGUETABLE_data,
-#                            ranking_data, consistency_data, net_split_data, net_split_data2,
-#                            netsplit_all, netsplit_all2, dataselectors)
 
 
 
@@ -2082,6 +2033,52 @@ def results_display(selected):
 #     style = { "width": "100%",'height':f'{48 + 95 * n_row}px'}
 #     return rowData, style
 
+
+
+@app.callback(
+    Output("quickstart-grid", "rowData"),
+    # Output("quickstart-grid", "style"),
+    Input("checklist_effects", "value"),
+    Input("quickstart-grid", "cellValueChanged"),
+    State("quickstart-grid", "rowData")
+)
+
+def selected(value_effect, value_change, rowData):
+    # print(row_data)
+    if value_change is not None and value_change[0]['value'] is not None and value_change[0]['value'] != 'Enter a number':
+    
+        row_idx = value_change[0]['rowIndex']
+        rowData = pd.DataFrame(rowData)
+        
+        dfc = rowData.copy()
+        round(dfc,2)
+
+        dfc.reset_index(drop=True, inplace=True)  
+        
+        value_risk = int(value_change[0]['value'])
+
+        detail_data = row_data.loc[row_idx, 'Treatments']
+        detail_data = pd.DataFrame(detail_data)
+        for i in range(1,detail_data.shape[0]):
+            
+            risk_treat = value_risk*detail_data['RR'].loc[i]
+            risk_treat =int(risk_treat)
+            abrisk = risk_treat-value_risk 
+            # dfc.loc[i,'Reference'] = f"{dfc.loc [i,'Reference']}" + f"\n{value_risk} per 1000"
+            dfc.loc[row_idx,'Treatments'][i]['Treatment'] = f"{row_data.loc[row_idx,'Treatments'][i]['Treatment']}" + f"\n{risk_treat} per 1000"
+            dfc.loc[row_idx,'Treatments'][i]['RR'] = str(row_data.loc[row_idx,'Treatments'][i]['RR'])+ '\n(' + str(row_data.loc[row_idx,'Treatments'][i]['CI_lower']) + ', ' + str(row_data.loc[row_idx,'Treatments'][i]['CI_upper']) + ')'
+            dfc.loc[row_idx,'Treatments'][i]['RR'] = f"{dfc.loc[row_idx,'Treatments'][i]['RR']}" + (f"\n{abrisk} more per 1000" if abrisk > 0 else f"\n{abs(abrisk)} less per 1000")
+            dfc.loc[row_idx,'Treatments'][i]['direct'] = f"{row_data.loc[row_idx,'Treatments'][i]['direct']}" + f"\n({row_data.loc[row_idx,'Treatments'][i]['direct_low']}, {row_data.loc[row_idx,'Treatments'][i]['direct_up']})" if pd.notna(row_data.loc[row_idx,'Treatments'][i]['direct']) else ""
+            dfc.loc[row_idx,'Treatments'][i]['indirect'] = f"{row_data.loc[row_idx,'Treatments'][i]['indirect']}" + f"\n({row_data.loc[row_idx,'Treatments'][i]['indirect_low']}, {row_data.loc[row_idx,'Treatments'][i]['indirect_up']})" if pd.notna(row_data.loc[row_idx,'Treatments'][i]['indirect']) else ""
+            
+        dfc = pd.DataFrame(dfc)
+        # n_row = dfc.shape[0]
+        
+        return dfc.to_dict("records")
+    return rowData
+
+
+
 app.clientside_callback(
     """(id) => {
         dash_ag_grid.getApiAsync(id).then((grid) => {
@@ -2283,6 +2280,33 @@ def display_only_selected(values, absolute_risk):
 #         return not pass_model, skt_style
 #     else:
 #         return pass_model, skt_style
+
+clientside_callback(
+    """function (n) {
+        if (n) {
+            dash_ag_grid.getApi("quickstart-grid").exportDataAsExcel();
+        }
+        return dash_clientside.no_update
+    }""",
+    Output("btn-excel-export", "n_clicks"),
+    Input("btn-excel-export", "n_clicks"),
+    prevent_initial_call=True
+)
+
+
+@app.callback(
+    Output("quickstart-grid", "dashGridOptions"),
+    Input("grid-printer-layout-btn", "n_clicks"),
+    Input("grid-regular-layout-btn", "n_clicks"),
+    State("quickstart-grid", "dashGridOptions")
+)
+def toggle_layout(print, regular, options): 
+    if ctx.triggered_id == "grid-printer-layout-btn":
+        options['domLayout']="print"
+        return  options
+    options['domLayout']=None
+    return  options
+
 
 
 

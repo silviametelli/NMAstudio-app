@@ -12,7 +12,7 @@ def __show_forest_plot(cell, style_pair):
     slctd_compsinv = []
     data = pd.read_csv('db/skt/final_all.csv')
     grouped = data.groupby(["Reference"])
-    if  cell is not None and len(cell) != 0 and 'colId' in cell and cell['colId'] == "direct" and cell['value'] is not None:
+    if  cell is not None and len(cell) != 0 and 'colId' in cell and cell['colId'] == "direct" and cell['value'] is not None and cell['value']!= '':
         dic_data =cell
         # selected_treatment = [s["Treatment"] for s in row_select]
         # row_select[0]['Treatment']

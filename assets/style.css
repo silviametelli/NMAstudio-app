@@ -418,7 +418,8 @@ h6 {margin-top: 0;}
 
 
 .skt_studyinfo2{
-    width: 200px;
+    justify-items: center;
+    width: 240px;
     height: auto;
     /* justify-content: center; */
     display: grid;
@@ -533,14 +534,15 @@ h6 {margin-top: 0;}
 .select_outcome{
     display: grid;
     text-align: center;
-    width: 200px;
+    width: 220px;
     align-items: center;
     font-weight: bold;
-    font-size: 13px
+    font-size: 12px
 }
 .slect_body{
     justify-content: center;
     display: grid;
+    justify-items: center;
 }
 
 

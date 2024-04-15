@@ -1955,83 +1955,6 @@ def results_display(selected):
 ####################################################################
 ############################ SKT TOOL ##############################
 
- 
-
-# @app.callback(
-#     [Output("quickstart-grid", "rowData"),
-#     Output("quickstart-grid", "style")],
-#     [
-#     Input("checklist_effects", "value"),
-#     Input("base_risk_input", "value")],
-# )
-
-# def selected(value_effect, value_risk):
-
-#     data = pd.read_csv('db/skt/final_all.csv')
-#     df = pd.DataFrame(data)
-#     certainty_values = ['High', 'Low', 'Moderate']
-#     df['Certainty'] = np.random.choice(certainty_values, size=df.shape[0])
-#     df['Comments'] = ['' for _ in range(df.shape[0])]
-#     df['CI_width_hf'] = df.CI_upper - df['RR']
-#     df['lower_error'] = df['RR'] - df.CI_lower
-#     df['weight'] = 1/df['CI_width_hf']
-#     df = df.round(2)
-#     df['Graph'] = ''
-
-    
-#     if value_effect==[]:
-#             df = df_mix
-#     elif all(effect in value_effect for effect in ['PI', 'direct', 'indirect']):
-#             df = df_all
-#     elif all(effect in ['PI'] for effect in value_effect):
-#             df = df_PI
-#     elif all(effect in ['direct'] for effect in value_effect):
-#             df = df_direct
-#     elif all(effect in ['indirect'] for effect in value_effect):
-#             df = df_indirect
-#     elif all(effect in ['PI', 'direct'] for effect in value_effect):
-#             df = df_PIdirect
-#     elif all(effect in ['PI', 'indirect'] for effect in value_effect):
-#             df = df_PIindirect
-#     elif all(effect in ['direct', 'indirect'] for effect in value_effect):
-#             df = df_directin
-
-#     dfc = df.copy()
-#     round(dfc,2)
-#     # dfc = dfc[dfc['Reference'] == value]
-#     # dfc = dfc.sort_values(by='RR')
-#     dfc.reset_index(drop=True, inplace=True)  
-#     # dfc['Reference'] = [f'{value} \n {value_risk} per 1000'] + [''] * (dfc.shape[0] - 1)
-#     value_risk = int(value_risk)
-#     for i in range(1,dfc.shape[0]):
-#         risk_treat = value_risk*dfc['RR'].loc[i]
-#         risk_treat =int(risk_treat)
-#         abrisk = risk_treat-value_risk 
-#         # dfc.loc[i,'Reference'] = f"{dfc.loc [i,'Reference']}" + f"\n{value_risk} per 1000"
-#         dfc.loc[i,'Treatment'] = f"{dfc.loc [i,'Treatment']}" + f"\n{risk_treat} per 1000"
-#         dfc.loc[i,'RR'] = str(dfc.loc[i,'RR'])+ '\n(' + str(dfc.loc[i,'CI_lower']) + ', ' + str(dfc.loc[i,'CI_upper']) + ')'
-#         dfc.loc[i,'RR'] = f"{dfc.loc [i,'RR']}" + (f"\n{abrisk} more per 1000" if abrisk > 0 else f"\n{abs(abrisk)} less per 1000")
-#         dfc.loc[i,'direct'] = f"{dfc.loc [i,'direct']}" + f"\n({dfc.loc[i,'direct_low']}, {dfc.loc[i,'direct_up']})" if pd.notna(dfc['direct'].iloc[i]) else ""
-#         dfc.loc[i,'indirect'] = f"{dfc.loc[i,'indirect']}" + f"\n({dfc.loc[i,'indirect_low']}, {dfc.loc[i,'indirect_up']})" if pd.notna(dfc['indirect'].iloc[i]) else ""
-    
-#     dfc = pd.DataFrame(dfc)
-#     grouped = df.groupby(["Reference", "risk"])
-#     rowData = []
-#     for (ref, risk), group in grouped:
-#         treatments = []
-#         for _, row in group.iterrows():
-#             treatment_data = {"Treatment": row["Treatment"], 
-#                             "RR": row["RR"], "direct": row["direct"],
-#                             "Graph": row["Graph"], "indirect": row["indirect"],
-#                             "p-value": row["p-value"], "Certainty": row["Certainty"],
-#                             "Comments": row["Comments"],
-#                             }
-#             treatments.append(treatment_data)
-#         rowData.append({"Reference": ref, "risk": risk, "Treatments": treatments})
-
-#     n_row = dfc.shape[0]
-#     style = { "width": "100%",'height':f'{48 + 95 * n_row}px'}
-#     return rowData, style
 
 
 
@@ -2040,22 +1963,104 @@ def results_display(selected):
     # Output("quickstart-grid", "style"),
     Input("checklist_effects", "value"),
     Input("quickstart-grid", "cellValueChanged"),
-    State("quickstart-grid", "rowData")
+    Input("range_lower", "value"),
+    Input("range_upper", "value"),
+    State("quickstart-grid", "rowData"),
+    State("checklist_effects", "value"),
 )
 
-def selected(value_effect, value_change, rowData):
-    # print(row_data)
-    if value_change is not None and value_change[0]['value'] is not None and value_change[0]['value'] != 'Enter a number':
+def selected(value_effect, value_change,lower,upper,rowData, state_effect):
+
+    data = pd.read_csv('db/skt/final_all.csv')
+    df = pd.DataFrame(data)
+    certainty_values = ['High', 'Low', 'Moderate']
+    df['Certainty'] = np.random.choice(certainty_values, size=df.shape[0])
+    df['Comments'] = ['' for _ in range(df.shape[0])]
+    df['CI_width_hf'] = df.CI_upper - df['RR']
+    df['lower_error'] = df['RR'] - df.CI_lower
+    df['weight'] = 1/df['CI_width_hf']
+    df = df.round(2)
+    df['Graph'] = ''
+    df['risk'] = 'Enter a number'
+    df['Scale_lower'] = 'Enter a number for lower'
+    df['Scale_upper'] = 'Enter a number for upper'
+
+    if value_effect==[]:
+            df = __skt_mix_forstplot(df,lower,upper)
+    elif all(effect in value_effect for effect in ['PI', 'direct', 'indirect']):
+            df = __skt_all_forstplot(df,lower,upper)
+    elif all(effect in ['PI'] for effect in value_effect):
+            df = __skt_PI_forstplot(df,lower,upper)
+    elif all(effect in ['direct'] for effect in value_effect):
+            df = __skt_direct_forstplot(df,lower,upper)
+    elif all(effect in ['indirect'] for effect in value_effect):
+            df = __skt_indirect_forstplot(df,lower,upper)
+    elif all(effect in ['PI', 'direct'] for effect in value_effect):
+            df = __skt_PIdirect_forstplot(df,lower,upper)
+    elif all(effect in ['PI', 'indirect'] for effect in value_effect):
+            df = __skt_PIindirect_forstplot(df,lower,upper)
+    elif all(effect in ['direct', 'indirect'] for effect in value_effect):
+            df = __skt_directin_forstplot(df,lower,upper)
+
+    grouped = df.groupby(["Reference", "risk", 'Scale_lower', 'Scale_upper'])
+    rowData_effect = []
+    for (ref, risk, Scale_lower, Scale_upper), group in grouped:
+        treatments = []
+        for _, row in group.iterrows():
+            treatment_data = {"Treatment": row["Treatment"], 
+                            "RR": row["RR"], "direct": row["direct"],
+                            "Graph": row["Graph"], "indirect": row["indirect"],
+                            "p-value": row["p-value"], "Certainty": row["Certainty"],
+                            "direct_low": row["direct_low"],"direct_up": row["direct_up"],
+                            "indirect_low": row["indirect_low"],"indirect_up": row["indirect_up"],
+                            "CI_lower": row["CI_lower"],"CI_upper": row["CI_upper"],
+                            "Comments": row["Comments"],
+                            }
+            treatments.append(treatment_data)
+        rowData_effect.append({"Reference": ref, "risk": risk,
+                    'Scale_lower': Scale_lower ,
+                    'Scale_upper': Scale_upper ,"Treatments": treatments})
+
+    rowData_effect = pd.DataFrame(rowData_effect)
+    
+    # for j in range(0, rowData_effect.shape[0]):
+        
+    #     detail_data = rowData_effect.loc[j, 'Treatments']
+    #     detail_data = pd.DataFrame(detail_data)
+        
+    #     for i in range(1,detail_data.shape[0]):
+    #         rowData_effect.loc[j,'Treatments'][i]['RR'] = str(rowData_effect.loc[j,'Treatments'][i]['RR'])+ '\n(' + str(rowData_effect.loc[j,'Treatments'][i]['CI_lower']) + ', ' + str(rowData_effect.loc[j,'Treatments'][i]['CI_upper']) + ')'
+    #         rowData_effect.loc[j,'Treatments'][i]['direct'] = f"{rowData_effect.loc[j,'Treatments'][i]['direct']}" + f"\n({rowData_effect.loc[j,'Treatments'][i]['direct_low']}, {rowData_effect.loc[j,'Treatments'][i]['direct_up']})" if pd.notna(rowData_effect.loc[j,'Treatments'][i]['direct']) else ""
+    #         rowData_effect.loc[j,'Treatments'][i]['indirect'] = f"{rowData_effect.loc[j,'Treatments'][i]['indirect']}" + f"\n({rowData_effect.loc[j,'Treatments'][i]['indirect_low']}, {rowData_effect.loc[j,'Treatments'][i]['indirect_up']})" if pd.notna(rowData_effect.loc[j,'Treatments'][i]['indirect']) else ""
+    
+    dfc_2 = rowData_effect.copy()   
+    
+    rowData = pd.DataFrame(rowData)
+    dfc = rowData.copy()
+    round(dfc,2)
+
+    dfc.reset_index(drop=True, inplace=True)  
+    for row_idx in range(dfc.shape[0]):
+        detail_data = dfc.loc[row_idx, 'Treatments']
+        detail_data = pd.DataFrame(detail_data)
+        for i in range(0,detail_data.shape[0]):
+            # dfc.loc[i,'Reference'] = f"{dfc.loc [i,'Reference']}" + f"\n{value_risk} per 1000"
+            dfc.loc[row_idx,'Treatments'][i]['Graph'] = dfc_2.loc[row_idx,'Treatments'][i]['Graph']
+            
+    dfc = pd.DataFrame(dfc)
+
+    if value_change is not None and value_change[0]['value'] is not None and value_change[0]['value'] != 'Enter a number' and value_change[0]['colId']=='risk':
     
         row_idx = value_change[0]['rowIndex']
-        rowData = pd.DataFrame(rowData)
-        
-        dfc = rowData.copy()
+        # print(row_idx)
+        # rowData = pd.DataFrame(rowData)
+        # dfc = rowData.copy()
         round(dfc,2)
 
         dfc.reset_index(drop=True, inplace=True)  
-        
+        dfc.loc[row_idx,'risk']=value_change[0]['value']
         value_risk = int(value_change[0]['value'])
+        
 
         detail_data = row_data.loc[row_idx, 'Treatments']
         detail_data = pd.DataFrame(detail_data)
@@ -2075,7 +2080,8 @@ def selected(value_effect, value_change, rowData):
         # n_row = dfc.shape[0]
         
         return dfc.to_dict("records")
-    return rowData
+
+    return dfc.to_dict("records")
 
 
 
@@ -2109,7 +2115,7 @@ app.clientside_callback(
 def display_forestplot(cell, _):
     if ctx.triggered_id == "close_forest":
         return False
-    if cell is not None and len(cell) != 0 and 'colId' in cell and cell['colId'] == "direct" and cell['value'] is not None:
+    if cell is not None and len(cell) != 0 and 'colId' in cell and cell['colId'] == "direct" and cell['value'] is not None and cell['value']!= '':
         return True
     return no_update
 
@@ -2120,13 +2126,13 @@ def display_forestplot(cell, _):
     Input("close_compare", "n_clicks"),
 )
 
-def display_forestplot(cell, _):
+def display_sktinfo(cell, _):
     if ctx.triggered_id == "close_compare":
         return False
     if cell is None or len(cell) == 0:  
         return False
     else:
-        if ('colId' in cell and cell['colId'] == "Treatment"):
+        if ('colId' in cell and cell['colId'] == "Treatment" and cell['value']!= 'Scale'):
             return True
     return no_update
 

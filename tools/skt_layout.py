@@ -33,10 +33,6 @@ treatment_list = [{'label': '{}'.format(treat_name), 'value': treat_name} for tr
 certainty_values = ['High', 'Low', 'Moderate']
 df['Certainty'] = np.random.choice(certainty_values, size=df.shape[0])
 df['Comments'] = ['' for _ in range(df.shape[0])]
-# df['Value1'] = df['Mixed effect\n95%CI'].str.extract(r'(\d+\.\d+)')[0].astype(float)
-# df['Value2'] = df['Mixed effect\n95%CI'].str.extract(r'\((\d+\.\d+),')[0].astype(float)
-# df['Value3'] = df['Mixed effect\n95%CI'].str.extract(r', (\d+\.\d+)\)')[0].astype(float)
-
 df['CI_width_hf'] = df.CI_upper - df['RR']
 df['lower_error'] = df['RR'] - df.CI_lower
 df['weight'] = 1/df['CI_width_hf']
@@ -57,20 +53,23 @@ def update_indirect_direct(row):
 
 df['Graph'] = ''
 df['risk'] = 'Enter a number'
+df['Scale_lower'] = 'Enter a number for lower'
+df['Scale_upper'] = 'Enter a number for upper'
 
-df_mix = __skt_mix_forstplot(df)
-df_all = __skt_all_forstplot(df)
-df_PI = __skt_PI_forstplot(df)
-df_direct = __skt_direct_forstplot(df)
-df_indirect = __skt_indirect_forstplot(df)
-df_PIdirect = __skt_PIdirect_forstplot(df)
-df_PIindirect = __skt_PIindirect_forstplot(df)
-df_directin = __skt_directin_forstplot(df)
-df = df_mix
 
-grouped = df.groupby(["Reference", "risk"])
+# df_mix = __skt_mix_forstplot(df,0.8,1.25)
+df_all = __skt_all_forstplot(df,0.8,1.25)
+# df_PI = __skt_PI_forstplot(df,0.8,1.25)
+# df_direct = __skt_direct_forstplot(df,0.8,1.25)
+# df_indirect = __skt_indirect_forstplot(df,0.8,1.25)
+# df_PIdirect = __skt_PIdirect_forstplot(df,0.8,1.25)
+# df_PIindirect = __skt_PIindirect_forstplot(df,0.8,1.25)
+# df_directin = __skt_directin_forstplot(df,0.8,1.25)
+df = df_all
+
+grouped = df.groupby(["Reference", "risk", 'Scale_lower', 'Scale_upper'])
 rowData = []
-for (ref, risk), group in grouped:
+for (ref, risk, Scale_lower, Scale_upper), group in grouped:
     treatments = []
     for _, row in group.iterrows():
         treatment_data = {"Treatment": row["Treatment"], 
@@ -83,13 +82,15 @@ for (ref, risk), group in grouped:
                           "Comments": row["Comments"],
                           }
         treatments.append(treatment_data)
-    rowData.append({"Reference": ref, "risk": risk, "Treatments": treatments})
+    rowData.append({"Reference": ref, "risk": risk,
+                    'Scale_lower': Scale_lower ,
+                    'Scale_lower': Scale_upper ,"Treatments": treatments})
 
 row_data = pd.DataFrame(rowData)
 
 
 row_data_default = []
-for (ref, risk), group in grouped:
+for (ref, risk, Scale_lower, Scale_upper), group in grouped:
     treatments = []
     for _, row in group.iterrows():
         treatment_data = {"Treatment": row["Treatment"], 
@@ -102,7 +103,9 @@ for (ref, risk), group in grouped:
                           "Comments": row["Comments"],
                           }
         treatments.append(treatment_data)
-    row_data_default.append({"Reference": ref, "risk": risk, "Treatments": treatments})
+    row_data_default.append({"Reference": ref, "risk": risk,
+                    'Scale_lower': Scale_lower ,
+                    'Scale_upper': Scale_upper ,"Treatments": treatments})
 
 row_data_default = pd.DataFrame(row_data_default)
 
@@ -119,7 +122,7 @@ for j in range(0, row_data_default.shape[0]):
 
 
 
-style_certainty = {'white-space': 'pre','display': 'grid','text-align': 'center','align-items': 'center'}
+style_certainty = {'white-space': 'pre','display': 'grid','text-align': 'center','align-items': 'center','border-left': 'solid 0.8px'}
 
 masterColumnDefs = [
     {
@@ -136,14 +139,25 @@ masterColumnDefs = [
      "field": "risk",
      "editable": True,
      'cellStyle': {
-        'color': 'grey'}
-     }
+        'color': 'grey','border-right': 'solid 0.8px'}
+     },
+     {"headerName": "Scale lower\n(forestplots)", 
+     "field": "Scale_lower",
+     "editable": True,
+     'cellStyle': {
+        'color': 'grey','border-right': 'solid 0.8px'}
+     },
+    {"headerName": "Scale upper\n(forestplots)", 
+     "field": "Scale_upper",
+     "editable": True,
+     'cellStyle': {
+        'color': 'grey','border-right': 'solid 0.8px'}}
 ]
 detailColumnDefs = [
    
     {"field": "Treatment", 
      "headerName": 'Treatment',
-     "checkboxSelection": {"function": "params.data.Treatment !== 'Instruction'"},
+    #  "checkboxSelection": {"function": "params.data.Treatment !== 'Instruction'"},
      "sortable": False,
      "filter": True,
      "width": 130,
@@ -205,7 +219,7 @@ detailColumnDefs = [
      "width": 110,
      "resizable": True,
      "tooltipField": 'Certainty',
-     "tooltipComponentParams": { "color": '#d8f0d3' },
+     "tooltipComponentParams": { "color": '#d8f0d3'},
      "tooltipComponent": "CustomTooltip",
      'cellStyle':{
         "styleConditions": [
@@ -215,7 +229,7 @@ detailColumnDefs = [
     ]}},
     {"field": "Comments", "width": 120, "resizable": True,
      'editable': True,
-     'cellStyle': {'border-left': 'solid 0.5px',"text-align":'center', 'display': 'grid'}},
+     'cellStyle': {'border-left': 'solid 0.5px',"text-align":'center', 'display': 'grid','border-right': 'solid 0.8px'}},
     
     ]
 
@@ -467,19 +481,18 @@ def skt_layout():
                                                             dbc.Col(
                                                                     [dbc.Row(html.Span('Options', className='option_select'), style={'display':'grid', 'padding-top':'unset'}),
                                                                      dbc.Col([dbc.Toast([
-                                                                            html.Span('Select the outcome',className='select_outcome'),
-                                                                            dcc.Dropdown(id='select_dropdown',clearable=True, placeholder="",
-                                                                                        options=outcome_list,
-                                                                                        className="tapEdgeData-fig-class",
-                                                                                        style={'width': '150px', 'height': '30px',
-                                                                                                'display': 'inline-block',}
-                                                                                                ),
-                                                                            html.Span('Enter the risk per 1000 for comparison',className='select_outcome'),
-                                                                            dcc.Input(id="base_risk_input",
+                                                                            html.Span('Enter the range of equvalence lower:',className='select_outcome'),
+                                                                            dcc.Input(id="range_lower",
                                                                                         type="text",
                                                                                         name='risk',
-                                                                                        value=20,
-                                                                                        placeholder="e.g. 20",) 
+                                                                                        value=0.8,
+                                                                                        placeholder="e.g. 0.8", style={'width':'80px'}),
+                                                                            html.Span('Enter the range of equvalence lower:',className='select_outcome'),
+                                                                            dcc.Input(id="range_upper",
+                                                                                        type="text",
+                                                                                        name='risk',
+                                                                                        value=1.25,
+                                                                                        placeholder="e.g. 1.25",style={'width':'80px'}) 
                                                                                                 ],className='skt_studyinfo2', bodyClassName='slect_body',headerClassName='headtab1'),
                                                                             dcc.Checklist(options= options_effects, value= ['PI', 'direct', 'indirect'], 
                                                                                           id='checklist_effects', style={'display': 'grid', 'align-items': 'end'})],

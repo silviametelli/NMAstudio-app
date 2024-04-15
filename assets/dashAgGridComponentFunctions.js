@@ -53,7 +53,7 @@ dagcomponentfuncs.DCC_GraphClickData = function (props) {
                 }
             },
             style: { height: '100%' },
-            config: { displayModeBar: false },
+            config: { displayModeBar: false, scrollZoom : false},
         });
     } else {
         return String(value);

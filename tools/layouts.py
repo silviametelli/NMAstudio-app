@@ -118,7 +118,7 @@ def real_homelayout():
                                                       className='col_results'),
                                                       dbc.Col([html.Img(src=FUNEL,
                                                       width="70px", style={'justify-self':'center'}),
-                                                      html.Span('Funel plots for small-study effect', className= 'main_results')],
+                                                      html.Span('Funnel plots for small-study effect', className= 'main_results')],
                                                       className='col_results')],
                                                       style={'width' : '-webkit-fill-available',
                                                                   'justify-content': 'center',}
@@ -849,7 +849,7 @@ def upload_data():
                                                 'height': '100px',
                                                 'align-items': 'center'
                                                }),
-                dbc.Col(html.Div(html.Span('*NMAStudio now support outcomes as many as you want.',className='upload_instuspan',
+                dbc.Col(html.Div(html.Span('*NMAStudio now support any number of outcomes.',className='upload_instuspan',
                             )), className='upload_instrucol')], 
                                          id="number-outcomes-input", className= 'upload_row'),
 

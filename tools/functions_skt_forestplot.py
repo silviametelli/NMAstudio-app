@@ -10,18 +10,20 @@ def update_indirect_direct(row):
     return row
 
 
-def __skt_all_forstplot(df, lower, upper):
+def __skt_all_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
     
+    # df = df.sort_values(by='Reference')
     new_rows = pd.DataFrame(columns=df.columns)
     for idx in range(0, 380, 19):
         new_rows.loc[idx/19, 'Reference'] = df.loc[idx, 'Reference']
 
     new_rows['Treatment'] = 'Scale'
     new_rows['risk'] = 'Enter a number'
-    new_rows['Scale_lower'] = 'Enter a number for lower'
-    new_rows['Scale_upper'] = 'Enter a number for upper'
+    new_rows['Scale_lower'] = 'Enter a value for lower'
+    new_rows['Scale_upper'] = 'Enter a value for upper'
     interval = 19
     insert_index = 0
+
     for _, row in new_rows.iterrows():
         df = pd.concat([df.iloc[:insert_index], row.to_frame().T, df.iloc[insert_index:]]).reset_index(drop=True)
         insert_index += interval + 1  # Move to the next insertion position
@@ -31,17 +33,22 @@ def __skt_all_forstplot(df, lower, upper):
         data_ex = df[j+1:j + 20]
         up_rng_max, low_rng_min = data_ex.CI_upper.mean(), data_ex.CI_lower.mean()
         up_mix_max, low_mix_min = data_ex.RR.max(), data_ex.RR.min()
-    # up_rng = 10**np.floor(np.log10(up_rng))
-    # low_rng = 10 ** np.floor(np.log10(low_rng))
-     
-        range_scale=[min(low_rng_min, -1, low_mix_min), 
-                              max(up_rng_max, 2.25, up_mix_max+1)]  
         
+        if refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is not None and scale_upper is not None:
+            range_scale = [scale_lower, scale_upper]
+        elif refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is not None and scale_upper is None:
+            range_scale = [scale_lower, max(up_rng_max, 2.25, up_mix_max+1)]
+        elif refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is None and scale_upper is not None:
+            range_scale = [min(low_rng_min, -1, low_mix_min), scale_upper]
+        else:
+            range_scale=[min(low_rng_min, -1, low_mix_min), 
+                              max(up_rng_max, 2.25, up_mix_max+1)]  
+    
         fig = go.Figure(go.Scatter( y = [],x = []))
         fig.update_layout(
         xaxis=dict(range=range_scale,
-                    tickvals=[i for i in range(int(min(low_rng_min, -1, low_mix_min)+1),
-                                        int(max(up_rng_max, 2.25, up_mix_max+1)-1))],
+                    tickvals=[i for i in range(int(range_scale[0]+1),
+                                        int(range_scale[1]-1))],
                         ),
         dragmode=False,
         showlegend=False,
@@ -106,7 +113,7 @@ def __skt_all_forstplot(df, lower, upper):
                                     y=[data_point['Treatment']],
                                     # error_x_minus=dict(type='data',color = colors[i],array='lower_error',visible=True),
                                     error_x=dict(type='data',color = colors[idx],array=[data_point['lower_error'],data_point['CI_width_hf']],visible=True),
-                                    marker=dict(color=colors[idx], size=12),
+                                    marker=dict(color=colors[idx], size=8),
                                     showlegend=False,
                                     hovertemplate= hovert_template[idx] 
                                 ))
@@ -161,15 +168,15 @@ def __skt_all_forstplot(df, lower, upper):
                 
     return df
 
-def __skt_PI_forstplot(df, lower, upper):
+def __skt_PI_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
     new_rows = pd.DataFrame(columns=df.columns)
     for idx in range(0, 380, 19):
         new_rows.loc[idx/19, 'Reference'] = df.loc[idx, 'Reference']
 
     new_rows['Treatment'] = 'Scale'
     new_rows['risk'] = 'Enter a number'
-    new_rows['Scale_lower'] = 'Enter a number for lower'
-    new_rows['Scale_upper'] = 'Enter a number for upper'
+    new_rows['Scale_lower'] = 'Enter a value for lower'
+    new_rows['Scale_upper'] = 'Enter a value for upper'
     interval = 19
     insert_index = 0
     for _, row in new_rows.iterrows():
@@ -181,17 +188,23 @@ def __skt_PI_forstplot(df, lower, upper):
         data_ex = df[j+1:j + 20]
         up_rng_max, low_rng_min = data_ex.CI_upper.mean(), data_ex.CI_lower.mean()
         up_mix_max, low_mix_min = data_ex.RR.max(), data_ex.RR.min()
-    # up_rng = 10**np.floor(np.log10(up_rng))
-    # low_rng = 10 ** np.floor(np.log10(low_rng))
-     
-        range_scale=[min(low_rng_min, -1, low_mix_min), 
+
+        if refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is not None and scale_upper is not None:
+            range_scale = [scale_lower, scale_upper]
+        elif refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is not None and scale_upper is None:
+            range_scale = [scale_lower, max(up_rng_max, 2.25, up_mix_max+1)]
+        elif refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is None and scale_upper is not None:
+            range_scale = [min(low_rng_min, -1, low_mix_min), scale_upper]
+        else:
+            range_scale=[min(low_rng_min, -1, low_mix_min), 
                               max(up_rng_max, 2.25, up_mix_max+1)]  
+       
         
         fig = go.Figure(go.Scatter( y = [],x = []))
         fig.update_layout(
         xaxis=dict(range=range_scale,
-                    tickvals=[i for i in range(int(min(low_rng_min, -1, low_mix_min)+1),
-                                        int(max(up_rng_max, 2.25, up_mix_max+1)-1))],
+                    tickvals=[i for i in range(int(range_scale[0]+1),
+                                        int(range_scale[1]-1))],
                         ),
         dragmode=False,
         showlegend=False,
@@ -244,7 +257,7 @@ def __skt_PI_forstplot(df, lower, upper):
                                 y=[data_point['Treatment']],
                                 # error_x_minus=dict(type='data',color = colors[i],array='lower_error',visible=True),
                                 error_x=dict(type='data',color = colors[idx],array=[data_point['lower_error'],data_point['CI_width_hf']],visible=True),
-                                marker=dict(color=colors[idx], size=12),
+                                marker=dict(color=colors[idx], size=8),
                                 showlegend=False,
                                 hovertemplate= hovert_template[idx] 
                             ))
@@ -300,15 +313,15 @@ def __skt_PI_forstplot(df, lower, upper):
     return df
 
 
-def __skt_direct_forstplot(df, lower, upper):
+def __skt_direct_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
     new_rows = pd.DataFrame(columns=df.columns)
     for idx in range(0, 380, 19):
          new_rows.loc[idx/19, 'Reference'] = df.loc[idx, 'Reference']
 
     new_rows['Treatment'] = 'Scale'
     new_rows['risk'] = 'Enter a number'
-    new_rows['Scale_lower'] = 'Enter a number for lower'
-    new_rows['Scale_upper'] = 'Enter a number for upper'
+    new_rows['Scale_lower'] = 'Enter a value for lower'
+    new_rows['Scale_upper'] = 'Enter a value for upper'
     interval = 19
     insert_index = 0
     for _, row in new_rows.iterrows():
@@ -320,17 +333,22 @@ def __skt_direct_forstplot(df, lower, upper):
         data_ex = df[j+1:j + 20]
         up_rng_max, low_rng_min = data_ex.CI_upper.mean(), data_ex.CI_lower.mean()
         up_mix_max, low_mix_min = data_ex.RR.max(), data_ex.RR.min()
-    # up_rng = 10**np.floor(np.log10(up_rng))
-    # low_rng = 10 ** np.floor(np.log10(low_rng))
-     
-        range_scale=[min(low_rng_min, -1, low_mix_min), 
+        
+        if refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is not None and scale_upper is not None:
+            range_scale = [scale_lower, scale_upper]
+        elif refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is not None and scale_upper is None:
+            range_scale = [scale_lower, max(up_rng_max, 2.25, up_mix_max+1)]
+        elif refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is None and scale_upper is not None:
+            range_scale = [min(low_rng_min, -1, low_mix_min), scale_upper]
+        else:
+            range_scale=[min(low_rng_min, -1, low_mix_min), 
                               max(up_rng_max, 2.25, up_mix_max+1)]  
         
         fig = go.Figure(go.Scatter( y = [],x = []))
         fig.update_layout(
         xaxis=dict(range=range_scale,
-                    tickvals=[i for i in range(int(min(low_rng_min, -1, low_mix_min)+1),
-                                        int(max(up_rng_max, 2.25, up_mix_max+1)-1))],
+                    tickvals=[i for i in range(int(range_scale[0]+1),
+                                        int(range_scale[1]-1))],
                         ),
         dragmode=False,
         showlegend=False,
@@ -381,7 +399,7 @@ def __skt_direct_forstplot(df, lower, upper):
                                 y=[data_point['Treatment']],
                                 # error_x_minus=dict(type='data',color = colors[i],array='lower_error',visible=True),
                                 error_x=dict(type='data',color = colors[idx],array=[data_point['lower_error'],data_point['CI_width_hf']],visible=True),
-                                marker=dict(color=colors[idx], size=12),
+                                marker=dict(color=colors[idx], size=8),
                                 showlegend=False,
                                 hovertemplate= hovert_template[idx] 
                             ))
@@ -439,15 +457,15 @@ def __skt_direct_forstplot(df, lower, upper):
     return df
 
 
-def __skt_indirect_forstplot(df, lower, upper):
+def __skt_indirect_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
     new_rows = pd.DataFrame(columns=df.columns)
     for idx in range(0, 380, 19):
          new_rows.loc[idx/19, 'Reference'] = df.loc[idx, 'Reference']
 
     new_rows['Treatment'] = 'Scale'
     new_rows['risk'] = 'Enter a number'
-    new_rows['Scale_lower'] = 'Enter a number for lower'
-    new_rows['Scale_upper'] = 'Enter a number for upper'
+    new_rows['Scale_lower'] = 'Enter a value for lower'
+    new_rows['Scale_upper'] = 'Enter a value for upper'
     interval = 19
     insert_index = 0
     for _, row in new_rows.iterrows():
@@ -459,17 +477,23 @@ def __skt_indirect_forstplot(df, lower, upper):
         data_ex = df[j+1:j + 20]
         up_rng_max, low_rng_min = data_ex.CI_upper.mean(), data_ex.CI_lower.mean()
         up_mix_max, low_mix_min = data_ex.RR.max(), data_ex.RR.min()
-    # up_rng = 10**np.floor(np.log10(up_rng))
-    # low_rng = 10 ** np.floor(np.log10(low_rng))
-     
-        range_scale=[min(low_rng_min, -1, low_mix_min), 
+
+        if refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is not None and scale_upper is not None:
+            range_scale = [scale_lower, scale_upper]
+        elif refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is not None and scale_upper is None:
+            range_scale = [scale_lower, max(up_rng_max, 2.25, up_mix_max+1)]
+        elif refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is None and scale_upper is not None:
+            range_scale = [min(low_rng_min, -1, low_mix_min), scale_upper]
+        else:
+            range_scale=[min(low_rng_min, -1, low_mix_min), 
                               max(up_rng_max, 2.25, up_mix_max+1)]  
+ 
         
         fig = go.Figure(go.Scatter( y = [],x = []))
         fig.update_layout(
         xaxis=dict(range=range_scale,
-                    tickvals=[i for i in range(int(min(low_rng_min, -1, low_mix_min)+1),
-                                        int(max(up_rng_max, 2.25, up_mix_max+1)-1))],
+                    tickvals=[i for i in range(int(range_scale[0]+1),
+                                        int(range_scale[1]-1))],
                         ),
         dragmode=False,
         showlegend=False,
@@ -520,7 +544,7 @@ def __skt_indirect_forstplot(df, lower, upper):
                                 y=[data_point['Treatment']],
                                 # error_x_minus=dict(type='data',color = colors[i],array='lower_error',visible=True),
                                 error_x=dict(type='data',color = colors[idx],array=[data_point['lower_error'],data_point['CI_width_hf']],visible=True),
-                                marker=dict(color=colors[idx], size=12),
+                                marker=dict(color=colors[idx], size=8),
                                 showlegend=False,
                                 hovertemplate= hovert_template[idx] 
                             ))
@@ -578,15 +602,15 @@ def __skt_indirect_forstplot(df, lower, upper):
     return df
 
 
-def __skt_PIdirect_forstplot(df, lower, upper):
+def __skt_PIdirect_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
     new_rows = pd.DataFrame(columns=df.columns)
     for idx in range(0, 380, 19):
          new_rows.loc[idx/19, 'Reference'] = df.loc[idx, 'Reference']
 
     new_rows['Treatment'] = 'Scale'
     new_rows['risk'] = 'Enter a number'
-    new_rows['Scale_lower'] = 'Enter a number for lower'
-    new_rows['Scale_upper'] = 'Enter a number for upper'
+    new_rows['Scale_lower'] = 'Enter a value for lower'
+    new_rows['Scale_upper'] = 'Enter a value for upper'
     interval = 19
     insert_index = 0
     for _, row in new_rows.iterrows():
@@ -598,17 +622,23 @@ def __skt_PIdirect_forstplot(df, lower, upper):
         data_ex = df[j+1:j + 20]
         up_rng_max, low_rng_min = data_ex.CI_upper.mean(), data_ex.CI_lower.mean()
         up_mix_max, low_mix_min = data_ex.RR.max(), data_ex.RR.min()
-    # up_rng = 10**np.floor(np.log10(up_rng))
-    # low_rng = 10 ** np.floor(np.log10(low_rng))
-     
-        range_scale=[min(low_rng_min, -1, low_mix_min), 
+
+        if refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is not None and scale_upper is not None:
+            range_scale = [scale_lower, scale_upper]
+        elif refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is not None and scale_upper is None:
+            range_scale = [scale_lower, max(up_rng_max, 2.25, up_mix_max+1)]
+        elif refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is None and scale_upper is not None:
+            range_scale = [min(low_rng_min, -1, low_mix_min), scale_upper]
+        else:
+            range_scale=[min(low_rng_min, -1, low_mix_min), 
                               max(up_rng_max, 2.25, up_mix_max+1)]  
+  
         
         fig = go.Figure(go.Scatter( y = [],x = []))
         fig.update_layout(
         xaxis=dict(range=range_scale,
-                    tickvals=[i for i in range(int(min(low_rng_min, -1, low_mix_min)+1),
-                                        int(max(up_rng_max, 2.25, up_mix_max+1)-1))],
+                    tickvals=[i for i in range(int(range_scale[0]+1),
+                                        int(range_scale[1]-1))],
                         ),
         dragmode=False,
         showlegend=False,
@@ -664,7 +694,7 @@ def __skt_PIdirect_forstplot(df, lower, upper):
                                 y=[data_point['Treatment']],
                                 # error_x_minus=dict(type='data',color = colors[i],array='lower_error',visible=True),
                                 error_x=dict(type='data',color = colors[idx],array=[data_point['lower_error'],data_point['CI_width_hf']],visible=True),
-                                marker=dict(color=colors[idx], size=12),
+                                marker=dict(color=colors[idx], size=8),
                                 showlegend=False,
                                 hovertemplate= hovert_template[idx] 
                             ))
@@ -723,15 +753,15 @@ def __skt_PIdirect_forstplot(df, lower, upper):
 
 
 
-def __skt_PIindirect_forstplot(df, lower, upper):
+def __skt_PIindirect_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
     new_rows = pd.DataFrame(columns=df.columns)
     for idx in range(0, 380, 19):
          new_rows.loc[idx/19, 'Reference'] = df.loc[idx, 'Reference']
 
     new_rows['Treatment'] = 'Scale'
     new_rows['risk'] = 'Enter a number'
-    new_rows['Scale_lower'] = 'Enter a number for lower'
-    new_rows['Scale_upper'] = 'Enter a number for upper'
+    new_rows['Scale_lower'] = 'Enter a value for lower'
+    new_rows['Scale_upper'] = 'Enter a value for upper'
     interval = 19
     insert_index = 0
     for _, row in new_rows.iterrows():
@@ -743,17 +773,23 @@ def __skt_PIindirect_forstplot(df, lower, upper):
         data_ex = df[j+1:j + 20]
         up_rng_max, low_rng_min = data_ex.CI_upper.mean(), data_ex.CI_lower.mean()
         up_mix_max, low_mix_min = data_ex.RR.max(), data_ex.RR.min()
-    # up_rng = 10**np.floor(np.log10(up_rng))
-    # low_rng = 10 ** np.floor(np.log10(low_rng))
-     
-        range_scale=[min(low_rng_min, -1, low_mix_min), 
+
+        if refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is not None and scale_upper is not None:
+            range_scale = [scale_lower, scale_upper]
+        elif refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is not None and scale_upper is None:
+            range_scale = [scale_lower, max(up_rng_max, 2.25, up_mix_max+1)]
+        elif refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is None and scale_upper is not None:
+            range_scale = [min(low_rng_min, -1, low_mix_min), scale_upper]
+        else:
+            range_scale=[min(low_rng_min, -1, low_mix_min), 
                               max(up_rng_max, 2.25, up_mix_max+1)]  
+    
         
         fig = go.Figure(go.Scatter( y = [],x = []))
         fig.update_layout(
         xaxis=dict(range=range_scale,
-                    tickvals=[i for i in range(int(min(low_rng_min, -1, low_mix_min)+1),
-                                        int(max(up_rng_max, 2.25, up_mix_max+1)-1))],
+                    tickvals=[i for i in range(int(range_scale[0]+1),
+                                        int(range_scale[1]-1))],
                         ),
         dragmode=False,
         showlegend=False,
@@ -808,7 +844,7 @@ def __skt_PIindirect_forstplot(df, lower, upper):
                                 y=[data_point['Treatment']],
                                 # error_x_minus=dict(type='data',color = colors[i],array='lower_error',visible=True),
                                 error_x=dict(type='data',color = colors[idx],array=[data_point['lower_error'],data_point['CI_width_hf']],visible=True),
-                                marker=dict(color=colors[idx], size=12),
+                                marker=dict(color=colors[idx], size=8),
                                 showlegend=False,
                                 hovertemplate= hovert_template[idx] 
                             ))
@@ -866,15 +902,15 @@ def __skt_PIindirect_forstplot(df, lower, upper):
     return df
 
 
-def __skt_directin_forstplot(df, lower, upper):
+def __skt_directin_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
     new_rows = pd.DataFrame(columns=df.columns)
     for idx in range(0, 380, 19):
          new_rows.loc[idx/19, 'Reference'] = df.loc[idx, 'Reference']
 
     new_rows['Treatment'] = 'Scale'
     new_rows['risk'] = 'Enter a number'
-    new_rows['Scale_lower'] = 'Enter a number for lower'
-    new_rows['Scale_upper'] = 'Enter a number for upper'
+    new_rows['Scale_lower'] = 'Enter a value for lower'
+    new_rows['Scale_upper'] = 'Enter a value for upper'
     interval = 19
     insert_index = 0
     for _, row in new_rows.iterrows():
@@ -886,17 +922,23 @@ def __skt_directin_forstplot(df, lower, upper):
         data_ex = df[j+1:j + 20]
         up_rng_max, low_rng_min = data_ex.CI_upper.mean(), data_ex.CI_lower.mean()
         up_mix_max, low_mix_min = data_ex.RR.max(), data_ex.RR.min()
-    # up_rng = 10**np.floor(np.log10(up_rng))
-    # low_rng = 10 ** np.floor(np.log10(low_rng))
-     
-        range_scale=[min(low_rng_min, -1, low_mix_min), 
-                              max(up_rng_max, 2.25, up_mix_max+1)]  
+
+        if refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is not None and scale_upper is not None:
+            range_scale = [scale_lower, scale_upper]
+        elif refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is not None and scale_upper is None:
+            range_scale = [scale_lower, max(up_rng_max, 2.25, up_mix_max+1)]
+        elif refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is None and scale_upper is not None:
+            range_scale = [min(low_rng_min, -1, low_mix_min), scale_upper]
+        else:
+            range_scale=[min(low_rng_min, -1, low_mix_min), 
+                              max(up_rng_max, 2.25, up_mix_max+1)]
+            
         
         fig = go.Figure(go.Scatter( y = [],x = []))
         fig.update_layout(
         xaxis=dict(range=range_scale,
-                    tickvals=[i for i in range(int(min(low_rng_min, -1, low_mix_min)+1),
-                                        int(max(up_rng_max, 2.25, up_mix_max+1)-1))],
+                    tickvals=[i for i in range(int(range_scale[0]+1),
+                                        int(range_scale[1]-1))],
                         ),
         dragmode=False,
         showlegend=False,
@@ -953,7 +995,7 @@ def __skt_directin_forstplot(df, lower, upper):
                                 y=[data_point['Treatment']],
                                 # error_x_minus=dict(type='data',color = colors[i],array='lower_error',visible=True),
                                 error_x=dict(type='data',color = colors[idx],array=[data_point['lower_error'],data_point['CI_width_hf']],visible=True),
-                                marker=dict(color=colors[idx], size=12),
+                                marker=dict(color=colors[idx], size=8),
                                 showlegend=False,
                                 hovertemplate= hovert_template[idx] 
                             ))
@@ -1012,14 +1054,14 @@ def __skt_directin_forstplot(df, lower, upper):
 
 
 
-def __skt_mix_forstplot(df, lower, upper):
+def __skt_mix_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
     new_rows = pd.DataFrame(columns=df.columns)
     for idx in range(0, 380, 19):
         new_rows.loc[idx/19, 'Reference'] = df.loc[idx, 'Reference']
     new_rows['Treatment'] = 'Scale'
     new_rows['risk'] = 'Enter a number'
-    new_rows['Scale_lower'] = 'Enter a number for lower'
-    new_rows['Scale_upper'] = 'Enter a number for upper'
+    new_rows['Scale_lower'] = 'Enter a value for lower'
+    new_rows['Scale_upper'] = 'Enter a value for upper'
     interval = 19
     insert_index = 0
     for _, row in new_rows.iterrows():
@@ -1031,17 +1073,22 @@ def __skt_mix_forstplot(df, lower, upper):
         data_ex = df[j+1:j + 20]
         up_rng_max, low_rng_min = data_ex.CI_upper.mean(), data_ex.CI_lower.mean()
         up_mix_max, low_mix_min = data_ex.RR.max(), data_ex.RR.min()
-    # up_rng = 10**np.floor(np.log10(up_rng))
-    # low_rng = 10 ** np.floor(np.log10(low_rng))
-     
-        range_scale=[min(low_rng_min, -1, low_mix_min), 
-                              max(up_rng_max, 2.25, up_mix_max+1)]  
+
+        if refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is not None and scale_upper is not None:
+            range_scale = [scale_lower, scale_upper]
+        elif refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is not None and scale_upper is None:
+            range_scale = [scale_lower, max(up_rng_max, 2.25, up_mix_max+1)]
+        elif refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is None and scale_upper is not None:
+            range_scale = [min(low_rng_min, -1, low_mix_min), scale_upper]
+        else:
+            range_scale=[min(low_rng_min, -1, low_mix_min), 
+                              max(up_rng_max, 2.25, up_mix_max+1)] 
         
         fig = go.Figure(go.Scatter( y = [],x = []))
         fig.update_layout(
         xaxis=dict(range=range_scale,
-                    tickvals=[i for i in range(int(min(low_rng_min, -1, low_mix_min)+1),
-                                        int(max(up_rng_max, 2.25, up_mix_max+1)-1))],
+                    tickvals=[i for i in range(int(range_scale[0]+1),
+                                        int(range_scale[1]-1))],
                         ),
         dragmode=False,
         showlegend=False,

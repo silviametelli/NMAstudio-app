@@ -7,7 +7,8 @@ def __generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                         dwld_button,dwld_button2, net_download_activation):
 
     nodes_color = (custom_nd_clr or DFLT_ND_CLR) if dd_nclr != 'Default' else DFLT_ND_CLR
-    edges_color = (custom_edg_clr or None) if dd_eclr != 'Default' else None
+    edges_color = (custom_edg_clr or 'grey') if dd_eclr != 'Default' else 'grey'
+   
     label_size=(label_size or None) if dd_eclr != 'Default' else None
     treat_name=(treat_name or None) if dd_eclr != 'Default' else None
 
@@ -40,6 +41,7 @@ def __generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                          ]
 
 
+
     if slct_nodesdata:
         selected_nodes_id = [d['id'] for d in slct_nodesdata]
         all_slct_src_trgt = list({e['source'] for e in edgedata if e['source'] in selected_nodes_id
@@ -55,37 +57,51 @@ def __generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
                                     "opacity": 1}}
                          for id in selected_nodes_id] + [
                          {"selector": 'edge[id= "{}"]'.format(edge['id']),
-                          "style": {'opacity': 1,  # "line-color": edges_color,
+                          "style": {'opacity': 1,  "line-color": edges_color,
                                     'z-index': 5000}} for edge in edgedata if edge['source'] in selected_nodes_id
                                                                               or edge['target'] in selected_nodes_id] + [
                          {"selector": 'node[id = "{}"]'.format(id),
                           "style": {"opacity": 1}}
                          for id in all_nodes_id if id not in slct_nodesdata and id in all_slct_src_trgt]
 
+    if slct_edgedata:
+        selected_edge_id = [d['id'] for d in slct_edgedata]
+        # all_slct_src_trgt = list({e['source'] for e in edgedata if e['source'] in selected_edge_id
+        #                             or e['target'] in selected_edge_id}
+        #                             | {e['target'] for e in edgedata if e['source'] in selected_edge_id
+        #                             or e['target'] in selected_edge_id})
 
+        stylesheet = get_stylesheet(pie=pie,  classes=cls,  n_class=n_cls, edg_lbl=edg_lbl, edg_col=edges_color,
+                                    nd_col=nodes_color, node_size=node_size,label_size=label_size) + [
+                            {"selector": 'edge[id= "{}"]'.format(id),
+                            "style": {'opacity': 1,  "line-color": 'rgb(165, 74, 97)',
+                                    'z-index': 5000}} for id in selected_edge_id]
+
+   
     # if slct_edgedata and False:  #TODO: Not doing much at the moment
     #     for edge in edgedata:
-    #         if edge['source'] in edgedata:
-    #             stylesheet.append({
-    #                 "selector": 'node[id = "{}"]'.format(edge['target']),
-    #                 "style": {'background-color': FOLLOWING_COLOR, 'opacity': 0.9}})
-    #             stylesheet.append({"selector": 'edge[id= "{}"]'.format(edge['id']),
-    #                                "style": {'opacity': 0.9,
-    #                                          "line-color": "blue",
-    #                                          # "mid-target-arrow-color": FOLLOWING_COLOR,
-    #                                          # "mid-target-arrow-shape": "vee",
-    #                                          'z-index': 5000}})
-    #         if edge['target'] in edgedata:
-    #             stylesheet.append({"selector": 'node[id = "{}"]'.format(edge['source']),
-    #                                "style": {'background-color': FOLLOWER_COLOR,
-    #                                          'opacity': 0.9,
-    #                                          'z-index': 9999}})
-    #             stylesheet.append({"selector": 'edge[id= "{}"]'.format(edge['id']),
-    #                                "style": {'opacity': 1,
-    #                                          "line-color": "blue",
-    #                                          "mid-target-arrow-color": FOLLOWER_COLOR,
-    #                                          "mid-target-arrow-shape": "vee",
-    #                                          'z-index': 5000}})
+    #         # if edge['source'] in edgedata:
+    #             # print('true')
+    #         stylesheet.append({
+    #             "selector": 'node[id = "{}"]'.format(edge['target']),
+    #             "style": {'background-color': FOLLOWING_COLOR, 'opacity': 0.9}})
+    #         stylesheet.append({"selector": 'edge[id= "{}"]'.format(edge['id']),
+    #                             "style": {'opacity': 0.9,
+    #                                         "line-color": "blue",
+    #                                         # "mid-target-arrow-color": FOLLOWING_COLOR,
+    #                                         # "mid-target-arrow-shape": "vee",
+    #                                         'z-index': 5000}})
+    #         # if edge['target'] in edgedata:
+    #         stylesheet.append({"selector": 'node[id = "{}"]'.format(edge['source']),
+    #                             "style": {'background-color': FOLLOWER_COLOR,
+    #                                         'opacity': 0.9,
+    #                                         'z-index': 9999}})
+    #         stylesheet.append({"selector": 'edge[id= "{}"]'.format(edge['id']),
+    #                             "style": {'opacity': 1,
+    #                                         "line-color": "blue",
+    #                                         "mid-target-arrow-color": FOLLOWER_COLOR,
+    #                                         "mid-target-arrow-shape": "vee",
+    #                                         'z-index': 5000}})
 
 
     triggered = [tr['prop_id'] for tr in dash.callback_context.triggered]
@@ -95,6 +111,6 @@ def __generate_stylesheet(node, slct_nodesdata, elements, slct_edgedata,
     else:
         net_download_activation = False
 
-
+    # print(stylesheet)
     stylesheet_modal  = stylesheet
     return stylesheet, stylesheet_modal, net_download_activation

@@ -1966,11 +1966,10 @@ def results_display(selected):
     Input("range_lower", "value"),
     Input("range_upper", "value"),
     State("quickstart-grid", "rowData"),
-    State("checklist_effects", "value"),
 )
 
-def selected(value_effect, value_change,lower,upper,rowData, state_effect):
-
+def selected(value_effect, value_change,lower,upper,rowData):
+    
     data = pd.read_csv('db/skt/final_all.csv')
     df = pd.DataFrame(data)
     certainty_values = ['High', 'Low', 'Moderate']
@@ -1982,25 +1981,48 @@ def selected(value_effect, value_change,lower,upper,rowData, state_effect):
     df = df.round(2)
     df['Graph'] = ''
     df['risk'] = 'Enter a number'
-    df['Scale_lower'] = 'Enter a number for lower'
-    df['Scale_upper'] = 'Enter a number for upper'
+    df['Scale_lower'] = 'Enter a value for lower'
+    df['Scale_upper'] = 'Enter a value for upper'
+
+    if value_change is not None and value_change[0]['value'] is not None and value_change[0]['value'] != 'Enter a value for lower' and value_change[0]['colId']=='Scale_lower':
+        scale_lower = float(value_change[0]['value'])
+        scale_upper = float(value_change[0]['data']['Scale_upper']) if value_change[0]['data']['Scale_upper'] != 'Enter a value for upper' else None
+    elif value_change is not None and value_change[0]['value'] is not None:
+        scale_lower = float(value_change[0]['data']['Scale_lower']) if value_change[0]['data']['Scale_lower'] != 'Enter a value for lower' else None
+    else:
+        scale_lower = None
+
+    if value_change is not None and value_change[0]['value'] is not None and value_change[0]['value'] != 'Enter a value for upper' and value_change[0]['colId']=='Scale_upper':
+        scale_upper = float(value_change[0]['value'])
+        scale_lower = float(value_change[0]['data']['Scale_lower']) if value_change[0]['data']['Scale_lower'] != 'Enter a value for lower' else None
+    elif value_change is not None and value_change[0]['value'] is not None:
+        scale_upper = float(value_change[0]['data']['Scale_upper']) if value_change[0]['data']['Scale_upper'] != 'Enter a value for upper' else None
+    else:
+        scale_upper = None
+
+    # if value_change is not None and value_change[0]['value'] is not None and (value_change[0]['value'] != 'Enter a value for upper' and value_change[0]['value'] != 'Enter a value for lower') and (value_change[0]['colId']=='Scale_upper' or value_change[0]['colId']=='Scale_lower'):
+    if value_change is not None and value_change[0]['value'] is not None:
+        refer_name = value_change[0]['data']['Reference']
+    else:
+        refer_name = None
+
 
     if value_effect==[]:
-            df = __skt_mix_forstplot(df,lower,upper)
+            df = __skt_mix_forstplot(df,lower,upper, scale_lower, scale_upper, refer_name)
     elif all(effect in value_effect for effect in ['PI', 'direct', 'indirect']):
-            df = __skt_all_forstplot(df,lower,upper)
+            df = __skt_all_forstplot(df,lower,upper, scale_lower, scale_upper, refer_name)
     elif all(effect in ['PI'] for effect in value_effect):
-            df = __skt_PI_forstplot(df,lower,upper)
+            df = __skt_PI_forstplot(df,lower,upper, scale_lower, scale_upper, refer_name)
     elif all(effect in ['direct'] for effect in value_effect):
-            df = __skt_direct_forstplot(df,lower,upper)
+            df = __skt_direct_forstplot(df,lower,upper, scale_lower, scale_upper, refer_name)
     elif all(effect in ['indirect'] for effect in value_effect):
-            df = __skt_indirect_forstplot(df,lower,upper)
+            df = __skt_indirect_forstplot(df,lower,upper, scale_lower, scale_upper, refer_name)
     elif all(effect in ['PI', 'direct'] for effect in value_effect):
-            df = __skt_PIdirect_forstplot(df,lower,upper)
+            df = __skt_PIdirect_forstplot(df,lower,upper, scale_lower, scale_upper, refer_name)
     elif all(effect in ['PI', 'indirect'] for effect in value_effect):
-            df = __skt_PIindirect_forstplot(df,lower,upper)
+            df = __skt_PIindirect_forstplot(df,lower,upper, scale_lower, scale_upper, refer_name)
     elif all(effect in ['direct', 'indirect'] for effect in value_effect):
-            df = __skt_directin_forstplot(df,lower,upper)
+            df = __skt_directin_forstplot(df,lower,upper, scale_lower, scale_upper, refer_name)
 
     grouped = df.groupby(["Reference", "risk", 'Scale_lower', 'Scale_upper'])
     rowData_effect = []
@@ -2022,17 +2044,6 @@ def selected(value_effect, value_change,lower,upper,rowData, state_effect):
                     'Scale_upper': Scale_upper ,"Treatments": treatments})
 
     rowData_effect = pd.DataFrame(rowData_effect)
-    
-    # for j in range(0, rowData_effect.shape[0]):
-        
-    #     detail_data = rowData_effect.loc[j, 'Treatments']
-    #     detail_data = pd.DataFrame(detail_data)
-        
-    #     for i in range(1,detail_data.shape[0]):
-    #         rowData_effect.loc[j,'Treatments'][i]['RR'] = str(rowData_effect.loc[j,'Treatments'][i]['RR'])+ '\n(' + str(rowData_effect.loc[j,'Treatments'][i]['CI_lower']) + ', ' + str(rowData_effect.loc[j,'Treatments'][i]['CI_upper']) + ')'
-    #         rowData_effect.loc[j,'Treatments'][i]['direct'] = f"{rowData_effect.loc[j,'Treatments'][i]['direct']}" + f"\n({rowData_effect.loc[j,'Treatments'][i]['direct_low']}, {rowData_effect.loc[j,'Treatments'][i]['direct_up']})" if pd.notna(rowData_effect.loc[j,'Treatments'][i]['direct']) else ""
-    #         rowData_effect.loc[j,'Treatments'][i]['indirect'] = f"{rowData_effect.loc[j,'Treatments'][i]['indirect']}" + f"\n({rowData_effect.loc[j,'Treatments'][i]['indirect_low']}, {rowData_effect.loc[j,'Treatments'][i]['indirect_up']})" if pd.notna(rowData_effect.loc[j,'Treatments'][i]['indirect']) else ""
-    
     dfc_2 = rowData_effect.copy()   
     
     rowData = pd.DataFrame(rowData)

@@ -16,6 +16,7 @@ data = pd.read_csv('db/skt/final_all.csv')
 pw_data = pd.read_csv('db/skt/forest_data_prws.csv')
 df = pd.DataFrame(data)
 
+
 out_list = [['PASI90',"SAE"]]
 
 outcome_list = [{'label': '{}'.format(out_name), 'value': out_name} for out_name in np.unique(out_list)]
@@ -53,12 +54,12 @@ def update_indirect_direct(row):
 
 df['Graph'] = ''
 df['risk'] = 'Enter a number'
-df['Scale_lower'] = 'Enter a number for lower'
-df['Scale_upper'] = 'Enter a number for upper'
+df['Scale_lower'] = 'Enter a value for lower'
+df['Scale_upper'] = 'Enter a value for upper'
 
 
 # df_mix = __skt_mix_forstplot(df,0.8,1.25)
-df_all = __skt_all_forstplot(df,0.8,1.25)
+df_all = __skt_all_forstplot(df,0.8,1.25,scale_lower=None, scale_upper=None, refer_name=None)
 # df_PI = __skt_PI_forstplot(df,0.8,1.25)
 # df_direct = __skt_direct_forstplot(df,0.8,1.25)
 # df_indirect = __skt_indirect_forstplot(df,0.8,1.25)
@@ -487,7 +488,7 @@ def skt_layout():
                                                                                         name='risk',
                                                                                         value=0.8,
                                                                                         placeholder="e.g. 0.8", style={'width':'80px'}),
-                                                                            html.Span('Enter the range of equvalence lower:',className='select_outcome'),
+                                                                            html.Span('Enter the range of equvalence upper:',className='select_outcome'),
                                                                             dcc.Input(id="range_upper",
                                                                                         type="text",
                                                                                         name='risk',

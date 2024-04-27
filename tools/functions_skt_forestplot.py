@@ -10,7 +10,7 @@ def update_indirect_direct(row):
     return row
 
 
-def __skt_all_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
+def __skt_all_forstplot(df, lower, scale_lower, scale_upper, refer_name):
     
     # df = df.sort_values(by='Reference')
     new_rows = pd.DataFrame(columns=df.columns)
@@ -23,7 +23,7 @@ def __skt_all_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
     new_rows['Scale_upper'] = 'Enter a value for upper'
     interval = 19
     insert_index = 0
-
+    lower =float(lower)
     for _, row in new_rows.iterrows():
         df = pd.concat([df.iloc[:insert_index], row.to_frame().T, df.iloc[insert_index:]]).reset_index(drop=True)
         insert_index += interval + 1  # Move to the next insertion position
@@ -137,9 +137,9 @@ def __skt_all_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
                             type="rect",
                             xref="x",
                             yref="paper",
-                            x0=f"{lower}",
+                            x0=f"{1+lower}",
                             y0="0",
-                            x1=f"{upper}",
+                            x1=f"{1-lower}",
                             y1='1',
                             fillcolor="orange",
                             opacity=0.4,
@@ -150,7 +150,7 @@ def __skt_all_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
                 )
             
                 fig.add_trace(go.Scatter(
-                    x=[0.8, 1.25],  # x-coordinate in the middle of the shape
+                    x=[1-lower, 1+lower],  # x-coordinate in the middle of the shape
                     y=[0, 0],    # y-coordinate (doesn't matter, since it's vertical shape)
                     mode='markers',
                     marker=dict(color='rgba(0, 0, 0, 0)', size=5),
@@ -168,7 +168,7 @@ def __skt_all_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
                 
     return df
 
-def __skt_PI_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
+def __skt_PI_forstplot(df, lower,  scale_lower, scale_upper, refer_name):
     new_rows = pd.DataFrame(columns=df.columns)
     for idx in range(0, 380, 19):
         new_rows.loc[idx/19, 'Reference'] = df.loc[idx, 'Reference']
@@ -177,6 +177,7 @@ def __skt_PI_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
     new_rows['risk'] = 'Enter a number'
     new_rows['Scale_lower'] = 'Enter a value for lower'
     new_rows['Scale_upper'] = 'Enter a value for upper'
+    lower =float(lower)
     interval = 19
     insert_index = 0
     for _, row in new_rows.iterrows():
@@ -281,9 +282,9 @@ def __skt_PI_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
                         type="rect",
                         xref="x",
                         yref="paper",
-                        x0=f"{lower}",
+                        x0=f"{1+lower}",
                         y0="0",
-                        x1=f"{upper}",
+                        x1=f"{1-lower}",
                         y1='1',
                         fillcolor="orange",
                         opacity=0.4,
@@ -294,7 +295,7 @@ def __skt_PI_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
             )
         
             fig.add_trace(go.Scatter(
-                x=[0.8, 1.25],  # x-coordinate in the middle of the shape
+                x=[1-lower, 1+lower],  # x-coordinate in the middle of the shape
                 y=[0, 0],    # y-coordinate (doesn't matter, since it's vertical shape)
                 mode='markers',
                 marker=dict(color='rgba(0, 0, 0, 0)', size=5),
@@ -313,7 +314,7 @@ def __skt_PI_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
     return df
 
 
-def __skt_direct_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
+def __skt_direct_forstplot(df, lower, scale_lower, scale_upper, refer_name):
     new_rows = pd.DataFrame(columns=df.columns)
     for idx in range(0, 380, 19):
          new_rows.loc[idx/19, 'Reference'] = df.loc[idx, 'Reference']
@@ -322,6 +323,7 @@ def __skt_direct_forstplot(df, lower, upper, scale_lower, scale_upper, refer_nam
     new_rows['risk'] = 'Enter a number'
     new_rows['Scale_lower'] = 'Enter a value for lower'
     new_rows['Scale_upper'] = 'Enter a value for upper'
+    lower =float(lower)
     interval = 19
     insert_index = 0
     for _, row in new_rows.iterrows():
@@ -423,9 +425,9 @@ def __skt_direct_forstplot(df, lower, upper, scale_lower, scale_upper, refer_nam
                         type="rect",
                         xref="x",
                         yref="paper",
-                        x0=f"{lower}",
+                        x0=f"{1+lower}",
                         y0="0",
-                        x1=f"{upper}",
+                        x1=f"{1-lower}",
                         y1='1',
                         fillcolor="orange",
                         opacity=0.4,
@@ -436,7 +438,7 @@ def __skt_direct_forstplot(df, lower, upper, scale_lower, scale_upper, refer_nam
             )
         
             fig.add_trace(go.Scatter(
-                x=[0.8, 1.25],  # x-coordinate in the middle of the shape
+                x=[1-lower, 1+lower],  # x-coordinate in the middle of the shape
                 y=[0, 0],    # y-coordinate (doesn't matter, since it's vertical shape)
                 mode='markers',
                 marker=dict(color='rgba(0, 0, 0, 0)', size=5),
@@ -457,7 +459,7 @@ def __skt_direct_forstplot(df, lower, upper, scale_lower, scale_upper, refer_nam
     return df
 
 
-def __skt_indirect_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
+def __skt_indirect_forstplot(df, lower, scale_lower, scale_upper, refer_name):
     new_rows = pd.DataFrame(columns=df.columns)
     for idx in range(0, 380, 19):
          new_rows.loc[idx/19, 'Reference'] = df.loc[idx, 'Reference']
@@ -466,6 +468,7 @@ def __skt_indirect_forstplot(df, lower, upper, scale_lower, scale_upper, refer_n
     new_rows['risk'] = 'Enter a number'
     new_rows['Scale_lower'] = 'Enter a value for lower'
     new_rows['Scale_upper'] = 'Enter a value for upper'
+    lower =float(lower)
     interval = 19
     insert_index = 0
     for _, row in new_rows.iterrows():
@@ -568,9 +571,9 @@ def __skt_indirect_forstplot(df, lower, upper, scale_lower, scale_upper, refer_n
                         type="rect",
                         xref="x",
                         yref="paper",
-                        x0=f"{lower}",
+                        x0=f"{1+lower}",
                         y0="0",
-                        x1=f"{upper}",
+                        x1=f"{1-lower}",
                         y1='1',
                         fillcolor="orange",
                         opacity=0.4,
@@ -581,7 +584,7 @@ def __skt_indirect_forstplot(df, lower, upper, scale_lower, scale_upper, refer_n
             )
         
             fig.add_trace(go.Scatter(
-                x=[0.8, 1.25],  # x-coordinate in the middle of the shape
+                x=[1-lower, 1+lower],  # x-coordinate in the middle of the shape
                 y=[0, 0],    # y-coordinate (doesn't matter, since it's vertical shape)
                 mode='markers',
                 marker=dict(color='rgba(0, 0, 0, 0)', size=5),
@@ -602,7 +605,7 @@ def __skt_indirect_forstplot(df, lower, upper, scale_lower, scale_upper, refer_n
     return df
 
 
-def __skt_PIdirect_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
+def __skt_PIdirect_forstplot(df, lower, scale_lower, scale_upper, refer_name):
     new_rows = pd.DataFrame(columns=df.columns)
     for idx in range(0, 380, 19):
          new_rows.loc[idx/19, 'Reference'] = df.loc[idx, 'Reference']
@@ -611,6 +614,7 @@ def __skt_PIdirect_forstplot(df, lower, upper, scale_lower, scale_upper, refer_n
     new_rows['risk'] = 'Enter a number'
     new_rows['Scale_lower'] = 'Enter a value for lower'
     new_rows['Scale_upper'] = 'Enter a value for upper'
+    lower =float(lower)
     interval = 19
     insert_index = 0
     for _, row in new_rows.iterrows():
@@ -718,9 +722,9 @@ def __skt_PIdirect_forstplot(df, lower, upper, scale_lower, scale_upper, refer_n
                         type="rect",
                         xref="x",
                         yref="paper",
-                        x0=f"{lower}",
+                        x0=f"{1+lower}",
                         y0="0",
-                        x1=f"{upper}",
+                        x1=f"{1-lower}",
                         y1='1',
                         fillcolor="orange",
                         opacity=0.4,
@@ -731,7 +735,7 @@ def __skt_PIdirect_forstplot(df, lower, upper, scale_lower, scale_upper, refer_n
             )
         
             fig.add_trace(go.Scatter(
-                x=[0.8, 1.25],  # x-coordinate in the middle of the shape
+                x=[1-lower, 1+lower],  # x-coordinate in the middle of the shape
                 y=[0, 0],    # y-coordinate (doesn't matter, since it's vertical shape)
                 mode='markers',
                 marker=dict(color='rgba(0, 0, 0, 0)', size=5),
@@ -753,7 +757,7 @@ def __skt_PIdirect_forstplot(df, lower, upper, scale_lower, scale_upper, refer_n
 
 
 
-def __skt_PIindirect_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
+def __skt_PIindirect_forstplot(df, lower,  scale_lower, scale_upper, refer_name):
     new_rows = pd.DataFrame(columns=df.columns)
     for idx in range(0, 380, 19):
          new_rows.loc[idx/19, 'Reference'] = df.loc[idx, 'Reference']
@@ -762,6 +766,7 @@ def __skt_PIindirect_forstplot(df, lower, upper, scale_lower, scale_upper, refer
     new_rows['risk'] = 'Enter a number'
     new_rows['Scale_lower'] = 'Enter a value for lower'
     new_rows['Scale_upper'] = 'Enter a value for upper'
+    lower =float(lower)
     interval = 19
     insert_index = 0
     for _, row in new_rows.iterrows():
@@ -868,9 +873,9 @@ def __skt_PIindirect_forstplot(df, lower, upper, scale_lower, scale_upper, refer
                         type="rect",
                         xref="x",
                         yref="paper",
-                        x0=f"{lower}",
+                        x0=f"{1+lower}",
                         y0="0",
-                        x1=f"{upper}",
+                        x1=f"{1-lower}",
                         y1='1',
                         fillcolor="orange",
                         opacity=0.4,
@@ -881,7 +886,7 @@ def __skt_PIindirect_forstplot(df, lower, upper, scale_lower, scale_upper, refer
             )
         
             fig.add_trace(go.Scatter(
-                x=[0.8, 1.25],  # x-coordinate in the middle of the shape
+                x=[1-lower, 1+lower],  # x-coordinate in the middle of the shape
                 y=[0, 0],    # y-coordinate (doesn't matter, since it's vertical shape)
                 mode='markers',
                 marker=dict(color='rgba(0, 0, 0, 0)', size=5),
@@ -902,7 +907,7 @@ def __skt_PIindirect_forstplot(df, lower, upper, scale_lower, scale_upper, refer
     return df
 
 
-def __skt_directin_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
+def __skt_directin_forstplot(df, lower, scale_lower, scale_upper, refer_name):
     new_rows = pd.DataFrame(columns=df.columns)
     for idx in range(0, 380, 19):
          new_rows.loc[idx/19, 'Reference'] = df.loc[idx, 'Reference']
@@ -911,6 +916,7 @@ def __skt_directin_forstplot(df, lower, upper, scale_lower, scale_upper, refer_n
     new_rows['risk'] = 'Enter a number'
     new_rows['Scale_lower'] = 'Enter a value for lower'
     new_rows['Scale_upper'] = 'Enter a value for upper'
+    lower =float(lower)
     interval = 19
     insert_index = 0
     for _, row in new_rows.iterrows():
@@ -1019,9 +1025,9 @@ def __skt_directin_forstplot(df, lower, upper, scale_lower, scale_upper, refer_n
                         type="rect",
                         xref="x",
                         yref="paper",
-                        x0=f"{lower}",
+                        x0=f"{1+lower}",
                         y0="0",
-                        x1=f"{upper}",
+                        x1=f"{1-lower}",
                         y1='1',
                         fillcolor="orange",
                         opacity=0.4,
@@ -1032,7 +1038,7 @@ def __skt_directin_forstplot(df, lower, upper, scale_lower, scale_upper, refer_n
             )
         
             fig.add_trace(go.Scatter(
-                x=[0.8, 1.25],  # x-coordinate in the middle of the shape
+                x=[1-lower, 1+lower],  # x-coordinate in the middle of the shape
                 y=[0, 0],    # y-coordinate (doesn't matter, since it's vertical shape)
                 mode='markers',
                 marker=dict(color='rgba(0, 0, 0, 0)', size=5),
@@ -1054,7 +1060,7 @@ def __skt_directin_forstplot(df, lower, upper, scale_lower, scale_upper, refer_n
 
 
 
-def __skt_mix_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
+def __skt_mix_forstplot(df, lower, scale_lower, scale_upper, refer_name):
     new_rows = pd.DataFrame(columns=df.columns)
     for idx in range(0, 380, 19):
         new_rows.loc[idx/19, 'Reference'] = df.loc[idx, 'Reference']
@@ -1062,6 +1068,7 @@ def __skt_mix_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
     new_rows['risk'] = 'Enter a number'
     new_rows['Scale_lower'] = 'Enter a value for lower'
     new_rows['Scale_upper'] = 'Enter a value for upper'
+    lower =float(lower)
     interval = 19
     insert_index = 0
     for _, row in new_rows.iterrows():
@@ -1153,9 +1160,9 @@ def __skt_mix_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
                         type="rect",
                         xref="x",
                         yref="paper",
-                        x0=f"{lower}",
+                        x0=f"{1+lower}",
                         y0="0",
-                        x1=f"{upper}",
+                        x1=f"{1-lower}",
                         y1='1',
                         fillcolor="orange",
                         opacity=0.4,
@@ -1166,7 +1173,7 @@ def __skt_mix_forstplot(df, lower, upper, scale_lower, scale_upper, refer_name):
             )
         
             fig.add_trace(go.Scatter(
-                x=[0.8, 1.25],  # x-coordinate in the middle of the shape
+                x=[1-lower, 1+lower],  # x-coordinate in the middle of the shape
                 y=[0, 0],    # y-coordinate (doesn't matter, since it's vertical shape)
                 mode='markers',
                 marker=dict(color='rgba(0, 0, 0, 0)', size=5),

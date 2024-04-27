@@ -59,7 +59,7 @@ df['Scale_upper'] = 'Enter a value for upper'
 
 
 # df_mix = __skt_mix_forstplot(df,0.8,1.25)
-df_all = __skt_all_forstplot(df,0.8,1.25,scale_lower=None, scale_upper=None, refer_name=None)
+df_all = __skt_all_forstplot(df,0.8,scale_lower=None, scale_upper=None, refer_name=None)
 # df_PI = __skt_PI_forstplot(df,0.8,1.25)
 # df_direct = __skt_direct_forstplot(df,0.8,1.25)
 # df_indirect = __skt_indirect_forstplot(df,0.8,1.25)
@@ -293,7 +293,7 @@ grid = dag.AgGrid(
 ####################################################################################################################################################################
 
 model_skt_stand1 = dbc.Modal(
-                        [dbc.ModalHeader("Header",className='forest_head'),
+                        [dbc.ModalHeader("Pairwise Forest Plot",className='forest_head'),
                             dbc.ModalBody([dcc.Loading(
                                     html.Div([
                                         dcc.Graph(
@@ -332,13 +332,13 @@ model_skt_stand1 = dbc.Modal(
                     ],id="modal_forest", is_open=False, scrollable=True,contentClassName="forest_content")
 
 model_skt_stand2 = dbc.Modal(
-        [dbc.ModalHeader("Header",className='skt_info_head'),
+        [dbc.ModalHeader("Detail information",className='skt_info_head'),
             dbc.ModalBody(
                 [
                 html.Span('Treatment: FUM, Comparator: PBO',className='skt_span_info'),
                 html.Span('Randomize control studies: 3',className='skt_span_info'),
-                html.Span('Total participants in arm: 1929',className='skt_span_info'), 
-                html.Span('Mean age: xxx)', className='skt_span_info'),
+                html.Span('Total participants: 1929',className='skt_span_info'), 
+                html.Span('Mean age: xxx', className='skt_span_info'),
                 html.Span('Mean male percentage: XXX', className='skt_span_info'),
                 ],className='skt_info_body'),
             dbc.ModalFooter(dbc.Button( "Close", id="close_compare", className="ms-auto", n_clicks=0), className='skt_info_close'),
@@ -363,7 +363,7 @@ model_password = dbc.Modal(
                 html.Br(),
                 dbc.Button( "OK", id="password_ok",n_clicks=0, style={'background-color':'grey'})
                 ]),
-    ],id="pass_model", is_open=True, contentClassName="pass_content", style={'display':'none'})
+    ],id="pass_model", is_open=True, contentClassName="pass_content", style={'display':'block'})
 ####################################################################################################################################################################
 ####################################################################################################################################################################
 # instruct_plot = ('/assets/figure/instruction_skt1.png')
@@ -385,7 +385,9 @@ options_effects = [
    ]
 
 def Sktpage():
-    return html.Div([Navbar(), skt_layout()])
+    return html.Div([Navbar(), model_password], id='skt_page_content')
+
+
 
 def skt_layout():
     return html.Div([
@@ -482,18 +484,18 @@ def skt_layout():
                                                             dbc.Col(
                                                                     [dbc.Row(html.Span('Options', className='option_select'), style={'display':'grid', 'padding-top':'unset'}),
                                                                      dbc.Col([dbc.Toast([
-                                                                            html.Span('Enter the range of equvalence lower:',className='select_outcome'),
+                                                                            html.Span('Enter a value for clinically unimportant differences between interventions:',className='select_outcome'),
                                                                             dcc.Input(id="range_lower",
                                                                                         type="text",
                                                                                         name='risk',
-                                                                                        value=0.8,
-                                                                                        placeholder="e.g. 0.8", style={'width':'80px'}),
-                                                                            html.Span('Enter the range of equvalence upper:',className='select_outcome'),
-                                                                            dcc.Input(id="range_upper",
-                                                                                        type="text",
-                                                                                        name='risk',
-                                                                                        value=1.25,
-                                                                                        placeholder="e.g. 1.25",style={'width':'80px'}) 
+                                                                                        value=0.2,
+                                                                                        placeholder="e.g. 0.2", style={'width':'80px'}),
+                                                                            # html.Span('Enter the range of equvalence upper:',className='select_outcome'),
+                                                                            # dcc.Input(id="range_upper",
+                                                                            #             type="text",
+                                                                            #             name='risk',
+                                                                            #             value=1.25,
+                                                                            #             placeholder="e.g. 1.25",style={'width':'80px'}) 
                                                                                                 ],className='skt_studyinfo2', bodyClassName='slect_body',headerClassName='headtab1'),
                                                                             dcc.Checklist(options= options_effects, value= ['PI', 'direct', 'indirect'], 
                                                                                           id='checklist_effects', style={'display': 'grid', 'align-items': 'end'})],

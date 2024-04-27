@@ -534,10 +534,11 @@ h6 {margin-top: 0;}
 .select_outcome{
     display: grid;
     text-align: center;
-    width: 220px;
+    width: 240px;
     align-items: center;
     font-weight: bold;
-    font-size: 12px
+    font-size: 12px;
+    white-space: pre-wrap;
 }
 .slect_body{
     justify-content: center;
@@ -667,7 +668,7 @@ h6 {margin-top: 0;}
 .forest_head{
     font-size: 20px;
     border-bottom: solid 0.6px gray;
-    height: 30px;
+    height: 50px;
     align-content: center;
     display: grid;
     padding-left: 20px;
@@ -696,7 +697,7 @@ h6 {margin-top: 0;}
 
 .forest_close{
     border-top: solid 0.7px gray;
-    width: 600px;
+    width: 800px;
     text-align: end;
     align-items: center;
     display: grid;
@@ -705,10 +706,10 @@ h6 {margin-top: 0;}
 
 #close_forest{
     color: white;
-    background-color: #B85042;
+    background-color: #f8f6f6;
     border: solid 0.8px gray;
     border-radius: 8%;
-    width: 50px;
+    /* width: 50px; */
     height: 25px;
 }
 

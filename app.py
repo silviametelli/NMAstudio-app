@@ -102,19 +102,38 @@ app.layout = get_new_layout()
 HOMEPAGE = Homepage()
 RealHomepage = realHomepage()
 SKTPAGE = Sktpage()
+
 # SKT = Sktpage()
 
+
+
 # Update the index
+
 @app.callback(Output('page-content', 'children'),
-              [Input('url', 'pathname')])
+              Input('url', 'pathname'))
 def display_page(pathname):
     if pathname == '/home':  return RealHomepage
     elif pathname == '/results':  return HOMEPAGE
-    elif pathname == '/skt':  return SKTPAGE
+    elif pathname == '/skt': return SKTPAGE,
     # elif pathname == '/doc': return doc_layout
     # elif pathname == '/news': return news_layout
 
     else:  return RealHomepage
+
+@app.callback(
+    Output('pass_model','is_open'),
+    Output('skt_page_content','children'),
+    Input('password_ok','n_clicks'),
+    Input('password','value'),
+    State('pass_model','is_open'),
+    State('skt_page_content','children'),
+)
+def clear_treat(click, password, pass_model, children):
+    if password =='777' and click:
+        children = [Navbar(), skt_layout()]
+        return not pass_model, children
+    else:
+        return pass_model, children
 
 # @app.callback(Output('results_page', 'children'),
 #               [Input('test_upload', 'n_clicks_timestamp'),
@@ -1964,11 +1983,11 @@ def results_display(selected):
     Input("checklist_effects", "value"),
     Input("quickstart-grid", "cellValueChanged"),
     Input("range_lower", "value"),
-    Input("range_upper", "value"),
+    # Input("range_upper", "value"),
     State("quickstart-grid", "rowData"),
 )
 
-def selected(value_effect, value_change,lower,upper,rowData):
+def selected(value_effect, value_change,lower,rowData):
     
     data = pd.read_csv('db/skt/final_all.csv')
     df = pd.DataFrame(data)
@@ -2008,21 +2027,21 @@ def selected(value_effect, value_change,lower,upper,rowData):
 
 
     if value_effect==[]:
-            df = __skt_mix_forstplot(df,lower,upper, scale_lower, scale_upper, refer_name)
+            df = __skt_mix_forstplot(df,lower, scale_lower, scale_upper, refer_name)
     elif all(effect in value_effect for effect in ['PI', 'direct', 'indirect']):
-            df = __skt_all_forstplot(df,lower,upper, scale_lower, scale_upper, refer_name)
+            df = __skt_all_forstplot(df,lower, scale_lower, scale_upper, refer_name)
     elif all(effect in ['PI'] for effect in value_effect):
-            df = __skt_PI_forstplot(df,lower,upper, scale_lower, scale_upper, refer_name)
+            df = __skt_PI_forstplot(df,lower, scale_lower, scale_upper, refer_name)
     elif all(effect in ['direct'] for effect in value_effect):
-            df = __skt_direct_forstplot(df,lower,upper, scale_lower, scale_upper, refer_name)
+            df = __skt_direct_forstplot(df,lower, scale_lower, scale_upper, refer_name)
     elif all(effect in ['indirect'] for effect in value_effect):
-            df = __skt_indirect_forstplot(df,lower,upper, scale_lower, scale_upper, refer_name)
+            df = __skt_indirect_forstplot(df,lower, scale_lower, scale_upper, refer_name)
     elif all(effect in ['PI', 'direct'] for effect in value_effect):
-            df = __skt_PIdirect_forstplot(df,lower,upper, scale_lower, scale_upper, refer_name)
+            df = __skt_PIdirect_forstplot(df,lower, scale_lower, scale_upper, refer_name)
     elif all(effect in ['PI', 'indirect'] for effect in value_effect):
-            df = __skt_PIindirect_forstplot(df,lower,upper, scale_lower, scale_upper, refer_name)
+            df = __skt_PIindirect_forstplot(df,lower, scale_lower, scale_upper, refer_name)
     elif all(effect in ['direct', 'indirect'] for effect in value_effect):
-            df = __skt_directin_forstplot(df,lower,upper, scale_lower, scale_upper, refer_name)
+            df = __skt_directin_forstplot(df,lower, scale_lower, scale_upper, refer_name)
 
     grouped = df.groupby(["Reference", "risk", 'Scale_lower', 'Scale_upper'])
     rowData_effect = []

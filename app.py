@@ -2002,6 +2002,8 @@ def selected(value_effect, value_change,lower,rowData):
     df['risk'] = 'Enter a number'
     df['Scale_lower'] = 'Enter a value for lower'
     df['Scale_upper'] = 'Enter a value for upper'
+    df['ab_effect'] = ''
+    df['ab_difference'] = ''
 
     if value_change is not None and value_change[0]['value'] is not None and value_change[0]['value'] != 'Enter a value for lower' and value_change[0]['colId']=='Scale_lower':
         scale_lower = float(value_change[0]['value'])
@@ -2055,7 +2057,8 @@ def selected(value_effect, value_change,lower,rowData):
                             "direct_low": row["direct_low"],"direct_up": row["direct_up"],
                             "indirect_low": row["indirect_low"],"indirect_up": row["indirect_up"],
                             "CI_lower": row["CI_lower"],"CI_upper": row["CI_upper"],
-                            "Comments": row["Comments"],
+                            "Comments": row["Comments"],"ab_effect": row["ab_effect"],
+                          "ab_difference": row["ab_difference"]
                             }
             treatments.append(treatment_data)
         rowData_effect.append({"Reference": ref, "risk": risk,
@@ -2100,9 +2103,13 @@ def selected(value_effect, value_change,lower,rowData):
             risk_treat =int(risk_treat)
             abrisk = risk_treat-value_risk 
             # dfc.loc[i,'Reference'] = f"{dfc.loc [i,'Reference']}" + f"\n{value_risk} per 1000"
-            dfc.loc[row_idx,'Treatments'][i]['Treatment'] = f"{row_data.loc[row_idx,'Treatments'][i]['Treatment']}" + f"\n{risk_treat} per 1000"
+            # dfc.loc[row_idx,'Treatments'][i]['Treatment'] = f"{row_data.loc[row_idx,'Treatments'][i]['Treatment']}" + f"\n{risk_treat} per 1000"
+            
             dfc.loc[row_idx,'Treatments'][i]['RR'] = str(row_data.loc[row_idx,'Treatments'][i]['RR'])+ '\n(' + str(row_data.loc[row_idx,'Treatments'][i]['CI_lower']) + ', ' + str(row_data.loc[row_idx,'Treatments'][i]['CI_upper']) + ')'
-            dfc.loc[row_idx,'Treatments'][i]['RR'] = f"{dfc.loc[row_idx,'Treatments'][i]['RR']}" + (f"\n{abrisk} more per 1000" if abrisk > 0 else f"\n{abs(abrisk)} less per 1000")
+            # dfc.loc[row_idx,'Treatments'][i]['RR'] = f"{dfc.loc[row_idx,'Treatments'][i]['RR']}" + (f"\n{abrisk} more per 1000" if abrisk > 0 else f"\n{abs(abrisk)} less per 1000")
+            
+            dfc.loc[row_idx,'Treatments'][i]['ab_effect'] = f"\n{risk_treat} per 1000"
+            dfc.loc[row_idx,'Treatments'][i]['ab_difference'] = f"\n{abrisk} more per 1000" if abrisk > 0 else f"\n{abs(abrisk)} less per 1000"
             dfc.loc[row_idx,'Treatments'][i]['direct'] = f"{row_data.loc[row_idx,'Treatments'][i]['direct']}" + f"\n({row_data.loc[row_idx,'Treatments'][i]['direct_low']}, {row_data.loc[row_idx,'Treatments'][i]['direct_up']})" if pd.notna(row_data.loc[row_idx,'Treatments'][i]['direct']) else ""
             dfc.loc[row_idx,'Treatments'][i]['indirect'] = f"{row_data.loc[row_idx,'Treatments'][i]['indirect']}" + f"\n({row_data.loc[row_idx,'Treatments'][i]['indirect_low']}, {row_data.loc[row_idx,'Treatments'][i]['indirect_up']})" if pd.notna(row_data.loc[row_idx,'Treatments'][i]['indirect']) else ""
             

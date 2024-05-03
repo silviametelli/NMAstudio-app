@@ -56,6 +56,9 @@ df['Graph'] = ''
 df['risk'] = 'Enter a number'
 df['Scale_lower'] = 'Enter a value for lower'
 df['Scale_upper'] = 'Enter a value for upper'
+df['ab_effect'] = ''
+df['ab_difference'] = ''
+
 
 
 # df_mix = __skt_mix_forstplot(df,0.8,1.25)
@@ -80,7 +83,8 @@ for (ref, risk, Scale_lower, Scale_upper), group in grouped:
                           "direct_low": row["direct_low"],"direct_up": row["direct_up"],
                           "indirect_low": row["indirect_low"],"indirect_up": row["indirect_up"],
                           "CI_lower": row["CI_lower"],"CI_upper": row["CI_upper"],
-                          "Comments": row["Comments"],
+                          "Comments": row["Comments"],"ab_effect": row["ab_effect"],
+                          "ab_difference": row["ab_difference"],
                           }
         treatments.append(treatment_data)
     rowData.append({"Reference": ref, "risk": risk,
@@ -101,7 +105,8 @@ for (ref, risk, Scale_lower, Scale_upper), group in grouped:
                           "direct_low": row["direct_low"],"direct_up": row["direct_up"],
                           "indirect_low": row["indirect_low"],"indirect_up": row["indirect_up"],
                           "CI_lower": row["CI_lower"],"CI_upper": row["CI_upper"],
-                          "Comments": row["Comments"],
+                          "Comments": row["Comments"],"ab_effect": row["ab_effect"],
+                          "ab_difference": row["ab_difference"],
                           }
         treatments.append(treatment_data)
     row_data_default.append({"Reference": ref, "risk": risk,
@@ -171,7 +176,7 @@ detailColumnDefs = [
         'line-height': 'normal',
         'align-items': 'center'
           }},
-
+    
     {"field": "RR", 
      "headerName": "Mixed effect\n95%CI",
      "width": 180,
@@ -186,6 +191,37 @@ detailColumnDefs = [
                    'align-items': 'center'
                    }
        },
+
+    {"field": "ab_effect", 
+     "headerName": "Absolute Effect",
+     "width": 180,
+     "resizable": True,
+     'cellStyle': {'border-left': 'solid 0.8px',
+                   'backgroud-color':'white',
+                #    'line-height': '20px',
+                   "text-align":'center',
+                   'white-space': 'pre',
+                   'display': 'grid',
+                   'line-height': 'normal',
+                   'align-items': 'center'
+                   }
+       },
+
+       {"field": "ab_difference", 
+     "headerName": "Absolute Difference",
+     "width": 180,
+     "resizable": True,
+     'cellStyle': {'border-left': 'solid 0.8px',
+                   'backgroud-color':'white',
+                #    'line-height': '20px',
+                   "text-align":'center',
+                   'white-space': 'pre',
+                   'display': 'grid',
+                   'line-height': 'normal',
+                   'align-items': 'center'
+                   }
+       },
+
     {
         "field": "Graph",
         "cellRenderer": "DCC_GraphClickData",
@@ -484,7 +520,7 @@ def skt_layout():
                                                             dbc.Col(
                                                                     [dbc.Row(html.Span('Options', className='option_select'), style={'display':'grid', 'padding-top':'unset'}),
                                                                      dbc.Col([dbc.Toast([
-                                                                            html.Span('Enter a value for clinically unimportant differences between interventions:',className='select_outcome'),
+                                                                            html.Span('Enter the minimum clinical difference value:',className='select_outcome'),
                                                                             dcc.Input(id="range_lower",
                                                                                         type="text",
                                                                                         name='risk',

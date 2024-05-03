@@ -37,24 +37,36 @@ def __skt_all_forstplot(df, lower, scale_lower, scale_upper, refer_name):
         up_mix_max, low_mix_min = data_ex.RR.max(), data_ex.RR.min()
         # up_mix_max = 10**np.floor(np.log10(up_mix_max)) 
         # low_mix_min = 10 ** np.floor(np.log10(low_mix_min))
-        
         if refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is not None and scale_upper is not None:
             range_scale = [np.log10(scale_lower), np.log10(scale_upper)]
         elif refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is not None and scale_upper is None:
-            print(scale_lower)
             range_scale = [np.log10(scale_lower), np.log10(max(up_rng_max, up_mix_max))]
-            print(range_scale)
         elif refer_name is not None and refer_name == df['Reference'][j+1] and scale_lower is None and scale_upper is not None:
             range_scale = [np.log10(min(low_rng_min, 0.1, low_mix_min)), np.log10(scale_upper)]
         else:
             range_scale=[np.log10(min(low_rng_min, 0.1, low_mix_min)), 
                              np.log10(max(up_rng_max,10, up_mix_max))]  
+        
             
         fig = go.Figure(go.Scatter( y = [],x = []))
+        
+        tick0 = 10**range_scale[0] + 0.1
+        tick_end = 10**range_scale[1] - 1
+        # num_steps1 = int((1 - tick0) / 0.1)+1
+        # num_steps2 = int(tick_end / 1)+1     
+        
+        tick_values1 = np.linspace(tick0, 1, num=5).round(2)
+        tick_values2 = np.linspace(1, tick_end, num=5).round(2)
+        tick_values = np.concatenate((tick_values1, tick_values2[1:]))
+        # Insert 1 at the beginning of the array
+        # tick_values = np.insert(tick_values, 0, 1)
+        # dtick=(tick_end - tick0) / 9
+
         fig.update_layout(
-        xaxis=dict(range=range_scale
-                    # tickvals=[i for i in range(int(range_scale[0]+1),
-                    #                     int(range_scale[1]-1))],
+        xaxis=dict(range=range_scale,
+                #    tick0=range_scale[0],
+                #    dtick=(tick_end - tick0) / 9
+                    tickvals=tick_values
                         ),
         dragmode=False,
         showlegend=False,
@@ -69,7 +81,8 @@ def __skt_all_forstplot(df, lower, scale_lower, scale_upper, refer_name):
         fig.update_xaxes(ticks="outside",
                          type="log",
                         showgrid=False,
-                        autorange=True, showline=True,
+                        # autorange=True, 
+                        showline=True,
                         # tickcolor='rgba(0,0,0,0)',
                         linecolor='black'
                         )
@@ -80,7 +93,6 @@ def __skt_all_forstplot(df, lower, scale_lower, scale_upper, refer_name):
                 filterDf = df.iloc[i]
                 filter_df = pd.DataFrame([filterDf])
                 filter_df = filter_df.apply(update_indirect_direct, axis=1)
-    
                 # data_ex = df[j+1, j + 20]     
                 filter_df = pd.concat([filter_df] * 4, ignore_index=True)         
 
@@ -132,12 +144,19 @@ def __skt_all_forstplot(df, lower, scale_lower, scale_upper, refer_name):
                                     showlegend=False,
                                     hovertemplate= hovert_template[idx] 
                                 )),
-                    fig.update_xaxes(type="log")
+                    fig.update_xaxes(ticks="outside",
+                         type="log",
+                         range=range_scale,
+                        # showgrid=False,
+                        # showline=False,
+                        # tickcolor='rgba(0,0,0,0)',
+                        # linecolor='rgba(0,0,0,0)'
+                        )
                 
                 fig.update_layout(
                     barmode='group',
                     bargap=0.25,
-                    xaxis=dict(range=range_scale),
+                    xaxis=dict(range=range_scale, type='log'),
                     # xaxis=dict(range=[min(low_rng_min, -10), up_rng_max]),
                     showlegend=False,
                     yaxis_visible=False,
@@ -180,7 +199,7 @@ def __skt_all_forstplot(df, lower, scale_lower, scale_upper, refer_name):
                 fig.add_shape(type='line', yref='paper', y0=0, y1=1, xref='x', x0=1, x1=1,
                                 line=dict(color="green", width=2,dash="dot"), layer='below')
                 
-                fig.update_xaxes(type="log")
+                # fig.update_xaxes(type="log")
             
                 df.at[i, "Graph"] = fig
                 

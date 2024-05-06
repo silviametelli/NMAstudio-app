@@ -2027,7 +2027,6 @@ def selected(value_effect, value_change,lower,rowData):
     else:
         refer_name = None
 
-
     if value_effect==[]:
             df = __skt_mix_forstplot(df,lower, scale_lower, scale_upper, refer_name)
     elif all(effect in value_effect for effect in ['PI', 'direct', 'indirect']):

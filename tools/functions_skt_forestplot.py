@@ -51,12 +51,10 @@ def __skt_all_forstplot(df, lower, scale_lower, scale_upper, refer_name):
         fig = go.Figure(go.Scatter( y = [],x = []))
         
         tick0 = 10**range_scale[0] + 0.1
-        tick_end = 10**range_scale[1] - 1
-        # num_steps1 = int((1 - tick0) / 0.1)+1
-        # num_steps2 = int(tick_end / 1)+1     
+        tick_end = 10**range_scale[1] - 1    
         
         tick_values1 = np.linspace(tick0, 1, num=5).round(2)
-        tick_values2 = np.linspace(1, tick_end, num=5).round(2)
+        tick_values2 = np.linspace(1, tick_end, num=5).astype(int)
         tick_values = np.concatenate((tick_values1, tick_values2[1:]))
         # Insert 1 at the beginning of the array
         # tick_values = np.insert(tick_values, 0, 1)
@@ -64,8 +62,6 @@ def __skt_all_forstplot(df, lower, scale_lower, scale_upper, refer_name):
 
         fig.update_layout(
         xaxis=dict(range=range_scale,
-                #    tick0=range_scale[0],
-                #    dtick=(tick_end - tick0) / 9
                     tickvals=tick_values
                         ),
         dragmode=False,
@@ -147,10 +143,6 @@ def __skt_all_forstplot(df, lower, scale_lower, scale_upper, refer_name):
                     fig.update_xaxes(ticks="outside",
                          type="log",
                          range=range_scale,
-                        # showgrid=False,
-                        # showline=False,
-                        # tickcolor='rgba(0,0,0,0)',
-                        # linecolor='rgba(0,0,0,0)'
                         )
                 
                 fig.update_layout(
@@ -237,12 +229,17 @@ def __skt_PI_forstplot(df, lower,  scale_lower, scale_upper, refer_name):
             range_scale=[np.log10(min(low_rng_min, 0.1, low_mix_min)), 
                              np.log10(max(up_rng_max,10, up_mix_max))]  
        
+        tick0 = 10**range_scale[0] + 0.1
+        tick_end = 10**range_scale[1] - 1    
+        
+        tick_values1 = np.linspace(tick0, 1, num=5).round(2)
+        tick_values2 = np.linspace(1, tick_end, num=5).astype(int)
+        tick_values = np.concatenate((tick_values1, tick_values2[1:]))
         
         fig = go.Figure(go.Scatter( y = [],x = []))
         fig.update_layout(
         xaxis=dict(range=range_scale, type='log',
-                    # tickvals=[i for i in range(int(range_scale[0]+1),
-                    #                     int(range_scale[1]-1))],
+                    tickvals=tick_values,
                         ),
         dragmode=False,
         showlegend=False,
@@ -388,11 +385,18 @@ def __skt_direct_forstplot(df, lower, scale_lower, scale_upper, refer_name):
             range_scale=[np.log10(min(low_rng_min, 0.1, low_mix_min)), 
                              np.log10(max(up_rng_max,10, up_mix_max))]  
         
+
+        tick0 = 10**range_scale[0] + 0.1
+        tick_end = 10**range_scale[1] - 1    
+        
+        tick_values1 = np.linspace(tick0, 1, num=5).round(2)
+        tick_values2 = np.linspace(1, tick_end, num=5).astype(int)
+        tick_values = np.concatenate((tick_values1, tick_values2[1:]))
+
         fig = go.Figure(go.Scatter( y = [],x = []))
         fig.update_layout(
-        xaxis=dict(range=range_scale, type='log'
-                    # tickvals=[i for i in range(int(range_scale[0]+1),
-                    #                     int(range_scale[1]-1))],
+        xaxis=dict(range=range_scale, type='log',
+                    tickvals=tick_values,
                         ),
         dragmode=False,
         showlegend=False,
@@ -535,12 +539,17 @@ def __skt_indirect_forstplot(df, lower, scale_lower, scale_upper, refer_name):
             range_scale=[np.log10(min(low_rng_min, 0.1, low_mix_min)), 
                              np.log10(max(up_rng_max,10, up_mix_max))]   
  
+        tick0 = 10**range_scale[0] + 0.1
+        tick_end = 10**range_scale[1] - 1    
         
+        tick_values1 = np.linspace(tick0, 1, num=5).round(2)
+        tick_values2 = np.linspace(1, tick_end, num=5).astype(int)
+        tick_values = np.concatenate((tick_values1, tick_values2[1:]))
+
         fig = go.Figure(go.Scatter( y = [],x = []))
         fig.update_layout(
-        xaxis=dict(range=range_scale,type='log'
-                    # tickvals=[i for i in range(int(range_scale[0]+1),
-                    #                     int(range_scale[1]-1))],
+        xaxis=dict(range=range_scale,type='log',
+                    tickvals=tick_values,
                         ),
         dragmode=False,
         showlegend=False,
@@ -682,12 +691,17 @@ def __skt_PIdirect_forstplot(df, lower, scale_lower, scale_upper, refer_name):
             range_scale=[np.log10(min(low_rng_min, 0.1, low_mix_min)), 
                              np.log10(max(up_rng_max,10, up_mix_max))]  
   
+        tick0 = 10**range_scale[0] + 0.1
+        tick_end = 10**range_scale[1] - 1    
         
+        tick_values1 = np.linspace(tick0, 1, num=5).round(2)
+        tick_values2 = np.linspace(1, tick_end, num=5).astype(int)
+        tick_values = np.concatenate((tick_values1, tick_values2[1:]))
+
         fig = go.Figure(go.Scatter( y = [],x = []))
         fig.update_layout(
-        xaxis=dict(range=range_scale,type='log'
-                    # tickvals=[i for i in range(int(range_scale[0]+1),
-                    #                     int(range_scale[1]-1))],
+        xaxis=dict(range=range_scale,type='log',
+                    tickvals=tick_values
                         ),
         dragmode=False,
         showlegend=False,
@@ -842,12 +856,17 @@ def __skt_PIindirect_forstplot(df, lower,  scale_lower, scale_upper, refer_name)
             range_scale=[np.log10(min(low_rng_min, 0.1, low_mix_min)), 
                              np.log10(max(up_rng_max,10, up_mix_max))]   
     
+        tick0 = 10**range_scale[0] + 0.1
+        tick_end = 10**range_scale[1] - 1    
         
+        tick_values1 = np.linspace(tick0, 1, num=5).round(2)
+        tick_values2 = np.linspace(1, tick_end, num=5).astype(int)
+        tick_values = np.concatenate((tick_values1, tick_values2[1:]))
+
         fig = go.Figure(go.Scatter( y = [],x = []))
         fig.update_layout(
-        xaxis=dict(range=range_scale,type='log'
-                    # tickvals=[i for i in range(int(range_scale[0]+1),
-                    #                     int(range_scale[1]-1))],
+        xaxis=dict(range=range_scale,type='log',
+                    tickvals=tick_values
                         ),
         dragmode=False,
         showlegend=False,
@@ -996,13 +1015,18 @@ def __skt_directin_forstplot(df, lower, scale_lower, scale_upper, refer_name):
         else:
             range_scale=[np.log10(min(low_rng_min, 0.1, low_mix_min)), 
                              np.log10(max(up_rng_max,10, up_mix_max))]
-            
+        
+        tick0 = 10**range_scale[0] + 0.1
+        tick_end = 10**range_scale[1] - 1    
+        
+        tick_values1 = np.linspace(tick0, 1, num=5).round(2)
+        tick_values2 = np.linspace(1, tick_end, num=5).astype(int)
+        tick_values = np.concatenate((tick_values1, tick_values2[1:]))  
         
         fig = go.Figure(go.Scatter( y = [],x = []))
         fig.update_layout(
-        xaxis=dict(range=range_scale, type='log'
-                    # tickvals=[i for i in range(int(range_scale[0]+1),
-                    #                     int(range_scale[1]-1))],
+        xaxis=dict(range=range_scale, type='log',
+                    tickvals=tick_values
                         ),
         dragmode=False,
         showlegend=False,
@@ -1152,11 +1176,17 @@ def __skt_mix_forstplot(df, lower, scale_lower, scale_upper, refer_name):
             range_scale=[np.log10(min(low_rng_min, 0.1, low_mix_min)), 
                              np.log10(max(up_rng_max,10, up_mix_max))] 
         
+        tick0 = 10**range_scale[0] + 0.1
+        tick_end = 10**range_scale[1] - 1    
+        
+        tick_values1 = np.linspace(tick0, 1, num=5).round(2)
+        tick_values2 = np.linspace(1, tick_end, num=5).astype(int)
+        tick_values = np.concatenate((tick_values1, tick_values2[1:])) 
+
         fig = go.Figure(go.Scatter( y = [],x = []))
         fig.update_layout(
-        xaxis=dict(range=range_scale, type='log'
-                    # tickvals=[i for i in range(int(range_scale[0]+1),
-                    #                     int(range_scale[1]-1))],
+        xaxis=dict(range=range_scale, type='log',
+                    tickvals=tick_values
                         ),
         dragmode=False,
         showlegend=False,

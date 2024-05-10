@@ -21,6 +21,7 @@ def __skt_all_forstplot(df, lower, scale_lower, scale_upper, refer_name):
     new_rows['risk'] = 'Enter a number'
     new_rows['Scale_lower'] = 'Enter a value for lower'
     new_rows['Scale_upper'] = 'Enter a value for upper'
+    new_rows['RR'] = 'RR'
     interval = 19
     insert_index = 0
     lower =float(lower)
@@ -206,6 +207,7 @@ def __skt_PI_forstplot(df, lower,  scale_lower, scale_upper, refer_name):
     new_rows['risk'] = 'Enter a number'
     new_rows['Scale_lower'] = 'Enter a value for lower'
     new_rows['Scale_upper'] = 'Enter a value for upper'
+    new_rows['RR'] = 'RR'
     lower =float(lower)
     interval = 19
     insert_index = 0
@@ -362,6 +364,7 @@ def __skt_direct_forstplot(df, lower, scale_lower, scale_upper, refer_name):
     new_rows['risk'] = 'Enter a number'
     new_rows['Scale_lower'] = 'Enter a value for lower'
     new_rows['Scale_upper'] = 'Enter a value for upper'
+    new_rows['RR'] = 'RR'
     lower =float(lower)
     interval = 19
     insert_index = 0
@@ -516,6 +519,7 @@ def __skt_indirect_forstplot(df, lower, scale_lower, scale_upper, refer_name):
     new_rows['risk'] = 'Enter a number'
     new_rows['Scale_lower'] = 'Enter a value for lower'
     new_rows['Scale_upper'] = 'Enter a value for upper'
+    new_rows['RR'] = 'RR'
     lower =float(lower)
     interval = 19
     insert_index = 0
@@ -668,6 +672,7 @@ def __skt_PIdirect_forstplot(df, lower, scale_lower, scale_upper, refer_name):
     new_rows['risk'] = 'Enter a number'
     new_rows['Scale_lower'] = 'Enter a value for lower'
     new_rows['Scale_upper'] = 'Enter a value for upper'
+    new_rows['RR'] = 'RR'
     lower =float(lower)
     interval = 19
     insert_index = 0
@@ -833,6 +838,7 @@ def __skt_PIindirect_forstplot(df, lower,  scale_lower, scale_upper, refer_name)
     new_rows['risk'] = 'Enter a number'
     new_rows['Scale_lower'] = 'Enter a value for lower'
     new_rows['Scale_upper'] = 'Enter a value for upper'
+    new_rows['RR'] = 'RR'
     lower =float(lower)
     interval = 19
     insert_index = 0
@@ -993,6 +999,7 @@ def __skt_directin_forstplot(df, lower, scale_lower, scale_upper, refer_name):
     new_rows['risk'] = 'Enter a number'
     new_rows['Scale_lower'] = 'Enter a value for lower'
     new_rows['Scale_upper'] = 'Enter a value for upper'
+    new_rows['RR'] = 'RR'
     lower =float(lower)
     interval = 19
     insert_index = 0
@@ -1153,6 +1160,7 @@ def __skt_mix_forstplot(df, lower, scale_lower, scale_upper, refer_name):
     new_rows['risk'] = 'Enter a number'
     new_rows['Scale_lower'] = 'Enter a value for lower'
     new_rows['Scale_upper'] = 'Enter a value for upper'
+    new_rows['RR'] = 'RR'
     lower =float(lower)
     interval = 19
     insert_index = 0

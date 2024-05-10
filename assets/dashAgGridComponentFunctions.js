@@ -90,16 +90,26 @@ var dagcomponentfuncs = window.dashAgGridComponentFunctions = window.dashAgGridC
 // };
 dagcomponentfuncs.CustomTooltip = function (props) {
     const certainty = props.data.Certainty;
+    const withinstudy = props.data.within_study;
+    const reporting = props.data.reporting;
+    const indirectness = props.data.indirectness;
+    const imprecision = props.data.imprecision;
+    const heterogeneity = props.data.heterogeneity;
+    const incoherence = props.data.incoherence;
+
+
     const backgroundColor = getBackgroundColorForCertainty(certainty);
 
     const info = [
         React.createElement('h4', {}, "Certainty of evidence: " + certainty),
         React.createElement('div', { style: { marginBottom: 8 } }, ''),
-        React.createElement('div', {}, 'Risk of bias: Not serious'),
-        React.createElement('div', {}, 'Inconsistency: Not serious'),
-        React.createElement('div', {}, 'Publication Bias: Not serious'),
-        React.createElement('div', {}, 'Imprecision: Not serious'),
-        React.createElement('div', {}, 'Intransitivity: Not serious'),
+        React.createElement('div', {}, 'Within-study bias: '+ withinstudy),
+        React.createElement('div', {}, 'Reporting bias: '+reporting),
+        React.createElement('div', {}, 'Indirectness: '+indirectness),
+        React.createElement('div', {}, 'Imprecision: '+imprecision),
+        React.createElement('div', {}, 'Heterogeneity: '+heterogeneity),
+        React.createElement('div', {}, 'Incoherence: '+incoherence),
+
     ];
 
     return React.createElement(

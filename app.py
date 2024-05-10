@@ -1991,13 +1991,32 @@ def selected(value_effect, value_change,lower,rowData):
     
     data = pd.read_csv('db/skt/final_all.csv')
     df = pd.DataFrame(data)
-    certainty_values = ['High', 'Low', 'Moderate']
-    df['Certainty'] = np.random.choice(certainty_values, size=df.shape[0])
-    df['Comments'] = ['' for _ in range(df.shape[0])]
-    df['CI_width_hf'] = df.CI_upper - df['RR']
-    df['lower_error'] = df['RR'] - df.CI_lower
-    df['weight'] = 1/df['CI_width_hf']
-    df = df.round(2)
+    df['Certainty']= ''
+    df['within_study'] = ''
+    df['reporting'] = ''
+    df['indirectness'] = ''
+    df['imprecision'] = ''
+    df['heterogeneity'] = ''
+    df['incoherence'] = ''
+
+    for i in range(df.shape[0]):
+        src = df['Reference'][i]
+        trgt = df['Treatment'][i]
+        slctd_comps = [f'{src}:{trgt}']
+        slctd_compsinv = [f'{trgt}:{src}']
+        cinima_df = cinima_dat[cinima_dat['Comparison'].isin(slctd_comps) | cinima_dat['Comparison'].isin(slctd_compsinv)]
+        df['Certainty'][i] = cinima_df['Confidence rating'].iloc[0]
+        df['within_study'][i] = cinima_df['Within-study bias'].iloc[0]
+        df['reporting'][i] = cinima_df['Reporting bias'].iloc[0]
+        df['indirectness'][i] = cinima_df['Indirectness'].iloc[0]
+        df['imprecision'][i] = cinima_df['Imprecision'].iloc[0]
+        df['heterogeneity'][i] = cinima_df['Heterogeneity'].iloc[0]
+        df['incoherence'][i] = cinima_df['Incoherence'].iloc[0]
+        df['Comments'] = ['' for _ in range(df.shape[0])]
+        df['CI_width_hf'] = df.CI_upper - df['RR']
+        df['lower_error'] = df['RR'] - df.CI_lower
+        df['weight'] = 1/df['CI_width_hf']
+        df = df.round(2)
     df['Graph'] = ''
     df['risk'] = 'Enter a number'
     df['Scale_lower'] = 'Enter a value for lower'
@@ -2057,7 +2076,10 @@ def selected(value_effect, value_change,lower,rowData):
                             "indirect_low": row["indirect_low"],"indirect_up": row["indirect_up"],
                             "CI_lower": row["CI_lower"],"CI_upper": row["CI_upper"],
                             "Comments": row["Comments"],"ab_effect": row["ab_effect"],
-                          "ab_difference": row["ab_difference"]
+                          "ab_difference": row["ab_difference"],
+                          "within_study": row["within_study"],"reporting": row["reporting"],
+                          "indirectness": row["indirectness"],"imprecision": row["imprecision"],
+                          "heterogeneity": row["heterogeneity"],"incoherence": row["incoherence"],
                             }
             treatments.append(treatment_data)
         rowData_effect.append({"Reference": ref, "risk": risk,
@@ -2336,18 +2358,18 @@ clientside_callback(
 )
 
 
-@app.callback(
-    Output("quickstart-grid", "dashGridOptions"),
-    Input("grid-printer-layout-btn", "n_clicks"),
-    Input("grid-regular-layout-btn", "n_clicks"),
-    State("quickstart-grid", "dashGridOptions")
-)
-def toggle_layout(print, regular, options): 
-    if ctx.triggered_id == "grid-printer-layout-btn":
-        options['domLayout']="print"
-        return  options
-    options['domLayout']=None
-    return  options
+# @app.callback(
+#     Output("quickstart-grid", "dashGridOptions"),
+#     Input("grid-printer-layout-btn", "n_clicks"),
+#     Input("grid-regular-layout-btn", "n_clicks"),
+#     State("quickstart-grid", "dashGridOptions")
+# )
+# def toggle_layout(print, regular, options): 
+#     if ctx.triggered_id == "grid-printer-layout-btn":
+#         options['domLayout']="print"
+#         return  options
+#     options['domLayout']=None
+#     return  options
 
 
 

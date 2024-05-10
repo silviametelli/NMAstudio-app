@@ -16,6 +16,7 @@ data = pd.read_csv('db/skt/final_all.csv')
 pw_data = pd.read_csv('db/skt/forest_data_prws.csv')
 df = pd.DataFrame(data)
 
+cinima_dat = pd.read_csv('db/Cinema/cinema_report_PASI90.csv')
 
 out_list = [['PASI90',"SAE"]]
 
@@ -29,10 +30,35 @@ treat_list = [np.unique(df.Treatment)]
 
 treatment_list = [{'label': '{}'.format(treat_name), 'value': treat_name} for treat_name in np.unique(treat_list)]
 
+df['Certainty']= ''
+df['within_study'] = ''
+df['reporting'] = ''
+df['indirectness'] = ''
+df['imprecision'] = ''
+df['heterogeneity'] = ''
+df['incoherence'] = ''
+
+for i in range(df.shape[0]):
+    src = df['Reference'][i]
+    trgt = df['Treatment'][i]
+    slctd_comps = [f'{src}:{trgt}']
+    slctd_compsinv = [f'{trgt}:{src}']
+    cinima_df = cinima_dat[cinima_dat['Comparison'].isin(slctd_comps) | cinima_dat['Comparison'].isin(slctd_compsinv)]
+    df['Certainty'][i] = cinima_df['Confidence rating'].iloc[0]
+    df['within_study'][i] = cinima_df['Within-study bias'].iloc[0]
+    df['reporting'][i] = cinima_df['Reporting bias'].iloc[0]
+    df['indirectness'][i] = cinima_df['Indirectness'].iloc[0]
+    df['imprecision'][i] = cinima_df['Imprecision'].iloc[0]
+    df['heterogeneity'][i] = cinima_df['Heterogeneity'].iloc[0]
+    df['incoherence'][i] = cinima_df['Incoherence'].iloc[0]
+
+
+
 
 # df['p-value'] = 0.05
-certainty_values = ['High', 'Low', 'Moderate']
-df['Certainty'] = np.random.choice(certainty_values, size=df.shape[0])
+# certainty_values = ['High', 'Low', 'Moderate']
+# df['Certainty'] = np.random.choice(certainty_values, size=df.shape[0])
+
 df['Comments'] = ['' for _ in range(df.shape[0])]
 df['CI_width_hf'] = df.CI_upper - df['RR']
 df['lower_error'] = df['RR'] - df.CI_lower
@@ -85,6 +111,9 @@ for (ref, risk, Scale_lower, Scale_upper), group in grouped:
                           "CI_lower": row["CI_lower"],"CI_upper": row["CI_upper"],
                           "Comments": row["Comments"],"ab_effect": row["ab_effect"],
                           "ab_difference": row["ab_difference"],
+                          "within_study": row["within_study"],"reporting": row["reporting"],
+                          "indirectness": row["indirectness"],"imprecision": row["imprecision"],
+                          "heterogeneity": row["heterogeneity"],"incoherence": row["incoherence"],
                           }
         treatments.append(treatment_data)
     rowData.append({"Reference": ref, "risk": risk,
@@ -107,6 +136,9 @@ for (ref, risk, Scale_lower, Scale_upper), group in grouped:
                           "CI_lower": row["CI_lower"],"CI_upper": row["CI_upper"],
                           "Comments": row["Comments"],"ab_effect": row["ab_effect"],
                           "ab_difference": row["ab_difference"],
+                          "within_study": row["within_study"],"reporting": row["reporting"],
+                          "indirectness": row["indirectness"],"imprecision": row["imprecision"],
+                          "heterogeneity": row["heterogeneity"],"incoherence": row["incoherence"],
                           }
         treatments.append(treatment_data)
     row_data_default.append({"Reference": ref, "risk": risk,
@@ -132,7 +164,7 @@ style_certainty = {'white-space': 'pre','display': 'grid','text-align': 'center'
 
 masterColumnDefs = [
     {
-        "headerName": "Reference",
+        "headerName": "Reference Treatment",
         "field": "Reference",
         "cellRenderer": "agGroupCellRenderer",
         'cellStyle': {'border-left': 'solid 0.8px',
@@ -435,9 +467,9 @@ def skt_layout():
                                                     'text-align': 'center',
                                                     'color':'#5c7780',
                                                        }),
-                                    html.Button("Export to Excel", id="btn-excel-export"),
-                                    html.Button("print", id="grid-printer-layout-btn"),
-                                    html.Button("regular", id="grid-regular-layout-btn"),
+                                    # html.Button("Export to Excel", id="btn-excel-export"),
+                                    # html.Button("print", id="grid-printer-layout-btn"),
+                                    # html.Button("regular", id="grid-regular-layout-btn"),
                                             dbc.Col([
                                                 html.P(
                                                 "Standard skt",

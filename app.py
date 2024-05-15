@@ -2179,6 +2179,18 @@ def display_forestplot(cell, _):
 
 
 @app.callback(
+   [ Output('forest-fig-pairwise', 'figure'),
+    Output('forest-fig-pairwise', 'style')],
+    [Input("quickstart-grid", "cellClicked"),
+    Input('forest-fig-pairwise', 'style')]
+)
+
+def show_forest_plot(cell, style_pair):
+    # print(cell)
+    return __show_forest_plot(cell, style_pair)
+
+
+@app.callback(
     Output("skt_modal_copareinfo", "is_open"), 
     Input("quickstart-grid", "cellClicked"),
     Input("close_compare", "n_clicks"),
@@ -2196,16 +2208,6 @@ def display_sktinfo(cell, _):
 
 
 
-@app.callback(
-   [ Output('forest-fig-pairwise', 'figure'),
-    Output('forest-fig-pairwise', 'style')],
-    [Input("quickstart-grid", "cellClicked"),
-    Input('forest-fig-pairwise', 'style')]
-)
-
-def show_forest_plot(cell, style_pair):
-    # print(cell)
-    return __show_forest_plot(cell, style_pair)
 
 
 

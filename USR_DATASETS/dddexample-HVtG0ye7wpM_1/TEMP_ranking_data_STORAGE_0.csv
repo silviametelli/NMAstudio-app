@@ -1,0 +1,7 @@
+,treatment,pscore
+1,nicotine_gum ,0.84
+2,no_treatment ,0.28
+3,placebo ,0.21
+4,sublingual_tablet,0.41000000000000003
+5, nicotine_inhaler ,0.75
+6, nicotine_patch ,0.51

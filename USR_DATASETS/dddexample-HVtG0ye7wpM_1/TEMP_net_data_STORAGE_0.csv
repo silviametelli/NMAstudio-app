@@ -1,0 +1,10 @@
+,TE1,seTE1,studlab,treat1,treat2,event11,n11,event21,n21,incr,allstudies,studlab.orig,year,rob,outcome ,treat1.orig,r11,treat2.orig,r21,effect_size1,outcome1_direction
+0,0.4648622297,0.5790361338000001,Berlin, nicotine_patch ,placebo ,8,203,5,199,0.0,0,Berlin,2014,1,gastricreflux_vomiting, nicotine_patch ,8,placebo ,5,OR,beneficial
+1,1.1373983136999999,0.42348118220000003,Bollinger, nicotine_inhaler ,placebo ,23,200,8,200,0.0,0,Bollinger,2000,2,gastricreflux_vomiting, nicotine_inhaler ,23,placebo ,8,OR,beneficial
+2,1.7411851833,0.6373232515,Garvey,nicotine_gum ,placebo ,16,203,3,203,0.0,0,Garvey,2000,2,gastricreflux_vomiting,nicotine_gum ,16,placebo ,3,OR,beneficial
+3,0.0090498355,0.4670116895,Glover,sublingual_tablet,placebo ,10,120,10,121,0.0,0,Glover,2001,2,gastricreflux_vomiting,sublingual_tablet,10,placebo ,10,OR,beneficial
+4,-0.0674412808,1.430033197,Jarvis,nicotine_gum ,placebo ,1,47,1,44,0.0,0,Jarvis,1982,2,gastricreflux_vomiting,nicotine_gum ,1,placebo ,1,OR,beneficial
+5,2.677480135,1.5149636295,Molander,sublingual_tablet,placebo ,5,20,0,20,0.5,0,Molander,2000,3,gastricreflux_vomiting,sublingual_tablet,5,placebo ,0,OR,beneficial
+6,1.2417131323000001,1.7186756977000002,Oncken, nicotine_patch ,placebo ,1,7,0,7,0.5,0,Oncken,2009,2,gastricreflux_vomiting, nicotine_patch ,1,placebo ,0,OR,beneficial
+7,1.0707359191,1.6372558312,Tonneson, nicotine_inhaler ,placebo ,1,146,0,141,0.5,0,Tonneson,1993,2,gastricreflux_vomiting, nicotine_inhaler ,1,placebo ,0,OR,beneficial
+8,1.7621147526,1.5615113422,Tonneson_2,nicotine_gum ,no_treatment ,2,50,0,56,0.5,0,Tonneson_2,1988,2,gastricreflux_vomiting,nicotine_gum ,2,no_treatment ,0,OR,beneficial

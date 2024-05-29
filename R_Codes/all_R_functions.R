@@ -799,6 +799,7 @@ get_pairwise_data_contrast <- function(dat, outcome2=FALSE){
     
 get_pairwise_data_contrast_new <- function(dat, num_outcome=1){
    pairwise_dat <- list()
+   pair_add <- list()
    for (i in 1:num_outcome){
     sm <- dat[[paste0("effect_size", i)]][1] 
     if(sm %in% c('RR','OR')) {
@@ -809,6 +810,7 @@ get_pairwise_data_contrast_new <- function(dat, num_outcome=1){
                                        treat=list(treat1,treat2),
                                        incr=0.5,
                                        sm=sm)
+        pair_add[[i]]  <-  pair_dat
         pairwise_dat[[i]] <- pair_dat[,1:9]
         names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'TE'] <- paste0("TE", i)
         names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'seTE'] <- paste0("seTE", i)
@@ -826,6 +828,7 @@ get_pairwise_data_contrast_new <- function(dat, num_outcome=1){
                                             treat=list(treat1,treat2),
                                             incr=0.5,
                                             sm=sm)
+        pair_add[[i]]  <-  pair_dat
         pairwise_dat[[i]] <- pair_dat[,1:9]                                   
         names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'TE'] <- paste0("TE", i)
         names(pairwise_dat[[i]])[names(pairwise_dat[[i]]) == 'seTE'] <- paste0("seTE", i)
@@ -836,9 +839,12 @@ get_pairwise_data_contrast_new <- function(dat, num_outcome=1){
         }
     }
     final_dat = reduce(pairwise_dat, full_join, by = c("studlab","treat1","treat2"))
-    add_columns <- names(pair_dat)[10:length(names(pair_dat))]
+    final_dat <- final_dat %>%select(studlab, treat1, treat2, everything())
+    combined_df <- bind_rows(pair_add)
+    final_add <- combined_df %>% distinct(studlab, treat1, treat2, .keep_all = TRUE)
+    add_columns <- names(final_add)[10:length(names(final_add))]
     
-    new_cols <- pair_dat %>%
+    new_cols <- final_add %>%
     dplyr::select(add_columns)
 
     final_dat1 <- cbind.data.frame(final_dat,new_cols)

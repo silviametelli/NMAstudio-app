@@ -2202,7 +2202,7 @@ def display_sktinfo(cell, _):
     if cell is None or len(cell) == 0:  
         return False
     else:
-        if ('colId' in cell and cell['colId'] == "Treatment" and cell['value']!= 'Scale'):
+        if ('colId' in cell and cell['colId'] == "Treatment" and cell['value']is not None):
             return True
     return no_update
 

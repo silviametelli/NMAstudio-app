@@ -280,7 +280,7 @@ detailColumnDefs = [
      "headerName": "p-value\n(Consistency)",
       "width": 140,
       "resizable": True,
-      'cellStyle': {"text-align":'center', 'display': 'grid',
+      'cellStyle': {"text-align":'center', 'display': 'grid','line-height': 'normal',
                     'white-space': 'pre', 'align-items': 'center'}
       },
     {"field": "Certainty", 
@@ -303,7 +303,14 @@ detailColumnDefs = [
     ]
 
 
-# n_row = df.shape[0]
+getRowStyle = {
+    "styleConditions": [
+        {
+            "condition": "params.rowIndex === 0",
+            "style": {"backgroundColor": "#faead7",'font-weight': 'bold'},
+        },
+    ]
+}
 
 grid = dag.AgGrid(
     id="quickstart-grid",
@@ -313,6 +320,7 @@ grid = dag.AgGrid(
     columnDefs=masterColumnDefs,
     rowData = row_data_default.to_dict("records"),
     masterDetail=True,
+    # getRowStyle=getRowStyle,
     detailCellRendererParams={
                 "detailGridOptions": {
                 "columnDefs": detailColumnDefs,
@@ -321,6 +329,7 @@ grid = dag.AgGrid(
                 "rowDragMultiRow": True,
                 "rowDragEntireRow": True,
                 "rowSelection": "multiple",
+                'getRowStyle': getRowStyle,
                 },
                 "detailColName": "Treatments",
                 "suppressCallback": True,
@@ -336,6 +345,7 @@ grid = dag.AgGrid(
                                   'text-align': 'center',
                                   'align-items': 'center',
                                   'border-bottom': 'solid 0.5px',
+                                #   'background-color':'#faead7'
                                   },
                     # "tooltipComponent": "CustomTooltip"
                     },
@@ -576,8 +586,27 @@ def skt_layout():
                                                                dbc.Col([grid, model_skt_stand1, model_skt_stand2],className='skt_col2', id = 'grid_type'),
                                                                               ],className='skt_rowtable'),
                                                       html.Br(), html.Br(),
-                                                      dbc.Row(),
-                                                                              ]),], style={'display':'block'})])
+                                                      dbc.Row()
+                                                        ]),
+                                                      dbc.Col([
+                                                dcc.Markdown('Expert Committee Members',
+                                                className="markdown_style_main",
+                                                style={
+                                                        "font-size": '20px',
+                                                        'text-align': 'center',
+                                                        'color':'orange',
+                                                        'border-bottom': '2px solid',
+                                                        'font-weight': 'bold',
+                                                        'height': 'fit-content',
+                                                        # 'margin-left': '20px',
+                                                        'width': '100%',
+                                                        'margin-top': '0'
+                                                        }),
+                                                dcc.Markdown('Isabelle Boutron, Toshi Furukawa, Emily Karahalios, Tianjing li, Michael Mccaul, Adriani Nikolakopoulou, Haliton Oliveira, Thodoris Papakonstantiou, Georgia Salanti, Guido Schwarzer, Ian Saldanha, Nicky Welton, Sally Yaacoub',
+                                                                className="markdown_style", style={"color": "black", 'font-size': 'large'}),
+                                                html.Br(),html.Br(),html.Br(),],style={ 'width': '95%', 'padding-left': '5%'}) 
+                                                        ], style={'display':'block'}), 
+                                                                              ])
 
 ####################################################################################################################################################################
 ####################################################################################################################################################################

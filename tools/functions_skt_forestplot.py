@@ -17,11 +17,14 @@ def __skt_all_forstplot(df, lower, scale_lower, scale_upper, refer_name):
     for idx in range(0, 380, 19):
         new_rows.loc[idx/19, 'Reference'] = df.loc[idx, 'Reference']
 
-    new_rows['Treatment'] = 'Scale'
+    # new_rows['Treatment'] = 'Scale'
     new_rows['risk'] = 'Enter a number'
     new_rows['Scale_lower'] = 'Enter a value for lower'
     new_rows['Scale_upper'] = 'Enter a value for upper'
     new_rows['RR'] = 'RR'
+    new_rows['direct'] = 'RR'
+    new_rows['indirect'] = 'RR'
+    new_rows['p-value'] = '0.75\n(Global)'
     interval = 19
     insert_index = 0
     lower =float(lower)

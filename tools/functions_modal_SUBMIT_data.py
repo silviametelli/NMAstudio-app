@@ -369,7 +369,8 @@ def __data_trans(
         else:
             treat_list = [{'label': str(treat_name), 'value': str(treat_name)}
               for treat_name in sorted(data_user['treat'].unique(), key=str)]
-            
+
+
         
         
         try:

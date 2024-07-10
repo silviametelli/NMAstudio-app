@@ -306,7 +306,7 @@ detailColumnDefs = [
 getRowStyle = {
     "styleConditions": [
         {
-            "condition": "params.rowIndex === 0",
+            "condition": "params.data.RR === 'RR'",
             "style": {"backgroundColor": "#faead7",'font-weight': 'bold'},
         },
     ]
